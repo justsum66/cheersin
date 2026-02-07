@@ -7,6 +7,7 @@ import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
+/** G2.9 情侶默契題庫：生活、價值觀、回憶、習慣等 */
 const COUPLE_QUESTIONS = [
   '另一半最喜歡的食物是？',
   '我們第一次約會去哪裡？',
@@ -28,6 +29,21 @@ const COUPLE_QUESTIONS = [
   '另一半最引以為傲的事？',
   '另一半最難忘的回憶？',
   '另一半最想學的技能？',
+  '另一半的生日願望通常是？',
+  '另一半最喜歡的禮物類型？',
+  '吵架後另一半通常先怎麼和好？',
+  '另一半最喜歡的約會方式？',
+  '另一半最在意的家人是誰？',
+  '另一半小時候的夢想是？',
+  '另一半最討厭被怎麼對待？',
+  '另一半覺得我最可愛的瞬間？',
+  '另一半最喜歡我們一起做的活動？',
+  '另一半的雷區或地雷是什麼？',
+  '另一半最常誇我什麼？',
+  '另一半心目中理想的家庭樣子？',
+  '另一半最喜歡的動物？',
+  '另一半最想和我一起去的地方？',
+  '另一半覺得我們哪裡最合拍？',
 ]
 
 /** G2.9-G2.10：情侶默契測試 - 測試情侶間的了解程度 */
@@ -94,6 +110,13 @@ export default function CoupleTest() {
   const answererName = currentAnswerer === 0 ? player1Name : player2Name
   const totalQuestions = score.correct + score.wrong
   const compatibility = totalQuestions > 0 ? Math.round((score.correct / totalQuestions) * 100) : 0
+  /** G2.10 配對邏輯：依默契指數回傳配對結果標籤 */
+  const pairingLabel =
+    compatibility >= 90 ? '靈魂伴侶'
+    : compatibility >= 75 ? '默契十足'
+    : compatibility >= 60 ? '還不錯'
+    : compatibility >= 40 ? '還需磨合'
+    : '多聊聊吧'
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
@@ -131,15 +154,16 @@ export default function CoupleTest() {
         </div>
       ) : showResult ? (
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
-          <p className="text-4xl font-bold text-pink-400 mb-4">{compatibility}%</p>
-          <p className="text-white/70 mb-2">默契指數</p>
+          <p className="text-4xl font-bold text-pink-400 mb-2">{compatibility}%</p>
+          <p className="text-white/70 mb-1">默契指數</p>
+          <p className="text-primary-300 font-medium mb-2">{pairingLabel}</p>
           <p className="text-white/50 mb-4">答對 {score.correct} / {totalQuestions} 題</p>
           {compatibility >= 80 && <p className="text-emerald-400">太棒了！你們超有默契 💕</p>}
           {compatibility >= 50 && compatibility < 80 && <p className="text-yellow-400">還不錯！繼續培養默契 💛</p>}
           {compatibility < 50 && <p className="text-red-400">需要更多了解對方喔 💔</p>}
           <div className="flex gap-3 mt-4 justify-center">
             <button onClick={resetGame} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">再玩一次</button>
-            <CopyResultButton text={`情侶默契測試：${player1Name} ❤️ ${player2Name}\n默契指數：${compatibility}%\n答對 ${score.correct}/${totalQuestions} 題`} />
+            <CopyResultButton text={`情侶默契測試：${player1Name} ❤️ ${player2Name}\n默契指數：${compatibility}% · ${pairingLabel}\n答對 ${score.correct}/${totalQuestions} 題`} />
           </div>
         </motion.div>
       ) : (

@@ -7,7 +7,7 @@ import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { ClickableImage } from '@/components/ui/ImageLightbox'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles, Focus, ChevronDown, ChevronUp } from 'lucide-react'
-import { recordStudyToday, addPoints, getStreak, addLearnMinutes, getLearnMinutes, setCompletedChapterToday, addWeeklyChapterCount } from '@/lib/gamification'
+import { recordStudyToday, addPoints, getStreak, addLearnMinutes, getLearnMinutes, setCompletedChapterToday, addWeeklyChapterCount, incrementChaptersCompletedToday } from '@/lib/gamification'
 import { useGameSound } from '@/hooks/useGameSound'
 import { fireFullscreenConfetti } from '@/lib/celebration'
 import { getNote, setNote } from '@/lib/learn-notes'
@@ -46,6 +46,8 @@ import { SeasonalCocktailGuide } from '@/components/learn/SeasonalCocktailGuide'
 import toast from 'react-hot-toast'
 import { COPY_TOAST_PROGRESS_SAVED } from '@/config/copy.config'
 import { getReadingListForCourse } from '@/config/learn-reading-list'
+import { getCommonMistakes } from '@/config/learn-common-mistakes'
+import { getReferencesForCourse } from '@/config/learn-references'
 
 const PROGRESS_KEY = 'cheersin_learn_progress'
 
@@ -244,8 +246,11 @@ export function LearnCourseContent({
     
     /* 任務 89：進度儲存成功後輕量 Toast，僅在切換章節/完成時顯示一次 */
     toast.success(COPY_TOAST_PROGRESS_SAVED, { duration: 2500 })
-    /* L73：課程完成率 100% 時解鎖徽章 */
-    if (nextCompleted >= total && total > 0) unlockBadge('course-complete')
+    /* L73：課程完成率 100% 時解鎖徽章；P2.B3.2 技能解鎖動畫 */
+    if (nextCompleted >= total && total > 0) {
+      unlockBadge('course-complete')
+      toast.success('解鎖成就：完成一門課程', { duration: 3000 })
+    }
     const prevMin = getLearnMinutes()
     addLearnMinutes(5)
     const nextMin = getLearnMinutes()
@@ -262,6 +267,7 @@ export function LearnCourseContent({
     const streakBefore = getStreak().days
     recordStudyToday()
     setCompletedChapterToday()
+    incrementChaptersCompletedToday()
     addWeeklyChapterCount()
     const streakAfter = getStreak().days
     if (streakAfter > streakBefore && [3, 7, 14].includes(streakAfter)) {
@@ -450,16 +456,30 @@ export function LearnCourseContent({
             <ChevronLeft className="w-5 h-5" />
             返回學院
           </Link>
-          <button
-            type="button"
-            onClick={() => setFocusMode((v) => !v)}
-            className={`min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring ${focusMode ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/60 hover:text-white'}`}
-            title={focusMode ? '顯示章節導航' : '專注閱讀（隱藏側邊）'}
-            aria-pressed={focusMode}
-          >
-            <Focus className="w-4 h-4" />
-            {focusMode ? '顯示導航' : '專注閱讀'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? `${window.location.origin}/learn/${courseId}` : ''
+                navigator.clipboard?.writeText(url).then(() => toast.success('已複製課程連結，可分享給好友'))
+              }}
+              className="min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring bg-white/5 text-white/60 hover:text-white"
+              title="推薦課程給好友"
+            >
+              <Share2 className="w-4 h-4" />
+              推薦給好友
+            </button>
+            <button
+              type="button"
+              onClick={() => setFocusMode((v) => !v)}
+              className={`min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring ${focusMode ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/60 hover:text-white'}`}
+              title={focusMode ? '顯示章節導航' : '專注閱讀（隱藏側邊）'}
+              aria-pressed={focusMode}
+            >
+              <Focus className="w-4 h-4" />
+              {focusMode ? '顯示導航' : '專注閱讀'}
+            </button>
+          </div>
         </div>
 
         {/* 39 課程內目錄錨點；Acad-09/680 目錄 RWD、48px、當前章節高亮、進度勾選 */}
@@ -729,11 +749,12 @@ export function LearnCourseContent({
                     ))
                   })()}
                 </div>
-                {/* 160 學習筆記：本章節專用；Esc  blur（task 27） */}
+                {/* 160 學習筆記：本章節專用；Esc  blur（task 27）；P2.A2.1 可列印版 */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-white/60 text-xs font-medium">我的筆記</label>
-                    {/* Phase 1 D3.4: 筆記自動保存指示器 */}
+                    <div className="flex items-center gap-2">
+                      {/* Phase 1 D3.4: 筆記自動保存指示器 */}
                     <AnimatePresence>
                       {noteSaveIndicator[ch.id] && (
                         <motion.div
@@ -756,6 +777,39 @@ export function LearnCourseContent({
                         </motion.div>
                       )}
                     </AnimatePresence>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const printContent = chapters.map((ch) => ({
+                            title: ch.title,
+                            note: notes[ch.id] ?? getNote(courseId, ch.id) ?? '',
+                          })).filter((x) => x.note.trim())
+                          if (printContent.length === 0) {
+                            toast('尚無筆記可列印')
+                            return
+                          }
+                          const win = window.open('', '_blank')
+                          if (!win) return
+                          win.document.write(`
+                            <!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} - 品酒筆記</title>
+                            <style>body{font-family:system-ui;padding:2rem;max-width:720px;margin:0 auto;color:#333}
+                            h1{font-size:1.25rem;margin-bottom:1rem}.chapter{margin-bottom:1.5rem}
+                            .chapter h2{font-size:1rem;color:#666;margin-bottom:0.5rem}
+                            .chapter p{white-space:pre-wrap;font-size:0.9rem;line-height:1.6}
+                            @media print{body{padding:1rem}}</style></head><body>
+                            <h1>${title} · 品酒筆記</h1>
+                            ${printContent.map((c) => `<div class="chapter"><h2>${c.title}</h2><p>${c.note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p></div>`).join('')}
+                            </body></html>`)
+                          win.document.close()
+                          win.focus()
+                          setTimeout(() => { win.print(); win.close() }, 300)
+                        }}
+                        className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 games-focus-ring"
+                        title="列印筆記"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     value={notes[ch.id] ?? getNote(courseId, ch.id)}
@@ -1428,6 +1482,25 @@ export function LearnCourseContent({
           </div>
         )}
 
+        {/* P2.A1.3 常見錯誤觀念 */}
+        {(() => {
+          const mistakes = getCommonMistakes(courseId)
+          if (!mistakes) return null
+          return (
+            <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <h3 className="text-sm font-semibold text-amber-200 mb-2">{mistakes.title}</h3>
+              <ul className="space-y-2">
+                {mistakes.items.map((item, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-white/80">
+                    <span className="text-amber-400 shrink-0">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })()}
+
         {/* P2.A4.1 延伸閱讀書單；P2.D2.2 摺疊/展開控制 */}
         {(() => {
           const reading = getReadingListForCourse(courseId)
@@ -1463,6 +1536,77 @@ export function LearnCourseContent({
             </div>
           )
         })()}
+
+        {/* P2.A4.2 論文引用資料 */}
+        {(() => {
+          const refs = getReferencesForCourse(courseId)
+          if (refs.length === 0) return null
+          return (
+            <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+              <h3 className="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-white/60" />
+                參考資料
+              </h3>
+              <ul className="space-y-1.5 text-sm text-white/70">
+                {refs.map((r, i) => (
+                  <li key={i}>
+                    {r.url ? (
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-primary-300 hover:underline">
+                        {r.title}
+                      </a>
+                    ) : (
+                      <span>{r.title}</span>
+                    )}
+                    {r.authors && <span className="text-white/50"> — {r.authors}</span>}
+                    {r.year && <span className="text-white/50"> ({r.year})</span>}
+                    {r.note && <span className="text-white/50 text-xs ml-1">{r.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })()}
+
+        {/* P2.A2.3 風味輪對照圖：葡萄酒課視覺化（籌備中） */}
+        {courseId === 'wine-basics' && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-sm font-semibold text-white/90 mb-1">風味輪對照圖</h3>
+            <p className="text-white/50 text-xs">葡萄品種風味輪視覺化籌備中，敬請期待。</p>
+          </div>
+        )}
+        {/* P2.A3.1 配方計算器：調酒課可調整份量（籌備中） */}
+        {courseId === 'cocktail-basics' && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-sm font-semibold text-white/90 mb-1">配方計算器</h3>
+            <p className="text-white/50 text-xs">可依人數調整份量的調酒計算器籌備中。</p>
+          </div>
+        )}
+        {/* P2.A3.2 年份比較時間軸：威士忌課（籌備中） */}
+        {courseId === 'whisky-101' && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-sm font-semibold text-white/90 mb-1">年份比較時間軸</h3>
+            <p className="text-white/50 text-xs">陳年差異視覺化時間軸籌備中。</p>
+          </div>
+        )}
+        {/* P2.A3.3 精米步合對照：清酒課（籌備中） */}
+        {courseId === 'sake-intro' && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-sm font-semibold text-white/90 mb-1">精米步合對照</h3>
+            <p className="text-white/50 text-xs">清酒精米步合互動式對照籌備中。</p>
+          </div>
+        )}
+        {/* P2.F2.2 步驟 GIF 動圖：調酒課（籌備中） */}
+        {courseId === 'cocktail-basics' && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-sm font-semibold text-white/90 mb-1">步驟 GIF 動圖</h3>
+            <p className="text-white/50 text-xs">調酒步驟快速教學動圖籌備中。</p>
+          </div>
+        )}
+        {/* P2.F3.1 重點回顧音檔：籌備中 */}
+        <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <h3 className="text-sm font-semibold text-white/90 mb-1">重點回顧音檔</h3>
+          <p className="text-white/50 text-xs">Podcast 與音檔籌備中，敬請期待。通勤時也能複習重點。</p>
+        </div>
 
         {/* Phase 2 B2.1: 智慧推薦下一堂課程 */}
         {progressPct >= 100 && (() => {

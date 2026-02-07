@@ -21,6 +21,8 @@ export default function FingerGuessing() {
   const [p1Choice, setP1Choice] = useState<(typeof CHOICES)[number] | null>(null)
   const [p2Choice, setP2Choice] = useState<(typeof CHOICES)[number] | null>(null)
   const [result, setResult] = useState<string | null>(null)
+  /** G1.14 連勝機制：P1 連贏次數（平手不重置、P1 輸則歸零） */
+  const [winStreak, setWinStreak] = useState(0)
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reducedMotion = useGameReduceMotion()
 
@@ -36,9 +38,11 @@ export default function FingerGuessing() {
     } else if (WIN[choice] === c2) {
       playSound('win')
       setResult(`${players[0]} 贏，${players[1]} 喝！`)
+      setWinStreak((s) => s + 1)
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50)
     } else {
       playSound('wrong')
+      setWinStreak(0)
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
       setResult(`${players[1]} 贏，${players[0]} 喝！`)
     }
@@ -78,6 +82,11 @@ export default function FingerGuessing() {
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="猜拳">
       <GameRules rules={`剪刀贏布、布贏石頭、石頭贏剪刀。\n此處為玩家 vs 隨機，輸的人喝；平手可再來。`} />
       <p className="text-white/50 text-sm mb-2">猜拳，輸的人喝（{players[0]} vs {players[1]}）</p>
+      {winStreak > 0 && (
+        <p className="text-amber-400 text-sm font-medium mb-1" aria-live="polite">
+          {players[0]} 連勝 {winStreak} 場{winStreak >= 3 ? ' 🔥' : ''}
+        </p>
+      )}
       <AnimatePresence mode="wait">
         {p1Choice !== null && p2Choice !== null && (
           <motion.div

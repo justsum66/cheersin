@@ -49,6 +49,10 @@ export function getStreak(): { days: number; lastDate: string } {
 const LEARN_MINUTES_KEY = 'cheersin_learn_minutes'
 /** 57 每日任務：今日是否已完成一章 */
 const DAILY_CHAPTER_KEY = 'cheersin_daily_chapter'
+/** P2.B2.2 學習提醒排程：每日目標章數 */
+const LEARN_DAILY_GOAL_KEY = 'cheersin_learn_daily_goal'
+/** 今日已完成章數（key 含日期，每日歸零） */
+const LEARN_CHAPTERS_TODAY_PREFIX = 'cheersin_learn_chapters_'
 
 /** 35 學習時長統計：累積分鐘數 */
 export function getLearnMinutes(): number {
@@ -87,6 +91,70 @@ export function getCompletedChapterToday(): boolean {
     return stored === today
   } catch {
     return false
+  }
+}
+
+/** P2.B2.2 今日已完成章數（用於每日目標進度） */
+export function getChaptersCompletedToday(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const raw = localStorage.getItem(LEARN_CHAPTERS_TODAY_PREFIX + today) ?? '0'
+    const n = parseInt(raw, 10)
+    return Number.isFinite(n) ? Math.max(0, n) : 0
+  } catch {
+    return 0
+  }
+}
+
+/** 完成一章時呼叫，累加今日完成數 */
+export function incrementChaptersCompletedToday(): number {
+  if (typeof window === 'undefined') return 0
+  const today = new Date().toISOString().slice(0, 10)
+  const next = getChaptersCompletedToday() + 1
+  try {
+    localStorage.setItem(LEARN_CHAPTERS_TODAY_PREFIX + today, String(next))
+  } catch {
+    /* ignore */
+  }
+  return next
+}
+
+/** P2.B3.3 學習時間熱力圖：過去 N 天每日完成章數 */
+export function getLearnChaptersHistory(days: number): { date: string; count: number }[] {
+  if (typeof window === 'undefined' || days <= 0) return []
+  const out: { date: string; count: number }[] = []
+  const today = new Date()
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    const date = d.toISOString().slice(0, 10)
+    const raw = localStorage.getItem(LEARN_CHAPTERS_TODAY_PREFIX + date) ?? '0'
+    const n = parseInt(raw, 10)
+    out.push({ date, count: Number.isFinite(n) ? Math.max(0, n) : 0 })
+  }
+  return out.reverse()
+}
+
+/** P2.B2.2 取得/設定每日目標章數（1–10） */
+export function getLearnDailyGoal(): number {
+  if (typeof window === 'undefined') return 1
+  try {
+    const raw = localStorage.getItem(LEARN_DAILY_GOAL_KEY) ?? '1'
+    const n = parseInt(raw, 10)
+    return Number.isFinite(n) && n >= 1 && n <= 10 ? n : 1
+  } catch {
+    return 1
+  }
+}
+
+export function setLearnDailyGoal(chapters: number): void {
+  if (typeof window === 'undefined') return
+  const n = Math.max(1, Math.min(10, Math.round(chapters)))
+  try {
+    localStorage.setItem(LEARN_DAILY_GOAL_KEY, String(n))
+  } catch {
+    /* ignore */
   }
 }
 

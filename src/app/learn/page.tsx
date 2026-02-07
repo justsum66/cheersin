@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useDeferredValue, useRef, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSubscription } from '@/hooks/useSubscription'
 import { canAccessProCourse, canUseProTrial, getProTrialRemainingThisMonth, hasProBadge } from '@/lib/subscription'
 import { UpgradeModal } from '@/components/UpgradeModal'
 import { getBookmarks } from '@/lib/learn-bookmarks'
-import { getPoints, getLeaderboard, getStreak, getLearnMinutes, getUnlockedBadges, BADGE_LABELS, getCompletedChapterToday, getWeeklyChapterCount, maybeUnlockHolidayBadge, getSommelierLevel, getFriendCompare, setFriendCompare } from '@/lib/gamification'
+import { getPoints, getLeaderboard, getStreak, getLearnMinutes, getUnlockedBadges, BADGE_LABELS, getCompletedChapterToday, getWeeklyChapterCount, maybeUnlockHolidayBadge, getSommelierLevel, getFriendCompare, setFriendCompare, getLearnDailyGoal, setLearnDailyGoal, getChaptersCompletedToday, getLearnChaptersHistory } from '@/lib/gamification'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
 import { getCourseRating } from '@/lib/learn-course-ratings'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
@@ -547,6 +547,11 @@ export default function LearnPage() {
   const [shareAchieveToast, setShareAchieveToast] = useState(false)
   const [dailyDone, setDailyDone] = useState(false)
   const [weeklyCount, setWeeklyCount] = useState(0)
+  /** P2.B2.2 學習提醒排程：每日目標章數與今日已完成 */
+  const [dailyGoal, setDailyGoal] = useState(1)
+  const [chaptersToday, setChaptersToday] = useState(0)
+  /** P2.B3.3 學習時間熱力圖：過去 7 天每日完成章數 */
+  const [heatmapHistory, setHeatmapHistory] = useState<{ date: string; count: number }[]>([])
   /** 56 與好友比較 */
   const [friendCompare, setFriendCompareState] = useState<ReturnType<typeof getFriendCompare>>(null)
   const [friendNickname, setFriendNickname] = useState('')
@@ -663,6 +668,9 @@ export default function LearnPage() {
     setStreak(getStreak())
     setLearnMinutes(getLearnMinutes())
     setBadges(getUnlockedBadges())
+    setDailyGoal(getLearnDailyGoal())
+    setChaptersToday(getChaptersCompletedToday())
+    setHeatmapHistory(getLearnChaptersHistory(7))
     setDailyDone(getCompletedChapterToday())
     setWeeklyCount(getWeeklyChapterCount())
     setProgress(loadProgress())
@@ -982,6 +990,89 @@ export default function LearnPage() {
             </Link>
           </motion.div>
         )}
+
+        {/* P2.B2.2 學習提醒排程：每日目標 */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <h2 className="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
+            <Target className="w-4 h-4 text-primary-400" />
+            今日目標
+          </h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-white/70 text-sm">完成</span>
+            <select
+              value={dailyGoal}
+              onChange={(e) => {
+                const n = Number(e.target.value)
+                setLearnDailyGoal(n)
+                setDailyGoal(n)
+              }}
+              className="min-h-[40px] px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
+              aria-label="每日目標章數"
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                <option key={n} value={n}>{n} 章</option>
+              ))}
+            </select>
+            <span className="text-white/70 text-sm">今日已完成 <strong className="text-primary-400">{chaptersToday}</strong> 章</span>
+            {chaptersToday >= dailyGoal && dailyGoal > 0 && (
+              <span className="text-green-400 text-sm">✓ 達標</span>
+            )}
+          </div>
+        </motion.div>
+
+        {/* P2.C3.2 本週之星：排行榜 */}
+        {leaderboard.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              本週之星
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {leaderboard.slice(0, 5).map((e) => (
+                <span
+                  key={e.rank}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${e.isCurrentUser ? 'bg-primary-500/30 text-primary-200 border border-primary-500/50' : 'bg-white/10 text-white/80'}`}
+                >
+                  <span className="text-white/50">#{e.rank}</span>
+                  <span>{e.name}</span>
+                  <span className="text-amber-400/90">{e.points} 分</span>
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* P2.B3.3 學習時間熱力圖：過去 7 天每日完成章數 */}
+        {heatmapHistory.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary-400" />
+              過去 7 天學習
+            </h2>
+            <div className="flex gap-1.5 items-end" role="img" aria-label="過去7天每日完成章數">
+              {heatmapHistory.map(({ date, count }) => {
+                const max = Math.max(1, ...heatmapHistory.map((h) => h.count))
+                const intensity = max > 0 ? count / max : 0
+                return (
+                  <div
+                    key={date}
+                    className="flex-1 min-w-0 flex flex-col items-center gap-0.5"
+                    title={`${date}：${count} 章`}
+                  >
+                    <div
+                      className="w-full rounded-t min-h-[24px] transition-colors"
+                      style={{
+                        backgroundColor: intensity > 0.6 ? 'rgba(139, 92, 246, 0.6)' : intensity > 0.2 ? 'rgba(139, 92, 246, 0.3)' : 'rgba(255,255,255,0.08)',
+                      }}
+                    />
+                    <span className="text-[10px] text-white/50">{date.slice(5).replace('-', '/')}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
+
         {/* AUDIT /learn #36：無進行中、無書籤時空狀態文案引導 */}
         {!continueLearningCourse && (
           <div className="mb-6 py-4 px-4 rounded-xl bg-white/[0.03] border border-white/5 text-center" role="status">
@@ -1241,6 +1332,32 @@ export default function LearnPage() {
             <div>
               <h2 className="font-semibold text-white">徽章牆</h2>
               <p className="text-white/50 text-sm">解鎖成就、展示學習徽章</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          <Link
+            href="/learn/weakness"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-amber-500/20">
+              <AlertCircle className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">弱項診斷</h2>
+              <p className="text-white/50 text-sm">依錯題本分析需加強的課程與章節</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          <Link
+            href="/learn/exam-practice"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <FileQuestion className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">考古題練習區</h2>
+              <p className="text-white/50 text-sm">認證考試歷年考題與模擬練習</p>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>
@@ -1526,8 +1643,13 @@ export default function LearnPage() {
                   transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
                 }}
                 onClick={() => !isLocked && handleCoursePreview(course)}
-                className="cursor-pointer"
+                className="cursor-pointer group/card"
               >
+                {/* P2.D3.2 快速預覽 hover：桌面版 hover 顯示描述 */}
+                <div className="hidden sm:block absolute inset-0 z-[2] pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 rounded-2xl bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 flex flex-col justify-end">
+                  <p className="text-white/90 text-sm line-clamp-3 mb-2">{course.description}</p>
+                  <span className="text-primary-300 text-xs font-medium">點擊進入課程</span>
+                </div>
                 {/* L05/L06：課程卡 hover 一致、focus-visible 由內層 Link 提供 */}
                 <div
                   className={`card-interactive glass-card rounded-2xl h-full relative overflow-hidden shadow-glass-1 hover:shadow-glass-hover hover:border-white/20 transition-all duration-300 ease-out active:scale-[0.99] min-h-[120px] ${isLocked ? 'cursor-pointer' : ''}`}
