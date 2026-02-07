@@ -1424,6 +1424,32 @@ export default function LearnPage() {
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>
+          <Link
+            href="/learn/study-buddy"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <Users className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">學習夥伴配對</h2>
+              <p className="text-white/50 text-sm">同進度學員互相激勵（籌備中）</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          <Link
+            href="/learn/study-group"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <UserPlus className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">學習小組</h2>
+              <p className="text-white/50 text-sm">邀請好友組隊一起學（籌備中）</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
         </motion.div>
 
         {/* L87：課程篩選區 aria-label */}

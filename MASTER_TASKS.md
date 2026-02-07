@@ -7,14 +7,14 @@
 
 | Category | Total | Completed | Remaining |
 |----------|-------|-----------|-----------|
-| Phase 2 Course Optimization | 60 | 48 | 12 |
-| Game Strategy (50 Games) | 100 | 42 | 58 |
+| Phase 2 Course Optimization | 60 | 50 | 10 |
+| Game Strategy (50 Games) | 100 | 50 | 50 |
 | UX/UI Optimizations | 100 | 100 | 0 |
 | PWA/Security/Enterprise | ~250 | ~250 | 0 |
 
 ---
 
-## A. Phase 2 Course Optimization (12 Remaining)
+## A. Phase 2 Course Optimization (10 Remaining)
 
 ### 🔴 High Priority (2 remaining)
 | ID | Task | Description |
@@ -37,13 +37,11 @@
 | P2.F1.1 | 60秒短影片 | 關鍵概念 TikTok 風格 |
 
 ### ✅ 本批已完成（已從上表移除）
-P2.D3.2 快速預覽、P2.A2.1 列印筆記、P2.B2.2 學習提醒/今日目標、P2.C3.2 本週之星、P2.A1.3 常見錯誤、P2.E2.3 推薦課程、P2.F3.1 Podcast 籌備中、P2.B1.3 弱項診斷、P2.A4.3 考古題練習區、P2.A4.2 論文引用、P2.B3.2 技能解鎖 toast、P2.B3.3 學習熱力圖、P2.A2.3/A3.1/A3.2/A3.3/F2.2 籌備中區塊、P2.D3.3 關鍵字高亮、P2.D4.3 專注閱讀、P2.E1.3 徽章牆、P2.B2.3 遺忘曲線複習、P2.C2.3 題目難度自適應、P2.B1.2 知識圖譜、P2.E3.1 KOL推薦榜單
+P2.D3.2 快速預覽、P2.A2.1 列印筆記、P2.B2.2 學習提醒/今日目標、P2.C3.2 本週之星、P2.A1.3 常見錯誤、P2.E2.3 推薦課程、P2.F3.1 Podcast 籌備中、P2.B1.3 弱項診斷、P2.A4.3 考古題練習區、P2.A4.2 論文引用、P2.B3.2 技能解鎖 toast、P2.B3.3 學習熱力圖、P2.A2.3/A3.1/A3.2/A3.3/F2.2 籌備中區塊、P2.D3.3 關鍵字高亮、P2.D4.3 專注閱讀、P2.E1.3 徽章牆、P2.B2.3 遺忘曲線複習、P2.C2.3 題目難度自適應、P2.B1.2 知識圖譜、P2.E3.1 KOL推薦榜單、P2.B3.4 學習夥伴配對、P2.E3.2 學習小組
 
-### 🟢 Low Priority (5 remaining)
+### 🟢 Low Priority (3 remaining)
 | ID | Task | Description |
 |----|------|-------------|
-| P2.B3.4 | 學習夥伴配對 | 同進度用戶激勵 |
-| P2.E3.2 | 學習小組 | 邀請好友組隊 |
 | P2.F1.2 | ASMR品酒音效 | 品飲課程沉浸體驗 |
 | P2.F1.3 | 空拍環景素材 | 產區介紹視覺震撼 |
 | P2.F2.3 | 香氣模擬 | 葡萄品種互動元素 |
@@ -89,19 +87,19 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 ### B4. Phase 3 Games - 完成50款 (13 games, 26 tasks)
 | Game | Tasks |
 |------|-------|
-| 反應大師 | G3.1 感測器整合, G3.2 動作偵測 |
+| 反應大師 | G3.1 ✅, G3.2 ✅ |
 | 翻杯競速 | G3.3 點擊邏輯, G3.4 團隊機制 |
 | 記憶大考驗 | G3.5 圖案生成, G3.6 記憶邏輯 |
 | 猜歌達人 | G3.7 音樂API, G3.8 計時機制 |
 | 撲克對決 | G3.9 牌局邏輯, G3.10 心理博弈 |
 | 故事接龍 | G3.11 AI判定, G3.12 故事連貫 |
 | 速度比拼 | G3.13 題目生成, G3.14 計時對決 |
-| 讀心術 | G3.15 遊戲邏輯, G3.16 猜測機制 |
+| 讀心術 | G3.15 ✅, G3.16 ✅ |
 | 情趣骰子 | G3.17 骰子系統, G3.18 18+內容 |
 | 身體語言 | G3.19 表演卡庫, G3.20 計時猜測 |
-| 酒後吐真言 | G3.21 AI生成, G3.22 靈魂拷問 |
+| 酒後吐真言 | G3.21 ✅, G3.22 ✅ |
 | 曖昧指數 | G3.23 問題庫, G3.24 指數計算 |
-| 深夜食堂 | G3.25 故事系統, G3.26 投票真假 |
+| 深夜食堂 | G3.25 ✅, G3.26 ✅ |
 
 ### B5. Existing Game Optimizations (16 games, 27 tasks)
 | Game | Optimization Tasks |
