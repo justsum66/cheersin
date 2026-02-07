@@ -87,7 +87,7 @@
 | **P1-027** ✅ | **動畫系統統一：** 使用 `framer-motion` 建立統一的動畫變體庫（`variants.ts`），用於頁面切換、彈窗、元素淡入等，取代零散的 `initial`, `animate` 寫法。 | **(Meta React 核心成員)** 統一管理動畫可以確保體驗一致，並方便全局禁用（reduce-motion）。 | `lib/variants.ts`, `components/**/*.tsx` | 5h |
 | **P1-028** ✅ | **建立 Icon 組件庫：** 將所有 `lucide-react` 圖標封裝成一個 `<Icon name="..." />` 組件，方便統一管理尺寸、顏色和替換。 | **(Airbnb 設計系統負責人)** 這是設計系統的基礎設施，便於未來迭代。 | `components/ui/Icon.tsx` | 3h |
 | **P1-029** | **完善亮色/暗色主題：** 當前的暗色主題是唯一的，需要設計並實現一套完整的亮色主題。顏色定義需在 `tailwind.config.ts` 中分離。 | **(Material Design 創始人)** 尊重用戶的系統偏好，提供選擇。 | `ThemeContext.tsx`, `tailwind.config.ts` | 8h |
-| **P1-030** | **高對比度模式：** 為色弱或視力障礙用戶實現高對比度模式，所有顏色需有對應的高對比度版本。 | **(無障礙專家)** 讓更多人能無障礙地使用你的產品。 | `ThemeContext.tsx`, `tailwind.config.ts` | 4h |
+| **P1-030** ✅ | **高對比度模式：** 為色弱或視力障礙用戶實現高對比度模式，所有顏色需有對應的高對比度版本。 | **(無障礙專家)** 讓更多人能無障礙地使用你的產品。 | `ThemeContext.tsx`, `globals.css` (html.high-contrast) | 4h |
 | **P1-031** ✅ | **統一 Modal 組件：** 專案中存在多種 Modal 實現。需要建立一個統一的 `Modal.tsx` 組件，處理遮罩、關閉按鈕、焦點鎖定和進出場動畫。 | **(React 核心成員)** 避免重複造輪子，確保所有彈窗行為一致。 | `components/ui/Modal.tsx` | 6h |
 | **P1-032** ✅ | **統一表單元素風格：** `input`, `button`, `select` 等表單元素的風格不統一。需要在 `globals.css` 中為其定義基礎樣式，並在各處應用。 | **(設計系統負責人)** 一致的表單是專業感的體現。 | `globals.css`, `components/ui/Input.tsx` | 5h |
 | **P1-033** ✅ | **玻璃擬態效果優化：** `glass-card` 的 `backdrop-blur` 效果在不同瀏覽器上表現不一。需要增加 fallback 顏色，並優化模糊半徑和邊框透明度。 | **(Dribbble 藝術總監)** 細節決定成敗。一個精緻的玻璃效果能極大提升科技感。 | `globals.css` | 2h |
@@ -135,7 +135,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **P1-066** | **登入/註冊頁面重構：** `login/page.tsx` 頁面過於簡陋。需要重新設計，增加品牌元素、社交登入選項（Google, Apple），並提供「忘記密碼」流程。 | **(UX 設計師)** 登入頁是轉化的關鍵一步，其體驗必須順滑、可信。 | `login/page.tsx` | 6h |
 | **P1-067** | **個人資料頁 (Profile) 儀表盤化：** `profile/page.tsx` 應設計成一個儀表盤，可視化展示用戶的遊戲統計、學習進度、最近活動和成就徽章。 | **(遊戲化專家)** 讓用戶對自己的「成就」一目了然，增加他們的歸屬感。 | `profile/page.tsx` | 8h |
-| **P1-068** | **定價頁對比表格：** `pricing/page.tsx` 應使用特性對比表格（Feature Comparison Table）清晰地展示不同方案的權益差異。 | **(Stripe 總監)** 幫助用戶快速決策，找到最適合自己的方案。 | `pricing/page.tsx` | 5h |
+| **P1-068** ✅ | **定價頁對比表格：** `pricing/page.tsx` 應使用特性對比表格（Feature Comparison Table）清晰地展示不同方案的權益差異。 | **(Stripe 總監)** 幫助用戶快速決策，找到最適合自己的方案。 | `pricing/page.tsx` (COMPARISON_ROWS 方案功能對比) | 5h |
 | **P1-069** | **AI 助理聊天界面優化：** `assistant/page.tsx` 的聊天氣泡、輸入框、頭像等需要重新設計，使其更具現代感和親和力。 | **(UI 設計師)** 聊天界面是高頻互動區，其設計直接影響用戶體驗。 | `assistant/page.tsx` | 6h |
 | **P1-070** | **靈魂酒測 (Quiz) 動畫與過渡：** `quiz/page.tsx` 的問題切換應有流暢的卡片滑動或淡入淡出動畫。結果頁的出現應伴隨慶祝動畫（如 `canvas-confetti`）。 | **(動效設計師)** 增加趣味性，讓測驗過程不再枯燥。 | `quiz/page.tsx` | 4h |
 | **P1-071** | **品酒學院課程列表：** `learn/page.tsx` 的課程列表應有卡片式和列表式兩種視圖切換，並增加篩選和排序功能。 | **(UX 設計師)** 滿足不同用戶的瀏覽習慣。 | `learn/page.tsx` | 5h |
@@ -217,7 +217,7 @@
 | **P1-126** ✅ | **統一的遊戲頂部欄：** `GameWrapper.tsx` 應提供一個統一的頂部欄，顯示當前遊戲名稱、回合數、當前回合玩家和退出按鈕。 | **(設計系統負責人)** 確保所有遊戲都有一致的導航和信息結構。 | `GameWrapper.tsx` | 3h |
 | **P1-127** | **卡片抽取動畫：** 在「真心話大冒險」等抽卡遊戲中，卡片應從牌堆中飛出並翻轉，而不是瞬間出現。 | **(動效設計師)** 模擬真實的抽卡動作，增加儀式感和期待感。 | `TruthOrDare.tsx`, `NeverHaveIEver.tsx` | 4h |
 | **P1-128** | **輪盤轉動物理效果：** `Roulette.tsx` 的輪盤轉動應更符合物理規律，有加速和減速過程，並伴隨「咔嗒」音效。 | **(遊戲化專家)** 提升輪盤的真實感和刺激感。 | `Roulette.tsx` | 4h |
-| **P1-129** | **計時器視覺化：** 在有時間限制的遊戲中（如「炸彈」），計時器應以圓形進度條或逐漸變紅的背景等視覺化方式呈現，增加緊迫感。 | **(UI 設計師)** 視覺化的倒計時比單純的數字更具衝擊力。 | `NumberBomb.tsx` | 3h |
+| **P1-129** ✅ | **計時器視覺化：** 在有時間限制的遊戲中（如「炸彈」），計時器應以圓形進度條或逐漸變紅的背景等視覺化方式呈現，增加緊迫感。 | **(UI 設計師)** 視覺化的倒計時比單純的數字更具衝擊力。 | `HotPotato.tsx`, `NameTrain.tsx` (圓形進度 + 最後 3 秒變紅) | 3h |
 | **P1-130** | **「輪到你了」提示：** 在回合制遊戲中，輪到某個玩家時，應有醒目的動畫和音效提示，例如其頭像放大並發光。 | **(UX 設計師)** 明確告知玩家輪到他們操作了。 | `GameWrapper.tsx` | 3h |
 | **P1-131** | **遊戲結果慶祝/惋惜動畫：** 遊戲勝利或觸發懲罰時，應有全屏的慶祝（如彩帶）或惋惜（如屏幕變灰）動畫。 | **(動效設計師)** 強化情緒反饋，讓輸贏更有感覺。 | `GameWrapper.tsx`, `lib/celebration.ts` | 4h |
 | **P1-132** | **「真心話/大冒險」題目質量提升：** `truthOrDare.json` 的題目庫需要擴充至 2000+，並由專業寫手進行潤色，使其更有趣、更具挑戰性。 | **(內容策略師)** 題目的質量直接決定了遊戲的核心樂趣。 | `data/truthOrDare.json` | 10h (內容) |
@@ -335,7 +335,7 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P2-331** | **實現 HTTP 安全頭：** 除了 CSP，還應在 `next.config.ts` 中添加 `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security (HSTS)` 等安全頭。 | **(XSS/CSRF 防護專家)** 這是防止多種 Web 攻擊的低成本、高效益措施。 | `next.config.ts` | 2h |
+| **P2-331** ✅ | **實現 HTTP 安全頭：** 除了 CSP，還應在 `next.config.ts` 中添加 `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security (HSTS)` 等安全頭。 | **(XSS/CSRF 防護專家)** 這是防止多種 Web 攻擊的低成本、高效益措施。 | `next.config.ts` (headers: X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy) | 2h |
 | **P2-332** | **Cookie 安全屬性：** 所有設置的 Cookie 都應使用 `HttpOnly`, `Secure`, `SameSite=Strict` 屬性，防止 XSS 和 CSRF 攻擊。 | **(JWT 安全研究員)** 嚴格限制 Cookie 的訪問權限，減少被盜風險。 | `lib/supabase-server.ts` | 3h |
 | **P2-333** | **防止 SQL 注入：** 確保所有 Supabase 查詢都使用了參數化查詢，而不是手動拼接字符串。對所有用戶輸入進行嚴格的清理和驗證。 | **(SQL Injection 終結者)** 雖然 Supabase 的客戶端庫默認是安全的，但仍需審查所有原始查詢 (`sql()`) 的用法。 | `app/api/**/*.ts` | 4h |
 | **P2-334** | **防止 XSS (跨站腳本)：** 確保所有用戶生成的內容在渲染到頁面時都經過了嚴格的轉義。對於需要渲染 HTML 的地方，使用 `DOMPurify` 進行清理。 | **(XSS/CSRF 防護專家)** 這是前端安全的第一道防線。 | `components/**/*.tsx` | 5h |
@@ -346,7 +346,7 @@
 | **P2-339** | **實現「數據刪除」權利：** 在用戶個人資料頁面，提供一個「刪除賬戶」的選項。該操作需要二次確認，並在後端徹底清除該用戶的所有相關數據。 | **(GDPR 顧問)** 這是 GDPR 等隱私法規賦予用戶的基本權利。 | `profile/page.tsx`, `api/users/delete/route.ts` | 6h |
 | **P2-340** | **隱私政策 (Privacy Policy) 頁面：** 撰寫一份清晰、易於理解的隱私政策，說明你收集了哪些數據、如何使用、與誰共享，以及用戶的權利。 | **(GDPR 顧問)** 透明是建立信任的前提。 | `app/privacy/page.tsx` | 4h (法務) |
 | **P2-341** | **JWT Token 時效與刷新：** Supabase 的 JWT 應設置合理的過期時間（如 1 小時），並實現無感的 Token 刷新機制，而不是要求用戶重新登錄。 | **(JWT 安全研究員)** 在安全性和用戶體驗之間取得平衡。 | `lib/supabase.ts` | 5h |
-| **P2-342** | **防止敏感文件洩露：** 配置 `.gitignore` 和 `.dockerignore`，確保 `.env`, `*.log`, `node_modules` 等文件不會被提交到版本庫或打包到鏡像中。 | **(滲透測試大師)** 這是最基本也是最常見的安全疏忽。 | `.gitignore` | 1h |
+| **P2-342** ✅ | **防止敏感文件洩露：** 配置 `.gitignore` 和 `.dockerignore`，確保 `.env`, `*.log`, `node_modules` 等文件不會被提交到版本庫或打包到鏡像中。 | **(滲透測試大師)** 這是最基本也是最常見的安全疏忽。 | `.gitignore` (.env*, *.log, node_modules, .next 等) | 1h |
 | **P2-343** | **API 錯誤信息模糊化：** 在生產環境中，API 的錯誤信息不應暴露過多的內部實現細節（如數據庫錯誤、堆棧跟踪）。返回統一的、模糊的錯誤提示。 | **(資安專家)** 詳細的錯誤信息會為攻擊者提供有價值線索。 | `lib/api-response.ts` | 2h |
 | **P2-344** | **用戶上傳內容安全：** 如果未來支持用戶上傳頭像或圖片，必須在後端對文件類型、大小進行嚴格驗證，並使用獨立的域名提供服務，防止惡意文件執行。 | **(滲透測試大師)** 用戶上傳是常見的攻擊向量。 | `api/upload/route.ts` (未來) | 6h |
 | **P2-345** | **實現雙因素認證 (2FA)：** 為賬戶安全提供一個額外的保護層，允許用戶綁定 TOTP 應用（如 Google Authenticator）。 | **(資安專家)** 能有效防止因密碼洩露導致的賬戶被盜。 | `profile/security/page.tsx` | 10h |

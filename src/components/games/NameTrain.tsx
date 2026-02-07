@@ -8,6 +8,9 @@ import GameRules from './GameRules'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const TURN_SECONDS = 10
+/** P1-129：圓形計時器半徑（視覺化倒數） */
+const TIMER_R = 28
+const TIMER_STROKE = 4
 
 type OrderMode = 'list' | 'random'
 
@@ -185,8 +188,29 @@ export default function NameTrain() {
       {combo > 0 && (
         <p className="text-amber-400 text-sm font-medium mb-1" aria-live="polite">連擊 {combo} 次 🔥</p>
       )}
+      {/* P1-129：計時器視覺化 — 圓形進度 + 剩餘秒數，最後 3 秒變紅 */}
       {timeLeft > 0 && (
-        <p className="text-white/50 text-sm mb-1">剩餘 {timeLeft} 秒</p>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="relative inline-flex items-center justify-center">
+            <svg className="w-14 h-14 -rotate-90" aria-hidden>
+              <circle cx={TIMER_R + TIMER_STROKE} cy={TIMER_R + TIMER_STROKE} r={TIMER_R} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={TIMER_STROKE} />
+              <circle
+                cx={TIMER_R + TIMER_STROKE}
+                cy={TIMER_R + TIMER_STROKE}
+                r={TIMER_R}
+                fill="none"
+                stroke={timeLeft <= 3 ? 'rgb(239, 68, 68)' : 'rgb(var(--primary))'}
+                strokeWidth={TIMER_STROKE}
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * TIMER_R}
+                strokeDashoffset={2 * Math.PI * TIMER_R * (1 - timeLeft / TURN_SECONDS)}
+                className="transition-[stroke-dashoffset] duration-1000"
+              />
+            </svg>
+            <span className={`absolute text-sm font-mono font-bold ${timeLeft <= 3 ? 'text-red-400' : 'text-white/80'}`}>{timeLeft}</span>
+          </div>
+          <p className="text-white/50 text-sm">剩餘 {timeLeft} 秒</p>
+        </div>
       )}
       {players.length <= 5 && (
         <p className="text-white/40 text-xs mb-1">鍵盤 1–{players.length} 對應選第 N 位</p>

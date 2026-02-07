@@ -12,6 +12,10 @@ const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const MIN_SEC = 3
 const MAX_SEC = 10
 
+/** P1-129：圓形計時器半徑與線寬（視覺化倒數） */
+const TIMER_R = 56
+const TIMER_STROKE = 6
+
 /** 熱土豆：隨機倒數 3～10 秒，0 秒時拿著的人喝。傳給下一位後重新倒數。 */
 export default function HotPotato() {
   const contextPlayers = useGamesPlayers()
@@ -20,6 +24,8 @@ export default function HotPotato() {
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [holderIndex, setHolderIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  /** P1-129：本輪總秒數，用於圓形進度計算 */
+  const [roundTotalSec, setRoundTotalSec] = useState(MAX_SEC)
   const [loser, setLoser] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -27,6 +33,7 @@ export default function HotPotato() {
     play('click')
     setLoser(null)
     const sec = MIN_SEC + Math.floor(Math.random() * (MAX_SEC - MIN_SEC + 1))
+    setRoundTotalSec(sec)
     setSecondsLeft(sec)
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = setInterval(() => {
@@ -83,21 +90,46 @@ export default function HotPotato() {
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="熱土豆">
       <GameRules rules={`隨機 3～10 秒倒數，傳給下一位；0 秒時拿著的人喝。\n點「傳給下一位」後重新開始倒數。`} />
       <p className="text-white/50 text-sm mb-2">倒數傳手機，0 秒時拿著的人喝</p>
-      {/* Phase 1 C4.1: 計時器動畫 - 強調最後3秒 */}
+      {/* P1-129：計時器視覺化 — 圓形進度條 + 數字，最後 3 秒變紅 */}
       {secondsLeft !== null && (
         <motion.div
-          className="mb-4"
+          className="mb-4 relative inline-flex items-center justify-center"
           animate={secondsLeft <= 3 ? {
-            scale: [1, 1.2, 1],
-            rotate: [0, -5, 5, 0]
+            scale: [1, 1.05, 1],
+            rotate: [0, -3, 3, 0]
           } : {}}
           transition={{ duration: 0.5, repeat: secondsLeft <= 3 ? Infinity : 0 }}
         >
-          <motion.p 
-            className={`text-6xl font-mono font-bold mb-2 ${
+          {/* 圓形進度：剩餘比例 = secondsLeft / roundTotalSec，stroke-dashoffset 從滿到空 */}
+          {!reducedMotion && (
+            <svg className="absolute w-[132px] h-[132px] -rotate-90" aria-hidden>
+              <circle
+                cx={TIMER_R + TIMER_STROKE}
+                cy={TIMER_R + TIMER_STROKE}
+                r={TIMER_R}
+                fill="none"
+                stroke="rgba(255,255,255,0.1)"
+                strokeWidth={TIMER_STROKE}
+              />
+              <circle
+                cx={TIMER_R + TIMER_STROKE}
+                cy={TIMER_R + TIMER_STROKE}
+                r={TIMER_R}
+                fill="none"
+                stroke={secondsLeft <= 3 ? 'rgb(239, 68, 68)' : 'rgb(var(--primary))'}
+                strokeWidth={TIMER_STROKE}
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * TIMER_R}
+                strokeDashoffset={2 * Math.PI * TIMER_R * (1 - secondsLeft / roundTotalSec)}
+                className="transition-[stroke-dashoffset] duration-1000"
+              />
+            </svg>
+          )}
+          <motion.p
+            className={`relative z-10 text-6xl font-mono font-bold mb-2 ${
               secondsLeft <= 3 ? 'text-red-400' : 'text-primary-300'
             }`}
-            role="status" 
+            role="status"
             aria-live="polite"
             animate={secondsLeft <= 3 ? {
               textShadow: [
@@ -108,15 +140,15 @@ export default function HotPotato() {
               ]
             } : {}}
             transition={{ duration: 1, repeat: Infinity }}
-            style={{ 
+            style={{
               filter: secondsLeft <= 3 ? 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))' : 'none'
             }}
           >
             {secondsLeft}
           </motion.p>
           {secondsLeft <= 3 && (
-            <motion.p 
-              className="text-red-400 text-sm font-bold uppercase tracking-wider"
+            <motion.p
+              className="relative z-10 text-red-400 text-sm font-bold uppercase tracking-wider mt-1"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: [0.5, 1, 0.5], y: 0 }}
               transition={{ duration: 0.8, repeat: Infinity }}
