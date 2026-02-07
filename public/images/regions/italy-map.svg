@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-labelledby="italy-title">
+  <title id="italy-title">�')"@�</title>
+  <rect width="400" height="300" fill="#1a1a2e"/>
+  <text x="200" y="35" fill="#e2e8f0" text-anchor="middle" font-size="18" font-family="sans-serif">Italy / Italia</text>
+  <rect x="60" y="60" width="90" height="45" rx="4" fill="#334155" stroke="#64748b"/>
+  <text x="105" y="88" fill="#94a3b8" text-anchor="middle" font-size="10">Piedmont</text>
+  <rect x="60" y="115" width="90" height="45" rx="4" fill="#334155" stroke="#64748b"/>
+  <text x="105" y="140" fill="#94a3b8" text-anchor="middle" font-size="10">Veneto</text>
+  <rect x="60" y="170" width="90" height="45" rx="4" fill="#334155" stroke="#64748b"/>
+  <text x="105" y="195" fill="#94a3b8" text-anchor="middle" font-size="10">Tuscany</text>
+  <rect x="180" y="85" width="140" height="50" rx="4" fill="#475569" stroke="#64748b"/>
+  <text x="250" y="117" fill="#cbd5e1" text-anchor="middle" font-size="11">Barolo / Barbaresco</text>
+  <rect x="180" y="150" width="140" height="50" rx="4" fill="#475569" stroke="#64748b"/>
+  <text x="250" y="182" fill="#cbd5e1" text-anchor="middle" font-size="11">Chianti / Brunello</text>
+  <rect x="180" y="215" width="140" height="45" rx="4" fill="#475569" stroke="#64748b"/>
+  <text x="250" y="242" fill="#cbd5e1" text-anchor="middle" font-size="11">Prosecco / Amarone</text>
+  <text x="200" y="280" fill="#64748b" text-anchor="middle" font-size="10">���y<X-�X�a<</text>
+</svg>

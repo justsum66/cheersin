@@ -1,0 +1,56 @@
+{
+  "id": "italy-deep",
+  "title": "產區深度：義大利",
+  "description": "皮蒙特、托斯卡尼、威尼托與原生品種",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "義大利葡萄酒概覽",
+      "duration": "8分鐘",
+      "content": "義大利為全球最大產酒國之一，產量與種植面積常居世界前三。北、中、南風格各異：北部皮蒙特、威尼托冷涼至溫和；中部托斯卡尼、翁布里亞溫和；南部坎帕尼亞、普利亞、西西里溫暖地中海。原生品種豐富：Nebbiolo（Barolo、Barbaresco）、Sangiovese（Chianti、Brunello）、Barbera、Aglianico、Nero d'Avola、Corvina 等。DOC、DOCG 為法定產區分級；Super Tuscan 打破傳統混釀國際品種，開創 IGT 高品質路線。",
+      "imageUrl": "/images/regions/italy-map.svg",
+      "imageAlt": "義大利產區概圖：皮蒙特、托斯卡尼、威尼托",
+      "quiz": [
+        { "question": "Chianti 主力品種？", "options": ["Nebbiolo", "Sangiovese", "Barbera", "Nero d'Avola"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "皮蒙特：Barolo、Barbaresco",
+      "duration": "8分鐘",
+      "content": "皮蒙特（Piedmont）以 Nebbiolo 為王。Barolo：強勁單寧、玫瑰、焦油、松露風味，法定至少 38 個月陳年（其中 18 個月桶陳）；Barbaresco 稍輕盈、較早適飲、法定 26 個月。Barbera 高酸低單寧、日常佐餐；Dolcetto 果味即飲。Asti、Moscato d'Asti 為甜氣泡，後者氣泡較少、酒精較低。Langhe DOC 涵蓋多品種混釀。子產區如 Barolo 的 La Morra、Serralunga 風格差異明顯。",
+      "quiz": [
+        { "question": "Barolo 的主力品種？", "options": ["Sangiovese", "Nebbiolo", "Barbera", "Dolcetto"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "托斯卡尼：Chianti、Brunello、Super Tuscan",
+      "duration": "8分鐘",
+      "content": "Chianti Classico：黑公雞（Gallo Nero）標誌、至少 80% Sangiovese，Riserva 需 24 個月陳年。Brunello di Montalcino：100% Sangiovese（當地稱 Brunello）、強勁單寧、需長期陳年，Riserva 至少 5 年。Super Tuscan：1970s 打破 DOC 限制、混釀 Cabernet、Merlot 等國際品種；Sassicaia（Bolgheri）、Tignanello、Ornellaia 開創 IGT 高品質路線，現多數有 Bolgheri DOC 或子產區。",
+      "quiz": [
+        { "question": "Super Tuscan 特點？", "options": ["僅原生品種", "可混國際品種、打破傳統", "僅白葡萄", "僅氣泡"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "威尼托、倫巴底與南方",
+      "duration": "8分鐘",
+      "content": "威尼托：Amarone della Valpolicella 風乾葡萄（appassimento）釀造、濃郁乾型；Prosecco DOC/DOCG 氣泡、Glera 品種；Soave 白酒、Garganega。倫巴底：Franciacorta 傳統法氣泡、可媲美香檳；Valpolicella 日常紅酒、Ripasso 用 Amarone 果渣二次發酵。南方：Aglianico del Vulture（Basilicata）、Taurasi（Campania）陳年潛力強；Primitivo（Puglia）果味飽滿；Nero d'Avola（西西里）深色果味。",
+      "quiz": [
+        { "question": "Amarone 釀造特色？", "options": ["新鮮葡萄", "風乾葡萄", "僅白葡萄", "加糖"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選酒與搭配",
+      "duration": "8分鐘",
+      "content": "義式料理絕配：番茄、橄欖油、起司。Chianti 配義大利麵、披薩。Barolo 配松露、紅肉。Prosecco 開胃。Amarone 配野味、陳年起司。",
+      "quiz": [
+        { "question": "義大利麵適合搭？", "options": ["Barolo", "Chianti", "Amarone", "Moscato"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

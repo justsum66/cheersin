@@ -1,0 +1,54 @@
+{
+  "id": "tequila-mezcal",
+  "title": "龍舌蘭與梅茲卡爾",
+  "description": "認識龍舌蘭的產區、等級與梅茲卡爾的煙燻魅力",
+  "duration": "30分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "龍舌蘭植物與產區",
+      "duration": "5分鐘",
+      "content": "龍舌蘭酒以龍舌蘭植物（Agave）的心臟 piña 經烘烤、碾碎、發酵、蒸餾製成。Tequila 必須使用藍色龍舌蘭（Agave Tequilana Weber），產區限墨西哥哈利斯科（Jalisco）、瓜納華托、米卻肯、納亞里特、塔毛利帕斯五州，其中哈利斯科 Tequila 鎮為核心、高原地形與火山土壤賦予特色。Mezcal 可用多種龍舌蘭（Espadín 最常見，野生 Tobalá、Tepeztate 等風味獨特），產區主要在瓦哈卡（Oaxaca），另有 Guerrero、Durango、San Luis Potosí 等。Tequila 是 Mezcal 的子類，但兩者製程與風味差異大。",
+      "quiz": [
+        { "question": "Tequila 必須使用哪種龍舌蘭？", "options": ["任意龍舌蘭", "藍色龍舌蘭", "僅野生", "綠色龍舌蘭"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Blanco、Reposado、Añejo",
+      "duration": "6分鐘",
+      "content": "Blanco（Silver）：無陳年或短陳年，純淨龍舌蘭風味，適合調酒與 shot。Reposado：橡木桶 2–12 個月，微甜圓潤，Margarita 也可用。Añejo：1–3 年，深沉複雜，適合純飲。Extra Añejo：3 年以上，風味最豐富。選購時認明 100% Agave，避免 mixto（混合其他糖源）。",
+      "quiz": [
+        { "question": "Blanco 龍舌蘭的特點是？", "options": ["長期陳年", "無或短陳年", "煙燻味重", "僅用於調酒"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "梅茲卡爾的煙燻味",
+      "duration": "5分鐘",
+      "content": "Mezcal 傳統製法：龍舌蘭心在坑窯中煙燻，產生獨特煙燻風味。Tequila 多不煙燻。梅茲卡爾常含蟲（gusano）作行銷，非必要。產區、龍舌蘭品種影響風味：Espadín 常見、Tobalá 野生風味強。Mezcal 可純飲或做 smoky Margarita，搭配柑橘與辣椒料理。",
+      "quiz": [
+        { "question": "Mezcal 的煙燻味主要來自？", "options": ["橡木桶", "坑窯煙燻", "添加香料", "發酵過程"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "龍舌蘭經典調酒",
+      "duration": "6分鐘",
+      "content": "Margarita：龍舌蘭 + 君度 + 萊姆汁，鹽口杯。Tequila Sunrise：龍舌蘭 + 柳橙汁 + 紅石榴。Paloma：龍舌蘭 + 葡萄柚蘇打。龍舌蘭 shot：配鹽與檸檬。Mezcal 可取代龍舌蘭做 smoky Margarita。",
+      "quiz": [
+        { "question": "Margarita 不包含？", "options": ["龍舌蘭", "君度", "萊姆汁", "通寧水"], "correctIndex": 3 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "品飲與選購",
+      "duration": "5分鐘",
+      "content": "100% Agave 標示代表純龍舌蘭，非 mixto。Blanco 適合調酒；Reposado/Añejo 可純飲。搭配柑橘、辣椒、墨西哥料理。Mezcal 純飲可感受煙燻與礦物。",
+      "quiz": [
+        { "question": "「100% Agave」標示代表？", "options": ["混合其他烈酒", "純龍舌蘭製成", "酒精濃度 100%", "僅 Blanco"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

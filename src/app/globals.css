@@ -1,0 +1,1874 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Phase 1 E4.1: 首頁 LCP 優化 - 預加載及字體顯示優化 */
+/* 第一屏關鍵元素優先渲染 */
+.lcp-priority {
+  content-visibility: visible;
+  contain: none;
+}
+
+/* 非第一屏元素延遲渲染 */
+.lcp-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* 字體顯示優化 - 避免 FOIT */
+.font-display-swap {
+  font-display: swap;
+}
+
+:root {
+  /* 品牌色：深酒紅 #8B0000、香檳金 #D4AF37 */
+  --background: 10 10 10;
+  --foreground: 255 255 255;
+  --primary: 139 0 0;
+  --secondary: 212 175 55;
+  --accent: 138 43 226;
+  /* 背景漸層：深紫 #1a0a2e → 黑 #0a0a0a */
+  --background-start: 26 10 46;
+  --background-end: 10 10 10;
+  /* 文字層次：純白 > 白/70 > 白/50 > 白/30 */
+  --text-primary: 255 255 255;
+  --text-secondary: 255 255 255 / 0.7;
+  --text-muted: 255 255 255 / 0.5;
+  --text-subtle: 255 255 255 / 0.3;
+  /* 語義色 */
+  --error: 185 28 28;
+  --success: 4 120 87;
+  --warning: 194 65 12;
+  /* P3 任務 61：字體由 layout next/font 注入，font-display: swap；fallback 為 system-ui, sans-serif */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+  --text-scale: 1;
+  --focus-ring: 0 0 0 3px rgba(139, 0, 0, 0.6);
+  /* 任務 96：字級以 rem 為主，支援瀏覽器字級縮放；避免固定 px 標題 */
+  /* Type scale token：單一來源字階 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-hero: clamp(2.5rem, 5vw + 1rem, 3.5rem);
+  --text-h1: 3.5rem;
+  /* UX_LAYOUT_200：排版與間距 token（#1–#30） */
+  --text-h2: 2.25rem;
+  --text-h3: 1.5rem;
+  --text-h4: 1.25rem;
+  --text-h5: 1.125rem;
+  --text-h6: 1rem;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0.01em;
+  /* P1 完美像素：區塊間距 8px grid — section 用 4rem/6rem */
+  --space-section: 4rem;
+  --space-section-lg: 6rem;
+  --space-card: 1rem;
+  --space-card-lg: 1.5rem;
+  --space-container: 1rem;
+  --space-container-md: 1.5rem;
+  --space-container-lg: 2rem;
+  /* P2 完美像素：正文行高 1.65 減輕長文壓迫感 */
+  --line-height-body: 1.65;
+  --line-height-tight: 1.25;
+  /* Phase 1 A2: 標題精細字距調整 */
+  --tracking-h1: -0.025em;
+  --tracking-h2: -0.02em;
+  --tracking-h3: -0.015em;
+  /* P1：按鈕圓角與 design-tokens 對齊 — borderRadius.lg/md */
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  /* UX_LAYOUT_200 #30：按鈕內 padding 一致（設計系統） */
+  --btn-padding-x: 2.5rem;
+  --btn-padding-y: 0.875rem;
+  /* P3 Hero 光暈：品牌色 15% 透明度，變更 primary/secondary 時光暈同步 */
+  --hero-glow-primary: rgb(var(--primary) / 0.15);
+  --hero-glow-secondary: rgb(var(--secondary) / 0.15);
+  /* H06 / E05：暗角強度可調 */
+  --hero-vignette-opacity: 0.28;
+  --hero-vignette-mid: 0.12;
+  /* Hero 入場動畫延遲（與 home.config HERO_ANIMATION_DELAYS 對應，供 CSS 動畫用） */
+  --hero-title-delay-1: 0.15s;
+  --hero-title-delay-2: 0.35s;
+  --hero-subtitle-delay: 0.6s;
+  --hero-cta-delay: 0.75s;
+}
+
+@layer base {
+  /* 任務 95：主題切換時背景與文字過渡，不閃爍（預留深色/淺色切換） */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  /* 280 安全區域：底部導航避開 iPhone 等劉海/Home 條；UX_LAYOUT_200 #35；UX-08 全站 main 底部留安全區 */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  /** 根 layout main 用：手機底部留 5rem + safe-area，桌面 md:pb-0 */
+  .main-content-pb {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  /* RWD 2：遊戲區水平安全區域（劉海/島型螢幕） */
+  .safe-area-px {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+  /** DEDUP #3：輸入區/主內容區至少 1rem + safe-area，避免內聯 env() */
+  .safe-area-pb-min-1 { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0)); }
+  .safe-area-pb-quiz-main { padding-bottom: max(4rem, calc(1rem + env(safe-area-inset-bottom, 0px))); }
+  .safe-area-pb-hero { padding-bottom: max(3.5rem, env(safe-area-inset-bottom, 3.5rem)); }
+  /* 任務 81：色彩對比 WCAG AA — 正文 ≥4.5:1、大字 ≥3:1；design-tokens 已用 white/70、white/50 維持可讀 */
+  /* RWD 31：焦點環與對比；A-13 焦點環 transition 順暢；任務 82：焦點環 2px offset 不裁切 */
+  .games-focus-ring {
+    transition: box-shadow 0.2s ease-out, outline-color 0.2s ease-out;
+  }
+  /* P1 完美像素：焦點環對比 ≥3:1（rgba 0.8） */
+  .games-focus-ring:focus-visible {
+    outline: 2px solid rgba(139, 0, 0, 0.8);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  /* 任務 69：高對比模式 — prefers-contrast: more 時提高邊框與可讀性 */
+  @media (prefers-contrast: more) {
+    .btn-primary, .btn-secondary, .btn-ghost {
+      border-width: 2px;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    .input-glass, [class*="input-glass"] {
+      border-width: 2px;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+    a:not([class*="btn-"]) {
+      text-decoration-thickness: 2px;
+    }
+  }
+  /* 任務 70：reduced-motion 由 PageTransition、MagneticButton、Navigation、CookieConsentBanner、ParticleBubbles、AuroraBackground 等組件處理 */
+  /* RWD 13–22：遊戲區字級與排版（第二批） */
+  .games-heading { font-size: var(--text-2xl); }
+  @media (min-width: 768px) { .games-heading { font-size: var(--text-3xl); } }
+  .games-body { font-size: var(--text-base); }
+  @media (min-width: 768px) { .games-body { font-size: var(--text-lg); } }
+  .games-result-text { font-size: var(--text-xl); }
+  @media (min-width: 768px) { .games-result-text { font-size: var(--text-2xl); } }
+  .games-btn-text { font-size: var(--text-base); }
+  @media (min-width: 768px) { .games-btn-text { font-size: var(--text-lg); } }
+  .games-question { line-height: 1.625; }
+  .games-helper { font-size: var(--text-sm); }
+  /* RWD 15：輔助文案 text-sm = 14px，不小於 12px */
+  /* RWD 20：遊戲區中央對齊由 GameWrapper 內層 text-center 提供 */
+  /* RWD 21：重要數字由 tabular-nums 類提供 */
+  /* RWD 22：文案區使用 min-w-0 max-w-full 不固定寬度 */
+  /* 任務 83：觸控目標 44px 覆查 — 全站可點擊元素 ≥44px；已用 .games-touch-target / .min-touch / min-h-[48px] 覆蓋主要按鈕 */
+  /* RWD 23–52：觸控/按鈕/表單/卡片/圖示（第三批）；重複優化：48px 觸控區請用 .games-touch-target 避免散落 min-h-[48px] min-w-[48px] */
+  .games-touch-target { min-height: 48px; min-width: 48px; }
+  .games-cta { min-height: 48px; padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .games-btn-group { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  @media (min-width: 768px) { .games-btn-group { gap: 1rem; } }
+  .games-card { padding: 1rem; border-radius: 0.75rem; }
+  @media (min-width: 768px) { .games-card { padding: 1.5rem; } }
+  .games-card-xl { border-radius: 1rem; }
+  .games-input { min-height: 48px; }
+  /* 121 響應式：320px–2560px 適配；錨點 #faq 等平滑捲動 */
+  html {
+    min-width: 320px;
+    max-width: 100vw;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply min-h-screen overflow-x-hidden antialiased;
+    font-family: var(--font-sans);
+    min-width: 320px;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--line-height-body);
+  }
+  /* UX_LAYOUT_200 #9：正文與小字體建議不小於 0.75rem（--text-xs）；可讀性 */
+  p {
+    margin-bottom: 0.75em;
+  }
+  ul, ol {
+    margin: 0 0 0.75em 0;
+    padding-left: 1.5em;
+  }
+  li + li {
+    margin-top: 0.25em;
+  }
+  /* UX_LAYOUT_200 #13：引言 blockquote */
+  blockquote {
+    margin: 1em 0;
+    padding-left: 1em;
+    border-left: 3px solid rgb(var(--primary) / 0.5);
+    font-style: italic;
+    color: rgb(var(--text-secondary));
+  }
+  /* 背景漸層：深紫 #1a0a2e → 黑 #0a0a0a；P3 主題切換 300ms 過渡 */
+  html:not(.light) body {
+    background: linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%);
+    @apply text-white;
+    transition: background-color 0.3s ease;
+  }
+  html.light body {
+    @apply bg-gray-50 text-gray-900;
+    transition: background-color 0.3s ease;
+  }
+  html.light .glass-card,
+  html.light .glass-heavy {
+    @apply bg-white/70 border-gray-200/50 backdrop-blur-xl;
+  }
+  html.light .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #7a0000, #b8942e, #6b0000);
+  }
+  html.light .glass-2 {
+    @apply bg-white/80 border-gray-200/60 backdrop-blur-xl;
+  }
+
+  /* 125 字體大小調節全站：依 --text-scale 縮放根字級 */
+  html {
+    font-size: calc(100% * var(--text-scale, 1));
+  }
+
+  /* 124 高對比模式：邊框與文字對比加強 */
+  html.high-contrast body,
+  html[data-high-contrast="true"] body {
+    @apply text-white;
+  }
+  html.high-contrast .glass-card,
+  html.high-contrast .glass-heavy,
+  html[data-high-contrast="true"] .glass-card,
+  html[data-high-contrast="true"] .glass-heavy {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(10, 10, 20, 0.95);
+  }
+  html.high-contrast a,
+  html.high-contrast button,
+  html[data-high-contrast="true"] a,
+  html[data-high-contrast="true"] button {
+    text-decoration-thickness: 1px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* 21 品牌 Pattern：酒杯幾何，置於背景層；P3 透明度 0.04–0.06 不搶主內容 */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 12v6l-8 26h16l-8-26zm0 32c-3 0-6 2-6 5s3 5 6 5 6-2 6-5-3-5-6-5z' fill='rgba(212,175,55,0.04)'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+  }
+  /* Cinematic Noise Overlay；P3 z-index 不擋互動、pointer-events: none */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* P2 全站連結 hover 一致：underline、primary 色 */
+  a:not([class*="btn-"]):not(.skip-link) {
+    font-weight: 500;
+    @apply text-primary-400;
+  }
+  a:not([class*="btn-"]):not(.skip-link):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    @apply text-primary-300;
+  }
+  /* UX_LAYOUT_200 #5：副標題/正文對比 */
+  .text-muted-ux {
+    color: rgb(var(--text-muted));
+  }
+
+  /* UX_LAYOUT_200 #1 #4：字體層級使用 token；h1 小螢幕縮放 */
+  /* Phase 1 A2.1: 標題精細字距 - 依層級遞減 */
+  h1 {
+    font-size: clamp(1.75rem, 5vw + 1rem, var(--text-h1));
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--tracking-h1);
+  }
+  h2 {
+    font-size: var(--text-h2);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--tracking-h2);
+  }
+  h3 {
+    font-size: var(--text-h3);
+    letter-spacing: var(--tracking-h3);
+  }
+  h4 { font-size: var(--text-h4); }
+  h5 { font-size: var(--text-h5); }
+  h6 { font-size: var(--text-h6); }
+  body {
+    font-size: var(--text-base);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold text-balance;
+    letter-spacing: var(--tracking-tight);
+  }
+  /* UX_LAYOUT_200 #15：標題與下方內容間距 */
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+  }
+  /* 數字：Tabular Nums 對齊 */
+  .tabular-nums,
+  [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+  /* UX_LAYOUT_200 #11：報價/金價等數字 — tabular-nums + 可選等寬/serif 風格 */
+  .text-price,
+  .text-numeric {
+    font-variant-numeric: tabular-nums;
+  }
+  .text-price {
+    font-feature-settings: "tnum";
+  }
+  /* UX_LAYOUT_200 #14：代碼/code 字體與背景 */
+  code,
+  kbd {
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.25rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  kbd {
+    font-size: 0.85em;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  pre {
+    margin: 0.75em 0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-x: auto;
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  pre code {
+    padding: 0;
+    background: none;
+    border: none;
+  }
+  /* UX_LAYOUT_200 #33：響應式斷點與 Tailwind 一致 — 註解供設計/開發對照；sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536 */
+
+  /* Olivia/Cindy 低視力：prefers-contrast 時加強邊框與文字對比；P3 .glass-2 一併覆蓋 */
+  @media (prefers-contrast: more) {
+    .glass-card,
+    .glass-card-spotlight,
+    .glass-heavy,
+    .glass-2 {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    button, input, [role="button"] {
+      border-width: 2px;
+    }
+  }
+
+  /* Jack 平板橫屏：games 區塊 padding 調整 */
+  @media (min-width: 834px) and (orientation: landscape) {
+    .games-content {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  /* 126 減少動態效果：尊重 prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* 127 Focus 可見指示器：鍵盤聚焦時明顯邊框，滑鼠點擊不干擾 */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid rgb(139 0 0);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* 128 Skip to content：平時隱藏，聚焦時顯示 */
+  .skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    z-index: 100;
+  }
+  /* T011 P2：觸控區域 ≥44px，銀髮/無障礙合規 */
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: auto;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.25rem;
+    margin: 0;
+    clip: auto;
+    background: rgb(139 0 0);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: var(--focus-ring);
+  }
+  /* 21 品牌 Pattern：酒杯幾何圖案背景 */
+  .brand-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 8v4l-6 20h12l-6-20zm0 24c-2 0-4 1.5-4 4s2 4 4 4 4-1.5 4-4-2-4-4-4z' fill='rgba(212,175,55,0.06)'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
+  }
+}
+
+@layer components {
+
+  /* 286 桌面最大寬度 1440px 容器（響應式 276-290） */
+  .container-desktop {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* UX_LAYOUT_200 #16–#21 #32：區塊間距與容器水平 padding */
+  .section-spacing {
+    padding-top: var(--space-section);
+    padding-bottom: var(--space-section);
+  }
+  .section-spacing-lg {
+    padding-top: var(--space-section-lg);
+    padding-bottom: var(--space-section-lg);
+  }
+  .content-px {
+    padding-left: var(--space-container);
+    padding-right: var(--space-container);
+  }
+  @media (min-width: 768px) {
+    .content-px {
+      padding-left: var(--space-container-md);
+      padding-right: var(--space-container-md);
+    }
+  }
+  @media (min-width: 1024px) {
+    .content-px {
+      padding-left: var(--space-container-lg);
+      padding-right: var(--space-container-lg);
+    }
+  }
+  /* 窄版閱讀寬度（文章/條款） */
+  .prose-narrow {
+    max-width: 48rem;
+  }
+  /* UX-02/31：內文可讀寬度與行高（65ch + leading-relaxed） */
+  .content-readable {
+    max-width: 65ch;
+    line-height: var(--line-height-body);
+  }
+  /* UX-32：區塊間垂直間距（section 間 gap，與 section-spacing 搭配） */
+  .section-gap {
+    margin-bottom: var(--space-section);
+  }
+  .section-gap-lg {
+    margin-bottom: var(--space-section-lg);
+  }
+  /* UX-33：鍵盤焦點對比強化（與 games-focus-ring 並存，可選用） */
+  .focus-contrast:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 2px;
+  }
+  /* UX-34：最小觸控目標 48px（與 min-h-[48px] min-w-[48px] 等價，可複用） */
+  .min-touch {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Phase 1 E2.2: CLS 預防 - aspect-ratio 固定圖片比例 */
+  .aspect-wine-card {
+    aspect-ratio: 3 / 4;
+  }
+  .aspect-hero {
+    aspect-ratio: 16 / 9;
+  }
+  .aspect-thumbnail {
+    aspect-ratio: 4 / 3;
+  }
+  .aspect-avatar {
+    aspect-ratio: 1 / 1;
+  }
+  /* CLS 預防：圖片容器保留空間 */
+  .img-placeholder {
+    background: linear-gradient(135deg, rgba(26, 10, 46, 0.8), rgba(10, 10, 26, 0.9));
+    contain: layout;
+  }
+  /* CLS 預防：動態內容容器最小高度 */
+  .min-h-dynamic {
+    min-height: 200px;
+    contain-intrinsic-size: auto 200px;
+  }
+
+  /* 玻璃卡片陰影層級：1 預設、2 浮起、hover 懸浮 */
+  /* P3 任務 33：陰影與 design-tokens 對齊 — 數值對應 design-tokens.ts shadows.md / lg */
+  /* P3 任務 33：陰影與 design-tokens shadows.md 對齊 */
+  .shadow-glass-1 {
+    box-shadow: 0 4px 24px -2px rgba(139, 0, 0, 0.12), 0 0 0 1px rgba(212, 175, 55, 0.08);
+  }
+  .shadow-glass-2 {
+    box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.25);
+  }
+  .shadow-glass-hover {
+    box-shadow: 0 12px 40px -12px rgba(139, 0, 0, 0.2), 0 0 0 1px rgba(212, 175, 55, 0.12), 0 12px 44px -12px rgba(0, 0, 0, 0.35);
+  }
+  /* P3 Hero CTA 光暈陰影：品牌色單一來源 */
+  .shadow-hero-glow {
+    box-shadow: 0 0 28px rgba(139, 0, 0, 0.35);
+  }
+
+  /* 23 卡片圓角：lg 16px、xl 24px；24 陰影品牌色調 */
+  /* Phase 1 A3.4: glass-morphism hover 效果增強 */
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-all duration-500 shadow-glass-1;
+  }
+  .glass-card-xl {
+    @apply rounded-3xl;
+  }
+  .glass-card:hover {
+    @apply border-white/20 bg-white/[0.08];
+    /* Phase 1 B2.1: 卡片 hover 微浮效果增強 */
+    box-shadow: 0 12px 36px -4px rgba(139, 0, 0, 0.28), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 16px 52px -12px rgba(0, 0, 0, 0.4);
+    transform: translateY(-6px) scale(1.005);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glass-card:hover {
+      transform: none;
+    }
+  }
+  
+  /* Phase 1 A3.4: 卡片 glow 效果 - 游戲卡片特別 glow */
+  .glass-card-glow {
+    @apply glass-card;
+    position: relative;
+  }
+  .glass-card-glow::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.4), rgba(212, 175, 55, 0.2), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .glass-card-glow:hover::before {
+    opacity: 1;
+  }
+
+  /* Glass Card with Spotlight Hover (Generic)；任務 33：hover 陰影加深 */
+  .glass-card-spotlight {
+    @apply glass-card bg-gradient-to-br from-white/5 to-transparent;
+  }
+  .glass-card-spotlight:hover {
+    @apply shadow-glass-hover;
+  }
+
+  .glass-heavy {
+    @apply border-b border-white/5 bg-[#1a0a2e]/80 backdrop-blur-2xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#0a0a0a]/80;
+  }
+
+  /* Gradient Text：深酒紅 + 香檳金；P3 任務 32：品牌漸層單一 utility，色值來自 tokens */
+  .gradient-text,
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient;
+    background-image: linear-gradient(to right, #8B0000, #D4AF37, #7a0000);
+  }
+  .gradient-text-static {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #8B0000, #D4AF37);
+  }
+  /* P2 任務 17：全站內容連結 hover 底線一致（排除按鈕、skip-link、nav、footer；顏色由各區塊自訂） */
+  a:not([class*="btn-"]):not(.skip-link):not([class*="nav-link"]):not([class*="home-footer-link"]):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* Buttons：觸控區域 ≥44px；P0 完美像素：200ms 過渡 + 陰影/高光微調 */
+  /* P1：主按鈕圓角與 design-tokens 對齊 — borderRadius.lg = 1rem */
+  .btn-primary {
+    @apply relative overflow-hidden font-semibold text-white hover:scale-[1.02] active:scale-[0.98] min-h-[48px] min-w-[44px] inline-flex items-center justify-center;
+    border-radius: var(--radius-lg, 1rem);
+    padding-left: var(--btn-padding-x);
+    padding-right: var(--btn-padding-x);
+    padding-top: var(--btn-padding-y);
+    padding-bottom: var(--btn-padding-y);
+    background-image: linear-gradient(to right, #8B0000, #7a0000);
+    box-shadow: 0 6px 20px -4px rgba(139, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 250ms cubic-bezier(0.32, 0.72, 0, 1), background-image 200ms ease;
+    will-change: auto;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 10px 28px -4px rgba(139, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    will-change: transform;
+    /* Phase 1 A1.1: 按鈕 hover 漸層反饋 */
+    background-image: linear-gradient(to right, #9B0000, #8B0000, #9B0000);
+    background-size: 200% auto;
+  }
+  /* A-03 按鈕 active 態對比度足夠；P0 高光 0.06 強化按下感 */
+  .btn-primary:active {
+    background-image: linear-gradient(to right, #7a0000, #6b0000);
+    box-shadow: 0 4px 12px -4px rgba(139, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* P1：secondary 圓角與 design-tokens 對齊；P0 過渡 200ms brand easing；P3 hover 時 GPU 提示 */
+  .btn-secondary {
+    @apply relative overflow-hidden font-semibold text-white border border-white/20 hover:bg-white/10 hover:border-white/40 hover:scale-[1.02] active:scale-[0.98] min-h-[48px] min-w-[44px] inline-flex items-center justify-center;
+    border-radius: var(--radius-md, 0.75rem);
+    padding-left: calc(var(--btn-padding-x) * 0.8);
+    padding-right: calc(var(--btn-padding-x) * 0.8);
+    padding-top: var(--btn-padding-y);
+    padding-bottom: var(--btn-padding-y);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease;
+    will-change: auto;
+  }
+  .btn-secondary:hover {
+    will-change: transform;
+    /* Phase 1 A1.1: 按鈕 hover 漸層反饋 */
+    background-image: linear-gradient(to right, rgba(255,255,255,0.12), rgba(255,255,255,0.08), rgba(255,255,255,0.12));
+    background-size: 200% auto;
+  }
+
+  /* CTA 主按鈕微動畫 pulse；P2 完美像素：2.8s ease-in-out */
+  .btn-primary {
+    animation: btn-pulse 2.8s ease-in-out infinite;
+  }
+  .btn-primary:hover {
+    animation: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary {
+      animation: none;
+    }
+  }
+  /* UX_LAYOUT_200 #123：幽靈按鈕與背景對比足夠；P0 過渡 200ms */
+  .btn-ghost {
+    @apply bg-transparent border border-white/30 text-white/90 hover:bg-white/10 hover:border-white/50 min-h-[48px] min-w-[44px] inline-flex items-center justify-center font-medium;
+    border-radius: var(--radius-md, 0.75rem);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+  }
+  html.light .btn-ghost {
+    @apply border-gray-300 text-gray-800 hover:bg-gray-100 hover:border-gray-400;
+  }
+  /* P3 任務：深色/淺色主題按鈕對比 — light 時 primary/secondary 對比 ≥4.5:1 */
+  html.light .btn-primary {
+    @apply bg-[#8B0000] text-white hover:bg-[#7a0000] border-0;
+    box-shadow: 0 4px 14px -2px rgba(139, 0, 0, 0.4);
+  }
+  html.light .btn-secondary {
+    @apply bg-white/10 text-gray-900 border-gray-300 hover:bg-white/20 hover:border-gray-400;
+  }
+  .btn-primary:disabled,
+  .btn-ghost:disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  }
+  .btn-primary:disabled:hover,
+  .btn-ghost:disabled:hover {
+    transform: none;
+  }
+  /* T120 無障礙：按鈕與連結 focus-visible 環不覆蓋；P1 對比 ≥3:1 */
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible,
+  .btn-ghost:focus-visible,
+  .btn-danger:focus-visible {
+    outline: 2px solid rgba(139, 0, 0, 0.8);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+  a:focus-visible {
+    outline: 2px solid rgba(139, 0, 0, 0.8);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+  /* H91 Danger 按鈕；P0 過渡 200ms */
+  .btn-danger {
+    @apply rounded-xl px-6 py-3 font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 hover:text-red-300 min-h-[48px] min-w-[44px] inline-flex items-center justify-center;
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+  }
+
+  /* P0 完美像素：首屏 Hero 主 CTA 視覺權重 — 略大、陰影更明顯、與次要按鈕間距 1.25rem */
+  /* Phase 1 A1.3: CTA glow 效果 - 呼吸動畫光暈 */
+  .hero-cta-primary {
+    min-height: 52px;
+    padding-left: 2.75rem;
+    padding-right: 2.75rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    box-shadow: 0 8px 24px -4px rgba(139, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 40px -8px rgba(139, 0, 0, 0.5);
+    animation: cta-glow-pulse 2.5s ease-in-out infinite;
+  }
+  .hero-cta-primary:hover {
+    box-shadow: 0 10px 28px -4px rgba(139, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 60px -8px rgba(139, 0, 0, 0.7);
+    animation: none;
+  }
+  
+  /* Phase 1 A1.3: CTA glow 呼吸動畫 */
+  @keyframes cta-glow-pulse {
+    0%, 100% {
+      box-shadow: 0 8px 24px -4px rgba(139, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 30px -8px rgba(139, 0, 0, 0.4);
+    }
+    50% {
+      box-shadow: 0 8px 24px -4px rgba(139, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 50px -8px rgba(139, 0, 0, 0.65);
+    }
+  }
+
+  /* Inputs：全站統一 glass 樣式與 primary focus 環；UX_LAYOUT_200 #101 #102 */
+  /* UX_LAYOUT_200 #198：表單在 viewport 內可見 — focus 時捲動留邊距 */
+  /* P2：placeholder 字重與顏色 — 不搶視覺 */
+  .input-glass {
+    @apply w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-primary-500/50 focus:bg-white/10 min-h-[44px];
+    scroll-margin-block: 1.5rem;
+    transition: border-color 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out;
+  }
+  .input-glass:focus-visible {
+    box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.55);
+    outline: none;
+    outline-offset: 2px;
+  }
+  /* P2 完美像素：placeholder 0.38 略弱於內容層次 */
+  .input-glass::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+    font-weight: 400;
+  }
+  .input-glass.input-glass-error,
+  .input-glass:invalid:not(:placeholder-shown) {
+    border-color: rgb(var(--error) / 0.6);
+    @apply focus:border-red-500/70 focus-visible:ring-red-400/30;
+  }
+  /* UX_LAYOUT_200 #103：成功狀態可選視覺 */
+  .input-glass.input-glass-success {
+    border-color: rgb(var(--success) / 0.5);
+    @apply focus:border-emerald-500/50 focus-visible:ring-emerald-400/30;
+  }
+  /* P3：表單 label 與輸入間距使用 token */
+  .form-field-spacing > label + *,
+  .form-field-spacing .label + input,
+  .form-field-spacing .label + select,
+  .form-field-spacing .label + textarea {
+    margin-top: var(--space-card, 0.5rem);
+  }
+  /* UX_LAYOUT_200 #18：表單欄位間距統一 */
+  .form-field-gap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  /* UX_LAYOUT_200 #95：表單區塊視覺分組（邊框/間距） */
+  .form-group-ux {
+    padding: 0.75rem 0;
+    border-radius: 0.5rem;
+  }
+  .form-group-ux + .form-group-ux {
+    margin-top: 0.25rem;
+  }
+  /* UX_LAYOUT_200 #158：焦點移入表單區提示 — 任一欄位 focus 時容器淡出 ring */
+  .form-focus-within-hint:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 1px rgb(139 0 0 / 0.25);
+    border-radius: 0.75rem;
+    transition: box-shadow 0.2s ease;
+  }
+  /* UX_LAYOUT_200 #19：按鈕與連結 inline 間隔 */
+  .inline-cta-gap > * + * {
+    margin-left: 0.5rem;
+  }
+  /* UX_LAYOUT_200 #22：卡片網格 gap */
+  .card-grid-gap {
+    gap: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .card-grid-gap {
+      gap: 1.5rem;
+    }
+  }
+  /* UX_LAYOUT_200 #27：標題與副標題間距 */
+  .title-subtitle-gap {
+    margin-bottom: 0.25rem;
+  }
+  .title-subtitle-gap + * {
+    margin-top: 0.25rem;
+  }
+  /* UX_LAYOUT_200 #116：圖示+文字按鈕間距一致 */
+  .btn-icon-text-gap {
+    gap: 0.5rem;
+  }
+  /* UX_LAYOUT_200 #135：按鈕文字不換行或最多兩行 */
+  .btn-nowrap {
+    white-space: nowrap;
+  }
+  /* UX_LAYOUT_200 #25 #42：模態框內 padding、max-height 與 overflow */
+  .modal-padding {
+    padding: 1.5rem;
+  }
+  .modal-content-overflow {
+    max-height: min(80vh, 600px);
+    overflow-y: auto;
+  }
+  /* UX_LAYOUT_200 #199：模態框在小屏全屏或可關閉 */
+  @media (max-width: 640px) {
+    .modal-fullscreen-mobile {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      border-radius: 0;
+      margin: 0;
+    }
+  }
+  /* UX_LAYOUT_200 #83 #104：錯誤訊息與說明文字 — 搭配 input aria-describedby */
+  .field-error {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: rgb(var(--error));
+  }
+  .field-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: rgb(var(--text-muted));
+  }
+  /* UX_LAYOUT_200 #96 #133：表單按鈕區 — 主按鈕在前、間距一致 */
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .form-actions .btn-primary {
+    order: 0;
+  }
+  .form-actions .btn-secondary,
+  .form-actions .btn-ghost {
+    order: 1;
+  }
+  /* UX_LAYOUT_200 #23：導航項目間距一致 */
+  .nav-item-gap {
+    gap: 0.25rem;
+  }
+  @media (min-width: 768px) {
+    .nav-item-gap {
+      gap: 0.5rem;
+    }
+  }
+  /* UX_LAYOUT_200 #60：導航項目 hover/focus 視覺一致 */
+  .nav-link-ux {
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .nav-link-ux:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  .nav-link-ux:focus-visible {
+    outline: 2px solid rgb(139 0 0);
+    outline-offset: 2px;
+  }
+  /* UX_LAYOUT_200 #63：訂閱/價格入口 CTA 區分 — 與一般連結視覺區隔 */
+  .nav-cta-ux {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: rgb(212 175 55);
+    font-weight: 600;
+  }
+  .nav-cta-ux:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+  /* UX_LAYOUT_200 #195：遊戲/測驗觸控反饋 — 按壓縮放 */
+  .touch-feedback {
+    transition: transform 0.15s ease;
+  }
+  .touch-feedback:active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .touch-feedback:active {
+      transform: none;
+    }
+  }
+  /* UX_LAYOUT_200 #152：下拉展開/收合動畫 — 用於 accordion、select 面板 */
+  .dropdown-expand {
+    overflow: hidden;
+    transition: max-height 0.25s ease-out, opacity 0.2s ease-out;
+  }
+  .dropdown-expand[aria-hidden="true"] {
+    max-height: 0;
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dropdown-expand {
+      transition: none;
+    }
+  }
+  /* UX_LAYOUT_200 #156：成功勾選/完成動畫 — 簡短 scale + opacity */
+  .checkmark-done {
+    animation: checkmark-done 0.35s ease-out;
+  }
+  @keyframes checkmark-done {
+    0% { transform: scale(0.8); opacity: 0.6; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .checkmark-done {
+      animation: none;
+    }
+  }
+  /* UX_LAYOUT_200 #187：相鄰可點元素間距足夠，避免誤觸 */
+  .touch-spacing > * + * {
+    margin-left: 0.5rem;
+  }
+  @media (min-width: 768px) {
+    .touch-spacing > * + * {
+      margin-left: 0.75rem;
+    }
+  }
+  /* UX_LAYOUT_200 #196：捲動容器 iOS 順滑 */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+  /* UX_LAYOUT_200 #38：超大螢幕容器不過寬 */
+  .container-2xl {
+    max-width: 1536px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* UX_LAYOUT_200 #24：頁腳區塊間距與對齊 */
+  .footer-section-gap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    text-align: center;
+  }
+  @media (min-width: 768px) {
+    .footer-section-gap {
+      gap: 2rem;
+    }
+  }
+  /* UX_LAYOUT_200 #28：圖文混排時圖片與文字間距 */
+  .media-text-gap {
+    gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .media-text-gap {
+      gap: 1.5rem;
+    }
+  }
+  /* UX_LAYOUT_200 #39：表格響應 — 小屏橫向捲動、可選卡片化 */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-responsive table {
+    min-width: 100%;
+  }
+  /* UX_LAYOUT_200 #40：雙欄佈局 — 小屏單欄、大屏雙欄斷點一致（md 768px） */
+  .two-col-responsive {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .two-col-responsive {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+  /* UX_LAYOUT_200 #43：全屏遊戲/測驗時隱藏多餘 chrome（由 JS 在 fullscreen 時加 class） */
+  .fullscreen-hide-chrome .print\:hidden,
+  .fullscreen-hide-chrome [aria-label="主導航"],
+  .fullscreen-hide-chrome [aria-label="底部導航"] {
+    display: none !important;
+  }
+  /* P2：按鈕 loading 旋轉圖示與禁用態 */
+  .btn-primary.is-loading,
+  .btn-secondary.is-loading {
+    @apply pointer-events-none opacity-80;
+  }
+  .btn-primary.is-loading::after,
+  .btn-secondary.is-loading::after {
+    content: '';
+    width: 1em;
+    height: 1em;
+    margin-left: 0.5em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.8s linear infinite;
+  }
+  /* P2：按鈕內 icon 與文字間距 */
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    gap: var(--space-card, 0.5rem);
+  }
+  @keyframes btn-spin {
+    to { transform: rotate(360deg); }
+  }
+  /* 任務 27：Toast 出現動畫 0.25–0.3s */
+  @keyframes toastFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .toast-enter-anim {
+    animation: toastFadeIn 0.3s ease-out;
+  }
+}
+
+/* 水平滾動隱藏捲軸（Lobby 分類 / 最近玩過）；DEDUP #14：輪播/橫向捲動共用 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+/** DEDUP #14：橫向捲動區共用 — overflow-x-auto + scrollbar-hide；子按鈕/連結請加 games-touch-target */
+.carousel-track {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+@layer utilities {
+  /* Phase 1 E3.3: 虛擬滾動化優化 - content-visibility 與 contain-intrinsic-size */
+  .virtual-scroll-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 120px;
+  }
+  .virtual-scroll-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 180px;
+  }
+  .virtual-scroll-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 60px;
+  }
+  
+  /* Phase 1 A2.3: text-wrap balance 支援（現代瀏覽器） */
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Phase 1 B2.1: 按鈕按下動畫增強 */
+  .btn-press-scale {
+    transition: transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .btn-press-scale:active {
+    transform: scale(0.98);
+  }
+  /* Phase 1 B3.2: Shimmer 動畫效果 */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  .shimmer {
+    animation: shimmer 1.5s ease-in-out infinite;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.0) 100%
+    );
+    background-size: 1000px 100%;
+  }
+  
+  /* Phase 1 A5.2: Loading skeleton 脈衝動畫增強 */
+  .skeleton-shimmer-enhanced {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      rgba(139, 0, 0, 0.05) 0%,
+      rgba(212, 175, 55, 0.08) 25%,
+      rgba(138, 43, 226, 0.06) 50%,
+      rgba(212, 175, 55, 0.08) 75%,
+      rgba(139, 0, 0, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-pulse 2s ease-in-out infinite;
+  }
+  
+  .skeleton-shimmer-enhanced::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  }
+  
+  @keyframes skeleton-pulse {
+    0%, 100% {
+      background-position: 0% 50%;
+      opacity: 0.6;
+    }
+    50% {
+      background-position: 100% 50%;
+      opacity: 1;
+    }
+  }
+  
+  @keyframes skeleton-shimmer {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+  /* Phase 1 A3.4: 卡片 hover 微妙顏色變化 */
+  .card-glow-hover {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .card-glow-hover:hover {
+    box-shadow: 0 0 20px rgba(139, 0, 0, 0.15), 0 0 40px rgba(212, 175, 55, 0.08);
+    border-color: rgba(212, 175, 55, 0.3);
+  }
+  
+  /* Phase 1 A3.1 + A4.1: Hero 標題 gradient text 動畫 - 微調時間與曲線 */
+  .gradient-text-animated {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 300% 100%;
+    animation: gradient-shift-enhanced 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  
+  /* Phase 1 A4.1: 更平滑的漸層動畫軌跡 */
+  @keyframes gradient-shift-enhanced {
+    0% {
+      background-position: 0% 50%;
+    }
+    25% {
+      background-position: 50% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    75% {
+      background-position: 50% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  /* 向後相容：保留原始 gradient-shift */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  /* Phase 1 A4.1: prefers-reduced-motion 支援 */
+  @media (prefers-reduced-motion: reduce) {
+    .gradient-text-animated {
+      animation: none;
+      background-position: 50% 50%;
+    }
+  }
+  /* Phase 1 B1.4: List stagger 動畫 - 列表項目逐一出現 */
+  @keyframes stagger-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .stagger-item {
+    animation: stagger-fade-in 0.4s ease-out both;
+  }
+  .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-item:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-item:nth-child(6) { animation-delay: 0.3s; }
+  
+  /* Phase 1 D2.1: 課程章節動畫比例感 - scroll-driven 入場動畫 */
+  .chapter-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .chapter-section.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Phase 1 D2.1: 課程章節逐一出現的延遲 */
+  .chapter-section:nth-of-type(1) { transition-delay: 0s; }
+  .chapter-section:nth-of-type(2) { transition-delay: 0.05s; }
+  .chapter-section:nth-of-type(3) { transition-delay: 0.1s; }
+  .chapter-section:nth-of-type(4) { transition-delay: 0.15s; }
+  .chapter-section:nth-of-type(5) { transition-delay: 0.2s; }
+  .chapter-section:nth-of-type(n+6) { transition-delay: 0.25s; }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .chapter-section {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+  /* Phase 1 B4.2: Parallax helper classes */
+  .parallax-slow {
+    transform: translateY(var(--parallax-offset, 0));
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Phase 1 A5.3: 間距優化 - 增加呼吸感 */
+  .breathe-spacing {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+  @media (min-width: 768px) {
+    .breathe-spacing {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Phase 1 C2.1: 成就功牌彈出動畫 */
+  @keyframes achievement-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotateZ(-10deg);
+    }
+    50% {
+      transform: scale(1.1) rotateZ(5deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotateZ(0deg);
+    }
+  }
+  .achievement-pop {
+    animation: achievement-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+  }
+
+  /* Phase 1 C2.2: 成就徽章輝光效果 */
+  @keyframes badge-glow {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(139, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(139, 0, 0, 0.6), 0 0 40px rgba(212, 175, 55, 0.4), 0 0 60px rgba(138, 43, 226, 0.2);
+    }
+  }
+  .badge-glow {
+    animation: badge-glow 2s ease-in-out infinite;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  /* 3D flip for Memory game */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+/* H90 骨架屏：P1 完美像素 — 1.5s 節奏、opacity 0.45–0.85 減刺眼 */
+@keyframes skeleton-shimmer {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+.skeleton-shimmer {
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* P2 完美像素：脈動 2.8s、陰影幅度 0.32→0.36 舒緩 */
+@keyframes btn-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 14px -2px rgba(139, 0, 0, 0.32);
+  }
+  50% {
+    box-shadow: 0 4px 20px 0 rgba(139, 0, 0, 0.36);
+  }
+}
+
+/* P3 漸層文字動畫；P2 完美像素：7s 節奏略輕快 */
+.animate-gradient {
+  animation: gradient 7s ease infinite;
+}
+/* P3 reduced-motion：漸層與橫向捲動動畫關閉 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient,
+  .gradient-text {
+    animation: none;
+  }
+}
+
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-left {
+    animation: none;
+  }
+}
+
+/* 遊戲頁字級設定（設定 modal 存 localStorage，此處依 data 屬性套用）；P3 md 明確 1rem */
+[data-games-font-size="sm"] .games-content {
+  font-size: 0.875rem;
+}
+[data-games-font-size="md"] .games-content {
+  font-size: 1rem;
+}
+[data-games-font-size="lg"] .games-content {
+  font-size: 1.125rem;
+}
+
+/* 2 touch-action: manipulation 防止雙擊縮放；GAMES_500 #25 底部安全區域與固定按鈕不重疊 */
+.games-content {
+  touch-action: manipulation;
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+}
+
+/* GAMES_500 #24：PWA standalone 時佈局不破碎（安全區域、min-height） */
+@media (display-mode: standalone) {
+  .games-content {
+    min-height: 100dvh;
+    padding-top: max(0.5rem, env(safe-area-inset-top, 0));
+  }
+}
+
+/* GAMES_500 #73：Lobby 主標題字階 token */
+.games-content h1#games-page-title {
+  font-size: var(--text-h2);
+}
+
+/* 93 遊戲進行中隱藏導航：移除 main 頂部 padding */
+[data-nav-hidden='1'] main {
+  padding-top: 0;
+}
+
+/* 281 橫屏遊戲模式：平板/手機橫屏時優化佈局；GAMES_500 #214 橫屏時 Wrapper chrome 不破碎 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .games-content {
+    padding-top: 0.5rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0));
+    max-height: 100dvh;
+    overflow-y: auto;
+  }
+  .games-content .max-w-7xl {
+    max-width: 100%;
+  }
+}
+
+/* T071 P2：大螢幕投影時佈局與字體可讀（夜店/酒吧活動主） */
+@media (min-width: 1920px) {
+  .games-content {
+    font-size: clamp(1rem, 1.1rem, 1.25rem);
+  }
+  .games-content .text-sm { font-size: clamp(0.875rem, 1rem, 1.125rem); }
+  .games-content .text-xs { font-size: clamp(0.75rem, 0.9rem, 1rem); }
+}
+
+/* GAMES_500 #24：PWA standalone 時 games 佈局不破碎（安全區域與全屏） */
+@media (display-mode: standalone) {
+  .games-content {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0) + 8px);
+    min-height: 100dvh;
+  }
+}
+
+/* GAMES_500 #93：高對比模式 Lobby 邊框與文字對比 */
+@media (prefers-contrast: more) {
+  .lobby-region .text-white\/50,
+  .lobby-region .text-white\/40 { color: rgb(255 255 255 / 0.9); }
+  .lobby-region .text-white\/30 { color: rgb(255 255 255 / 0.75); }
+  .lobby-region [role="tablist"],
+  .lobby-region [role="region"] { border-color: rgba(255, 255, 255, 0.35); border-width: 1px; }
+  .lobby-region .border-white\/10 { border-color: rgba(255, 255, 255, 0.35); }
+}
+
+/* 101. Bento Grid 卡片佈局（2026 流行）；間距統一 16px，hover 上浮 -4px */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.bento-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.bento-card-hover:hover {
+  transform: translateY(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-card-hover:hover {
+    transform: none;
+  }
+}
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+  }
+  .bento-span-2 {
+    grid-column: span 2;
+  }
+  .bento-span-row-2 {
+    grid-row: span 2;
+  }
+}
+
+/* 103. 3D 卡片效果：perspective + 懸浮傾斜 */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.card-3d:hover {
+  transform: rotateX(2deg) rotateY(-2deg) translateZ(8px);
+  transition: transform 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-3d:hover {
+    transform: none;
+  }
+}
+
+/* 104. Glassmorphism 2.0：更強毛玻璃 + 邊緣光暈 */
+.glass-2 {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* 107. Micro-interactions：按鈕/卡片 hover/active */
+.interact-scale {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.interact-scale:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.interact-scale:active {
+  transform: scale(0.98);
+}
+
+/* 121 大螢幕容器：2560px 下內容不無限拉寬 */
+.container-2xl {
+  max-width: min(100%, 1440px);
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 1536px) {
+  .container-2xl {
+    max-width: 1600px;
+  }
+}
+@media (min-width: 1920px) {
+  .container-2xl {
+    max-width: 1800px;
+  }
+}
+
+/* 123 鍵盤導航：可聚焦元素預設 tabindex=0，裝飾用隱藏 */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* 22 分隔線：漸層而非純色 */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+}
+
+/* 圖標：懸停旋轉/縮放微動畫、關鍵圖標發光 */
+.icon-interact {
+  @apply transition-transform duration-200;
+}
+.icon-interact:hover {
+  @apply scale-110;
+}
+.icon-glow {
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.4));
+}
+
+/* 116 滾動進度：品牌色 */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgb(139 0 0), rgb(212 175 55));
+  z-index: 9999;
+  transform-origin: left;
+  width: 100%;
+  transition: transform 0.15s ease-out;
+}
+/* UX_LAYOUT_200 #155：進度條動畫不過快 — 寬度過渡 0.3s；GAMES_500 #278 遊戲內進度條請用 .progress-bar-fill */
+.progress-bar-fill {
+  transition: width 0.3s ease-out;
+}
+
+/* RWD-23 / G-Common：遊戲內按鈕最小觸控區域 48px（WCAG 2.5.5），可與 focus-visible 環併用 */
+.game-btn-touch {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* GAMES_500 #247：遊戲內按鈕 focus-visible 環與全站一致 */
+.game-btn-focus:focus-visible {
+  outline: 2px solid rgb(139 0 0);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+/* GAMES_500 #286：遊戲主內容區列印時隱藏（可加在遊戲畫布／棋盤容器） */
+@media print {
+  .game-print-hidden {
+    display: none !important;
+  }
+}
+
+/* GAMES_500 #281：遊戲內列表語意 — role="list" 與 listitem 對應 */
+.game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* GAMES_500 #300：遊戲內主內容區無障礙 landmark */
+.game-main {
+  outline: none;
+}
+.game-main:focus-visible {
+  outline: 2px solid rgb(139 0 0);
+  outline-offset: 2px;
+}
+
+/* HOME_50：首頁專用 — 任務 6 暗角、H01 字階與行高、H06 vignette 變數 */
+.home-hero-vignette {
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 40%,
+    rgba(0, 0, 0, var(--hero-vignette-mid)) 70%,
+    rgba(0, 0, 0, var(--hero-vignette-opacity)) 100%
+  );
+}
+/* P1 完美像素：標題字距緊縮、行高微調 */
+.home-heading-1 {
+  font-size: var(--text-hero);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 768px) {
+  .home-heading-1 {
+    font-size: clamp(3rem, 4vw + 1rem, var(--text-h1));
+  }
+}
+.home-heading-2 {
+  font-size: clamp(var(--text-xl), 3vw + 0.5rem, var(--text-4xl));
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+}
+.home-subtitle {
+  font-size: clamp(0.875rem, 1vw + 0.5rem, 1rem);
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+/* HOME_30 專家 UX：字階 token — H3 卡片標題、Body 正文；P1 字距 -0.01em */
+.home-heading-3 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+@media (min-width: 768px) {
+  .home-heading-3 {
+    font-size: var(--text-xl);
+  }
+}
+.home-body {
+  font-size: var(--text-base);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+/* HOME_50 第二批：任務 5 首頁品牌 Pattern、任務 8 Hero 響應式漸層、任務 36 badge、任務 38 訂閱區焦點 */
+.home-brand-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 8v4l-6 20h12l-6-20zm0 24c-2 0-4 1.5-4 4s2 4 4 4 4-1.5 4-4-2-4-4-4z' fill='rgba(212,175,55,0.04)'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+.home-hero-gradient {
+  background: linear-gradient(135deg, #6B0F1A 0%, #7a1525 25%, #8B1530 45%, #a86b2e 70%, #C9A961 100%);
+}
+@media (max-width: 640px) {
+  .home-hero-gradient {
+    background: linear-gradient(135deg, #6B0F1A 0%, #7a1525 30%, #8B1530 55%, #9a4a28 85%, #b8925a 100%);
+  }
+}
+.home-badge {
+  font-size: 10px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  background: rgba(212, 175, 55, 0.2);
+  color: rgb(212 175 55);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+/* HOME_30-10：限時免費 badge 輕量動效，reduced-motion 時由 class 關閉 */
+.home-badge-pulse {
+  animation: home-badge-pulse 2.5s ease-in-out infinite;
+}
+@keyframes home-badge-pulse {
+  0%, 100% { opacity: 1; border-color: rgba(212, 175, 55, 0.3); }
+  50% { opacity: 0.92; border-color: rgba(212, 175, 55, 0.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-badge-pulse {
+    animation: none;
+  }
+}
+
+/* AUDIT /learn #32：課程標籤與全站 badge 一致 — 統一尺寸與邊框，語意色 */
+.learn-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.learn-badge-primary {
+  background: rgba(139, 0, 0, 0.9);
+  color: white;
+  border-color: rgba(139, 0, 0, 0.5);
+}
+.learn-badge-amber {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+.learn-badge-green {
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+/* AUDIT /quiz #34：Intro 與結果頁背景與首頁 Hero 漸層呼應 */
+.quiz-hero-echo {
+  background: linear-gradient(180deg, rgba(139, 0, 0, 0.04) 0%, transparent 25%, transparent 75%, rgba(212, 175, 55, 0.03) 100%);
+}
+
+.home-footer-form input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(10 10 10), 0 0 0 4px rgba(139, 0, 0, 0.6);
+}
+
+/* HOME_50 第三批：任務 25 Bento 網格、任務 29/31/37/40 排版與設計 */
+/* P1：Bento 四卡間距與 --space-section 對齊 */
+.home-bento-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-section, 1.5rem);
+}
+@media (min-width: 640px) {
+  .home-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 768px) {
+  .home-bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(140px, auto);
+    gap: 2rem;
+  }
+}
+/** 任務 31 / HOME_30-20：色彩對比 WCAG AA — 正文 0.7 提升可讀性 */
+.home-text-muted {
+  color: rgba(255, 255, 255, 0.7);
+}
+/** 任務 40 / HOME_30-5：社會認證標題與數字醒目 */
+.home-stats-trust {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+@media (min-width: 768px) {
+  .home-stats-trust {
+    font-size: 1rem;
+  }
+}
+/** VISUAL_TEMPLE P1：社會認證數字字階 token，無 magic number */
+.home-stats-num {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-4xl);
+  font-weight: 700;
+}
+@media (min-width: 768px) {
+  .home-stats-num {
+    font-size: var(--text-5xl);
+  }
+}
+/** 任務 37：Footer 文字連結 — 非按鈕樣式；P2 完美像素：hover 過渡 200ms 與按鈕一致 */
+.home-footer-link a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+.home-footer-link a:hover {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+}
+.home-footer-link a:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.6);
+}
+
+/* L71 / UX_LAYOUT_200 #45、GAMES_500 #15、UX-21～22、任務 63：列印樣式 — 隱藏導航/裝飾/Aurora/Particle、可讀寬度 */
+@media print {
+  .print\:hidden { display: none !important; }
+  .skip-link, [aria-label="主導航"], [aria-label="底部導航"] { display: none !important; }
+  /* UX-21 / 任務 63：列印時隱藏非必要 UI（Aurora、Particle、BackToTop、Cookie 橫幅等） */
+  [data-print-skip], .aurora-bg, [class*="BackToTop"], [class*="CookieConsent"], [class*="MaintenanceBanner"], [class*="OfflineBanner"], [class*="ExpiryBanner"] { display: none !important; }
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  /* UX-02/22：列印主內容可讀寬度 */
+  #main-content {
+    max-width: 65ch !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .glass-card, .glass-heavy, .glass-card-spotlight {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: #111 !important;
+  }
+  .gradient-text {
+    color: #8B0000 !important;
+    background: none !important;
+  }
+  a { color: #0a0a0a !important; }
+  /* 任務 97：列印時連結顯示 URL，可追溯 */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    color: #444;
+  }
+  .games-content .rounded-3xl.glass-card-spotlight,
+  .games-content [role="tablist"],
+  .games-content [role="list"] { display: none !important; }
+}

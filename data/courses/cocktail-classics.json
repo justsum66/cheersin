@@ -1,0 +1,63 @@
+{
+  "id": "cocktail-classics",
+  "title": "經典調酒實作",
+  "description": "從原料到手法，重現經典雞尾酒",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "調酒工具與技法",
+      "duration": "7分鐘",
+      "content": "必備工具：雪克杯（Boston 兩件式或 Cobbler 三件式）、量酒器 jigger（30/15ml 雙頭，精準控量）、吧勺 bar spoon、濾冰器 hawthorne strainer、榨汁器。技法：Shake（搖盪，含果汁、蛋清、乳脂的調酒，如 Whiskey Sour、Daiquiri）；Stir（攪拌，純烈酒如 Martini、Manhattan）；Build（直調，如 Gin Tonic、Highball）；Muddle（搗碎，如 Mojito 薄荷、Old Fashioned 方糖）。搖盪產生更多稀釋與乳化；攪拌保留清晰度與酒精感。Dry shake（先無冰搖）適合含蛋調酒。",
+      "quiz": [
+        { "question": "含果汁的調酒通常用？", "options": ["Stir 攪拌", "Shake 搖盪", "Build 直調", "Muddle 搗碎"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Old Fashioned 與 Sour 架構",
+      "duration": "8分鐘",
+      "content": "Old Fashioned 架構：烈酒 + 糖（方糖或糖漿）+ 苦精 + 大冰塊。經典比例約 60ml 威士忌、1 顆方糖、2–3 dash Angostura。Sour 架構：烈酒 + 酸（檸檬或萊姆汁）+ 甜（單糖漿 simple syrup）+ 冰。黃金比例 2:1:1（60ml 酒:30ml 酸:30ml 甜）或 3:2:1。這兩大架構可衍生無數變體：Whiskey Sour、Daiquiri、Margarita 皆屬 Sour 家族；Old Fashioned 系有 Rye、Bourbon、Rum 等變化。理解架構後可自行創作或調整甜酸度。",
+      "quiz": [
+        { "question": "Sour 架構不含哪項？", "options": ["烈酒", "酸", "甜", "奶油"], "correctIndex": 3 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Martini、Manhattan、Negroni",
+      "duration": "8分鐘",
+      "content": "Martini：琴酒/伏特加 + 苦艾酒，攪拌。Manhattan：威士忌 + 甜苦艾酒 + 苦精。Negroni：琴酒 + 金巴利 + 甜苦艾酒，等比例。三款都是攪拌型，不加果汁。",
+      "quiz": [
+        { "question": "Negroni 三種材料比例？", "options": ["2:1:1", "等比例 1:1:1", "3:2:1", "僅兩種材料"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Tiki 與熱帶調酒",
+      "duration": "7分鐘",
+      "content": "Tiki 調酒：Mai Tai（蘭姆、橙皮酒、檸檬、奧瑪苦精）、Zombie（多種蘭姆、百香果、櫻桃）、Piña Colada（蘭姆、椰奶、鳳梨）。特點：多種蘭姆酒（白、金、黑、過桶）、熱帶果汁、香料糖漿（orgeat、falernum）、視覺華麗（雕刻冰、鳳梨殼、薄荷叢）。居家可簡化：用單一蘭姆、市售鳳梨汁、省略罕見糖漿。Tiki 文化源自 1930 年代 Don the Beachcomber、Trader Vic，至今仍影響全球酒吧。",
+      "quiz": [
+        { "question": "Tiki 調酒常用基酒？", "options": ["僅伏特加", "蘭姆酒", "僅琴酒", "僅威士忌"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "裝飾與呈現",
+      "duration": "6分鐘",
+      "content": "檸檬皮噴油、橙皮扭轉。櫻桃、橄欖、薄荷葉。冰塊品質：大冰融化慢。杯具選擇與預冷。簡單裝飾提升專業感。",
+      "quiz": [
+        { "question": "檸檬皮擠在杯口主要目的？", "options": ["無作用", "增加香氣與油脂", "僅裝飾", "降溫"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "居家調酒採買清單",
+      "duration": "6分鐘",
+      "content": "基酒：琴酒、伏特加、蘭姆酒、龍舌蘭、威士忌。利口酒：君度、金巴利、甜苦艾酒。果汁、糖漿、苦精。依預算與喜好逐步擴充。",
+      "quiz": [
+        { "question": "做 Negroni 需要哪些利口酒？", "options": ["僅君度", "金巴利 + 甜苦艾酒", "僅薄荷酒", "僅咖啡利口酒"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

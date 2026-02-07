@@ -1,0 +1,39 @@
+{
+  "id": "home-bar",
+  "title": "居家酒吧入門",
+  "description": "從零開始打造家庭酒吧",
+  "duration": "35分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "必備工具清單",
+      "duration": "6分鐘",
+      "content": "必備工具：雪克杯（調製需搖盪的調酒，如 Daiquiri、Whiskey Sour）、量酒器 jigger（30ml/15ml 或 45ml/30ml 雙頭，精準控量）、吧勺（攪拌、分層）、榨汁器（新鮮檸檬萊姆）、濾冰器（倒出冰塊保留液體）、冰格（大格冰塊融化慢、調酒不易稀釋）。可選：苦精瓶（滴管控制）、搗棒（搗薄荷、藥草）、波士頓雪克杯（兩件式、專業感）。建議投資中上品質不鏽鋼工具，可長期使用。"
+    },
+    {
+      "id": 2,
+      "title": "六大基酒入門採購",
+      "duration": "7分鐘",
+      "content": "六大基酒：琴酒（Gin，如 Beefeater、Tanqueray）、伏特加（Vodka，如 Absolut、Ketel One）、蘭姆酒（Rum，白蘭姆如 Bacardi、Havana Club）、龍舌蘭（Tequila，100% Agave 如 Espolòn）、威士忌（波本如 Jim Beam、調和如 Johnnie Walker）、白蘭地（Brandy，如 Hennessy VS）。每類選一中價位入門款即可，避開過度廉價的調和烈酒。總預算約 3000–5000 元可備齊基礎，之後依常做調酒逐步添購。"
+    },
+    {
+      "id": 3,
+      "title": "利口酒與調味品",
+      "duration": "6分鐘",
+      "content": "利口酒：君度（橙皮，Margarita、Sidecar）、金巴利（苦甜，Negroni、Americano）、甜苦艾酒（Manhattan、Negroni）、乾苦艾酒（Martini）、咖啡利口酒（Espresso Martini、White Russian）。果汁：新鮮檸檬、萊姆、柳橙優於濃縮。糖漿：單糖漿（1:1 糖水）可自製；苦精 Angostura 必備。蘇打水、通寧水、薑汁汽水。依常做調酒逐步添購，避免一次買齊造成浪費。"
+    },
+    {
+      "id": 4,
+      "title": "冰塊與儲存",
+      "duration": "6分鐘",
+      "content": "冰塊：大冰融化慢、調酒不易稀釋；可購製冰球模、大格製冰盒。專業酒吧多用淨水製冰。儲存：基酒避光、常溫或陰涼處，開瓶後可存放數月。開瓶利口酒（尤其含奶、蛋）需冷藏並盡快使用。苦精、糖漿冷藏延長壽命。威士忌、白蘭地不需冷藏。瓶蓋栓緊、直立存放。居家酒吧無需酒櫃，陰涼櫥櫃即可。"
+    },
+    {
+      "id": 5,
+      "title": "10 杯必學居家調酒",
+      "duration": "7分鐘",
+      "content": "10 杯必學居家調酒：Gin Tonic（琴酒＋通寧＋檸檬）、Old Fashioned（威士忌＋糖＋苦精）、Margarita（龍舌蘭＋君度＋萊姆）、Whiskey Sour（威士忌＋檸檬＋糖）、Negroni（琴酒＋金巴利＋甜苦艾酒）、Daiquiri（蘭姆＋萊姆＋糖）、Mojito（蘭姆＋薄荷＋萊姆＋糖＋蘇打）、Manhattan（威士忌＋甜苦艾酒＋苦精）、Martini（琴酒＋乾苦艾酒）、Aperol Spritz（Aperol＋Prosecco＋蘇打）。掌握這些可應付聚餐、獨酌、招待賓客等多數場合，且材料可重複使用。"
+    }
+  ]
+}

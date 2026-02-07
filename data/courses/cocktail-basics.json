@@ -1,0 +1,66 @@
+{
+  "id": "cocktail-basics",
+  "title": "調酒基礎",
+  "description": "認識基酒、調酒技法與經典雞尾酒，在家也能調出專業感",
+  "duration": "35分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "六大基酒入門",
+      "duration": "6分鐘",
+      "content": "六大基酒是調酒的骨架：伏特加（Vodka，無色無味、百搭、多數雞尾酒可替換基酒）；琴酒（Gin，杜松子與草本、調酒使用最廣）；蘭姆酒（Rum，甘蔗、白/金/黑分級、熱帶風情）；龍舌蘭（Tequila，100% Agave 為佳、草本與胡椒）；威士忌（Whiskey，波本、裸麥、調和，經典調酒常用）；白蘭地（Brandy，葡萄蒸餾，Sidecar、Brandy Alexander）。每種基酒決定了調酒的基調與風味走向，混合利口酒、果汁、苦精、糖漿等可創造無數風味組合。",
+      "quiz": [
+        { "question": "琴酒（Gin）的主要風味來源是？", "options": ["甘蔗", "杜松子與草本", "龍舌蘭", "葡萄"], "correctIndex": 1 },
+        { "question": "以下哪種不是六大基酒？", "options": ["伏特加", "琴酒", "紅酒", "龍舌蘭"], "correctIndex": 2 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "調酒器具與必備品",
+      "duration": "5分鐘",
+      "content": "基本器具：搖盪杯（shaker）三件式或波士頓式、攪拌杯（mixing glass）配吧叉匙、量酒器 jigger（30/15ml 或 45/30ml）、榨汁器（新鮮檸檬萊姆必備）、濾冰器（strainer）。冰塊品質很重要：大方冰（2–3cm）融化慢、適合直調與攪拌；碎冰適合搖盪、Mojito 等。常用利口酒：君度（橙皮）、金巴利（苦甜）、甜/乾苦艾酒、咖啡利口酒。裝飾：檸檬皮（twist）、柑橘片、薄荷、櫻桃、黃瓜。",
+      "quiz": [
+        { "question": "大方冰適合哪種調酒方式？", "options": ["搖盪", "直調（Stir）", "攪打", "熱飲"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "搖盪與攪拌",
+      "duration": "6分鐘",
+      "content": "搖盪（Shake）：含果汁、蛋、奶、糖漿等不易混合的材料用搖盪，快速融合、降溫、打入空氣，搖約 10–15 秒至雪克杯結霜。攪拌（Stir）：純烈酒調酒如 Martini、Manhattan、Negroni 用攪拌，保持清澈、順滑、不過度稀釋，攪拌約 20–30 秒。直調（Build）：在杯中直接混合，如 Highball、Gin Tonic、Moscow Mule，適合含碳酸飲料的調酒。每種技法各有用途，選錯會影響成品質地與風味。",
+      "quiz": [
+        { "question": "Martini 一般使用哪種調製方式？", "options": ["搖盪", "攪拌", "直調", "攪打"], "correctIndex": 1 },
+        { "question": "含果汁的調酒通常適合？", "options": ["僅攪拌", "搖盪", "不加冰", "加熱"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "經典雞尾酒：Martini、Margarita、Old Fashioned",
+      "duration": "7分鐘",
+      "content": "Martini：琴酒 + 乾苦艾酒（通常 6:1 或 5:1），橄欖或檸檬皮；Dry Martini 少苦艾酒；Vodka Martini 以伏特加取代。Margarita：龍舌蘭 + 君度 + 鮮萊姆汁（經典 2:1:1），鹽口杯；可加龍舌蘭糖漿微調。Old Fashioned：威士忌（波本或裸麥）+ 方糖 + Angostura 苦精 + 少許水，橙皮與櫻桃裝飾。Mojito：白蘭姆 + 薄荷 + 萊姆汁 + 糖 + 蘇打水，碎冰。每款有經典比例，掌握後可依口味微調甜度、酸度與基酒選擇。",
+      "quiz": [
+        { "question": "Margarita 的基酒是？", "options": ["琴酒", "伏特加", "龍舌蘭", "威士忌"], "correctIndex": 2 },
+        { "question": "Old Fashioned 通常使用哪種基酒？", "options": ["琴酒", "龍舌蘭", "威士忌", "蘭姆酒"], "correctIndex": 2 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "酸甜平衡與糖漿",
+      "duration": "5分鐘",
+      "content": "許多經典調酒遵循酸甜平衡（sour formula）：酸（萊姆汁、檸檬汁）+ 甜（糖漿、利口酒）+ 基酒，比例約 2:1:2 或依酒款調整。簡單糖漿（simple syrup）為 1:1 糖與水，煮溶後冷藏；可自製風味糖漿：薑、薄荷、莓果、香草。酸度與甜度要與基酒強度匹配，過甜蓋過基酒、過酸難入口。苦精（bitters）可畫龍點睛，如 Angostura、orange bitters。",
+      "quiz": [
+        { "question": "簡單糖漿的比例通常是？", "options": ["2:1 糖與水", "1:1 糖與水", "1:2 糖與水", "純糖"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "居家調酒入門建議",
+      "duration": "6分鐘",
+      "content": "居家調酒入門：先備齊 1–2 種基酒（琴酒、伏特加或龍舌蘭）與量酒器、搖盪杯、榨汁器、冰格。從 Highball、Gin Tonic 等直調款開始（不需搖盪），再嘗試 Margarita、Daiquiri、Whiskey Sour 等搖盪款。關鍵：大冰塊融化慢、新鮮檸檬萊姆、品質中上的基酒（不必最貴）。可參考 IBA 經典配方或 2:1:1 酸甜公式，再依口味微調。多練幾次熟能生巧。進階：蛋清（Dry Shake）賦予綿密泡沫；澄清（Clarified）製作透明調酒；自製糖漿與浸漬。",
+      "quiz": [
+        { "question": "新手適合從哪類調酒開始？", "options": ["複雜三層 shot", "直調款如 Highball", "僅純飲", "熱調酒"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

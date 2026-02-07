@@ -1,0 +1,33 @@
+{
+  "id": "supermarket-wine",
+  "title": "超市選酒不求人",
+  "description": "全聯、家樂福、好市多選酒攻略",
+  "duration": "15分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "超市酒區怎麼逛",
+      "duration": "4分鐘",
+      "content": "先看產區與品種，再看價位。300–500 元有許多不錯入門款。智利、澳洲、西班牙性價比高。避開陽光直射的陳列。特價時可囤常飲款。"
+    },
+    {
+      "id": 2,
+      "title": "依場合快速選",
+      "duration": "4分鐘",
+      "content": "聚餐：大瓶（1.5L）或兩瓶 750ml。送禮：禮盒、知名產區。獨酌：單瓶、易飲款。野餐：旋蓋、粉紅或氣泡。燒烤：紅酒、Shiraz、Malbec。"
+    },
+    {
+      "id": 3,
+      "title": "台灣超市常見品牌",
+      "duration": "4分鐘",
+      "content": "智利：Concha y Toro、Santa Rita。澳洲：Yellow Tail、Jacob's Creek。西班牙：Torres、Marques de Caceres。法國：大區 AOC、波爾多入門。好市多自有品牌 Kirkland 常有驚喜。"
+    },
+    {
+      "id": 4,
+      "title": "預算帶與陷阱",
+      "duration": "3分鐘",
+      "content": "300 元以下：日常佐餐、調酒基酒可接受。500–800：聚餐、送禮較穩。避免：過度華麗包裝卻廉價、來路不明。建議先試小瓶或單杯。超市自有品牌與特價檔期常有超值選擇，可記住喜歡的產區與品種。"
+    }
+  ]
+}

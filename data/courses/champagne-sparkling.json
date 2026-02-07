@@ -1,0 +1,54 @@
+{
+  "id": "champagne-sparkling",
+  "title": "氣泡酒與香檳",
+  "description": "認識氣泡酒的釀造、香檳 vs 其他氣泡酒，以及慶祝時刻的選酒指南",
+  "duration": "30分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "氣泡怎麼來的？",
+      "duration": "5分鐘",
+      "content": "氣泡來自二次發酵產生的二氧化碳。傳統法（香檳法 Méthode Traditionnelle）：在瓶內進行二次發酵，酵母與糖在瓶中產生 CO2，陳年後除渣（disgorgement）除去酵母沉澱，補液後封瓶，氣泡細緻綿密、持久，成本最高。夏馬法（罐式 Charmat）：在大槽中二次發酵，幾週即完成，成本較低，Prosecco 多採此法，氣泡較大、果香奔放。加壓法（Carbonation）：直接將 CO2 打入靜態酒中，氣泡最粗、消散快，多用在廉價氣泡酒。傳統法氣泡最細密持久，香檳、Cava、部分高端氣泡酒皆採此工法。選購時可依預算與場合：慶祝選傳統法，日常開胃選 Prosecco 或 Cava。",
+      "quiz": [
+        { "question": "香檳的二次發酵在哪裡進行？", "options": ["大槽", "瓶內", "加壓注入", "發酵桶"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "香檳 vs Prosecco vs Cava",
+      "duration": "6分鐘",
+      "content": "香檳（Champagne）：僅產自法國香檳區、傳統法、三大品種 Pinot Noir/Chardonnay/Pinot Meunier，法律保護名稱。Prosecco：義大利威尼托、罐式法、Glera 品種、清爽果香與花香，DOC/DOCG 分級。Cava：西班牙、主要產於加泰隆尼亞、傳統法、Macabeo/Xarel·lo/Parellada 等品種，價格較香檳親民。Sekt：德國氣泡酒，品質分級從 Deutscher Sekt 到 Winzersekt。Crémant：法國其他產區的傳統法氣泡酒（如 Crémant de Bourgogne、Crémant de Loire），性價比佳。入門可從 Cava 或 Crémant 開始，再嘗試香檳感受差異。",
+      "quiz": [
+        { "question": "Prosecco 主要來自哪國？", "options": ["法國", "義大利", "西班牙", "德國"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "甜度分級",
+      "duration": "5分鐘",
+      "content": "Brut Nature：幾乎不補糖。Extra Brut：極乾。Brut：最常見，微乾，慶祝與搭餐首選。Extra Sec / Sec：半乾。Demi-Sec：半甜，可搭甜點。Doux：甜。慶祝常用 Brut；搭生蠔選 Extra Brut；甜點可選 Demi-Sec。酒標上的甜度標示有助選酒。",
+      "quiz": [
+        { "question": "市面最常見的香檳甜度等級是？", "options": ["Doux", "Brut", "Demi-Sec", "Brut Nature"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "適飲溫度與開瓶",
+      "duration": "5分鐘",
+      "content": "氣泡酒適飲溫度約 6–10°C，過冷會壓抑香氣、過熱氣泡散逸快。開瓶步驟：先撕開鋁箔、鬆開鐵絲套（勿完全卸下）、一手穩握瓶塞、一手轉動瓶身（不是轉塞）、讓壓力將塞緩緩推出，聽到輕微「 sigh」而非「砰」。慶祝時可搖晃噴瓶，但會流失大量酒液與氣泡。杯具：鬱金香杯（tulip）聚香、氣泡持久；笛型杯（flute）傳統、視覺美；白葡萄酒杯也可用於品鑑。避免廣口杯，氣泡散逸快。",
+      "quiz": [
+        { "question": "氣泡酒建議適飲溫度約為？", "options": ["0–4°C", "6–10°C", "室溫", "20°C"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "慶祝選酒指南",
+      "duration": "5分鐘",
+      "content": "正式場合：法國香檳 Brut（如 Moët、Veuve Clicquot、Dom Pérignon）。預算有限：西班牙 Cava（Freixenet、Codorníu）、義大利 Prosecco（Mionetto、La Marca）性價比高。搭餐：Brut 配生蠔、炸物、油炸軟殼蟹；Extra Brut 配壽司；Demi-Sec 配甜點、水果塔。粉紅氣泡（Rosé）：浪漫場合、搭配鮭魚、草莓、帕瑪火腿。台灣婚宴常見 Moët 或国产氣泡酒，可依預算與場合選擇。開瓶後盡量當日飲畢，真空塞可冷藏保存 1–2 天。",
+      "quiz": [
+        { "question": "預算有限時，可考慮哪種氣泡酒？", "options": ["僅香檳", "Cava 或 Prosecco", "僅粉紅香檳", "僅甜型"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

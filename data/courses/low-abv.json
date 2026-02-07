@@ -1,0 +1,45 @@
+{
+  "id": "low-abv",
+  "title": "低酒精飲品",
+  "description": "無醇、低酒精與 Session 風格",
+  "duration": "25分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "無酒精與脫醇酒",
+      "duration": "6分鐘",
+      "content": "脫醇葡萄酒（Dealcoholized Wine）：先正常釀造，再以蒸餾、逆滲透或旋轉錐等方式移除酒精，通常保留至 0.5% 以下。無酒精啤酒製程類似。品質差異大：高端品牌保留較多風味，廉價款可能偏甜或人工感。適合場合：開車前、懷孕、減量飲酒、運動後。選購可參考評價與品牌。",
+      "quiz": [
+        { "question": "脫醇酒如何處理酒精？", "options": ["不釀造", "釀造後移除", "僅稀釋", "僅發酵一次"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "低酒精葡萄酒",
+      "duration": "5分鐘",
+      "content": "低酒精葡萄酒（約 5–9% ABV）來源：早採收葡萄（糖分低、發酵後酒精少）、冷涼產區、或發酵中斷。德國 Kabinett、Spätlese 部分款；義大利 Moscato d'Asti（微氣泡、甜）；葡萄牙 Vinho Verde 部分款。風格清新、果味明亮、易飲，適合午間、野餐、泳池派對。搭配輕食、水果、沙拉。",
+      "quiz": [
+        { "question": "低酒精葡萄酒常見情境？", "options": ["僅晚宴", "午間、野餐、輕鬆場合", "僅烈酒場合", "僅冬季"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Session 啤酒與 Cider",
+      "duration": "6分鐘",
+      "content": "Session 啤酒：低酒精度（約 4% 以下）、易飲、可多杯，英國風格常見。Cider 蘋果酒：通常 4–6%，有無糖、干型、甜型，英國、法國、西班牙皆有產。適合長時間聚會、戶外活動。無酒精啤酒與 Cider 選擇越來越多，品質持續提升。",
+      "quiz": [
+        { "question": "Session 啤酒特點？", "options": ["高酒精", "低酒精、易飲可多杯", "僅苦味", "僅深色"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Mocktail 與低酒精調酒",
+      "duration": "5分鐘",
+      "content": "Mocktail：無酒精調飲，用果汁、茶、氣泡水、苦精等。Low-ABV Cocktail：少量基酒 + 大量非酒精元素，適合減量但不犧牲儀式感。2025 趨勢：低酒精複雜調酒（Session 風格）受歡迎，風味不減、適合長時間聚會；Aperol Spritz、Daycaps 白天調酒興起。詳見「2025-2026 酒類趨勢」課程。",
+      "quiz": [
+        { "question": "Mocktail 是？", "options": ["高酒精", "無酒精調飲", "僅啤酒", "僅葡萄酒"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

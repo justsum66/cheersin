@@ -1,0 +1,54 @@
+{
+  "id": "wine-pairing",
+  "title": "餐酒搭配進階",
+  "description": "風味互動與進階搭配邏輯",
+  "duration": "40分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "搭配的科學：味覺互動",
+      "duration": "8分鐘",
+      "content": "餐酒搭配有四大互動邏輯：襯托（互補，如奶油醬與 Chardonnay 的奶油感）；對比（清爽酒 cutting through 油膩）；切割（酸度或單寧清口、解膩）；融合（風味和諧、如煙燻與 Syrah）。關鍵法則：脂肪需要酸與單寧來平衡；甜食需要比甜點更甜的酒，否則酒會顯酸澀；辣味適合微甜、低酒精、有果香的酒（高酒精會放大辣感）；鮮味（Umami）會強化單寧的澀感，需注意。",
+      "quiz": [
+        { "question": "油脂豐富的料理適合搭配？", "options": ["無酸酒", "高酸或高單寧酒", "僅甜酒", "僅氣泡酒"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "料理主體與醬汁",
+      "duration": "7分鐘",
+      "content": "醬汁常比主料更重要。紅醬：番茄酸度高，選義大利紅酒或白酒，Chianti、Montepulciano 經典。白醬：奶油感，夏多內、粉紅酒、Viognier。咖喱、亞洲醬料：雷司令、Gewürztraminer、Off-dry 白酒。燒烤醬：Zinfandel、Shiraz。芥末醬：氣泡酒或高酸白酒。重量匹配原則：濃郁醬汁選酒體較重的酒。",
+      "quiz": [
+        { "question": "番茄紅醬適合搭配？", "options": ["僅甜酒", "義大利紅酒或高酸白酒", "僅波爾多", "僅香檳"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "起司與葡萄酒",
+      "duration": "7分鐘",
+      "content": "軟質：布里、卡門貝爾配夏多內、粉紅酒、香檳，奶油與酒體匹配。硬質：帕瑪森、陳年 Cheddar 配巴羅洛、Chianti、結構紅酒，鹹鮮與單寧互動。藍紋：甜酒（Sauternes、Port、貴腐）或強勁紅酒（Syrah、Zinfandel），甜鹹對比或強度匹配。山羊起司：Sauvignon Blanc 酸度切割；避免高單寧紅酒。洗皮起司：Alsatian Riesling、香檳。起司搭配原則：質地與強度匹配、酸度可切割脂肪。",
+      "quiz": [
+        { "question": "藍紋起司常見搭配？", "options": ["僅白酒", "甜酒或強勁紅酒", "僅氣泡酒", "啤酒最佳"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "中式與亞洲料理",
+      "duration": "8分鐘",
+      "content": "中式多元：紅燒可配梅洛；清蒸配白酒；麻辣配微甜雷司令或啤酒。日式：清酒、白酒、氣泡酒。泰式：Gewürztraminer、Riesling。",
+      "quiz": [
+        { "question": "麻辣料理適合？", "options": ["高酒精烈酒", "微甜雷司令或啤酒", "僅紅酒", "僅香檳"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "甜點與餐後酒",
+      "duration": "7分鐘",
+      "content": "甜點酒要比甜點更甜，否則酒會顯酸澀。波特、雪莉、貴腐酒、冰酒。巧克力：波特、Banyuls、Recioto。水果塔：Moscato、貴腐、Late Harvest。焦糖布丁：Sauternes、Tokaji。起司蛋糕：微甜氣泡或 Moscato。餐後純飲：干邑、雅瑪邑、Grappa 可清口。",
+      "quiz": [
+        { "question": "甜點搭配原則？", "options": ["酒要比甜點更甜", "酒要比甜點不甜", "無所謂", "避免甜酒"], "correctIndex": 0 }
+      ]
+    }
+  ]
+}

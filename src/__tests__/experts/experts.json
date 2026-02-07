@@ -1,0 +1,528 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "50 位嚴格專家審查框架，含 checklistItems 供自動/半自動評分",
+    "lastUpdated": "2026-02-01"
+  },
+  "experts": [
+    {
+      "id": "e001",
+      "category": "ux_ui",
+      "name": "行動優先設計師",
+      "focus": "手機觸控、響應式布局",
+      "checklistItems": [
+        { "id": "ux_mobile_touch", "text": "觸控區域 ≥48px", "automated": true, "rule": "minTouchTarget" },
+        { "id": "ux_mobile_viewport", "text": "viewport meta 正確", "automated": true, "rule": "viewportMeta" },
+        { "id": "ux_mobile_overflow", "text": "無水平捲動溢出", "automated": true, "rule": "noHorizontalOverflow" }
+      ]
+    },
+    {
+      "id": "e002",
+      "category": "ux_ui",
+      "name": "桌面體驗師",
+      "focus": "大螢幕布局、鍵盤導航",
+      "checklistItems": [
+        { "id": "ux_desktop_width", "text": "最大寬度限制不超 1440px", "automated": true, "rule": "maxContentWidth" },
+        { "id": "ux_desktop_hover", "text": "hover 狀態有反饋", "automated": false, "rule": null },
+        { "id": "ux_desktop_keyboard", "text": "Tab 順序合理", "automated": true, "rule": "tabOrder" }
+      ]
+    },
+    {
+      "id": "e003",
+      "category": "ux_ui",
+      "name": "動效設計師",
+      "focus": "過渡、動畫、減少動暈",
+      "checklistItems": [
+        { "id": "ux_motion_reduce", "text": "尊重 prefers-reduced-motion", "automated": true, "rule": "reduceMotion" },
+        { "id": "ux_motion_duration", "text": "動畫時長 ≤300ms", "automated": false, "rule": null },
+        { "id": "ux_motion_purpose", "text": "動畫有明確目的", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e004",
+      "category": "ux_ui",
+      "name": "導航一致性專家",
+      "focus": "頂部/底部導航一致",
+      "checklistItems": [
+        { "id": "ux_nav_consistency", "text": "頂部與底部導航項目一致", "automated": true, "rule": "navConsistency" },
+        { "id": "ux_nav_active", "text": "當前頁 highlight 正確", "automated": true, "rule": "activeNavHighlight" },
+        { "id": "ux_nav_links", "text": "所有導航連結可達", "automated": true, "rule": "navLinksAccessible" }
+      ]
+    },
+    {
+      "id": "e005",
+      "category": "ux_ui",
+      "name": "CTA 與轉換專家",
+      "focus": "按鈕文案、轉換漏斗",
+      "checklistItems": [
+        { "id": "ux_cta_visible", "text": "主要 CTA 首屏可見", "automated": true, "rule": "ctaAboveFold" },
+        { "id": "ux_cta_contrast", "text": "CTA 與背景對比足夠", "automated": true, "rule": "ctaContrast" },
+        { "id": "ux_cta_copy", "text": "CTA 文案清晰不模糊", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e006",
+      "category": "ux_ui",
+      "name": "載入狀態設計師",
+      "focus": "loading、skeleton、錯誤態",
+      "checklistItems": [
+        { "id": "ux_loading_indicator", "text": "非同步操作有載入指示", "automated": false, "rule": null },
+        { "id": "ux_loading_skeleton", "text": "骨架屏覆蓋主要區塊", "automated": false, "rule": null },
+        { "id": "ux_error_state", "text": "錯誤有明確提示", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e007",
+      "category": "ux_ui",
+      "name": "表單 UX 專家",
+      "focus": "輸入、驗證、提交",
+      "checklistItems": [
+        { "id": "ux_form_labels", "text": "表單欄位有 label", "automated": true, "rule": "formLabels" },
+        { "id": "ux_form_validation", "text": "驗證錯誤即時顯示", "automated": false, "rule": null },
+        { "id": "ux_form_submit", "text": "提交按鈕防重複點擊", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e008",
+      "category": "ux_ui",
+      "name": "遊戲 UI 專家",
+      "focus": "遊戲元件、規則展示",
+      "checklistItems": [
+        { "id": "ux_game_rules", "text": "遊戲規則可展開檢視", "automated": true, "rule": "gameRulesExists" },
+        { "id": "ux_game_exit", "text": "返回/離開按鈕存在", "automated": true, "rule": "gameExitButton" },
+        { "id": "ux_game_state", "text": "遊戲狀態清楚顯示", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e009",
+      "category": "ux_ui",
+      "name": "平板適配師",
+      "focus": "768–1024px 區間",
+      "checklistItems": [
+        { "id": "ux_tablet_breakpoint", "text": "平板 breakpoint 無破碎", "automated": true, "rule": "tabletLayout" },
+        { "id": "ux_tablet_touch", "text": "平板觸控目標足夠", "automated": true, "rule": "minTouchTarget" }
+      ]
+    },
+    {
+      "id": "e010",
+      "category": "ux_ui",
+      "name": "視覺層級專家",
+      "focus": "標題、層級、對比",
+      "checklistItems": [
+        { "id": "ux_heading_h1", "text": "每頁僅一個 h1", "automated": true, "rule": "singleH1" },
+        { "id": "ux_heading_order", "text": "h2 不跳級", "automated": true, "rule": "headingOrder" },
+        { "id": "ux_visual_hierarchy", "text": "重要內容視覺突出", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e011",
+      "category": "a11y",
+      "name": "讀屏專家",
+      "focus": "螢幕閱讀器相容",
+      "checklistItems": [
+        { "id": "a11y_aria_labels", "text": "互動元素有 aria-label 或可見文字", "automated": true, "rule": "axe" },
+        { "id": "a11y_landmarks", "text": "landmark 區塊正確", "automated": true, "rule": "axe" },
+        { "id": "a11y_live_region", "text": "動態內容有 aria-live", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e012",
+      "category": "a11y",
+      "name": "鍵盤導航專家",
+      "focus": "Tab、Enter、Esc",
+      "checklistItems": [
+        { "id": "a11y_focus_visible", "text": "焦點有可見樣式", "automated": true, "rule": "focusVisible" },
+        { "id": "a11y_focus_trap", "text": "Modal 內焦點不洩漏", "automated": true, "rule": "focusTrap" },
+        { "id": "a11y_skip_link", "text": "Skip to content 連結存在", "automated": true, "rule": "skipLink" }
+      ]
+    },
+    {
+      "id": "e013",
+      "category": "a11y",
+      "name": "色彩對比專家",
+      "focus": "WCAG 對比比",
+      "checklistItems": [
+        { "id": "a11y_contrast_aa", "text": "文字對比 ≥4.5:1 (AA)", "automated": true, "rule": "axe" },
+        { "id": "a11y_contrast_large", "text": "大文字對比 ≥3:1", "automated": true, "rule": "axe" },
+        { "id": "a11y_color_only", "text": "資訊不只依賴顏色", "automated": true, "rule": "axe" }
+      ]
+    },
+    {
+      "id": "e014",
+      "category": "a11y",
+      "name": "認知負荷專家",
+      "focus": "ADHD、認知友善",
+      "checklistItems": [
+        { "id": "a11y_simplify", "text": "每屏主任務單一", "automated": false, "rule": null },
+        { "id": "a11y_reduce_motion", "text": "支援 prefers-reduced-motion", "automated": true, "rule": "reduceMotion" },
+        { "id": "a11y_reading_level", "text": "文案易讀", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e015",
+      "category": "a11y",
+      "name": "表單無障礙專家",
+      "focus": "input、error、required",
+      "checklistItems": [
+        { "id": "a11y_input_association", "text": "label 與 input 關聯", "automated": true, "rule": "axe" },
+        { "id": "a11y_error_announce", "text": "錯誤與 input 關聯", "automated": true, "rule": "axe" },
+        { "id": "a11y_required", "text": "必填有標示", "automated": true, "rule": "requiredIndication" }
+      ]
+    },
+    {
+      "id": "e016",
+      "category": "a11y",
+      "name": "圖片替代專家",
+      "focus": "alt、裝飾性圖片",
+      "checklistItems": [
+        { "id": "a11y_img_alt", "text": "有意義圖片有 alt", "automated": true, "rule": "axe" },
+        { "id": "a11y_img_decorative", "text": "裝飾性圖片 alt 空或 aria-hidden", "automated": true, "rule": "axe" }
+      ]
+    },
+    {
+      "id": "e017",
+      "category": "a11y",
+      "name": "動態內容專家",
+      "focus": "AJAX、SPA 更新",
+      "checklistItems": [
+        { "id": "a11y_dynamic_announce", "text": "動態更新有告知", "automated": false, "rule": null },
+        { "id": "a11y_loading_announce", "text": "載入狀態可被讀取", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e018",
+      "category": "a11y",
+      "name": "觸控與手部不便專家",
+      "focus": "觸控區域、手勢",
+      "checklistItems": [
+        { "id": "a11y_touch_target", "text": "可點擊區域 ≥44×44px", "automated": true, "rule": "minTouchTarget" },
+        { "id": "a11y_gesture_alt", "text": "手勢有替代操作", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e019",
+      "category": "wine",
+      "name": "WSET 侍酒師",
+      "focus": "知識正確性、術語",
+      "checklistItems": [
+        { "id": "wine_terminology", "text": "酒類術語使用正確", "automated": false, "rule": null },
+        { "id": "wine_food_pairing", "text": "餐酒搭配建議合理", "automated": false, "rule": null },
+        { "id": "wine_region", "text": "產區資訊正確", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e020",
+      "category": "wine",
+      "name": "台灣酒款專家",
+      "focus": "在地酒款、金車、臺虎等",
+      "checklistItems": [
+        { "id": "wine_taiwan_brands", "text": "台灣品牌資料正確", "automated": true, "rule": "taiwanWinesData" },
+        { "id": "wine_taiwan_pricing", "text": "價格區間合理", "automated": false, "rule": null },
+        { "id": "wine_taiwan_context", "text": "AI 推薦可引用在地酒款", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e021",
+      "category": "wine",
+      "name": "葡萄酒專家",
+      "focus": "葡萄品種、產區、風格",
+      "checklistItems": [
+        { "id": "wine_grape_variety", "text": "品種與風格描述正確", "automated": false, "rule": null },
+        { "id": "wine_vintage", "text": "年份資訊合理", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e022",
+      "category": "wine",
+      "name": "威士忌專家",
+      "focus": "產區、桶型、泥煤",
+      "checklistItems": [
+        { "id": "wine_whisky_region", "text": "蘇格蘭/日本/台灣區分正確", "automated": false, "rule": null },
+        { "id": "wine_whisky_cask", "text": "桶型描述正確", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e023",
+      "category": "wine",
+      "name": "啤酒與清酒專家",
+      "focus": "風格、釀造",
+      "checklistItems": [
+        { "id": "wine_beer_style", "text": "啤酒風格分類正確", "automated": false, "rule": null },
+        { "id": "wine_sake_grade", "text": "清酒等級說明正確", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e024",
+      "category": "wine",
+      "name": "推薦邏輯專家",
+      "focus": "AI 推薦一致性",
+      "checklistItems": [
+        { "id": "wine_recommend_budget", "text": "預算篩選生效", "automated": false, "rule": null },
+        { "id": "wine_recommend_occasion", "text": "場合篩選生效", "automated": false, "rule": null },
+        { "id": "wine_recommend_quiz", "text": "靈魂酒測結果可影響推薦", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e025",
+      "category": "perf",
+      "name": "LCP 專家",
+      "focus": "最大內容繪製",
+      "checklistItems": [
+        { "id": "perf_lcp", "text": "LCP ≤2.5s", "automated": true, "rule": "lighthouse" },
+        { "id": "perf_lcp_image", "text": "首屏圖片優化", "automated": true, "rule": "imageOptimization" }
+      ]
+    },
+    {
+      "id": "e026",
+      "category": "perf",
+      "name": "FID/INP 專家",
+      "focus": "互動延遲",
+      "checklistItems": [
+        { "id": "perf_fid", "text": "INP ≤100ms", "automated": true, "rule": "lighthouse" },
+        { "id": "perf_main_thread", "text": "主執行緒不過載", "automated": true, "rule": "lighthouse" }
+      ]
+    },
+    {
+      "id": "e027",
+      "category": "perf",
+      "name": "CLS 專家",
+      "focus": "累積布局偏移",
+      "checklistItems": [
+        { "id": "perf_cls", "text": "CLS ≤0.1", "automated": true, "rule": "lighthouse" },
+        { "id": "perf_cls_image", "text": "圖片有尺寸避免 CLS", "automated": true, "rule": "imageDimensions" }
+      ]
+    },
+    {
+      "id": "e028",
+      "category": "perf",
+      "name": "Bundle 專家",
+      "focus": "JS/CSS 體積",
+      "checklistItems": [
+        { "id": "perf_bundle_js", "text": "首屏 JS 合理", "automated": true, "rule": "bundleSize" },
+        { "id": "perf_code_split", "text": "路由 code splitting", "automated": true, "rule": "codeSplitting" }
+      ]
+    },
+    {
+      "id": "e029",
+      "category": "perf",
+      "name": "API 延遲專家",
+      "focus": "後端回應時間",
+      "checklistItems": [
+        { "id": "perf_api_timeout", "text": "API 有合理 timeout", "automated": false, "rule": null },
+        { "id": "perf_api_error", "text": "API 錯誤有 fallback", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e030",
+      "category": "perf",
+      "name": "慢速網路專家",
+      "focus": "3G、離線",
+      "checklistItems": [
+        { "id": "perf_slow_network", "text": "慢網下仍可載入", "automated": true, "rule": "throttledNetwork" },
+        { "id": "perf_offline", "text": "離線基礎頁可顯示", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e031",
+      "category": "security",
+      "name": "OWASP 專家",
+      "focus": "Top 10",
+      "checklistItems": [
+        { "id": "sec_xss", "text": "無 XSS 漏洞", "automated": true, "rule": "xssCheck" },
+        { "id": "sec_injection", "text": "無注入漏洞", "automated": false, "rule": null },
+        { "id": "sec_https", "text": "生產環境 HTTPS", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e032",
+      "category": "security",
+      "name": "Auth 專家",
+      "focus": "登入、session",
+      "checklistItems": [
+        { "id": "sec_auth_flow", "text": "登入登出流程正確", "automated": false, "rule": null },
+        { "id": "sec_session", "text": "session 管理安全", "automated": false, "rule": null },
+        { "id": "sec_protected_routes", "text": "受保護路由有檢查", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e033",
+      "category": "security",
+      "name": "資料保護專家",
+      "focus": "敏感資料、PII",
+      "checklistItems": [
+        { "id": "sec_pii", "text": "PII 不洩漏至 log", "automated": false, "rule": null },
+        { "id": "sec_env", "text": "API key 不暴露前端", "automated": true, "rule": "noSecretsInClient" }
+      ]
+    },
+    {
+      "id": "e034",
+      "category": "security",
+      "name": "CSRF 專家",
+      "focus": "跨站請求",
+      "checklistItems": [
+        { "id": "sec_csrf", "text": "表單有 CSRF 防護", "automated": false, "rule": null },
+        { "id": "sec_cors", "text": "CORS 設定正確", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e035",
+      "category": "security",
+      "name": "依賴掃描專家",
+      "focus": "npm audit",
+      "checklistItems": [
+        { "id": "sec_audit", "text": "無高危依賴漏洞", "automated": true, "rule": "npmAudit" }
+      ]
+    },
+    {
+      "id": "e036",
+      "category": "qa",
+      "name": "E2E 覆蓋專家",
+      "focus": "關鍵路徑",
+      "checklistItems": [
+        { "id": "qa_e2e_home", "text": "首頁 CTA 可點", "automated": true, "rule": "e2eHomeCta" },
+        { "id": "qa_e2e_quiz", "text": "測驗流程可完成", "automated": true, "rule": "e2eQuiz" },
+        { "id": "qa_e2e_games", "text": "遊戲可進入", "automated": true, "rule": "e2eGames" }
+      ]
+    },
+    {
+      "id": "e037",
+      "category": "qa",
+      "name": "回歸測試專家",
+      "focus": "既有功能不壞",
+      "checklistItems": [
+        { "id": "qa_regression_nav", "text": "導航不壞", "automated": true, "rule": "navWorks" },
+        { "id": "qa_regression_api", "text": "API 回傳正常", "automated": true, "rule": "apiHealth" }
+      ]
+    },
+    {
+      "id": "e038",
+      "category": "qa",
+      "name": "邊界情境專家",
+      "focus": "空態、錯誤、極端",
+      "checklistItems": [
+        { "id": "qa_edge_empty", "text": "空資料有處理", "automated": false, "rule": null },
+        { "id": "qa_edge_error", "text": "錯誤態有 fallback", "automated": false, "rule": null },
+        { "id": "qa_edge_long", "text": "超長輸入有截斷", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e039",
+      "category": "qa",
+      "name": "跨瀏覽器專家",
+      "focus": "Chrome、Safari、Firefox",
+      "checklistItems": [
+        { "id": "qa_cross_browser", "text": "主流瀏覽器可跑", "automated": true, "rule": "crossBrowser" }
+      ]
+    },
+    {
+      "id": "e040",
+      "category": "qa",
+      "name": "穩定性專家",
+      "focus": "flaky、retry",
+      "checklistItems": [
+        { "id": "qa_flaky", "text": "測試穩定不 flaky", "automated": false, "rule": null },
+        { "id": "qa_error_boundary", "text": "有 ErrorBoundary", "automated": true, "rule": "errorBoundaryExists" }
+      ]
+    },
+    {
+      "id": "e041",
+      "category": "product",
+      "name": "CTA 轉換專家",
+      "focus": "按鈕、導流",
+      "checklistItems": [
+        { "id": "prod_cta_above_fold", "text": "主 CTA 首屏", "automated": true, "rule": "ctaAboveFold" },
+        { "id": "prod_cta_clarity", "text": "CTA 文案明確", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e042",
+      "category": "product",
+      "name": "訂閱流程專家",
+      "focus": "付費轉換",
+      "checklistItems": [
+        { "id": "prod_subscription_flow", "text": "訂閱流程可完成", "automated": true, "rule": "subscriptionFlow" },
+        { "id": "prod_pricing_visible", "text": "定價清楚展示", "automated": true, "rule": "pricingPageExists" }
+      ]
+    },
+    {
+      "id": "e043",
+      "category": "product",
+      "name": "導流漏斗專家",
+      "focus": "首頁→註冊→付費",
+      "checklistItems": [
+        { "id": "prod_funnel_home", "text": "首頁有註冊入口", "automated": true, "rule": "signupLinkExists" },
+        { "id": "prod_funnel_paywall", "text": "付費牆時機合理", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e044",
+      "category": "product",
+      "name": "文案一致性專家",
+      "focus": "標題、按鈕文案",
+      "checklistItems": [
+        { "id": "prod_copy_consistency", "text": "同功能按鈕文案一致", "automated": false, "rule": null },
+        { "id": "prod_copy_h1", "text": "每頁 h1 明確", "automated": true, "rule": "singleH1" }
+      ]
+    },
+    {
+      "id": "e045",
+      "category": "product",
+      "name": "留存與回訪專家",
+      "focus": "登入後體驗",
+      "checklistItems": [
+        { "id": "prod_profile", "text": "個人頁可存取", "automated": true, "rule": "profilePageExists" },
+        { "id": "prod_progress", "text": "學習進度可追蹤", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e046",
+      "category": "arch",
+      "name": "可擴展性專家",
+      "focus": "模組化、解耦",
+      "checklistItems": [
+        { "id": "arch_modular", "text": "元件可重用", "automated": false, "rule": null },
+        { "id": "arch_deps", "text": "依賴關係清晰", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e047",
+      "category": "arch",
+      "name": "錯誤處理專家",
+      "focus": "try-catch、fallback",
+      "checklistItems": [
+        { "id": "arch_error_handling", "text": "關鍵路徑有 try-catch", "automated": false, "rule": null },
+        { "id": "arch_error_boundary", "text": "React ErrorBoundary 覆蓋", "automated": true, "rule": "errorBoundaryExists" }
+      ]
+    },
+    {
+      "id": "e048",
+      "category": "arch",
+      "name": "日誌與監控專家",
+      "focus": "logging、telemetry",
+      "checklistItems": [
+        { "id": "arch_logging", "text": "關鍵操作有 log", "automated": false, "rule": null },
+        { "id": "arch_health", "text": "Health check endpoint 存在", "automated": true, "rule": "healthEndpoint" }
+      ]
+    },
+    {
+      "id": "e049",
+      "category": "arch",
+      "name": "API 設計專家",
+      "focus": "REST、錯誤碼",
+      "checklistItems": [
+        { "id": "arch_api_errors", "text": "API 錯誤回傳結構一致", "automated": false, "rule": null },
+        { "id": "arch_api_version", "text": "API 有版本策略", "automated": false, "rule": null }
+      ]
+    },
+    {
+      "id": "e050",
+      "category": "arch",
+      "name": "狀態管理專家",
+      "focus": "client state、server state",
+      "checklistItems": [
+        { "id": "arch_state_consistency", "text": "狀態不衝突", "automated": false, "rule": null },
+        { "id": "arch_hydration", "text": "SSR hydration 無錯", "automated": true, "rule": "noHydrationMismatch" }
+      ]
+    }
+  ]
+}

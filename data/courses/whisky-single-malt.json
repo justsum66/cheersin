@@ -1,0 +1,63 @@
+{
+  "id": "whisky-single-malt",
+  "title": "單一麥芽威士忌",
+  "description": "產區、酒廠與單一麥芽深度探索",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "單一麥芽 vs 調和",
+      "duration": "7分鐘",
+      "content": "單一麥芽（Single Malt）：同一酒廠、100% 發芽大麥、蘇格蘭或愛爾蘭產。調和（Blended）：多酒廠麥芽與穀物威士忌混調，追求一致風味。單一麥芽風味個性更鮮明、產區特色明顯；調和追求平衡、易飲。Single Malt 不表示單一桶或單一年份，多數仍為多桶調和。Single Cask 才是單桶原酒。認識差異有助選酒：想探索產區風格選單一麥芽；日常飲用可選品質調和。",
+      "quiz": [
+        { "question": "單一麥芽必須來自？", "options": ["多個酒廠", "同一酒廠", "僅蘇格蘭", "僅愛爾蘭"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "蘇格蘭六大產區",
+      "duration": "8分鐘",
+      "content": "蘇格蘭六大產區：高地（Highland）幅員廣，從 Speyside 邊緣的輕盈花果到西部厚重泥煤；斯佩塞（Speyside）酒廠最密集，花果、麥芽甜、常經雪莉桶；艾雷島（Islay）泥煤煙燻最強烈，Laphroaig、Ardbeg、Lagavulin 經典；低地（Lowland）清淡優雅、三次蒸餾常見；坎貝爾鎮（Campbeltown）海洋鹹感、油潤，Springbank 代表；島嶼（Islands）含 Skye、Orkney、Jura 等，海鹽與煙燻並存。各產區風土與傳統造就風格差異。",
+      "quiz": [
+        { "question": "艾雷島威士忌典型風味？", "options": ["僅花果", "泥煤煙燻", "僅麥芽甜", "無煙燻"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "泥煤與烘麥",
+      "duration": "6分鐘",
+      "content": "泥煤（Peat）：苔蘚化石燃料，烘麥時產生煙燻味。PPM（酚含量）衡量泥煤強度。從無泥煤到重泥煤，依個人接受度選擇。",
+      "quiz": [
+        { "question": "泥煤風味來自？", "options": ["發酵", "烘麥燃料", "橡木桶", "水源"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "桶陳：波本桶與雪莉桶",
+      "duration": "7分鐘",
+      "content": "波本桶：香草、椰子、奶油。雪莉桶：果乾、堅果、香料。雙桶、三桶過桶。First fill vs Refill。桶型影響風味輪廓。",
+      "quiz": [
+        { "question": "雪莉桶常見賦予？", "options": ["僅香草", "果乾、堅果、香料", "僅煙燻", "僅泥煤"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "品飲與加水",
+      "duration": "6分鐘",
+      "content": "純飲、加一滴水、加冰。加水可打開香氣、降低酒精刺感。專業品飲多用純飲或微量加水。不同濃度呈現不同面向。",
+      "quiz": [
+        { "question": "威士忌加一滴水的作用？", "options": ["僅稀釋", "可打開香氣", "無影響", "破壞風味"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "日本與其他產區",
+      "duration": "6分鐘",
+      "content": "日本單一麥芽：山崎、白州、余市等。愛爾蘭、美國、台灣等產區。各產區法規與風格差異。探索不同產區拓展味蕾。",
+      "quiz": [
+        { "question": "日本威士忌知名品牌？", "options": ["僅蘇格蘭品牌", "山崎、白州等", "無單一麥芽", "僅調和"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

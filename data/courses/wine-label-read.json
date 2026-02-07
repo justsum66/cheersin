@@ -1,0 +1,33 @@
+{
+  "id": "wine-label-read",
+  "title": "酒標一眼看懂",
+  "description": "產區、年份、品種、酒莊一次搞懂",
+  "duration": "15分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "酒標基本元素",
+      "duration": "4分鐘",
+      "content": "酒標必看：酒莊名、產區、年份、品種（若有標）、酒精濃度 ABV。年份＝葡萄採收年，影響風格。ABV 多在 11–15%，過高可能濃郁或甜。背標常有口感描述與適飲建議。"
+    },
+    {
+      "id": 2,
+      "title": "舊世界 vs 新世界標示",
+      "duration": "4分鐘",
+      "content": "舊世界（法、義、西）：常標產區（Bordeaux、Chianti）而非品種，需懂產區對應品種。新世界（澳、美、智利）：多標品種（Cabernet Sauvignon、Chardonnay），易懂。混釀會標主要品種或比例。"
+    },
+    {
+      "id": 3,
+      "title": "等級與認證",
+      "duration": "4分鐘",
+      "content": "法國 AOC/AOP、義大利 DOC/DOCG、西班牙 DO 表示法定產區。Grand Cru、Reserva、Gran Reserva 代表等級或陳年。有機、生物動力有認證標章。"
+    },
+    {
+      "id": 4,
+      "title": "避雷與選購技巧",
+      "duration": "3分鐘",
+      "content": "避免：假酒（來路不明、過度便宜）。看軟木塞與酒標印刷品質。知名產區＋合理價格較安心。不懂時選大廠入門款或請店家推薦。可參考評分與得獎資訊，但勿迷信分數，個人喜好優先。"
+    }
+  ]
+}

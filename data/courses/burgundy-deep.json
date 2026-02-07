@@ -1,0 +1,56 @@
+{
+  "id": "burgundy-deep",
+  "title": "產區深度：勃根地",
+  "description": "黑皮諾、夏多內、風土與分級",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "勃根地風土哲學",
+      "duration": "8分鐘",
+      "content": "勃根地信奉「風土為王」，同村不同地塊（climat）風格差異可判若兩酒。從大區 Bourgogne、村莊級、一級園（Premier Cru）到特級園（Grand Cru），分級精細、層層遞進。Climat 為 UNESCO 認定之法定地塊名，逾千個。土壤：石灰岩主導、夾雜黏土、泥灰岩、侏羅紀沉積岩；陽坡與背斜構造影響日照與排水。兩大品種：黑皮諾（紅酒）、夏多內（白酒），幾乎無混釀。domaine 酒莊自種自釀 vs négociant 收購葡萄或原酒；前者風土表現更純粹。",
+      "imageUrl": "/images/regions/burgundy-map.svg",
+      "imageAlt": "勃根地產區概圖：夏布利、金丘、馬貢",
+      "quiz": [
+        { "question": "勃根地紅酒主力品種？", "options": ["卡本內", "梅洛", "黑皮諾", "希哈"], "correctIndex": 2 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "夏布利與金丘白酒",
+      "duration": "8分鐘",
+      "content": "夏布利：100% 夏多內，冷涼氣候、啟莫里階石灰岩、礦物、酸度爽脆，多數不經橡木或大桶（foudres）；一級園與特級園可有輕微橡木。金丘白酒三村：Meursault 圓潤飽滿、核果與奶油；Puligny-Montrachet 優雅礦物、酸度清亮；Chassagne-Montrachet 介於兩者、紅白酒皆產。蒙哈榭（Montrachet）為白酒特級園之巔。橡木桶陳年帶來奶油、烤麵包、圓潤；新桶比例與釀造選擇決定風格。",
+      "quiz": [
+        { "question": "夏布利白酒品種？", "options": ["白蘇維濃", "100% 夏多內", "雷司令", "格烏茲塔明那"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "夜丘紅酒：Gevery 到 Vosne",
+      "duration": "8分鐘",
+      "content": "夜丘自北而南：Gevrey-Chambertin 九個特級園、風格雄壯有力；Chambolle-Musigny 細膩優雅、Musigny 特級園細如絲絹；Vosne-Romanée 香氣華麗、Romanée-Conti、La Tâche、Richebourg 等傳奇特級園所在；Nuits-Saint-Georges 結構紮實、無特級園但一級園眾多。特級園 Chambertin、Musigny、La Tâche 為金字塔頂端。村莊名可加最負盛名一級園（如 Gevrey-Chambertin 1er Cru Clos Saint-Jacques）。",
+      "quiz": [
+        { "question": "Romanée-Conti 位於？", "options": ["波爾多", "Vosne-Romanée", "香檳", "羅亞爾河"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "伯恩丘與馬貢",
+      "duration": "8分鐘",
+      "content": "伯恩丘（Côte de Beaune）：紅白酒皆產。紅酒村 Beaune（商業中心、一級園眾多）、Pommard（單寧較強、結構）、Volnay（輕盈優雅、較少單寧）。白酒村 Meursault、Puligny-Montrachet、Chassagne-Montrachet 為金丘白酒核心。Aloxe-Corton 有紅白特級園 Corton、Corton-Charlemagne（白酒）。馬貢（Mâconnais）：Pouilly-Fuissé、Saint-Véran、Mâcon-Villages 白酒，性價比高、果味奔放。薄酒萊在最南、Gamay 為主、二氧化碳浸皮法（carbonic maceration）、新酒（Beaujolais Nouveau）或 cru 村莊級（Morgon、Fleurie 等）。",
+      "quiz": [
+        { "question": "薄酒萊主力品種？", "options": ["黑皮諾", "Gamay", "卡本內", "梅洛"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選酒策略與價格",
+      "duration": "8分鐘",
+      "content": "入門：大區 Bourgogne、馬貢村莊級、夏布利小夏布利。進階：村莊級一級園、Beaune、Pommard、夏布利一級園。頂級：特級園（預算高、供需緊張）。年份重要：2014、2015、2017、2019、2020 佳；2016 霜害減產。domaine 風土更純粹；négociant 如 Louis Jadot、Bouchard 品質穩定。建議從單一村莊垂直或水平品飲建立基準。",
+      "quiz": [
+        { "question": "勃根地分級由低到高？", "options": ["特級→一級→村莊", "大區→村莊→一級→特級", "僅村莊", "僅特級"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

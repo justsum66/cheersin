@@ -1,0 +1,56 @@
+{
+  "id": "bordeaux-deep",
+  "title": "產區深度：波爾多",
+  "description": "左岸、右岸、五大酒莊與分級制度",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "波爾多地理與氣候",
+      "duration": "8分鐘",
+      "content": "波爾多位於法國西南，受大西洋與吉隆特河（Gironde）影響，溫帶海洋性氣候、夏季溫暖、秋冬濕潤，偶有春季霜害與秋季降雨影響年份。三大紅品種：梅洛（Merlot）種植面積最大、早熟、右岸主力；卡本內蘇維濃（Cabernet Sauvignon）晚熟、左岸骨架；卡本內弗朗（Cabernet Franc）提供花香與結構。左岸（梅多克、格拉夫）礫石層排水佳、反射熱量助卡本內熟成，黏土保留水分；石灰岩台地（如 St-Estèphe 部分）賦予礦物與陳年潛力。右岸（聖愛美濃、龐馬魯）石灰岩、黏土、砂土混雜，梅洛為主、較早熟、圓潤柔軟。兩岸風格差異來自土壤、品種比例、採收時序與釀造傳統；同一產區內地塊（parcelle）微氣候差異可導致風格顯著不同。",
+      "imageUrl": "/images/regions/bordeaux-map.svg",
+      "imageAlt": "波爾多產區概圖：左岸梅多克、格拉夫；右岸聖愛美濃、龐馬魯",
+      "quiz": [
+        { "question": "波爾多右岸主力品種？", "options": ["卡本內蘇維濃", "梅洛", "希哈", "黑皮諾"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "1855 分級與列級酒莊",
+      "duration": "8分鐘",
+      "content": "1855 年巴黎博覽會應 Napoleon III 之邀建立梅多克與蘇玳分級，以當時市價與聲譽排序，至今僅 1973 年 Mouton Rothschild 晉升一級。一級酒莊（Premiers Crus）：Lafite Rothschild、Latour、Margaux、Haut-Brion（唯一格拉夫）、Mouton Rothschild。二至五級共 61 家梅多克酒莊。格拉夫 1959 分級涵蓋紅白酒；聖愛美濃分級每十年審查、爭議不斷（2022 年撤銷後重審）。蘇玳一級 Yquem 為特級優等。Grand Cru Classé 為列級；Cru Bourgeois 為中級酒莊、每年審核。négociant 體系：多數酒莊透過酒商裝瓶銷售，少數 domaine 自裝。",
+      "quiz": [
+        { "question": "1855 分級一級酒莊有幾家？", "options": ["3", "5", "10", "61"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "左岸風格：梅多克、格拉夫",
+      "duration": "8分鐘",
+      "content": "梅多克：卡本內蘇維濃主導、常混梅洛與卡本內弗朗，單寧強、黑醋栗、雪松、雪茄盒、陳年潛力佳。北往南四大名村：Saint-Estèphe 土壤黏土多、單寧較粗、需陳年；Pauillac 一級莊最多（Lafite、Latour、Mouton）、結構與優雅兼具；Saint-Julien 均衡、多列級莊；Margaux 最南、花香與細膩。Haut-Médoc 為梅多克南部大區。格拉夫：紅白酒皆產，唯一 1855 紅白酒雙分級產區；Pessac-Léognan 為 1987 年分出的精華次產區，Haut-Brion、La Mission Haut-Brion 所在。白酒以 Sauvignon Blanc、Sémillon 為主，常經橡木桶。",
+      "quiz": [
+        { "question": "梅多克紅酒主力品種？", "options": ["梅洛", "卡本內蘇維濃", "黑皮諾", "格那希"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "右岸風格：聖愛美濃、龐馬魯",
+      "duration": "8分鐘",
+      "content": "聖愛美濃：梅洛為主、混卡本內弗朗與卡本內，圓潤、李子和巧克力、石灰岩土壤賦予礦物與結構。分級每十年審查，Premier Grand Cru Classé A（Cheval Blanc、Ausone 等）為最高。金鐘（Angélus）、柏菲（Pavie）曾晉升 A 級。龐馬魯：無正式分級、面積小（約 800 公頃），梅洛天堂、常 90% 以上梅洛，豐腴果味、絲絨單寧。Petrus 無城堡、僅 11.5 公頃、藍黏土底土、價位頂尖；Le Pin、Lafleur 為膜拜酒。右岸整體較左岸早飲、果味較奔放。",
+      "quiz": [
+        { "question": "龐馬魯以何品種聞名？", "options": ["卡本內", "梅洛", "希哈", "黑皮諾"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選酒與陳年",
+      "duration": "8分鐘",
+      "content": "入門：大區 AOC（Bordeaux、Bordeaux Supérieur）、中級酒莊 Cru Bourgeois（性價比佳、每年重審）。進階：列級酒莊二軍（如 Carruades de Lafite、Pavillon Rouge）、五級酒莊、右岸小莊精品。en primeur 期酒：每年 4 月試新酒、預購期貨，好年份可增值。陳年：好年份可陳 10–30 年，一級酒莊頂級年份（如 1982、1990、2000、2009、2010）更久。近年佳年：2010、2015、2016、2019、2020。弱年份（如 2011、2013）宜早飲。年輕波爾多單寧較緊，醒酒 1–2 小時或陳年後更圓潤。搭餐：烤牛排、羊排、鴨胸、陳年起司、黑松露。",
+      "quiz": [
+        { "question": "波爾多列級酒莊好年份可陳年約？", "options": ["1 年", "10–30 年", "50 年", "100 年"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

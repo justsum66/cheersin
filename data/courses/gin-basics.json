@@ -1,0 +1,54 @@
+{
+  "id": "gin-basics",
+  "title": "琴酒入門",
+  "description": "認識琴酒的杜松子風味、產區與經典調酒",
+  "duration": "30分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "琴酒是什麼？",
+      "duration": "5分鐘",
+      "content": "琴酒（Gin）是以穀物（大麥、小麥、玉米等）蒸餾出的中性烈酒為基酒，加入杜松子（Juniper）與其他植物（芫荽、柑橘皮、當歸、豆蔻、鳶尾根等）調味。起源於 17 世紀荷蘭 Genever（藥用目的），在英國發揚光大並演化為 London Dry。歐盟規定琴酒必須有明顯杜松子風味；植物原料在蒸餾時浸漬或懸掛於蒸餾器（gin basket），萃取出精油與風味。琴酒多不經桶陳（少數如 Barrel-aged Gin 例外），裝瓶即飲，屬於白色烈酒，是調酒中最常用的基酒之一。",
+      "quiz": [
+        { "question": "琴酒的主要風味來源是？", "options": ["甘蔗", "杜松子", "葡萄", "大麥芽"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "London Dry 與其他風格",
+      "duration": "6分鐘",
+      "content": "London Dry：乾型、不甜、蒸餾時加植物、不事後調味，Beefeater、Tanqueray 代表。Plymouth：產區保護、略帶甜感。Old Tom：歷史風格、微甜，經典調酒 Ramos Gin Fizz 可用。Navy Strength：高酒精約 57%，調酒時用量減半。風味琴酒：額外突出某一風味（如接骨木、莓果），Hendrick's 黃瓜玫瑰、Monkey 47 草本複雜。",
+      "quiz": [
+        { "question": "London Dry 琴酒的特徵是？", "options": ["事後加糖", "乾型不甜", "僅產於倫敦", "僅用杜松子"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "琴酒與通寧水",
+      "duration": "5分鐘",
+      "content": "Gin Tonic 是經典搭配。通寧水（Tonic Water）含奎寧、帶苦甜、有氣泡，原本用於抗瘧。比例約 1:2 或 1:3 琴酒與通寧，依個人喜好；高球杯裝滿冰、先倒琴酒、再補通寧，輕攪。 garnish：檸檬角、柑橘皮、黃瓜片（Hendrick's 經典）、迷迭香。風味琴酒可搭配對應風味通寧水（莓果、接骨木、薑味等）。通寧水品牌影響大：Fever-Tree、Schweppes、Thomas Henry 各有風格。",
+      "quiz": [
+        { "question": "通寧水的主要特色是？", "options": ["無氣泡", "含奎寧", "僅甜味", "無酒精"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "經典琴酒調酒",
+      "duration": "6分鐘",
+      "content": "Martini：琴酒 + 乾苦艾酒，攪拌（Stir），橄欖或檸檬皮，比例可從 2:1 到 6:1 依口味調整。Negroni：琴酒 + 金巴利 + 甜苦艾酒，各 1oz，攪拌後加冰，橙片裝飾。Gimlet：琴酒 + 萊姆汁（或玫瑰萊姆糖漿），搖盪，清爽酸冽。Tom Collins：琴酒 + 檸檬汁 + 糖 + 蘇打水，直調，高球杯裝滿冰。French 75：琴酒 + 檸檬汁 + 糖 + 香檳，搖盪基酒與酸糖後加冰、 top 香檳，慶祝場合經典。Aviation、Last Word、Clover Club 等進階款可逐步探索。",
+      "quiz": [
+        { "question": "Negroni 不包含哪種材料？", "options": ["琴酒", "金巴利", "通寧水", "甜苦艾酒"], "correctIndex": 2 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選購與品飲",
+      "duration": "5分鐘",
+      "content": "入門可選 Beefeater、Tanqueray、Bombay Sapphire。進階可試 Hendrick's、Monkey 47。直飲適溫略冰或室溫。搭醃漬橄欖、起司、燻鮭魚。琴酒開瓶後可存放較久，避光直立即可。",
+      "quiz": [
+        { "question": "琴酒直飲建議溫度？", "options": ["冷凍", "略冰或室溫", "加熱", "僅調酒"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

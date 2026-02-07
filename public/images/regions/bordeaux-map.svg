@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="w-full">
+  <rect width="400" height="300" fill="#1a1a2e"/>
+  <text x="200" y="40" fill="#e2e8f0" text-anchor="middle" font-size="18" font-family="sans-serif">�>"@�</text>
+  <rect x="80" y="80" width="120" height="60" rx="4" fill="#334155" stroke="#64748b"/>
+  <text x="140" y="115" fill="#94a3b8" text-anchor="middle" font-size="12">� M�doc</text>
+  <rect x="80" y="160" width="120" height="60" rx="4" fill="#334155" stroke="#64748b"/>
+  <text x="140" y="195" fill="#94a3b8" text-anchor="middle" font-size="12">� Graves</text>
+  <rect x="200" y="120" width="120" height="60" rx="4" fill="#475569" stroke="#64748b"/>
+  <text x="260" y="155" fill="#cbd5e1" text-anchor="middle" font-size="12">� St-�milion</text>
+  <rect x="200" y="190" width="120" height="60" rx="4" fill="#475569" stroke="#64748b"/>
+  <text x="260" y="225" fill="#cbd5e1" text-anchor="middle" font-size="12">� Pomerol</text>
+  <text x="200" y="275" fill="#64748b" text-anchor="middle" font-size="10">	�y����</text>
+</svg>

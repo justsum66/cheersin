@@ -1,0 +1,27 @@
+{
+  "id": "party-wine-select",
+  "title": "聚餐選酒速成",
+  "description": "尾牙、婚宴、家聚選酒不踩雷",
+  "duration": "10分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "聚餐選酒原則",
+      "duration": "3分鐘",
+      "content": "聚餐選酒原則：人多選大眾易飲款，如 Prosecco、Cava、Riesling、Merlot、粉紅酒，避免過於濃郁或小眾自然酒（口味兩極）。預算有限：智利、澳洲、西班牙性價比高；大賣場禮盒、好市多自有品牌可考慮。分量：每人約 2–3 杯（150ml/杯），總人數 × 2.5 杯 ÷ 5 約等於所需瓶數；建議準備 1.5 倍量（聚餐常喝得比預期多）。紅白或紅白氣泡各一，可滿足不同口味。"
+    },
+    {
+      "id": 2,
+      "title": "中式桌菜怎麼搭",
+      "duration": "3分鐘",
+      "content": "中式桌菜口味多元（酸甜辣鹹並存），萬用款：Riesling（微甜平衡辣鹹）、Gewürztraminer（荔枝香、配港點）、粉紅酒（介於紅白之間）。紅燒肉、烤鴨、東坡肉可搭 Merlot、Syrah、Malbec。海鮮、蒸魚、白斬雞搭 Sauvignon Blanc、Pinot Grigio。麻辣鍋、川菜搭甜白酒或氣泡酒可降辣、解膩。江浙菜、本幫菜偏甜，可試半乾 Riesling。避開重單寧紅酒配海鮮（鐵鏽味）。"
+    },
+    {
+      "id": 3,
+      "title": "西式、自助餐選酒",
+      "duration": "4分鐘",
+      "content": "西式聚餐：牛排館選 Cabernet、Malbec、Shiraz；義大利餐廳選 Chianti、Barolo、Prosecco；法餐選勃根地或波爾多。自助餐菜色混搭，提供紅白各一最保險：Sauvignon Blanc、Chardonnay 搭海鮮沙拉；Merlot、Pinot Noir 搭烤肉與起司。婚宴、尾牙常見 Moët 或國產氣泡酒，可搭配前菜到甜點。若主辦方提供酒單，可請侍酒師依菜單推薦；自備酒注意開瓶費與 corkage 政策。多人場合以易飲、接受度高的酒款為優先。"
+    }
+  ]
+}

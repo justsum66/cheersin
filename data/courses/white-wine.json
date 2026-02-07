@@ -1,0 +1,65 @@
+{
+  "id": "white-wine",
+  "title": "白酒探索",
+  "description": "深入認識白酒的品種、產區與風格，從清爽到飽滿一次掌握",
+  "duration": "35分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "白酒與紅酒的釀造差異",
+      "duration": "6分鐘",
+      "content": "白酒多數在壓榨後才發酵，葡萄皮不參與浸漬，因此幾乎沒有單寧與深色色素。有些白酒會短時間帶皮接觸以增加質地與結構感。發酵溫度通常較低（12–18°C）以保留果香與 freshness。白酒可來自白葡萄或紅葡萄去皮釀造（如 Pinot Noir 做 Blanc de Noirs 香檳）。相較紅酒的浸漬萃取，白酒更重視壓榨時的果汁品質與發酵溫度控制；不鏽鋼桶多保留果香，橡木桶則賦予圓潤與複雜度。",
+      "quiz": [
+        { "question": "白酒與紅酒主要的釀造差異在於？", "options": ["發酵溫度", "是否帶皮發酵", "酒精濃度", "陳年時間"], "correctIndex": 1 },
+        { "question": "白酒常見的發酵溫度範圍約為？", "options": ["0–5°C", "12–18°C", "25–30°C", "室溫"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "主要白葡萄品種",
+      "duration": "7分鐘",
+      "content": "Chardonnay：可清爽可飽滿，經橡木桶可呈現奶油、烤麵包風味，勃艮第與加州為兩大風格；Sauvignon Blanc：草本、柑橘、熱帶水果，紐西蘭與盧瓦爾河谷為經典產區；Riesling：花香與礦物，從乾到甜都有，陳年潛力佳，德國與阿爾薩斯代表；Pinot Grigio / Pinot Gris：輕盈至中等酒體，梨子與白花，義大利多清爽、阿爾薩斯偏飽滿。另可認識 Viognier（杏桃、花香）、Gewürztraminer（荔枝、香料）、Albariño（西班牙海鮮搭）。",
+      "quiz": [
+        { "question": "以草本與柑橘香氣聞名的白品種是？", "options": ["Chardonnay", "Sauvignon Blanc", "Riesling", "Pinot Grigio"], "correctIndex": 1 },
+        { "question": "Riesling 常見的特色不包含？", "options": ["從乾到甜", "花香與礦物", "陳年潛力佳", "高單寧"], "correctIndex": 3 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "白酒的風格光譜",
+      "duration": "6分鐘",
+      "content": "白酒風格光譜從輕盈清爽（如義大利 Pinot Grigio、紐西蘭 Sauvignon Blanc、法國 Muscadet）到飽滿圓潤（如加州或勃艮第經橡木 Chardonnay、部分 Viognier）。四大變因：酸度（冷涼產區通常高酸）、酒體（橡木與酒精影響）、甜度（從 Brüt 到貴腐）、橡木影響（無桶 vs 新桶 vs 中性桶）。涼爽產區（盧瓦河、摩澤爾、紐西蘭）多高酸清爽；溫暖產區（加州、澳洲）多果味飽滿、酒精略高。選酒時可依口味偏好：喜歡清爽選高酸、無桶款；喜歡豐腴選橡木桶、溫暖產區。",
+      "quiz": [
+        { "question": "一般來說，涼爽產區的白酒傾向？", "options": ["高酸清爽", "低酸飽滿", "高單寧", "甜度高"], "correctIndex": 0 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "白酒適飲溫度與保存",
+      "duration": "5分鐘",
+      "content": "輕盈白酒約 8–10°C，飽滿白酒約 10–12°C。過冷會壓抑香氣，過熱會放大酒精感。開瓶後可冷藏 2–3 天，使用真空塞可延長；甜白酒氧化較慢可多放數日。陳年白酒需避光、恆溫 12–15°C、平放或斜放以保持軟木塞濕潤。氣泡酒與輕白酒可冰鎮 30 分鐘再飲用。",
+      "quiz": [
+        { "question": "一般輕盈白酒建議的適飲溫度約為？", "options": ["0–4°C", "8–10°C", "16–18°C", "室溫"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "白酒與餐點搭配",
+      "duration": "6分鐘",
+      "content": "海鮮、白肉、沙拉與輕盈白酒最搭。酸度高的白酒可解油膩（如炸物、奶油醬）。Sauvignon Blanc 配山羊乳酪經典；Chardonnay 配烤雞、龍蝦；Riesling 甜型可配亞洲料理與辛辣菜餚。重量匹配原則：輕盈料理配清爽白酒，濃郁菜餚選飽滿款。地域搭配（如法式海鮮配 Muscadet）往往相得益彰。",
+      "quiz": [
+        { "question": "酸度高的白酒適合搭配？", "options": ["甜點", "油膩或奶油醬料理", "牛排", "巧克力"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "選購白酒入門",
+      "duration": "5分鐘",
+      "content": "從單一品種、產區明確開始。紐西蘭 Sauvignon Blanc、智利或澳洲 Chardonnay 多為友善入門款。德國或阿爾薩斯 Riesling 可嘗試不同甜度（Kabinett 至 Spätlese）。舊世界（法國、義大利）常標產區，可請店家推薦。預算有限時，新世界入門款 C/P 值高；進階可探索勃艮第 Chablis、Puligny-Montrachet 等名家產區。",
+      "quiz": [
+        { "question": "入門白酒通常建議從何種風格開始？", "options": ["複雜混釀", "單一品種、產區明確", "僅老酒", "僅甜酒"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

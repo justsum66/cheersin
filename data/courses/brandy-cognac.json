@@ -1,0 +1,54 @@
+{
+  "id": "brandy-cognac",
+  "title": "白蘭地與干邑",
+  "description": "葡萄蒸餾酒的經典世界",
+  "duration": "35分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "白蘭地與干邑定義",
+      "duration": "6分鐘",
+      "content": "白蘭地（Brandy）是葡萄酒蒸餾而成的烈酒。干邑（Cognac）是法國干邑產區法定命名，必須使用特定葡萄（Ugni Blanc 為主）、銅壺二次蒸餾、橡木桶陳年。所有干邑都是白蘭地，但非所有白蘭地都是干邑。干邑六個子產區中 Grande Champagne、Petite Champagne 最受推崇。白蘭地涵蓋干邑、亞瑪邑、水果白蘭地等。",
+      "quiz": [
+        { "question": "干邑必須產自哪裡？", "options": ["任意法國", "干邑產區", "波爾多", "勃艮第"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "干邑等級：VS、VSOP、XO",
+      "duration": "6分鐘",
+      "content": "VS：至少 2 年桶陳。VSOP：至少 4 年。XO：至少 10 年（新規）。Napoleon：約 6 年。等級反映最低陳年，實際調和可能更長。",
+      "quiz": [
+        { "question": "XO 干邑最低桶陳年數？", "options": ["2年", "4年", "6年", "10年"], "correctIndex": 3 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "亞瑪邑與其他白蘭地",
+      "duration": "6分鐘",
+      "content": "亞瑪邑（Armagnac）：法國西南 Gascony，單次連續蒸餾（vs 干邑二次壺式），風味更粗獷、果乾與香料。水果白蘭地：Calvados（蘋果，諾曼第）、Poire Williams（梨）、Kirsch（櫻桃）。西班牙 Brandy de Jerez 雪莉桶熟成；義大利 Grappa 為葡萄渣蒸餾，可年輕或陳年。各地法規與陳年標示不同。WSET Spirits 涵蓋白蘭地分類。",
+      "quiz": [
+        { "question": "亞瑪邑與干邑蒸餾方式差異？", "options": ["相同", "亞瑪邑單次蒸餾", "干邑單次", "都不蒸餾"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "品飲與享用方式",
+      "duration": "6分鐘",
+      "content": "純飲：室溫或略溫，鬱金香杯。加水或冰塊可降低酒精感。調酒：Sidecar、Brandy Alexander。搭配巧克力、雪茄。",
+      "quiz": [
+        { "question": "白蘭地純飲建議溫度？", "options": ["冰鎮", "室溫或略溫", "加熱", "冷凍"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選購與品牌認識",
+      "duration": "6分鐘",
+      "content": "知名干邑：Hennessy、Rémy Martin、Martell、Courvoisier。亞瑪邑較小眾、性價比高，如 Darroze、Dartigalongue。選購可從 VSOP 入門，再嘗試 XO。干邑開瓶後可存放較久，避光直立即可。",
+      "quiz": [
+        { "question": "入門干邑可從哪個等級開始？", "options": ["僅 XO", "VSOP", "VS 或 VSOP", "Napoleon 以上"], "correctIndex": 2 }
+      ]
+    }
+  ]
+}

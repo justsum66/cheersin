@@ -1,0 +1,56 @@
+{
+  "id": "new-world-deep",
+  "title": "產區深度：新世界",
+  "description": "澳洲、美國、智利、阿根廷、紐西蘭精華",
+  "duration": "45分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "澳洲：巴羅沙、瑪格麗特河",
+      "duration": "8分鐘",
+      "content": "巴羅沙谷（Barossa Valley）：澳洲 Shiraz 天堂，老藤（some 100+ 年）、飽滿黑莓、黑胡椒、巧克力，溫暖乾燥。瑪格麗特河（Margaret River）：Cabernet Sauvignon、Chardonnay 優質，海洋調節、結構紮實。獵人谷（Hunter Valley）：Semillon 經瓶陳發展蜂蜜風味、陳年潛力驚人。克萊爾谷（Clare Valley）：Riesling 乾型、檸檬青蘋果、礦物。 McLaren Vale、Adelaide Hills 多元風格。溫暖氣候造就果味濃郁、酒精飽滿，與舊世界冷涼產區風格迥異。",
+      "imageUrl": "/images/regions/new-world-map.svg",
+      "imageAlt": "新世界產區概圖：美澳智利阿根廷紐西蘭南非",
+      "quiz": [
+        { "question": "澳洲巴羅沙以何品種聞名？", "options": ["Cabernet", "Shiraz", "Pinot Noir", "Chardonnay"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "美國：納帕、索諾瑪、俄勒岡",
+      "duration": "8分鐘",
+      "content": "納帕谷（Napa Valley）：Cabernet Sauvignon 頂級代表、高價但品質穩定；橡木桶陳年、黑醋栗、雪松。索諾瑪（Sonoma）：風格多元，Russian River Valley 的 Pinot Noir、Chardonnay；Dry Creek 的 Zinfandel。俄勒岡（Oregon）Willamette Valley：冷涼氣候 Pinot Noir，細緻優雅、可媲美勃根地。華盛頓州（Washington）：Columbia Valley Merlot、Cabernet，晝夜溫差大。AVA（American Viticultural Area）為美國法定產區。",
+      "quiz": [
+        { "question": "俄勒岡以何聞名？", "options": ["Shiraz", "Pinot Noir", "Malbec", "Riesling"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "智利與阿根廷",
+      "duration": "8分鐘",
+      "content": "智利：安地斯屏障阻隔太平洋濕氣、乾燥日照足。Casablanca、Leyda 冷涼海岸白酒（Chardonnay、Sauvignon Blanc）；Colchagua、Maipo 紅酒（Cabernet、Carménère）。Carménère 為智利特色品種，曾被誤認為 Merlot，現為國寶。阿根廷 Mendoza：高海拔（900–1500 m）Malbec，濃郁黑李、紫羅蘭、單寧柔和。Torrontés 白葡萄芳香、花香果香，Salta 產區最佳。Patagonia 新興冷涼產區。",
+      "quiz": [
+        { "question": "阿根廷 Mendoza 以何聞名？", "options": ["Chardonnay", "Malbec", "Shiraz", "Riesling"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "紐西蘭、南非與其他",
+      "duration": "8分鐘",
+      "content": "紐西蘭：Marlborough Sauvignon Blanc 草本、熱帶水果、百香果，全球指標；中奧塔哥（Central Otago）Pinot Noir 冷涼優雅、櫻桃礦物；Hawke's Bay 波爾多混釀。南非：Stellenbosch 結構酒款；Swartland 自然酒、老藤 Chenin Blanc；Pinotage 本土品種，煙燻漿果。加拿大：安大略、BC 冰酒（Eiswein）；Okanagan 多元風格。",
+      "quiz": [
+        { "question": "紐西蘭 Marlborough 以何聞名？", "options": ["Shiraz", "Sauvignon Blanc", "Malbec", "Cabernet"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "新世界選酒策略",
+      "duration": "8分鐘",
+      "content": "新世界選酒：性價比高、果味明確、易飲。入門從智利、澳洲、加州 Central Coast 開始。進階探索單一園、小產區、冷涼子產區。與舊世界比較：風格更奔放、技術導向、品種標示清楚；舊世界重風土與傳統。年份差異新世界通常較小。搭配：新世界 Shiraz 配烤肉；Marlborough SB 配生蠔；Malbec 配牛排。",
+      "quiz": [
+        { "question": "新世界酒常見特點？", "options": ["僅標產區", "品種標示清楚、果味明確", "僅白酒", "僅氣泡"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

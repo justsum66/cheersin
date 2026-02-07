@@ -1,0 +1,16 @@
+/**
+ * UI 元件 barrel（FOLDER #15）：常用 named export 集中，可選 from '@/components/ui'
+ * 含 default 的組件（如 FeatureIcon、ScrollProgress）仍建議直接 from '@/components/ui/XXX'
+ */
+export { BackToTop } from './BackToTop'
+export { Breadcrumb } from './Breadcrumb'
+export { ConfirmDialog } from './ConfirmDialog'
+export { CountUp } from './CountUp'
+export { EmptyState } from './EmptyState'
+export { InViewAnimate } from './InViewAnimate'
+export { MagneticButton } from './MagneticButton'
+export { ModalCloseButton } from './ModalCloseButton'
+export { PageTransition } from './PageTransition'
+export { Pagination } from './Pagination'
+export { Skeleton, SkeletonCard, SkeletonText } from './Skeleton'
+export { FormFieldError } from './FormFieldError'

@@ -1,0 +1,2 @@
+# Parser can fail on very large TSX (assistant page); fix when upgrading parser or splitting file
+src/app/assistant/page.tsx

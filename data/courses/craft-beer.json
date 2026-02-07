@@ -1,0 +1,63 @@
+{
+  "id": "craft-beer",
+  "title": "精釀啤酒探索",
+  "description": "進入精釀啤酒的多彩世界",
+  "duration": "30分鐘",
+  "free": false,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "精釀與商業啤酒",
+      "duration": "5分鐘",
+      "content": "精釀啤酒（Craft Beer）強調風味多樣、小批量生產、獨立酒廠（多數國家以年產量定義，如美國 600 萬桶以下）。商業啤酒以拉格為主、大規模量產、風味一致、追求成本效益。精釀常使用更多麥芽種類（如焦糖麥芽、焙烤麥芽）、啤酒花（風味與苦度）與特殊酵母，創造從淡色艾爾、IPA、賽松到帝國司陶特等豐富風格。精釀運動源自 1970–80 年代英美，現已全球普及，台灣也有蓬勃的精釀社群。探索時可從淡色艾爾或小麥啤酒入門，再進階 IPA 與司陶特。",
+      "quiz": [
+        { "question": "精釀啤酒通常強調？", "options": ["大規模量產", "風味多樣與小批量", "低酒精", "單一品種"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "艾爾與拉格",
+      "duration": "6分鐘",
+      "content": "艾爾（Ale）：頂層發酵（Saccharomyces cerevisiae）、發酵溫度較高（15–24°C）、發酵快、風味多元；涵蓋 IPA、司陶特、小麥啤酒、比利時艾爾等。拉格（Lager）：底層發酵（S. pastorianus）、低溫（7–13°C）、發酵慢、貯藏期長，風味清爽乾淨；皮爾森（Pilsner）、海尼根、Bock、Helles 等屬此類。兩者差異源於酵母種類與發酵溫度，拉格需要冷藏貯藏（Lagering）以沉澱酵母、穩定風味。",
+      "quiz": [
+        { "question": "艾爾（Ale）的發酵方式為？", "options": ["底層發酵", "頂層發酵", "混合發酵", "低溫發酵"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "IPA、司陶特、小麥",
+      "duration": "6分鐘",
+      "content": "IPA（India Pale Ale）：大量啤酒花帶來柑橘、松針、熱帶水果香氣與明顯苦韻；美式 IPA 果香奔放，英式較平衡；NEIPA 新英格蘭風格的混濁果香近年受歡迎。司陶特（Stout）：深色焙烤麥芽、咖啡巧克力風味；健力士為愛爾蘭乾司陶特代表；帝國司陶特酒精與風味更濃。小麥啤酒（Wheat Beer）：小麥比例高、酵母懸浮、柑橘與丁香風味；德式白啤、比利時白啤為經典。",
+      "quiz": [
+        { "question": "IPA 常見的風味特色是？", "options": ["甜味為主", "啤酒花香與苦韻", "焙烤麥芽", "柑橘與香料"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "讀懂酒標與 ABV",
+      "duration": "5分鐘",
+      "content": "ABV（Alcohol by Volume）酒精濃度，啤酒常見 4–8%，帝國司陶特可達 10%+。IBU（International Bitterness Units）苦度單位：拉格約 10–20、淡色艾爾 30–40、IPA 50–100+。酒標還標產地、風格、原料（小麥、燕麥、雙倍乾投酒花等）。Craft、Independent 標示表示獨立精釀酒廠（如美國 Brewers Association 定義）。SRM（色度）表示顏色深淺。了解這些有助於預期風味與搭配。",
+      "quiz": [
+        { "question": "酒標上的 ABV 代表？", "options": ["苦度", "酒精濃度", "甜度", "酸度"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "品飲與搭配",
+      "duration": "4分鐘",
+      "content": "適飲溫度約 4–12°C：淡拉格較冰（4–6°C）、艾爾可稍高（8–12°C）以釋放香氣。杯具影響香氣：郁金香杯聚香、品脫杯經典、司陶特可用不透明杯。搭配：IPA 配炸雞、辣食、印度咖哩；司陶特配巧克力、烤物、牡蠣；小麥啤酒配沙拉、海鮮、白肉；拉格配漢堡、起司、墨西哥料理。避免過冰壓抑風味。",
+      "quiz": [
+        { "question": "啤酒一般建議的適飲溫度約為？", "options": ["0°C", "4–12°C", "室溫", "20°C 以上"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "入門酒款推薦",
+      "duration": "4分鐘",
+      "content": "美式：Sierra Nevada Pale Ale、Brooklyn Lager。愛爾蘭：Guinness 司陶特。比利時：Hoegaarden 白啤、Duvel 金艾爾。德國：Weihenstephaner 小麥。台灣：金色三麥、臺虎、啤酒頭等在地精釀。從風格多元的入門款開始探索；精釀酒吧可點 flight（多杯小份）一次比較不同風格。",
+      "quiz": [
+        { "question": "Guinness 屬於哪種風格？", "options": ["IPA", "司陶特", "小麥", "拉格"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

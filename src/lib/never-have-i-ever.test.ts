@@ -1,0 +1,48 @@
+/**
+ * 我從來沒有題庫單元測試：getStatementsByCategory、CATEGORY_LABEL
+ */
+import { describe, it, expect } from 'vitest'
+import { getStatementsByCategory, CATEGORY_LABEL } from './never-have-i-ever'
+
+describe('getStatementsByCategory', () => {
+  it('returns array for all', () => {
+    const list = getStatementsByCategory('all')
+    expect(Array.isArray(list)).toBe(true)
+    expect(list.length).toBeGreaterThan(0)
+  })
+
+  it('each item has text and category', () => {
+    const list = getStatementsByCategory('all')
+    const cats = ['love', 'work', 'life', 'dark', 'adult']
+    list.slice(0, 5).forEach((item) => {
+      expect(typeof item.text).toBe('string')
+      expect(item.text.length).toBeGreaterThan(0)
+      expect(cats).toContain(item.category)
+    })
+  })
+
+  it('love category returns array', () => {
+    const list = getStatementsByCategory('love')
+    expect(Array.isArray(list)).toBe(true)
+    list.forEach((item) => {
+      expect(item.category).toBe('love')
+      expect(item.text).toMatch(/我從來沒有/)
+    })
+  })
+
+  it('work category returns array', () => {
+    const list = getStatementsByCategory('work')
+    expect(Array.isArray(list)).toBe(true)
+    list.forEach((item) => expect(item.category).toBe('work'))
+  })
+})
+
+describe('CATEGORY_LABEL', () => {
+  it('has labels for all five categories', () => {
+    expect(CATEGORY_LABEL.love).toBe('愛情')
+    expect(CATEGORY_LABEL.work).toBe('職場')
+    expect(CATEGORY_LABEL.life).toBe('生活')
+    expect(CATEGORY_LABEL.dark).toBe('黑歷史')
+    expect(CATEGORY_LABEL.adult).toBe('18+')
+  })
+})

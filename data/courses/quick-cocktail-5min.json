@@ -1,0 +1,27 @@
+{
+  "id": "quick-cocktail-5min",
+  "title": "5 分鐘快懂調酒",
+  "description": "在家調酒、吧台點酒不求人",
+  "duration": "5分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "經典調酒入門款",
+      "duration": "2分鐘",
+      "content": "Mojito：蘭姆酒＋薄荷＋萊姆，清爽。Margarita：龍舌蘭＋橙酒＋萊姆，酸甜。Gin Tonic：琴酒＋通寧水，最簡單。Old Fashioned：波本＋糖＋苦精，成熟風味。"
+    },
+    {
+      "id": 2,
+      "title": "居家必備三款基酒",
+      "duration": "2分鐘",
+      "content": "琴酒、伏特加、蘭姆酒可調出 80% 常見雞尾酒。加檸檬汁、糖漿、蘇打水即可。預算有限先買琴酒＋伏特加。"
+    },
+    {
+      "id": 3,
+      "title": "吧台點酒小技巧",
+      "duration": "1分鐘",
+      "content": "說出基酒＋口味偏好（酸、甜、清爽、烈）。「琴酒基底、清爽一點」bartender 就懂。不知道就點 Gin Tonic 或 Mojito。"
+    }
+  ]
+}

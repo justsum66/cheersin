@@ -1,0 +1,54 @@
+{
+  "id": "rum-basics",
+  "title": "蘭姆酒入門",
+  "description": "認識蘭姆酒的產區、風格與經典調酒，從甘蔗到 Mojito",
+  "duration": "30分鐘",
+  "free": true,
+  "chapters": [
+    {
+      "id": 1,
+      "title": "甘蔗蒸餾的烈酒",
+      "duration": "5分鐘",
+      "content": "蘭姆酒以甘蔗汁（農業蘭姆 Rhum Agricole，法屬加勒比如馬丁尼克）或糖蜜（工業蘭姆，多數加勒比產區）發酵後蒸餾製成。主要產區：加勒比海（牙買加、古巴、波多黎各、巴貝多、千里達）、中南美洲（委內瑞拉、瓜地馬拉、尼加拉瓜）、澳洲、台灣也有生產。分類：白蘭姆（無陳年或短陳年、清澈、調酒用）；金蘭姆（橡木桶陳年、微甜、琥珀色）；黑蘭姆（深色、風味濃郁、常用於 Tiki、可能加焦糖調色）。Overproof 指高酒精款（57%+），如 Wray & Nephew。蒸餾方式（壺式 vs  column）與陳年會顯著影響風格。",
+      "quiz": [
+        { "question": "蘭姆酒的主要原料是？", "options": ["大麥", "甘蔗", "葡萄", "玉米"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "白、金、黑蘭姆",
+      "duration": "5分鐘",
+      "content": "白蘭姆：清澈、輕盈、適合調酒如 Mojito、Daiquiri，古巴風格多乾型。金蘭姆：橡木桶陳年、微甜、適合直飲或調酒，百加得 Gold、哈瓦那 Club 代表。黑蘭姆：深色、濃郁、常用於 Tiki 調酒如 Mai Tai、Dark'n'Stormy。Overproof 蘭姆酒精濃度較高（57%+），調酒時用量需減半。選酒時依用途：調酒選白蘭姆，純飲可試金或黑。",
+      "quiz": [
+        { "question": "Mojito 通常使用哪種蘭姆？", "options": ["黑蘭姆", "白蘭姆", "僅金蘭姆", "Overproof"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "產區風格",
+      "duration": "6分鐘",
+      "content": "古巴：清爽、乾型、適合 Highball，哈瓦那 Club 代表。牙買加：濃郁、funk 風味，Appleton Estate、Wray & Nephew。波多黎各：清淡、美國常用，百加得、Don Q。巴貝多：平衡、甘蔗香，Mount Gay。海地、馬丁尼克：農業蘭姆（Rhum Agricole）、風土鮮明，以甘蔗汁蒸餾。產區差異大，可對比品飲感受。",
+      "quiz": [
+        { "question": "牙買加蘭姆常見的特色是？", "options": ["極清淡", "濃郁 funk", "僅甜型", "無陳年"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "經典調酒：Mojito、Daiquiri",
+      "duration": "6分鐘",
+      "content": "Mojito：白蘭姆、萊姆汁、糖、薄荷、蘇打水。Daiquiri：白蘭姆、萊姆汁、糖，搖盪。Piña Colada：蘭姆、鳳梨、椰奶。Dark'n'Stormy：黑蘭姆、薑汁啤酒。",
+      "quiz": [
+        { "question": "Daiquiri 的基本材料不包含？", "options": ["白蘭姆", "萊姆汁", "糖", "薄荷"], "correctIndex": 3 }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "選購與品飲",
+      "duration": "5分鐘",
+      "content": "入門可選清淡白蘭姆（如 Bacardi、Havana Club）調酒。進階可試單一產區、農業蘭姆（馬丁尼克 AOC）。直飲適溫室溫或略冰。搭巧克力、熱帶水果、焦糖甜點。保存避光、直立即可；開瓶後氧化較慢可存放數月。",
+      "quiz": [
+        { "question": "蘭姆酒直飲時建議溫度？", "options": ["冷藏", "室溫或略冰", "加熱", "冷凍"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}

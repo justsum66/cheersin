@@ -1,0 +1,63 @@
+{
+  "meta": "WSET Level 4 Diploma + CMS Certified Sommelier Advanced + Master of Wine (MW) 綜合等級",
+  "faq": [
+    {
+      "q": "什麼是 WSET Systematic Approach to Tasting？",
+      "a": "WSET 系統化品酒法（SAT）將葡萄酒分為外觀（Appearance）、鼻息（Nose）、口感（Palate）、結論（Conclusions）四部分，依顏色、澄清度、香氣強度與類型、甜度、酸度、單寧、酒體、風味、餘韻等項目描述，並評估品質與適飲期。此架構為 WSET Level 4 Diploma 與 MW 考試核心。"
+    },
+    {
+      "q": "紅酒適飲溫度為何？CMS 侍酒師標準？",
+      "a": "CMS 高級侍酒師標準：輕酒體紅酒（如 Pinot Noir、Gamay）約 12–14°C；中至飽滿酒體（Bordeaux、Rhône）約 16–18°C。過高會放大酒精感、壓制果香；過低會收斂單寧表現。氣泡酒 6–8°C，白酒 8–12°C，甜酒 6–8°C。"
+    },
+    {
+      "q": "單寧（Tannin）如何正確描述？",
+      "a": "單寧來自葡萄皮、籽與梗，以及橡木桶。描述時區分：量（低/中/高）、質地（細緻/顆粒感/粗獷）、成熟度（青澀/成熟/柔順）。WSET 術語包括 ripe、green、fine-grained、grippy。高單寧酒款適搭配油脂與蛋白質以柔化口感。"
+    },
+    {
+      "q": "法定產區 AOC / DOC / DO 代表什麼？",
+      "a": "法國 AOC（Appellation d’Origine Contrôlée）、義大利 DOC/DOCG、西班牙 DO/DOCa 為法定產區分級，規範地理範圍、允許品種、栽培與釀造方式、最低酒精等。WSET Level 4 要求熟悉主要產區法規與 typicity（產區典型風格）。"
+    },
+    {
+      "q": "醒酒（Decanting）什麼時候需要？",
+      "a": "年輕、高單寧或剛開瓶有還原氣味的紅酒適合醒酒；陳年紅酒為分離沉澱也可傾注（decant）。CMS 建議：年輕 Bordeaux、Rhône、Barolo 可醒 30–90 分鐘；老酒僅為除渣，醒酒時間宜短。白酒與氣泡酒一般不需醒酒。"
+    }
+  ],
+  "glassGuide": [
+    {
+      "category": "紅酒",
+      "glass": "Bordeaux 杯（大肚、收口）：集中香氣、酒液接觸空氣面積適中，適合 Cabernet、Merlot、Bordeaux 混釀。Burgundy 杯（大肚、開口較寬）：突出果香與細膩度，適合 Pinot Noir、Chardonnay。"
+    },
+    {
+      "category": "白酒",
+      "glass": "標準白酒杯（中等肚、略收口）：保留果香與酸度，適合 Sauvignon Blanc、Riesling、Pinot Grigio。較大 Chardonnay 杯可搭配橡桶白酒。"
+    },
+    {
+      "category": "氣泡酒",
+      "glass": "Flute 或 Tulip：細長杯身保留氣泡與層次；避免寬口碟形杯（香氣與氣泡散失快）。"
+    },
+    {
+      "category": "烈酒／威士忌",
+      "glass": "郁金香杯或 Glencairn：收口聚香，便於聞香與品評。CMS 烈酒服務會依酒款選擇杯型。"
+    }
+  ],
+  "decanting": [
+    {
+      "title": "何時醒酒",
+      "content": "年輕、高單寧紅酒（如 Barolo、年輕 Bordeaux、Syrah）可醒 30 分鐘至 2 小時以柔化單寧與整合風味。陳年紅酒若瓶底有沉澱，傾注至醒酒器以分離酒渣，避免長時間暴露空氣。"
+    },
+    {
+      "title": "如何傾注",
+      "content": "開瓶後可先直立靜置數小時讓沉澱落底。傾注時光源（蠟燭或手電）置於瓶頸下方，緩慢傾倒至沉澱接近瓶頸即停。CMS 侍酒流程會在桌邊或備餐台完成。"
+    },
+    {
+      "title": "白酒與氣泡酒",
+      "content": "多數白酒與氣泡酒不需醒酒；過度接觸空氣會喪失新鮮果香與氣泡。若遇還原味（火柴、硫味），可短暫晃杯或倒出後靜置數分鐘。"
+    }
+  ],
+  "tastingTips": [
+    "視覺：傾斜酒杯於白底上觀察色調、邊緣色、澄清度與黏度（酒淚）。",
+    "嗅覺：靜態聞香後晃杯再聞，區分一級（果香、花香）與二、三級（橡木、陳年、土壤）香氣。",
+    "口感：入口後讓酒液覆蓋舌面，評估甜度、酸度、單寧、酒體、風味強度與餘韻長短。",
+    "結論：綜合品質（平衡、層次、餘韻）與適飲期；是否具陳年潛力。"
+  ]
+}

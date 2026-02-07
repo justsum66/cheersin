@@ -1,0 +1,275 @@
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  PAYPAL_PLANS,
+  PAYABLE_TIERS,
+  PRICING_PLANS_DISPLAY,
+  getPayPalPriceString,
+  getPayPalPlanId,
+  type PayableTier,
+} from '@/config/pricing.config';
+import { logApiError } from '@/lib/api-error-log';
+import { getCurrentUser } from '@/lib/get-current-user';
+import { createServerClient } from '@/lib/supabase-server';
+import { errorResponse, serverErrorResponse } from '@/lib/api-response';
+
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
+const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
+  ? 'https://api-m.paypal.com'
+  : 'https://api-m.sandbox.paypal.com';
+
+async function getAccessToken(): Promise<string> {
+  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+
+  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+/** E01：方案從 pricing.config 讀取，與定價頁一致 */
+function getPlanForPayPal(planType: PayableTier) {
+  const plan = PAYPAL_PLANS[planType];
+  return {
+    name: plan.name,
+    description: plan.description,
+    price: getPayPalPriceString(planType),
+    currency: plan.currency,
+    interval: plan.interval,
+  };
+}
+
+/** D1/D2：PayPal 未設定時回傳 503，避免前端無限重試 */
+function ensurePayPalConfig(): void {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    throw new Error('PAYPAL_NOT_CONFIGURED')
+  }
+}
+
+/** BE-23：action 白名單，防無效請求 */
+const SUBSCRIPTION_ACTIONS = ['create-subscription', 'capture-subscription', 'cancel-subscription'] as const
+const MAX_SUBSCRIPTION_ID_LENGTH = 256
+
+export async function POST(request: NextRequest) {
+  const requestId = request.headers.get('x-request-id') ?? undefined
+  try {
+    ensurePayPalConfig()
+    let body: import('@/types/api-bodies').SubscriptionPostBody
+    try {
+      body = (await request.json()) as import('@/types/api-bodies').SubscriptionPostBody
+    } catch {
+      return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
+    }
+    const { action, planType, subscriptionId } = body
+    if (!action || !SUBSCRIPTION_ACTIONS.includes(action as (typeof SUBSCRIPTION_ACTIONS)[number])) {
+      return errorResponse(400, 'Invalid action', { message: 'action 須為 create-subscription、capture-subscription 或 cancel-subscription' })
+    }
+
+    // P0-06：create / capture / cancel 須已登入
+    const user = await getCurrentUser();
+    if (!user && (action === 'create-subscription' || action === 'capture-subscription' || action === 'cancel-subscription')) {
+      return errorResponse(401, 'Unauthorized', { message: '請先登入' });
+    }
+
+    const accessToken = await getAccessToken();
+
+    if (action === 'create-subscription') {
+      if (planType !== 'basic' && planType !== 'premium') {
+        return errorResponse(400, 'Invalid plan type', { message: '方案須為 basic 或 premium' });
+      }
+      // P1-12 / P3-73：若 config 已有 plan_id 則直接建立 subscription，不重複建立 product/plan
+      const planIdFromConfig = getPayPalPlanId(planType)
+
+      let planId: string
+      if (planIdFromConfig) {
+        planId = planIdFromConfig
+      } else {
+        const plan = getPlanForPayPal(planType);
+        const productResponse = await fetch(`${PAYPAL_API_BASE}/v1/catalogs/products`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: plan.name,
+            description: plan.description,
+            type: 'SERVICE',
+            category: 'EDUCATIONAL_AND_TEXTBOOKS',
+          }),
+        });
+        const product = await productResponse.json();
+        const billingPlanResponse = await fetch(`${PAYPAL_API_BASE}/v1/billing/plans`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            product_id: product.id,
+            name: plan.name,
+            description: plan.description,
+            billing_cycles: [
+              {
+                frequency: { interval_unit: plan.interval, interval_count: 1 },
+                tenure_type: 'REGULAR',
+                sequence: 1,
+                total_cycles: 0,
+                pricing_scheme: { fixed_price: { value: plan.price, currency_code: plan.currency } },
+              },
+            ],
+            payment_preferences: { auto_bill_outstanding: true, payment_failure_threshold: 3 },
+          }),
+        });
+        const billingPlan = await billingPlanResponse.json();
+        planId = billingPlan.id
+      }
+
+      // Create subscription（P0-06：傳 custom_id 供 Webhook 對應用戶）
+      const subscriptionResponse = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan_id: planId,
+          custom_id: user!.id,
+          application_context: {
+            brand_name: 'Cheersin',
+            locale: 'zh-TW',
+            shipping_preference: 'NO_SHIPPING',
+            user_action: 'SUBSCRIBE_NOW',
+            return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/subscription/success?planType=${encodeURIComponent(planType)}`,
+            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/subscription/cancel`,
+          },
+        }),
+      });
+
+      const subscription = await subscriptionResponse.json();
+      
+      return NextResponse.json({
+        subscriptionId: subscription.id,
+        approvalUrl: (subscription.links as import('@/types/api-bodies').PayPalLink[] | undefined)?.find((l) => l.rel === 'approve')?.href,
+      });
+    }
+
+    if (action === 'capture-subscription') {
+      const subId = typeof subscriptionId === 'string' ? subscriptionId.trim().slice(0, MAX_SUBSCRIPTION_ID_LENGTH) : ''
+      if (!subId) {
+        return errorResponse(400, 'Missing subscriptionId', { message: 'capture-subscription 需提供 subscriptionId' })
+      }
+      // Get subscription details after user approves
+      const response = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${subId}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const subscription = await response.json();
+      /** P3-54：回傳 current_period_end 供成功頁顯示「下次扣款日」 */
+      const nextBilling = subscription.billing_info?.next_billing_time ?? subscription.start_time
+      const currentPeriodEnd = nextBilling
+        ? (typeof nextBilling === 'string' ? nextBilling : new Date(nextBilling).toISOString()).slice(0, 10)
+        : null
+      return NextResponse.json({
+        status: subscription.status,
+        subscriberId: subscription.subscriber?.payer_id,
+        planId: subscription.plan_id,
+        startTime: subscription.start_time,
+        current_period_end: currentPeriodEnd,
+      });
+    }
+
+    if (action === 'cancel-subscription') {
+      const subId = typeof subscriptionId === 'string' ? subscriptionId.trim().slice(0, MAX_SUBSCRIPTION_ID_LENGTH) : ''
+      if (!subId) {
+        return errorResponse(400, 'Missing subscriptionId', { message: 'cancel-subscription 需提供 subscriptionId' })
+      }
+      // P0-06：僅允許取消自己的訂閱
+      const supabase = createServerClient();
+      const { data: sub, error: subError } = await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('paypal_subscription_id', subId)
+        .maybeSingle();
+      if (subError || !sub) {
+        return errorResponse(404, 'Subscription not found', { message: '找不到該訂閱' });
+      }
+      if ((sub as { user_id: string }).user_id !== user!.id) { // DB row shape from .select('user_id')
+        return errorResponse(401, 'Unauthorized', { message: '無法取消他人的訂閱' });
+      }
+      // Cancel subscription
+      const response = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${subId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: 'User requested cancellation',
+        }),
+      });
+
+      if (response.status === 204) {
+        return NextResponse.json({ success: true, message: 'Subscription cancelled' });
+      }
+      
+      return errorResponse(400, 'Failed to cancel subscription', { message: '取消訂閱失敗，請稍後再試' });
+    }
+
+    return errorResponse(400, 'Invalid action', { message: '不支援的 action' });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'PAYPAL_NOT_CONFIGURED') {
+      logApiError('subscription', error, { action: 'config-check', isP0: true, requestId })
+      return errorResponse(503, 'PayPal not configured', { message: '訂閱金流尚未設定，請稍後再試或聯繫客服。' })
+    }
+    logApiError('subscription', error, { isP0: true, requestId })
+    return serverErrorResponse(error);
+  }
+}
+
+/** E01 / P3-41：GET 回傳方案與 pricing.config；P3-54/55：已登入時一併回傳當前訂閱 tier、current_period_end */
+export async function GET() {
+  const plans = PAYABLE_TIERS.map((tier) => {
+    const plan = PAYPAL_PLANS[tier]
+    const display = PRICING_PLANS_DISPLAY.find((p) => p.tier === tier)
+    return {
+      id: tier,
+      name: plan.name,
+      price: plan.priceMonthly,
+      currency: plan.currency,
+      interval: '月',
+      features: display?.features ?? [],
+      ...(display?.popular ? { popular: true } : {}),
+    }
+  })
+  const user = await getCurrentUser()
+  let subscription: { tier: string; current_period_end: string | null } | null = null
+  if (user) {
+    const { data: sub } = await createServerClient()
+      .from('subscriptions')
+      .select('plan_type, current_period_end')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (sub) {
+      subscription = {
+        tier: (sub as { plan_type: string }).plan_type ?? 'free',
+        current_period_end: (sub as { current_period_end: string | null }).current_period_end
+          ? new Date((sub as { current_period_end: string }).current_period_end).toISOString().slice(0, 10)
+          : null,
+      }
+    }
+  }
+  return NextResponse.json({ plans, ...(subscription ? { subscription } : {}) })
+}
