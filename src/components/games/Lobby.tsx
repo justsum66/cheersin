@@ -139,11 +139,22 @@ interface LobbyProps {
   /** 任務 7：本週各遊戲遊玩次數，用於「本週熱門」區塊 */
   weeklyPlayCounts?: Record<string, number>
   onSelect: (id: string) => void
+  /** P1-122：篩選狀態保持 — 由 URL 或父層傳入，有則為受控模式 */
+  displayFilter?: DisplayCategory
+  onDisplayFilterChange?: (cat: DisplayCategory) => void
 }
 
-export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, onSelect }: LobbyProps) {
-  /** T051：預設「經典派對」= 熱門類型，派對主與從業者快速開局 */
-  const [displayFilter, setDisplayFilter] = useState<DisplayCategory>('classic')
+export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, onSelect, displayFilter: controlledFilter, onDisplayFilterChange }: LobbyProps) {
+  /** T051：預設「經典派對」= 熱門類型；P1-122 受控時用 props，否則用內部 state */
+  const [internalFilter, setInternalFilter] = useState<DisplayCategory>('classic')
+  const displayFilter = controlledFilter ?? internalFilter
+  const setDisplayFilter = useCallback((cat: DisplayCategory) => {
+    if (onDisplayFilterChange) {
+      onDisplayFilterChange(cat)
+    } else {
+      setInternalFilter(cat)
+    }
+  }, [onDisplayFilterChange])
   /** 任務 4：收藏 ID 列表，用於頂置與心形狀態 */
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteGameIds())
   /** 任務 10：遊戲評分，用於卡片顯示與更新 */
@@ -247,7 +258,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
 
   const handleFilterChange = useCallback((cat: DisplayCategory) => {
     startTransition(() => setDisplayFilter(cat))
-  }, [])
+  }, [setDisplayFilter])
 
   /** GAMES_500 #51：分類 tab 鍵盤 Home/End 切換 */
   const categoryTabRefs = useRef<(HTMLButtonElement | null)[]>([])

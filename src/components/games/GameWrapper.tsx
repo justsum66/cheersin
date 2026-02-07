@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { Trophy, Users, Smartphone, Share2, ChevronLeft, Settings, Maximize2, Minimize2, HelpCircle, Clock, CheckCircle, AlertTriangle, RotateCcw, Flag } from 'lucide-react'
+import { Trophy, Users, Smartphone, Share2, ChevronLeft, Settings, Maximize2, Minimize2, HelpCircle, Clock, CheckCircle, AlertTriangle, RotateCcw, Flag, SkipForward, RotateCw } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import {
   getPassPhoneEnabled,
@@ -134,6 +134,12 @@ interface GameWrapperProps {
   /** Q2：免登入試玩 — 限 N 局，局數用盡後顯示登入 CTA */
   isGuestTrial?: boolean
   trialRoundsMax?: number
+  /** P1-116：房間人數上限，有則頂部顯示「X/Y 位」 */
+  maxPlayers?: number
+  /** P1-138：跳過當前回合（子遊戲可選實作） */
+  onSkipRound?: () => void
+  /** P1-138：重新開始本局（子遊戲可選實作） */
+  onRestart?: () => void
 }
 
 /** 81 統一頂部：返回 / 遊戲名 / 設定；84 返回前確認；83 全螢幕；85 換遊戲 */
@@ -168,11 +174,18 @@ function GameWrapperHeader({
   pendingSwitchGameId = null,
   setPendingSwitchGameId,
   onConfirmSwitchGame,
+  maxPlayers,
+  onSkipRound,
+  onRestart,
 }: {
   title: string
   description?: string
   onExit: () => void
   players: string[]
+  /** P1-116：房間人數上限，有則顯示 X/Y 位 */
+  maxPlayers?: number
+  onSkipRound?: () => void
+  onRestart?: () => void
   isFullscreen: boolean
   onToggleFullscreen: () => void
   switchGameList?: SwitchGameItem[]
@@ -328,9 +341,9 @@ function GameWrapperHeader({
         {/* 81 右：玩家數、設定下拉（傳手機/全螢幕/分享/返回） */}
         <div className="flex items-center gap-2">
           {players.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60" aria-label={maxPlayers != null ? `房間人數 ${players.length}／${maxPlayers} 人` : `${players.length} 位玩家`}>
               <Users className="w-3.5 h-3.5" />
-              <span>{players.length} 位</span>
+              <span>{maxPlayers != null ? `${players.length}/${maxPlayers} 人` : `${players.length} 位`}</span>
             </div>
           )}
           <div className="relative" ref={settingsRef}>
@@ -367,6 +380,26 @@ function GameWrapperHeader({
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
                   >
                     {isPaused ? '繼續遊戲' : '暫停遊戲'}
+                  </button>
+                )}
+                {onSkipRound != null && (
+                  <button
+                    type="button"
+                    onClick={() => { onSkipRound(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
+                    aria-label="跳過當前回合"
+                  >
+                    <SkipForward className="w-4 h-4" /> 跳過本回合
+                  </button>
+                )}
+                {onRestart != null && (
+                  <button
+                    type="button"
+                    onClick={() => { onRestart(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
+                    aria-label="重新開始本局"
+                  >
+                    <RotateCw className="w-4 h-4" /> 重新開始
                   </button>
                 )}
                 {gameStats && (gameStats.durationSec != null || gameStats.correctCount != null || gameStats.punishmentCount != null) && (
@@ -599,6 +632,9 @@ export default function GameWrapper({
   reportContext,
   isGuestTrial = false,
   trialRoundsMax = TRIAL_ROUNDS_DEFAULT,
+  maxPlayers,
+  onSkipRound,
+  onRestart,
 }: GameWrapperProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [rulesContent, setRulesContent] = useState<string | null>(null)
@@ -971,6 +1007,9 @@ export default function GameWrapper({
               pendingSwitchGameId={pendingSwitchGameId}
               setPendingSwitchGameId={setPendingSwitchGameId}
               onConfirmSwitchGame={(id) => { onSwitchGame?.(id); setShowSwitchConfirm(false); setPendingSwitchGameId(null); }}
+              maxPlayers={maxPlayers}
+              onSkipRound={onSkipRound}
+              onRestart={onRestart}
             />
 
           {/* T059 P1：檢舉 modal — 類型、說明、送出後顯示「已收到」 */}

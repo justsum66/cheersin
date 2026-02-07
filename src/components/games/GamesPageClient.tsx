@@ -7,11 +7,11 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { getFontSize, getReduceMotion } from '@/lib/games-settings'
-import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings } from 'lucide-react'
+import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
-import Lobby from '@/components/games/Lobby'
+import Lobby, { type DisplayCategory } from '@/components/games/Lobby'
 import GameErrorBoundary from '@/components/games/GameErrorBoundary'
 import SettingsModal from '@/components/games/SettingsModal'
 import AgeGate, { getAgeGatePassed } from '@/components/games/AgeGate'
@@ -69,6 +69,15 @@ function GamesPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const roomSlug = searchParams.get('room')
+  /** P1-122：篩選器狀態保持 — 從 URL ?tab= 讀取並同步回寫 */
+  const LOBBY_TABS: DisplayCategory[] = ['couple', 'all', 'classic', 'vs', 'random', 'two']
+  const tabParam = searchParams.get('tab')
+  const lobbyDisplayFilter: DisplayCategory = (tabParam && LOBBY_TABS.includes(tabParam as DisplayCategory)) ? (tabParam as DisplayCategory) : 'classic'
+  const handleLobbyTabChange = useCallback((cat: DisplayCategory) => {
+    const p = new URLSearchParams(searchParams.toString())
+    p.set('tab', cat)
+    router.replace(`/games?${p.toString()}`, { scroll: false })
+  }, [searchParams, router])
   const { tier } = useSubscription()
   const [ageVerified, setAgeVerified] = useState(false)
   useEffect(() => {
@@ -140,6 +149,9 @@ function GamesPageContent() {
   const [roomJoinName, setRoomJoinName] = useState('')
   const [roomJoinPassword, setRoomJoinPassword] = useState('')
   const [roomJoinError, setRoomJoinError] = useState<string | null>(null)
+  /** P1-125：房間密碼可見性切換 */
+  const [showJoinPassword, setShowJoinPassword] = useState(false)
+  const [showCreatePassword, setShowCreatePassword] = useState(false)
   /** 任務 12：建立房間可選 4 位數密碼 */
   const [roomCreatePassword, setRoomCreatePassword] = useState('')
   const [createInvite, setCreateInvite] = useState<{ slug: string; inviteUrl: string } | null>(null)
@@ -579,6 +591,14 @@ function GamesPageContent() {
                 </p>
                 <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
 
+                {/* P1-116：房間人數顯示 — 在房間內頂部顯示目前人數/上限 */}
+                {roomSlug && joinedDisplayName && (
+                  <p className="mb-4 px-4 py-2 rounded-xl bg-white/5 border border-white/10 inline-flex items-center gap-2 text-white/80 text-sm" role="status" aria-label={`房間人數 ${roomPlayers.length} ／${maxPlayers} 人`}>
+                    <Users className="w-4 h-4 text-primary-400" aria-hidden />
+                    <span>目前 {roomPlayers.length}/{maxPlayers} 人</span>
+                  </p>
+                )}
+
                 {/* Room: loading / error / join form；GAMES_500 #166 房間 loading skeleton */}
                 {roomSlug && roomLoading && (
                   <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto animate-pulse" role="status" aria-label="載入房間中">
@@ -678,17 +698,27 @@ function GamesPageContent() {
                           觀戰
                         </button>
                       </div>
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        value={roomJoinPassword}
-                        onChange={(e) => { setRoomJoinPassword(e.target.value.replace(/\D/g, '').slice(0, 4)); setRoomJoinError(null); }}
-                        placeholder="房間密碼（若房主有設定）"
-                        maxLength={4}
-                        aria-label="房間密碼（若房主有設定）"
-                        className="min-h-[44px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 text-sm"
-                      />
+                      <div className="relative flex items-center">
+                        <input
+                          type={showJoinPassword ? 'text' : 'password'}
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={roomJoinPassword}
+                          onChange={(e) => { setRoomJoinPassword(e.target.value.replace(/\D/g, '').slice(0, 4)); setRoomJoinError(null); }}
+                          placeholder="房間密碼（若房主有設定）"
+                          maxLength={4}
+                          aria-label="房間密碼（若房主有設定）"
+                          className="min-h-[44px] w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowJoinPassword((s) => !s)}
+                          className="absolute right-2 flex items-center justify-center w-9 h-9 rounded-lg text-white/50 hover:text-white hover:bg-white/10 games-touch-target"
+                          aria-label={showJoinPassword ? '隱藏密碼' : '顯示密碼'}
+                        >
+                          {showJoinPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </form>
                     {roomJoinError && <p className="text-red-400 text-sm mt-2">{roomJoinError}</p>}
                   </div>
@@ -739,17 +769,27 @@ function GamesPageContent() {
                       </span>
                     </div>
                     <span className="text-sm font-semibold text-primary-300">建立房間</span>
-                    <input
-                      type="password"
-                      inputMode="numeric"
-                      autoComplete="off"
-                      value={roomCreatePassword}
-                      onChange={(e) => setRoomCreatePassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      placeholder="4 位數密碼（選填）"
-                      maxLength={4}
-                      aria-label="建立房間密碼（選填）"
-                      className="w-full max-w-[200px] min-h-[44px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30 text-sm"
-                    />
+                    <div className="relative flex items-center w-full max-w-[200px]">
+                      <input
+                        type={showCreatePassword ? 'text' : 'password'}
+                        inputMode="numeric"
+                        autoComplete="off"
+                        value={roomCreatePassword}
+                        onChange={(e) => setRoomCreatePassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="4 位數密碼（選填）"
+                        maxLength={4}
+                        aria-label="建立房間密碼（選填）"
+                        className="w-full min-h-[44px] bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCreatePassword((s) => !s)}
+                        className="absolute right-2 flex items-center justify-center w-9 h-9 rounded-lg text-white/50 hover:text-white hover:bg-white/10 games-touch-target"
+                        aria-label={showCreatePassword ? '隱藏密碼' : '顯示密碼'}
+                      >
+                        {showCreatePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     {roomCreatePassword.length === 4 && (
                       <p className="text-white/50 text-xs" role="status" aria-label="密碼強度">
                         {/^(\d)\1{3}$/.test(roomCreatePassword) ? '強度：弱（建議避免同一數字）' : /^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(roomCreatePassword) ? '強度：中（連續數字）' : '強度：佳'}
@@ -858,6 +898,8 @@ function GamesPageContent() {
                   games={gamesWithCategory}
                   recentGameIds={recentGameIds}
                   weeklyPlayCounts={weeklyPlayCounts}
+                  displayFilter={lobbyDisplayFilter}
+                  onDisplayFilterChange={handleLobbyTabChange}
                   onSelect={(id) => {
                     /** P0-009：訪客試玩 3 次後強制登入 */
                     if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
@@ -917,6 +959,7 @@ function GamesPageContent() {
                   }
                 }}
                 players={players}
+                maxPlayers={isInRoomMode ? maxPlayers : undefined}
                 switchGameList={gamesWithCategory.slice(0, 8).map((g) => ({ id: g.id, name: g.name }))}
                 onSwitchGame={(id) => setActiveGame(id)}
                 currentGameId={activeGame}
