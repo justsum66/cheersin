@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
-import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react'
+import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import { GameCard } from './GameCard'
 import { prefetchGame } from './GameLazyMap'
@@ -93,12 +93,13 @@ const CATEGORY_LABELS: Record<GameCategory, string> = {
   adult: '18+辣味',
 }
 
-/** 76 遊戲分類標籤：經典派對 / 競技對決 / 隨機選人 / T072 2 人（兩人友善） */
+/** 76 遊戲分類標籤：P0-003 情侶模式 / 經典派對 / 競技對決 / 隨機選人 / T072 2 人（兩人友善） */
 /** Grace 色盲友善：分類加 icon，不單靠顏色區分 */
-export type DisplayCategory = 'all' | 'classic' | 'vs' | 'random' | 'two'
-/** GAMES_500 #51：穩定引用供鍵盤與 map 使用 */
-const CATEGORY_LIST: readonly DisplayCategory[] = ['all', 'classic', 'vs', 'random', 'two']
+export type DisplayCategory = 'couple' | 'all' | 'classic' | 'vs' | 'random' | 'two'
+/** GAMES_500 #51：穩定引用供鍵盤與 map 使用；P0-003 情侶模式置頂 */
+const CATEGORY_LIST: readonly DisplayCategory[] = ['couple', 'all', 'classic', 'vs', 'random', 'two']
 const DISPLAY_LABELS: Record<DisplayCategory, string> = {
+  couple: '情侶模式',
   all: '全部',
   classic: '經典派對',
   vs: '競技對決',
@@ -106,6 +107,7 @@ const DISPLAY_LABELS: Record<DisplayCategory, string> = {
   two: '2 人',
 }
 const DISPLAY_ICONS: Record<DisplayCategory, LucideIcon> = {
+  couple: Heart,
   all: LayoutGrid,
   classic: Users,
   vs: Swords,
@@ -113,6 +115,7 @@ const DISPLAY_ICONS: Record<DisplayCategory, LucideIcon> = {
   two: Users,
 }
 const DISPLAY_TO_INTERNAL: Record<DisplayCategory, GameCategory[] | null> = {
+  couple: null,
   all: null,
   classic: ['party', 'facetoface'],
   vs: ['reaction', 'guess'],
@@ -120,8 +123,9 @@ const DISPLAY_TO_INTERNAL: Record<DisplayCategory, GameCategory[] | null> = {
   two: null,
 }
 
-/** GAMES_500 #92：分類 tab 對應 i18n key */
+/** GAMES_500 #92：分類 tab 對應 i18n key；P0-003 情侶模式無 i18n 則用 label */
 const DISPLAY_I18N_KEYS: Record<DisplayCategory, string> = {
+  couple: 'lobby.category.couple',
   all: GAMES_LOBBY_CATEGORY_ALL_I18N_KEY,
   classic: GAMES_LOBBY_CATEGORY_CLASSIC_I18N_KEY,
   vs: GAMES_LOBBY_CATEGORY_VS_I18N_KEY,
@@ -157,10 +161,11 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   const searchInputRef = useRef<HTMLInputElement>(null)
   const categoryTabListRef = useRef<HTMLDivElement>(null)
 
-  /** useMemo：複雜 filter 邏輯；T072「2 人」篩選兩人友善遊戲 */
+  /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
     () => {
       if (displayFilter === 'all') return games
+      if (displayFilter === 'couple') return games.filter((g) => g.twoPlayerFriendly === true && (g.category === 'adult' || g.category === 'party'))
       if (displayFilter === 'two') return games.filter((g) => g.twoPlayerFriendly === true)
       const allowed = DISPLAY_TO_INTERNAL[displayFilter]
       return games.filter((g) => {

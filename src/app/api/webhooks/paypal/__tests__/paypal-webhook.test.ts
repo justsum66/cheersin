@@ -100,7 +100,8 @@ describe('PayPal webhook POST', () => {
     const res = await POST(req)
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toContain('failed')
+    expect(json.success).toBe(false)
+    expect((json.error && typeof json.error === 'object' && 'message' in json.error ? (json.error as { message: string }).message : (json as { error?: string }).error) ?? '').toContain('failed')
   })
 })
 

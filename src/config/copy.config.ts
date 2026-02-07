@@ -1,7 +1,11 @@
 /**
  * 任務 92：微複製統一 — CTA、placeholder、Toast 用語與 tone of voice 一致
  * 全站按鈕、表單、Toast 引用此檔，避免「開始」vs「立即開始」等矛盾
+ * P0-001：價值主張 — 品牌 Slogan 統一為「你的 AI 派對靈魂伴侶」
  */
+
+/** P0-001：品牌 Slogan，全站文案圍繞此核心 */
+export const BRAND_SLOGAN = '你的 AI 派對靈魂伴侶'
 
 /** 主要 CTA：開始測驗／開始使用；P0 完美像素：品牌聲調統一 */
 export const COPY_CTA_START_QUIZ = '開始測驗'

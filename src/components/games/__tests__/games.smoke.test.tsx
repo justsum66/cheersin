@@ -6,6 +6,7 @@
 import type React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@/lib/celebration', () => ({ fireFullscreenConfetti: vi.fn() }))
+vi.mock('@/hooks/useGameSound', () => ({ useGameSound: () => ({ play: vi.fn() }) }))
 import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react'
 import { GameSessionProvider } from '../GameSessionProvider'
 import Roulette from '../Roulette'
@@ -182,13 +183,22 @@ describe('Games key path smoke', () => {
   it('ToastRelay shows result area after guess', async () => {
     render(wrap(ToastRelay))
     fireEvent.click(screen.getByTestId('toast-master-start'))
+    const input = screen.getByLabelText('接龍詞')
+    fireEvent.change(input, { target: { value: '酒' } })
+    fireEvent.click(screen.getByRole('button', { name: '送出' }))
+    await waitFor(() => expect(screen.getByText(/接「酒」/)).toBeInTheDocument(), { timeout: 1500 })
+    // 重複詞觸發「卡住」→ 顯示結果區（重新取 input 與 form，同一 act 內 change + submit）
+    const input2 = screen.getByLabelText('接龍詞')
+    const form = input2.closest('form')
+    expect(form).toBeTruthy()
+    await act(async () => {
+      fireEvent.change(input2, { target: { value: '酒' } })
+      fireEvent.submit(form!)
+    })
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /猜 玩家 1/ })).toBeInTheDocument()
-    }, { timeout: 1000 })
-    fireEvent.click(screen.getByRole('button', { name: /猜 玩家 1/ }))
-    await waitFor(() => {
-      expect(screen.getByTestId('toast-master-result')).toBeInTheDocument()
-    }, { timeout: 2000 })
+      expect(screen.getByTestId('toast-relay-result')).toBeInTheDocument()
+      expect(screen.getByText(/喝！/)).toBeInTheDocument()
+    }, { timeout: 3000 })
   }, 8000)
 
   it('KingsCup renders and draw button exists', () => {
@@ -253,7 +263,7 @@ describe('Games key path smoke', () => {
 
   it('ToastRelay theme selection updates aria-pressed', () => {
     render(wrap(ToastRelay))
-    const foodBtn = screen.getByRole('button', { name: '食物' })
+    const foodBtn = screen.getByRole('button', { name: /主題 食物/ })
     expect(foodBtn).toHaveAttribute('aria-pressed', 'false')
     fireEvent.click(foodBtn)
     expect(foodBtn).toHaveAttribute('aria-pressed', 'true')

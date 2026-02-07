@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Cheersin 乾杯 | 探索你的靈魂之酒',
     short_name: 'Cheersin',
-    description: '透過有趣的測驗發現最適合你的酒款，與AI侍酒師互動，享受派對遊戲。',
+    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對遊戲，一站滿足。',
     start_url: '/',
     display: 'standalone',
     background_color: '#000000',

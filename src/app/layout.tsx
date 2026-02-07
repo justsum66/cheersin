@@ -56,8 +56,8 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 /** T021 P2：meta 說明目標客群（成人/酒類），搜尋即知、不誤導為兒童產品 */
 export const metadata: Metadata = {
   title: 'Cheersin | 探索你的靈魂之酒',
-  description: 'Cheersin 成人品酒與派對遊戲平台：靈魂酒測發現命定酒款、AI 侍酒師問酒、派對桌遊同樂、品酒學院從零學起。測驗免費，一站滿足品酒與同樂需求。探索葡萄酒、威士忌與餐酒搭配，與好友同樂派對遊戲，從零學品酒知識，發現你的靈魂之酒。未滿18歲請勿飲酒。',
-  keywords: ['酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '成人派對遊戲', '台灣'],
+  description: 'Cheersin — 你的 AI 派對靈魂伴侶。靈魂酒測發現命定酒款、AI 幫你選遊戲與問酒、派對桌遊同樂、品酒學院從零學起。測驗免費，一站滿足。未滿18歲請勿飲酒。',
+  keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '台灣'],
   authors: [{ name: 'Cheersin Team' }],
   metadataBase: new URL(BASE),
   icons: {
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Cheersin | 探索你的靈魂之酒',
-    description: '成人品酒與派對遊戲：靈魂酒測、AI 侍酒師、派對桌遊、品酒學院，一站滿足。',
+    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。',
     type: 'website',
     locale: 'zh_TW',
     url: BASE,
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Cheersin | 探索你的靈魂之酒',
-    description: '成人品酒與派對遊戲：靈魂酒測、AI 侍酒師、派對桌遊、品酒學院，一站滿足。',
+    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。',
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Cheersin 探索你的靈魂之酒' }],
   },
 }

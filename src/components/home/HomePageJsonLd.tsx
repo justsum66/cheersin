@@ -10,7 +10,7 @@ export function HomePageJsonLd() {
     '@type': 'WebPage',
     '@id': `${BASE}/#webpage`,
     name: 'Cheersin | 探索你的靈魂之酒',
-    description: '成人品酒與派對遊戲平台：靈魂酒測、AI 侍酒師、派對桌遊、品酒學院，一站滿足。',
+    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。',
     url: BASE,
     isPartOf: { '@id': `${BASE}/#website` },
     inLanguage: 'zh-TW',

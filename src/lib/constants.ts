@@ -23,7 +23,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_TITLE = 'Cheersin | 探索你的靈魂之酒'
 
 /** 預設 meta 描述 */
-export const DEFAULT_DESCRIPTION = '品酒學院、靈魂酒測、AI 侍酒師與派對遊戲，一站式酒類體驗。'
+export const DEFAULT_DESCRIPTION = 'Cheersin — 你的 AI 派對靈魂伴侶。靈魂酒測、選遊戲、問酒款、品酒學院，一站滿足。'
 
 /** EXPERT_60 P1：社會認證數字動態化 — 可由 env NEXT_PUBLIC_SOCIAL_PROOF_COUNT 覆寫，後端可改為 API */
 export const SOCIAL_PROOF_USER_COUNT = typeof process.env.NEXT_PUBLIC_SOCIAL_PROOF_COUNT !== 'undefined'

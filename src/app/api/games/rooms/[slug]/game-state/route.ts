@@ -91,16 +91,14 @@ export async function POST(
     const payload = rawPayload != null && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload : {}
     const payloadKeys = Object.keys(payload)
     if (payloadKeys.length > PAYLOAD_MAX_KEYS) {
-      return errorResponse(400, 'payload has too many keys', {
+      return errorResponse(400, 'PAYLOAD_TOO_MANY_KEYS', {
         message: `Maximum ${PAYLOAD_MAX_KEYS} keys allowed`,
-        code: 'PAYLOAD_TOO_MANY_KEYS',
       })
     }
     const payloadSize = new TextEncoder().encode(JSON.stringify(payload)).length
     if (payloadSize > PAYLOAD_MAX_BYTES) {
-      return errorResponse(400, 'payload too large', {
+      return errorResponse(400, 'PAYLOAD_TOO_LARGE', {
         message: `Maximum ${PAYLOAD_MAX_BYTES} bytes allowed`,
-        code: 'PAYLOAD_TOO_LARGE',
       })
     }
 

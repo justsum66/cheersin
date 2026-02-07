@@ -552,7 +552,7 @@ function GamesPageContent() {
                   派對<span className="gradient-text">遊樂場</span>
                 </h1>
                 <p className="text-white/50 text-xl max-w-lg mx-auto mb-4">
-                  精選酒桌派對遊戲，點燃聚會氣氛。
+                  你的 AI 派對靈魂伴侶，點燃聚會氣氛。
                 </p>
                 <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
 

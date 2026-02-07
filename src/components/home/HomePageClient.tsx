@@ -121,7 +121,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
       <section
         role="banner"
         className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pt-0 overflow-hidden home-hero-gradient safe-area-pb-hero"
-        aria-label="探索你的靈魂之酒：30 秒靈魂酒測、AI 侍酒師諮詢、派對桌遊、品酒學院，一站滿足品酒與同樂。"
+        aria-label="你的 AI 派對靈魂伴侶：靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。"
       >
         {/* 任務 6：暗角 vignette，四角輕微變暗 */}
         <div className="absolute inset-0 z-[1] pointer-events-none home-hero-vignette" aria-hidden />

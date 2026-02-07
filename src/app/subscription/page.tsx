@@ -8,6 +8,7 @@ import { Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BrandLogo } from '@/components/BrandLogo';
 import { PayPalButton } from '@/components/PayPalButton';
+import { getErrorMessage } from '@/lib/api-response';
 import ResubscribeBanner from '@/components/ResubscribeBanner';
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout';
 
@@ -139,7 +140,7 @@ export default function SubscriptionPage() {
               const data = await res.json();
               setPromoValid(data.valid === true);
               if (data.valid) toast.success(data.discountPercent ? `已套用 ${data.discountPercent}% 折扣` : '優惠碼有效');
-              else toast.error(data.error || '優惠碼無效或已過期');
+              else toast.error(getErrorMessage(data) || '優惠碼無效或已過期');
             } catch {
               setPromoValid(false);
               toast.error('驗證失敗，請稍後再試');

@@ -233,9 +233,8 @@ export async function GET() {
         runChecks(),
         new Promise<NextResponse>((resolve) =>
             setTimeout(
-                () => resolve(errorResponse(504, 'Health check timeout', {
+                () => resolve(errorResponse(504, 'HEALTH_CHECK_TIMEOUT', {
                     message: '健康檢查逾時，請稍後再試',
-                    details: { timeoutMs: TOTAL_HEALTH_TIMEOUT_MS },
                 })),
                 TOTAL_HEALTH_TIMEOUT_MS
             )

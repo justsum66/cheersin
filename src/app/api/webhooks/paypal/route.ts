@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { logApiError, logApiWarn } from '@/lib/api-error-log'
 import { getTierFromPayPalPlanId } from '@/config/pricing.config'
@@ -429,18 +430,12 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV === 'production') {
       if (!process.env.PAYPAL_WEBHOOK_ID?.trim()) {
         logApiError('webhooks/paypal', new Error('PAYPAL_WEBHOOK_ID not set in production'), { isP0: true, requestId })
-        return NextResponse.json(
-          { error: 'Webhook not configured' },
-          { status: 503 }
-        )
+        return errorResponse(503, 'WEBHOOK_NOT_CONFIGURED', { message: 'Webhook not configured' })
       }
       const isValid = await verifyWebhookSignature(body, headers, requestId)
       if (!isValid) {
         logApiError('webhooks/paypal', new Error('Invalid webhook signature'), { code: 'invalid_signature', isP0: true, requestId })
-        return NextResponse.json(
-          { error: 'Invalid signature' },
-          { status: 401 }
-        )
+        return errorResponse(401, 'INVALID_SIGNATURE', { message: 'Invalid signature' })
       }
     }
 
@@ -467,10 +462,7 @@ export async function POST(request: NextRequest) {
           logApiWarn('webhooks/paypal', 'webhook_events table missing', { code: '42P01', requestId })
         } else {
           logApiError('webhooks/paypal', new Error(insertError.message), { code: insertError.code, isP0: true, requestId })
-          return NextResponse.json(
-            { error: 'Idempotency check failed' },
-            { status: 500 }
-          )
+          return errorResponse(500, 'IDEMPOTENCY_CHECK_FAILED', { message: 'Idempotency check failed' })
         }
       }
     }
@@ -479,10 +471,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 })
   } catch (error) {
     logApiError('webhooks/paypal', error, { action: 'handle-event', isP0: true, requestId })
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    )
+    return errorResponse(500, 'WEBHOOK_HANDLER_FAILED', { message: 'Webhook handler failed' })
   }
 }
 

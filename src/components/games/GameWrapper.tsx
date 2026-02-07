@@ -802,7 +802,7 @@ export default function GameWrapper({
   }, [isFullscreen])
 
   /** GAMES_500 #186 #22：遊戲標題與 document title 同步；變更時螢幕閱讀器 announce（可選） */
-  const GAMES_PAGE_TITLE = '派對遊樂場 | Cheersin — 酒桌派對遊戲'
+  const GAMES_PAGE_TITLE = '派對遊樂場 | Cheersin — 你的 AI 派對靈魂伴侶'
   useEffect(() => {
     if (typeof document !== 'undefined') document.title = `${title} | 派對遊樂場`
     setTitleAnnouncement(`頁面標題：${title} | 派對遊樂場`)

@@ -1,5 +1,6 @@
 'use client'
 
+import { getErrorMessage } from '@/lib/api-response'
 import { type ReactNode } from 'react'
 
 /**
@@ -44,7 +45,7 @@ export function PayPalButton({
         /** E25：503 時不重試，顯示服務暫不可用 */
         const msg = res.status === 503
           ? '訂閱服務暫不可用，請稍後再試或聯繫客服。'
-          : (data.message || data.error || '訂閱建立失敗');
+          : (getErrorMessage(data) || '訂閱建立失敗');
         onError?.(msg);
       }
     } catch (e) {

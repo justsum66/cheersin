@@ -6,14 +6,14 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
 /** GAMES_500 #1 #2 #32：預設 metadata 與 OG、canonical 一致；robots 允許索引 */
 export const metadata: Metadata = {
-  title: '派對遊樂場 | Cheersin — 酒桌派對遊戲',
-  description: '酒桌派對遊戲：真心話大冒險、國王杯、轉盤、骰子等，多人同樂。懲罰可自訂、不飲酒也能玩。',
-  keywords: ['派對遊戲', '酒桌遊戲', '真心話', '國王杯', 'Cheersin'],
+  title: '派對遊樂場 | Cheersin — 你的 AI 派對靈魂伴侶',
+  description: '你的 AI 派對靈魂伴侶：真心話大冒險、國王杯、轉盤、骰子等，多人同樂。懲罰可自訂、不飲酒也能玩。',
+  keywords: ['AI 派對靈魂伴侶', '派對遊戲', '酒桌遊戲', '真心話', '國王杯', 'Cheersin'],
   alternates: { canonical: `${BASE}/games` },
   robots: { index: true, follow: true },
   openGraph: {
-    title: '派對遊樂場 | Cheersin — 酒桌派對遊戲',
-    description: '酒桌派對遊戲，多人同樂。懲罰可自訂、不飲酒也能玩。',
+    title: '派對遊樂場 | Cheersin — 你的 AI 派對靈魂伴侶',
+    description: '你的 AI 派對靈魂伴侶，多人同樂。懲罰可自訂、不飲酒也能玩。',
     url: `${BASE}/games`,
     images: [{ url: `${BASE}/icons/icon-512.png`, width: 512, height: 512, alt: 'Cheersin 派對遊樂場' }],
   },

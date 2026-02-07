@@ -365,8 +365,10 @@ export function getGameMeta(id: string): GameMeta | undefined {
 /** T055 P1：免登入試玩遊戲 ID（骰子、轉盤），結束後引導登入 */
 export const GUEST_TRIAL_GAME_IDS: string[] = ['dice', 'roulette']
 
-/** G0.5：付費遊戲 ID 列表（需 premium 訂閱），後續新增 18+ 遊戲時在此加入 */
-export const PREMIUM_GAME_IDS: string[] = []
+/** P0-002：18+ 辣味專區付費牆 — 所有 adult 分類遊戲需 premium 訂閱 */
+export const PREMIUM_GAME_IDS: string[] = gamesWithCategory
+  .filter((g) => g.category === 'adult')
+  .map((g) => g.id)
 
 /** G0.5：檢查遊戲是否需要付費訂閱 */
 export function getGameRequiredTier(id: string): SubscriptionTier | undefined {

@@ -1,5 +1,6 @@
 'use client'
 
+import { getErrorMessage } from '@/lib/api-response'
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface RoomPlayer {
@@ -45,7 +46,7 @@ export function useGameRoom(slug: string | null) {
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        const msg = data.error || `HTTP ${res.status}`
+        const msg = getErrorMessage(data, `HTTP ${res.status}`)
         if (/過期|expired|not found|不存在/i.test(String(msg))) {
           permanentErrorSlugRef.current = s
           setError('房間已過期')
@@ -143,7 +144,7 @@ export function useGameRoom(slug: string | null) {
         })
         clearTimeout(timeoutId)
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) return { ok: false, error: (data as { error?: string }).error || (data as { message?: string }).message || `HTTP ${res.status}` }
+        if (!res.ok) return { ok: false, error: getErrorMessage(data, `HTTP ${res.status}`) }
         setPlayers((data as { players?: RoomPlayer[] }).players ?? [])
         return { ok: true }
       } catch (e) {
@@ -165,7 +166,7 @@ export function useGameRoom(slug: string | null) {
         body: JSON.stringify(password?.trim() ? { password: password.trim().slice(0, 4) } : {}),
       })
       const data = await res.json().catch(() => ({})) as { slug?: string; inviteUrl?: string; error?: string }
-      if (!res.ok) return { error: data.error || `HTTP ${res.status}` }
+      if (!res.ok) return { error: getErrorMessage(data, `HTTP ${res.status}`) }
       const url = data.inviteUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}/games?room=${data.slug}`
       return { slug: data.slug!, inviteUrl: url }
     } catch (e) {

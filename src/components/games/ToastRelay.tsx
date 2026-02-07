@@ -115,7 +115,21 @@ export default function ToastRelay() {
         </p>
       )}
       {!loser ? (
-        <form onSubmit={submitWord} className="w-full max-w-xs space-y-2">
+        <div className="w-full max-w-xs space-y-3">
+          {/* 開始一輪：明確 CTA，smoke 測試與無障礙用 */}
+          {chain.length === 0 && (
+            <button
+              type="button"
+              onClick={startRound}
+              disabled={isStartPending}
+              data-testid="toast-master-start"
+              aria-label="開始一輪"
+              className="w-full min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 text-white font-medium games-focus-ring hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-transform"
+            >
+              開始一輪
+            </button>
+          )}
+          <form onSubmit={submitWord} className="space-y-2">
           {/* G3D-ToastRelay-02：輸入區 3D 輸入框或陰影層次 */}
           <input
             ref={inputRef}
@@ -130,6 +144,7 @@ export default function ToastRelay() {
             送出
           </button>
         </form>
+        </div>
       ) : (
         <motion.div
           initial={reducedMotion ? false : { scale: 0.9 }}

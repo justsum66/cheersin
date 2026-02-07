@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { queryVectors } from '@/lib/pinecone'
 import { getEmbedding } from '@/lib/embedding'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logApiError } from '@/lib/api-error-log'
 
 const NAMESPACE_WINES = 'wines'
@@ -16,10 +17,10 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request.headers)
     /** WineRec-28：速率限制 30/分，429 時前端可提示 */
     if (isRateLimited(ip, 'recommend')) {
-      return NextResponse.json(
-        { error: '操作過於頻繁，請 1 分鐘後再試（每分鐘最多 30 次）' },
-        { status: 429, headers: { 'Retry-After': '60', 'X-RateLimit-Limit': '30' } }
-      )
+      const res = errorResponse(429, 'RATE_LIMITED', { message: '操作過於頻繁，請 1 分鐘後再試（每分鐘最多 30 次）' })
+      res.headers.set('Retry-After', '60')
+      res.headers.set('X-RateLimit-Limit', '30')
+      return res
     }
     const body = (await request.json()) as import('@/types/api-bodies').RecommendPostBody
 
@@ -85,9 +86,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     /** BE-15/SEC-17：結構化 log，不含 body/PII */
     logApiError('recommend', error)
-    return NextResponse.json(
-      { error: 'Recommendation failed', message: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    )
+    return serverErrorResponse(error)
   }
 }

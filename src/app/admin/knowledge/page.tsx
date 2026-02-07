@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { getErrorMessage } from '@/lib/api-response'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Pencil, Trash2, BookOpen } from 'lucide-react'
 
@@ -39,7 +40,7 @@ export default function AdminKnowledgePage() {
       const res = await fetch(API_BASE, { headers: headers() })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || `HTTP ${res.status}`)
+        throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       }
       const data = await res.json()
       setDocs(data.docs ?? [])
@@ -70,7 +71,7 @@ export default function AdminKnowledgePage() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+      if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setForm({ title: '', course_id: '', chapter: '', content: '' })
       setShowForm(false)
       await fetchDocs()
@@ -96,7 +97,7 @@ export default function AdminKnowledgePage() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+      if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setEditing(null)
       setForm({ title: '', course_id: '', chapter: '', content: '' })
       await fetchDocs()
@@ -113,7 +114,7 @@ export default function AdminKnowledgePage() {
     try {
       const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE', headers: headers() })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+      if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       await fetchDocs()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Delete failed')
