@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ChevronRight, Users, Heart, Star, Share2, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
+import { Badge } from '@/components/ui/Badge'
 import { GAME_DIFFICULTY_LABELS, type GameDifficulty } from '@/config/games.config'
 import { GAMES_CARD_PLAYERS_I18N_KEY } from '@/lib/games-ui-constants'
 
@@ -43,6 +44,8 @@ export interface GameCardData {
   twoPlayerFriendly?: boolean
   /** GAMES_500 #127：hover 時顯示的規則摘要（可選） */
   rulesSummary?: string
+  /** P1-123：新遊戲標籤 */
+  isNew?: boolean
 }
 
 /** GAMES_500 #115：描述 line-clamp 行數可配置，預設 2 */
@@ -163,8 +166,13 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
       }}
       whileTap={reducedMotion ? undefined : { scale: 0.98 }}
     >
-      {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊 */}
-      {game.popular && (
+      {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 New 標籤 */}
+      {game.isNew && (
+        <span className="absolute top-2 right-2 z-10">
+          <Badge variant="accent" size="sm">New</Badge>
+        </span>
+      )}
+      {game.popular && !game.isNew && (
         <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
           人氣
         </span>
@@ -225,7 +233,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         </span>
         <div className="flex flex-wrap gap-1.5 items-center mt-3">
           {game.category && displayLabel && (
-            <span className="inline-flex px-2 py-0.5 rounded bg-white/10 text-[10px] text-white/50">{displayLabel}</span>
+            <Badge variant="default" size="sm">{displayLabel}</Badge>
           )}
           {game.difficulty != null && (
             <span
@@ -246,7 +254,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             {game.players}
           </span>
           {game.twoPlayerFriendly && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 text-[10px] text-white/60" title="2 人即可玩" aria-hidden>2 人可玩</span>
+            <Badge variant="secondary" size="sm" title="2 人即可玩">2 人可玩</Badge>
           )}
           <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
         </div>

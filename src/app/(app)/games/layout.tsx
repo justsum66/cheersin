@@ -32,6 +32,26 @@ function GamesBreadcrumbJsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 }
 
+/** P1-065：遊戲頁 VideoGame 結構化數據 — 供搜尋引擎富媒體 */
+function GamesVideoGameJsonLd() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: '派對遊樂場 | Cheersin',
+    description: '真心話大冒險、國王杯、轉盤等酒桌派對遊戲。',
+    url: `${BASE}/games`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: [
+        { '@type': 'VideoGame', name: '真心話大冒險' },
+        { '@type': 'VideoGame', name: '國王杯' },
+        { '@type': 'VideoGame', name: '我從來沒有' },
+      ],
+    },
+  }
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+}
+
 /** GAMES_500 #12：無 JS 時靜態 fallback 文案 */
 function GamesNoscriptFallback() {
   return (
@@ -47,6 +67,7 @@ export default function GamesLayout({ children }: { children: React.ReactNode })
   return (
     <>
       <GamesBreadcrumbJsonLd />
+      <GamesVideoGameJsonLd />
       <GamesNoscriptFallback />
       {children}
     </>

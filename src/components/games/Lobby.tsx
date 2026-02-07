@@ -472,10 +472,26 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           )
         })}
       </div>
-      {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；id 供 tablist aria-describedby */}
-      <p id="lobby-game-count" className="text-sm mb-2 text-white/50" aria-live="polite">
-        共 {games.length} 款遊戲{sortedGames.length !== games.length ? `（當前 ${sortedGames.length} 款）` : ''}
-      </p>
+      {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；P1-114 隨機選一個 */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <p id="lobby-game-count" className="text-sm text-white/50" aria-live="polite">
+          共 {games.length} 款遊戲{sortedGames.length !== games.length ? `（當前 ${sortedGames.length} 款）` : ''}
+        </p>
+        {sortedGames.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const idx = Math.floor(Math.random() * sortedGames.length)
+              onSelect(sortedGames[idx].id)
+            }}
+            className="min-h-[44px] px-3 py-1.5 rounded-xl bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 text-sm font-medium flex items-center gap-1.5 games-focus-ring"
+            aria-label="隨機選一個遊戲"
+          >
+            <Shuffle className="w-4 h-4 shrink-0" aria-hidden />
+            隨機來一個
+          </button>
+        )}
+      </div>
       {/* GAMES_500 #49 #63 #64 #87：空狀態建議關鍵字／清除搜尋；建立房間為同頁區塊 */}
       {sortedGames.length === 0 && (
         <div className="text-center py-8 px-4" role="status" aria-live="polite">

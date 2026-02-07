@@ -9,6 +9,7 @@ const config: Config = {
   safelist: [{ pattern: /^via-secondary-\d+$/ }],
   theme: {
     extend: {
+      /* P1-041：品牌色板已擴展 50–950，供不同 UI 狀態使用 */
       colors: {
         primary: {
           50: '#fef2f2',

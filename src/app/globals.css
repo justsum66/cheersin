@@ -418,6 +418,22 @@
     background: none;
     border: none;
   }
+  /* P1-095：代碼塊 (Code Block) 樣式 — 左側品牌色條、一鍵複製區可選由組件提供 */
+  pre[data-code-block] {
+    border-left: 4px solid rgb(var(--primary) / 0.6);
+    position: relative;
+  }
+  /* P1-032：表單基礎 — 與 .input-glass 並存；select/textarea 基礎圓角與邊框 */
+  select:not([class*="input-glass"]) {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-height: 44px;
+  }
+  textarea:not([class*="input-glass"]) {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-height: 88px;
+  }
   /* UX_LAYOUT_200 #33：響應式斷點與 Tailwind 一致 — 註解供設計/開發對照；sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536 */
 
   /* Olivia/Cindy 低視力：prefers-contrast 時加強邊框與文字對比；P3 .glass-2 一併覆蓋 */

@@ -7,15 +7,17 @@ import type { ReactNode } from 'react'
  */
 export interface BadgeProps {
   children: ReactNode
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error'
+  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error'
   size?: 'sm' | 'md'
   className?: string
+  title?: string
 }
 
 const variantClasses: Record<NonNullable<BadgeProps['variant']>, string> = {
   default: 'bg-white/10 text-white/90 border-white/20',
   primary: 'bg-primary-500/20 text-primary-300 border-primary-500/40',
   secondary: 'bg-secondary-500/20 text-secondary-300 border-secondary-500/40',
+  accent: 'bg-accent-500/20 text-accent-300 border-accent-500/40',
   success: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
   warning: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
   error: 'bg-red-500/20 text-red-300 border-red-500/40',
@@ -31,11 +33,13 @@ export function Badge({
   variant = 'default',
   size = 'md',
   className = '',
+  title,
 }: BadgeProps) {
   return (
     <span
       className={`inline-flex items-center font-medium rounded-full border ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       role="status"
+      title={title}
     >
       {children}
     </span>

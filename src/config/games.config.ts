@@ -93,6 +93,8 @@ export interface GameMeta {
   rulesSummary?: string
   /** G0.5：付費遊戲所需訂閱等級（不設即免費） */
   requiredTier?: SubscriptionTier
+  /** P1-123：最近上線的新遊戲，卡片顯示 New 標籤 */
+  isNew?: boolean
 }
 
 /** 遊戲分類：派對／反應／猜數字／抽籤／其他／同桌對視／18+辣味。供 Lobby 篩選。 */
@@ -118,7 +120,7 @@ export const GAME_DIFFICULTY_LABELS: Record<GameDifficulty, string> = {
 
 /** 遊戲列表（順序即 Lobby 顯示順序）；任務 8/9：難度、每局約分鐘 */
 export const GAMES_META: GameMeta[] = [
-  { id: 'truth-or-dare', name: '真心話大冒險', description: '經典派對遊戲，揭開秘密或接受挑戰。', icon: MessageCircle, color: 'primary', players: '2-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zxhdmx zhenxinhuadamaoxian', twoPlayerFriendly: true },
+  { id: 'truth-or-dare', name: '真心話大冒險', description: '經典派對遊戲，揭開秘密或接受挑戰。', icon: MessageCircle, color: 'primary', players: '2-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zxhdmx zhenxinhuadamaoxian', twoPlayerFriendly: true, isNew: true },
   { id: 'roulette', name: '命運轉盤', description: '命運指針決定誰來喝一口。可自訂玩家名稱！', icon: RotateCw, color: 'secondary', players: '2-12 人', popular: true, difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'myzp mingyunzhuanpan', twoPlayerFriendly: true, rulesSummary: '指針轉到誰，誰喝一口。可自訂玩家名單。' },
   { id: 'trivia', name: '酒神隨堂考', description: '考驗酒類知識，答錯請喝！', icon: Target, color: 'accent', players: '1-6 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'jsstk jiushensuitangkao', twoPlayerFriendly: true },
   { id: 'dice', name: '深空骰子', description: '3D 數位擲骰，簡單暴力的比大小。', icon: Dices, color: 'white', players: '無限', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sksz shenkongshaizi', twoPlayerFriendly: true },
