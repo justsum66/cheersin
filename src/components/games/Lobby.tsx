@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
 import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
+import { Modal } from '@/components/ui/Modal'
 import { GameCard } from './GameCard'
 import { prefetchGame } from './GameLazyMap'
 import { getFavoriteGameIds, toggleFavorite, getGameRatings, setGameRating } from '@/lib/games-favorites'
@@ -60,6 +61,8 @@ interface GameOption {
   twoPlayerFriendly?: boolean
   /** GAMES_500 #127：卡片 hover 規則摘要 */
   rulesSummary?: string
+  /** P1-195：付費遊戲角標 */
+  isPremium?: boolean
 }
 
 /** GAMES_500 #61：猜你喜歡區塊「依你的遊玩與評分」可摺疊說明 */
@@ -171,6 +174,8 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const categoryTabListRef = useRef<HTMLDivElement>(null)
+  /** P1-118：遊戲規則快速預覽 Modal */
+  const [rulesModal, setRulesModal] = useState<{ name: string; rules: string } | null>(null)
 
   /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
@@ -547,6 +552,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               onRate: handleRate,
               isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
               twoPlayerFriendly: game.twoPlayerFriendly,
+              onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? '暫無規則摘要' }),
             }}
             index={index}
             onSelect={handleSelect}
@@ -557,6 +563,15 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
         </PrefetchOnVisible>
       ))}
       </div>
+
+      {/* P1-118：遊戲規則快速預覽 Modal */}
+      <Modal
+        open={rulesModal != null}
+        onClose={() => setRulesModal(null)}
+        title={rulesModal ? `規則：${rulesModal.name}` : undefined}
+      >
+        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{rulesModal?.rules ?? ''}</p>
+      </Modal>
     </div>
   )
 }

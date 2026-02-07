@@ -348,13 +348,13 @@ export const GAME_CATEGORY_BY_ID: Record<string, GameCategory> = {
   'vocal-war': 'party',
 }
 
-/** 帶分類的遊戲列表（供 Lobby 使用） */
-export type GameWithCategory = GameMeta & { category: GameCategory }
+/** 帶分類的遊戲列表（供 Lobby 使用）；P1-195 付費角標 */
+export type GameWithCategory = GameMeta & { category: GameCategory; isPremium?: boolean }
 
-export const gamesWithCategory: GameWithCategory[] = GAMES_META.map((g) => ({
-  ...g,
-  category: GAME_CATEGORY_BY_ID[g.id] ?? 'other',
-}))
+export const gamesWithCategory: GameWithCategory[] = GAMES_META.map((g) => {
+  const category = GAME_CATEGORY_BY_ID[g.id] ?? 'other'
+  return { ...g, category, isPremium: category === 'adult' }
+})
 
 /** 遊戲 ID 型別（由 GAMES_META 推導） */
 export type GameId = (typeof GAMES_META)[number]['id'] | null

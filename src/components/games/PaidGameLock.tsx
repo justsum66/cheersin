@@ -85,9 +85,9 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
               </div>
             </motion.div>
 
-            {/* 標題 */}
+            {/* P1-187：付費牆文案 — 強調解鎖後能獲得的刺激體驗，而非「你需要付費」 */}
             <h2 id="paid-game-lock-title" className="text-2xl font-display font-bold text-white mb-2">
-              {gameName}
+              解鎖「{gameName}」— 更多刺激在等你
             </h2>
 
             {/* 分類標籤 */}
@@ -98,9 +98,9 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
               </span>
             )}
 
-            {/* 說明文字 */}
-            <p className="text-white/70 mb-6">
-              此遊戲需要 <span className="text-primary-400 font-semibold">{tierLabel}</span> 方案才能遊玩
+            {/* 說明：解鎖後能獲得什麼 */}
+            <p className="text-white/80 mb-6">
+              升級 <span className="text-primary-400 font-semibold">{tierLabel}</span> 立即解鎖這款遊戲，與朋友玩到嗨。
             </p>
 
             {/* 功能列表 */}

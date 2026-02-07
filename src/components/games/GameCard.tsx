@@ -3,7 +3,7 @@
 import { memo, useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ChevronRight, Users, Heart, Star, Share2, type LucideIcon } from 'lucide-react'
+import { ChevronRight, Users, Heart, Star, Share2, Crown, HelpCircle, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import { Badge } from '@/components/ui/Badge'
 import { GAME_DIFFICULTY_LABELS, type GameDifficulty } from '@/config/games.config'
@@ -46,6 +46,10 @@ export interface GameCardData {
   rulesSummary?: string
   /** P1-123：新遊戲標籤 */
   isNew?: boolean
+  /** P1-195：付費功能角標（Pro/皇冠） */
+  isPremium?: boolean
+  /** P1-118：點擊規則圖標時彈出 Modal 預覽規則 */
+  onShowRules?: (game: { id: string; name: string; rulesSummary?: string }) => void
 }
 
 /** GAMES_500 #115：描述 line-clamp 行數可配置，預設 2 */
@@ -176,8 +180,14 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
       }}
       whileTap={reducedMotion ? undefined : { scale: 0.98 }}
     >
+      {/* P1-195：付費遊戲 Pro/皇冠角標 */}
+      {game.isPremium && (
+        <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-primary-500/90 to-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="Pro 方案解鎖">
+          <Crown className="w-3 h-3" /> Pro
+        </span>
+      )}
       {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 New 標籤 */}
-      {game.isNew && (
+      {game.isNew && !game.isPremium && (
         <span className="absolute top-2 right-2 z-10">
           <Badge variant="accent" size="sm">New</Badge>
         </span>
@@ -242,6 +252,16 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
         </span>
         <div className="flex flex-wrap gap-1.5 items-center mt-3">
+          {game.onShowRules != null && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); game.onShowRules?.({ id: game.id, name: game.name, rulesSummary: game.rulesSummary }); }}
+              className="games-touch-target inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-xs games-focus-ring"
+              aria-label="預覽遊戲規則"
+            >
+              <HelpCircle className="w-3.5 h-3.5" /> 規則
+            </button>
+          )}
           {game.category && displayLabel && (
             <Badge variant="default" size="sm">{displayLabel}</Badge>
           )}

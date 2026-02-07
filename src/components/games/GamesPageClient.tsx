@@ -517,11 +517,18 @@ function GamesPageContent() {
   return (
     <PullToRefresh onRefresh={handleRefresh} disabled={!!activeGame}>
       <div ref={mainContentRef} tabIndex={-1} className="games-content min-h-screen pt-0 pb-16 px-4 safe-area-px overflow-hidden relative" role="main" aria-label="派對遊樂場" onPointerDown={handlePreload}>
-        {/* Dynamic Background */}
-        <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary-500/5 rounded-full blur-[150px]" />
-      </div>
+        {/* Dynamic Background；P1-120：大廳背景氛圍 — 緩慢漸變光暈 */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/5 rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary-500/5 rounded-full blur-[150px]" />
+          <motion.div
+            className="absolute w-[400px] h-[400px] bg-accent-500/5 rounded-full blur-[120px]"
+            animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ top: '30%', left: '50%' }}
+            aria-hidden
+          />
+        </div>
 
       <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
         {/* 主內容：menu 或 game 二選一，mode="wait" 僅允許單一子節點 */}
