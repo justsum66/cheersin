@@ -141,6 +141,7 @@ export function trackEvent(event: AnalyticsEvent): void {
  * 需持久化到資料庫的事件名稱集合
  * 用於 API route 判斷哪些事件需寫入 Supabase
  */
+/** ANA.1：遊戲事件納入持久化 */
 const PERSIST_EVENT_NAMES = new Set([
   'user_signup',
   'user_login',
@@ -150,6 +151,13 @@ const PERSIST_EVENT_NAMES = new Set([
   'wine_view',
   'buy_link_click',
   'share',
+  'game_start',
+  'game_end',
+  'game_round',
+  'game_rounds',
+  'room_create',
+  'room_join',
+  'room_leave',
 ])
 
 /**

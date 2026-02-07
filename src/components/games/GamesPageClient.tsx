@@ -27,6 +27,7 @@ import toast from 'react-hot-toast'
 import { getWeeklyPlayCounts, incrementWeeklyPlay } from '@/lib/games-weekly'
 import { getLastSession, saveLastSession, clearLastSession } from '@/lib/games-last-session'
 import { setGameRating } from '@/lib/games-favorites'
+import { trackGameStart, trackGameEnd } from '@/lib/game-analytics'
 import { Star } from 'lucide-react'
 const STORAGE_KEY = 'cheersin_games_players'
 const ROOM_JOINED_KEY = 'cheersin_room_joined'
@@ -66,6 +67,9 @@ function GamesPageContent() {
   const mainContentRef = useRef<HTMLDivElement>(null)
   const rateModalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inviteCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** ANA.1：遊戲開始時間，用於離開時計算 duration */
+  const gameStartTimeRef = useRef<number>(0)
+  const lastTrackedGameIdRef = useRef<string | null>(null)
   useEffect(() => {
     return () => {
       if (rateModalTimeoutRef.current) {
@@ -219,6 +223,19 @@ function GamesPageContent() {
 
   const isInRoomMode = !!roomSlug && !!joinedDisplayName
   const players = isInRoomMode ? roomPlayers.map((p) => p.displayName) : localPlayers
+
+  /** ANA.1：進入遊戲時追蹤 game_start（僅在開局時送一次），離開時在 onExit 送 game_end */
+  useEffect(() => {
+    if (!activeGame) {
+      lastTrackedGameIdRef.current = null
+      return
+    }
+    if (lastTrackedGameIdRef.current === activeGame) return
+    lastTrackedGameIdRef.current = activeGame
+    gameStartTimeRef.current = Date.now()
+    trackGameStart(activeGame, players.length)
+  }, [activeGame, players.length])
+
   /** GAMES_500 #44：房間已滿時加入按鈕 disabled 與提示 */
   const roomFull = !!roomSlug && !joinedDisplayName && roomPlayers.length >= maxPlayers
   /** GAMES_500 #161：房間錯誤重試間隔與防抖（1.5s 內不重複） */
@@ -845,6 +862,9 @@ function GamesPageContent() {
                 description={selectedGame.description}
                 onExit={() => {
                   const exitedGame = activeGame
+                  const durationMs = gameStartTimeRef.current > 0 ? Date.now() - gameStartTimeRef.current : 0
+                  trackGameEnd(exitedGame ?? '', durationMs, 0)
+                  gameStartTimeRef.current = 0
                   setActiveGame(null)
                   /** AUDIT #20：離開遊戲後評分彈窗延遲 500ms，避免與關閉動畫重疊 */
                   if (rateModalTimeoutRef.current) clearTimeout(rateModalTimeoutRef.current)

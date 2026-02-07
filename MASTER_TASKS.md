@@ -116,7 +116,7 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 ### C3. Analytics
 | ID | Task |
 |----|------|
-| ANA.1 | 遊戲事件追蹤 |
+| ANA.1 | 遊戲事件追蹤 ✅（game_start/game_end 持久化；GamesPageClient 進入/離開送 track） |
 | ANA.2 | 學習行為分析 |
 | ANA.3 | 轉化漏斗監控 |
 
