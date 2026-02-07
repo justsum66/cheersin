@@ -362,8 +362,8 @@ export function getGameMeta(id: string): GameMeta | undefined {
   return GAMES_META.find((g) => g.id === id)
 }
 
-/** T055 P1：免登入試玩遊戲 ID（骰子、轉盤），結束後引導登入 */
-export const GUEST_TRIAL_GAME_IDS: string[] = ['dice', 'roulette']
+/** P0-009：訪客試玩 — 3–5 款非 18+ 熱門遊戲，試玩 3 次後強制登入 */
+export const GUEST_TRIAL_GAME_IDS: string[] = ['dice', 'roulette', 'trivia', 'never-have-i-ever', 'liar-dice']
 
 /** P0-002：18+ 辣味專區付費牆 — 所有 adult 分類遊戲需 premium 訂閱 */
 export const PREMIUM_GAME_IDS: string[] = gamesWithCategory

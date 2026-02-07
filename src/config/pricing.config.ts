@@ -45,12 +45,14 @@ export const PAYPAL_PLANS: Record<PayableTier, { name: string; description: stri
   },
 }
 
-/** 定價頁方案顯示用（不含 icon，icon 由頁面依 id 對應） */
+/** 定價頁方案顯示用（不含 icon，icon 由頁面依 id 對應）；P0-017：場景標籤用場景來賣 */
 export interface PricingPlanDisplay {
   id: 'starter' | 'pro' | 'elite'
   tier: SubscriptionTier
   name: string
   subName: string
+  /** P0-017：情侶方案 / 派對方案等場景標籤 */
+  sceneLabel?: string
   price: number
   originalPrice: number
   features: string[]
@@ -80,6 +82,7 @@ export const PRICING_PLANS_DISPLAY: PricingPlanDisplay[] = [
     tier: 'basic',
     name: '個人方案',
     subName: '品鑑家',
+    sceneLabel: '派對方案',
     price: 99,
     originalPrice: 199,
     popular: true,
@@ -98,6 +101,7 @@ export const PRICING_PLANS_DISPLAY: PricingPlanDisplay[] = [
     tier: 'premium',
     name: 'VIP 方案',
     subName: '大師級',
+    sceneLabel: '情侶・派對方案',
     price: 199,
     originalPrice: 399,
     features: [

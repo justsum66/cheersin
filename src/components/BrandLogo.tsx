@@ -39,7 +39,7 @@ export function BrandLogo({
   const isCompact = variant === 'compact' || variant === 'header'
 
   const content = (
-    <span className={`inline-flex items-center gap-2 sm:gap-3 ${className}`}>
+    <span className={`brand-logo inline-flex items-center gap-2 sm:gap-3 ${className}`}>
       <span
         className={`
           relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-xl

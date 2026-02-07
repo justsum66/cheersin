@@ -195,6 +195,9 @@ export default function PricingPage() {
                 <FeatureIcon icon={plan.icon} size="md" color={plan.color as 'white' | 'primary' | 'accent'} />
                 <h3 className="text-2xl font-bold text-white mt-4 mb-1">{plan.name}</h3>
                 <p className="text-white/50 text-sm mb-2">{plan.subName}</p>
+                {plan.sceneLabel && (
+                  <p className="text-primary-400/90 text-xs font-medium uppercase tracking-wider" aria-label="適用場景">{plan.sceneLabel}</p>
+                )}
                 {/* D53 原價刪除線 + 紅色「省 XX%」 */}
                 {plan.price > 0 && plan.originalPrice != null && plan.originalPrice > plan.price && billingCycle === 'monthly' && (
                   <div className="flex items-center gap-2 flex-wrap mb-1">

@@ -1,16 +1,19 @@
 import Link from 'next/link'
 
-/** EXPERT_60 P2：404 友善化 — 返回首頁 + 熱門連結（Quiz、Games、Pricing） */
+/** EXPERT_60 P2 / P1-043：404 友善化 — 返回首頁 + 熱門連結；無障礙 title/description */
 export default function NotFound() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
       style={{ background: 'linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%)' }}
+      role="main"
+      aria-labelledby="not-found-title"
+      aria-describedby="not-found-desc"
     >
-      <h1 className="home-heading-2 font-display font-bold mb-2">
+      <h1 id="not-found-title" className="home-heading-2 font-display font-bold mb-2">
         <span className="gradient-text">404</span>
       </h1>
-      <p className="home-text-muted mb-6">找不到此頁面</p>
+      <p id="not-found-desc" className="home-text-muted mb-6">找不到此頁面</p>
       <Link href="/" className="btn-primary mb-6">
         返回首頁
       </Link>

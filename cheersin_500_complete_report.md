@@ -41,7 +41,7 @@
 
 ## 1. [P0] 根本性重塑 (Fundamental Reshaping) - 25 項
 
-**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-014、P0-015、P0-019、P0-021 ✅ 已完成（價值主張、18+ 付費牆、情侶模式、AI 侍酒師派對、首頁靈魂酒測 CTA、env.example、API 錯誤格式統一、CSP 強化、README 重寫）。
+**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021 ✅ 已完成（價值主張、18+ 付費牆、情侶模式、訪客試玩 3 次登入、定價場景化、env.example、API 錯誤格式統一、CSP 強化、README 重寫）。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 
@@ -55,7 +55,7 @@
 | **P0-006** ✅ | **強化「AI 侍酒師」的派對屬性：** 增加「幫我選遊戲」、「根據我們的人數推薦」等預設問題，讓 AI 成為派對的組織者，而不僅僅是問酒的工具。 | **(Master Sommelier)** 讓 AI 融入真實場景，解決用戶「不知道玩什麼」的痛點。 | `assistant/page.tsx`, `chat/route.ts` | 4h |
 | **P0-007** ✅ | **首頁第一屏聚焦「靈魂酒測」：** 將「派對遊樂場」按鈕弱化，將「開始靈魂酒測」作為唯一的、最主要的 CTA。 | **(Stripe 總監)** 用戶路徑必須單一。先用免費的、高價值的「酒測」鉤住用戶，再引導至遊戲和付費。 | `(marketing)/page.tsx`, `HomePageClient.tsx` | 3h |
 | **P0-008** | **遊戲化「用戶等級」系統：** 將 Profile 頁的等級、經驗值視覺化，設計明確的升級路徑和獎勵（如：解鎖新頭像框、輪盤主題）。 | **(Duolingo 專家)** 用戶需要看到自己的成長，並期待下一次升級。這是提升留存的關鍵。 | `profile/page.tsx`, `gamification.ts` | 6h |
-| **P0-009** | **建立「訪客試玩」流程：** `GUEST_TRIAL_GAME_IDS` 應包含 3-5 款最吸引人的非 18+ 遊戲。試玩 3 次後，強制彈出註冊/登入框。 | **(增長黑客)** 降低體驗門檻，讓用戶先愛上產品，再要求他們註冊。 | `games.config.ts`, `GamesPageClient.tsx` | 4h |
+| **P0-009** ✅ | **建立「訪客試玩」流程：** `GUEST_TRIAL_GAME_IDS` 應包含 3-5 款最吸引人的非 18+ 遊戲。試玩 3 次後，強制彈出註冊/登入框。 | **(增長黑客)** 降低體驗門檻，讓用戶先愛上產品，再要求他們註冊。 | `games.config.ts`, `GamesPageClient.tsx` | 4h |
 | **P0-010** | **設計「病毒式分享」機制：** 任何遊戲結果頁（如真心話題目、懲罰結果）都應有一鍵生成「故事卡片」並分享到 IG/FB 的功能。卡片需帶有 Cheersin 的 Logo 和網址。 | **(網紅KOL)** 讓用戶成為你的免費廣告牌。分享的內容必須有趣、有槽點。 | `GameWrapper.tsx`, `CopyResultButton.tsx` | 5h |
 | **P0-011** | **重構 `games.config.ts`：** 目前 98 個遊戲定義混亂。必須按 `party`, `guess`, `reaction`, `adult` 等核心分類重組，並為每個遊戲增加 `short_description` 和 `rules_summary` 字段。 | **(Netflix 架構師)** 這是所有遊戲邏輯的源頭，必須清晰、可擴展。 | `games.config.ts` | 8h |
 | **P0-012** | **實現 Supabase RLS (Row Level Security)：** 當前數據庫訪問控制薄弱。必須為 `game_rooms`, `profiles` 等核心表格設定嚴格的 RLS 策略，確保用戶只能訪問自己的數據。 | **(資安專家)** 這是 P0 級別的安全漏洞，必須立即修復。 | `supabase` 後台配置 | 6h |
@@ -63,7 +63,7 @@
 | **P0-014** ✅ | **建立完整的 `env.example`：** 當前的 `.env.example` 缺少大量關鍵變量（如 `PAYPAL_WEBHOOK_ID`）。必須提供一個完整的、帶有詳細註釋的範例文件。 | **(Vercel 總監)** 讓新開發者能在 30 分鐘內跑起項目，而不是花半天時間猜環境變量。 | `.env.example` | 2h |
 | **P0-015** ✅ | **統一 API 錯誤響應格式：** API 錯誤格式不一。必須定義統一的錯誤響應結構（`{ success: false, error: { code: '...', message: '...' } }`），並在所有 `route.ts` 中實施。 | **(後端架構師)** 規範化是可維護性的前提。前端可以依此建立統一的錯誤處理邏輯。 | `api-response.ts`, 所有 `api/**/*.ts` | 4h |
 | **P0-016** | **實現「傳手機模式」：** `PassPhoneMode` 相關功能不完整。必須完成該模式，讓單一設備的多人遊戲體驗流暢。輪到某人時，手機應震動並顯示其暱稱。 | **(UX 設計師)** 這是線下聚會的核心場景，必須做到極致。 | `PassPhoneMode.tsx`, `PassPhoneProvider.tsx` | 6h |
-| **P0-017** | **重塑 `pricing/page.tsx`：** 定價頁必須重塑，突出「情侶方案」或「派對方案」，而不是單純的 `pro` 和 `elite`。用場景來賣，而不是用功能列表。 | **(Stripe 總監)** 用戶為了解決問題而付費，而不是為了購買功能。告訴他們這個方案能如何改善他們的派對/戀愛生活。 | `pricing/page.tsx`, `pricing.config.ts` | 5h |
+| **P0-017** ✅ | **重塑 `pricing/page.tsx`：** 定價頁必須重塑，突出「情侶方案」或「派對方案」，而不是單純的 `pro` 和 `elite`。用場景來賣，而不是用功能列表。 | **(Stripe 總監)** 用戶為了解決問題而付費，而不是為了購買功能。告訴他們這個方案能如何改善他們的派對/戀愛生活。 | `pricing/page.tsx`, `pricing.config.ts` | 5h |
 | **P0-018** | **優化「遊戲大廳」加載性能：** `GamesPageClient.tsx` 過於臃腫，首次加載時間過長。必須使用 `React.lazy` 和 `Suspense` 對非首屏遊戲列表進行懶加載。 | **(Web Vitals 工程師)** 用戶等待超過 3 秒就會離開。遊戲大廳是核心頁面，性能必須是 P0。 | `GamesPageClient.tsx`, `GameLazyMap.tsx` | 6h |
 | **P0-019** ✅ | **設定 CSP (Content Security Policy)：** `next.config.ts` 中的安全頭不完整。必須設定嚴格的 CSP，防止 XSS 攻擊。 | **(資安專家)** 一個 XSS 漏洞就可能導致用戶 token 被盜，後果不堪設想。 | `next.config.ts` | 3h |
 | **P0-020** | **引入日誌系統：** 當前缺乏有效的後端日誌。應引入 `pino` 或類似庫，並在所有 API 路由的關鍵路徑（如支付、創建房間）添加結構化日誌。 | **(DevOps 專家)** 沒有日誌，就等於蒙著眼睛開車。出現問題時無法追蹤和診斷。 | `logger.ts`, `api/**/*.ts` | 4h |
@@ -90,18 +90,18 @@
 | **P1-030** | **高對比度模式：** 為色弱或視力障礙用戶實現高對比度模式，所有顏色需有對應的高對比度版本。 | **(無障礙專家)** 讓更多人能無障礙地使用你的產品。 | `ThemeContext.tsx`, `tailwind.config.ts` | 4h |
 | **P1-031** | **統一 Modal 組件：** 專案中存在多種 Modal 實現。需要建立一個統一的 `Modal.tsx` 組件，處理遮罩、關閉按鈕、焦點鎖定和進出場動畫。 | **(React 核心成員)** 避免重複造輪子，確保所有彈窗行為一致。 | `components/ui/Modal.tsx` | 6h |
 | **P1-032** | **統一表單元素風格：** `input`, `button`, `select` 等表單元素的風格不統一。需要在 `globals.css` 中為其定義基礎樣式，並在各處應用。 | **(設計系統負責人)** 一致的表單是專業感的體現。 | `globals.css`, `components/ui/Input.tsx` | 5h |
-| **P1-033** | **玻璃擬態效果優化：** `glass-card` 的 `backdrop-blur` 效果在不同瀏覽器上表現不一。需要增加 fallback 顏色，並優化模糊半徑和邊框透明度。 | **(Dribbble 藝術總監)** 細節決定成敗。一個精緻的玻璃效果能極大提升科技感。 | `globals.css` | 2h |
-| **P1-034** | **滾動條美化：** 美化全局滾動條樣式，使其更纖細、顏色與主題匹配，並在 hover 時才完全顯示。 | **(UI 設計師)** 滾動條是常駐元素，美化它能提升整體精緻度。 | `globals.css` | 1h |
+| **P1-033** ✅ | **玻璃擬態效果優化：** `glass-card` 的 `backdrop-blur` 效果在不同瀏覽器上表現不一。需要增加 fallback 顏色，並優化模糊半徑和邊框透明度。 | **(Dribbble 藝術總監)** 細節決定成敗。一個精緻的玻璃效果能極大提升科技感。 | `globals.css` | 2h |
+| **P1-034** ✅ | **滾動條美化：** 美化全局滾動條樣式，使其更纖細、顏色與主題匹配，並在 hover 時才完全顯示。 | **(UI 設計師)** 滾動條是常駐元素，美化它能提升整體精緻度。 | `globals.css` | 1h |
 | **P1-035** | **建立骨架屏 (Skeleton) 組件：** 為 `GameCard`, `WineCard`, `Profile` 等需要異步加載數據的組件製作對應的骨架屏，提升加載體驗。 | **(Web Vitals 工程師)** 骨架屏能有效降低感知加載時間（Perceived Performance）。 | `components/ui/Skeleton.tsx` | 4h |
-| **P1-036** | **響應式斷點規範：** 在 `tailwind.config.ts` 中明確定義 `sm`, `md`, `lg`, `xl`, `2xl` 的斷點值，並在整個專案中統一使用。 | **(前端架構師)** 避免在代碼中使用魔術數字（magic numbers）。 | `tailwind.config.ts` | 1h |
+| **P1-036** ✅ | **響應式斷點規範：** 在 `tailwind.config.ts` 中明確定義 `sm`, `md`, `lg`, `xl`, `2xl` 的斷點值，並在整個專案中統一使用。 | **(前端架構師)** 避免在代碼中使用魔術數字（magic numbers）。 | `tailwind.config.ts` | 1h |
 | **P1-037** | **觸控目標尺寸：** 確保所有可點擊元素的最小觸控目標尺寸不小於 44x44px，符合 Apple HIG 和 Google Material Design 規範。 | **(Apple HIG 設計師)** 避免用戶誤觸，這是移動端體驗的基礎。 | `globals.css` | 3h |
-| **P1-038** | **焦點狀態 (Focus State) 美化：** 當前 `focus-visible` 樣式不明顯。需要設計一個清晰、美觀的全局焦點環，在鍵盤導航時高亮顯示。 | **(無障礙專家)** 讓鍵盤用戶能清楚地知道自己在哪裡。 | `globals.css` | 2h |
+| **P1-038** ✅ | **焦點狀態 (Focus State) 美化：** 當前 `focus-visible` 樣式不明顯。需要設計一個清晰、美觀的全局焦點環，在鍵盤導航時高亮顯示。 | **(無障礙專家)** 讓鍵盤用戶能清楚地知道自己在哪裡。 | `globals.css` | 2h |
 | **P1-039** | **Toast 通知系統：** `react-hot-toast` 的樣式比較簡陋。需要自定義其樣式，使其符合 App 的整體視覺風格，並增加成功、失敗、警告等不同狀態的圖標。 | **(UI 設計師)** Toast 是與用戶溝通的重要渠道，其設計不應被忽視。 | `ToastContext.tsx`, `globals.css` | 3h |
 | **P1-040** | **頁面過渡動畫：** 在 `layout.tsx` 中使用 `AnimatePresence` 為頁面切換增加淡入淡出或滑動的過渡動畫，提升流暢感。 | **(動效設計師)** 平滑的過渡能讓應用感覺更像一個整體。 | `layout.tsx` | 2h |
 | **P1-041** | **品牌色板擴展：** 當前的 `primary` 和 `secondary` 顏色不夠豐富。需要為每個品牌色擴展出 50-950 的完整色板，以應對不同 UI 狀態。 | **(Material Design 創始人)** 完整的色板是實現精細 UI 設計的基礎。 | `tailwind.config.ts` | 4h |
 | **P1-042** | **空狀態 (Empty State) 設計：** 為遊戲列表、聊天歷史、收藏夾等可能為空的頁面設計友好且帶有引導操作的空狀態插圖和文案。 | **(UX 設計師)** 空狀態是一個引導用戶的絕佳機會，而不是一個死胡同。 | `components/ui/EmptyState.tsx` | 3h |
-| **P1-043** | **錯誤頁面 (404, 500) 設計：** 設計自定義的 404 和 500 錯誤頁面，風格需與 App 保持一致，並提供返回首頁的明確指引。 | **(UX 設計師)** 即使用戶遇到錯誤，也要給他們提供良好的體驗。 | `app/not-found.tsx`, `app/error.tsx` | 2h |
-| **P1-044** | **陰影系統 (Box Shadow)：** 在 `tailwind.config.ts` 中定義一套層級化的陰影（`sm`, `md`, `lg`, `xl`），用於卡片、彈窗等元素的層級區分。 | **(UI 設計師)** 合理的陰影能創造空間感和層次感。 | `tailwind.config.ts` | 2h |
+| **P1-043** ✅ | **錯誤頁面 (404, 500) 設計：** 設計自定義的 404 和 500 錯誤頁面，風格需與 App 保持一致，並提供返回首頁的明確指引。 | **(UX 設計師)** 即使用戶遇到錯誤，也要給他們提供良好的體驗。 | `app/not-found.tsx`, `app/error.tsx` | 2h |
+| **P1-044** ✅ | **陰影系統 (Box Shadow)：** 在 `tailwind.config.ts` 中定義一套層級化的陰影（`sm`, `md`, `lg`, `xl`），用於卡片、彈窗等元素的層級區分。 | **(UI 設計師)** 合理的陰影能創造空間感和層次感。 | `tailwind.config.ts` | 2h |
 | **P1-045** | **間距 (Spacing) 規範：** 統一使用 8px 網格系統。在 `tailwind.config.ts` 中定義 `spacing` 單位，並在代碼中用 `p-2`, `m-4` 等代替 `p-[7px]` 這樣的硬編碼。 | **(設計系統負責人)** 統一的間距是實現像素級完美的關鍵。 | `tailwind.config.ts` | 3h |
 
 ### 2.2 首頁 & 導航 (Home & Navigation) - 20 項
@@ -114,9 +114,9 @@
 | **P1-049** | **Testimonials 輪播優化：** `HomeTestimonials.tsx` 的輪播應改為無限循環滾動，並在底部增加可點擊的圓點指示器。 | **(UX 設計師)** 提升輪播的可控性和用戶感知。 | `HomeTestimonialsCarousel.tsx` | 3h |
 | **P1-050** | **FAQ 手風琴動畫：** `HomeFAQAccordion.tsx` 的展開和折疊應有平滑的高度變化動畫，而不是瞬間完成。 | **(動效設計師)** 平滑的過渡動畫符合用戶的物理直覺。 | `HomeFAQAccordion.tsx` | 2h |
 | **P1-051** | **移動端漢堡菜單：** `Navigation.tsx` 的移動端菜單從左側滑出，並帶有遮罩層。菜單項應有入場動畫。 | **(UI 設計師)** 這是移動端導航的標準實踐。 | `components/navigation/Navigation.tsx` | 3h |
-| **P1-052** | **Logo 優化：** `BrandLogo.tsx` 中的 Logo 在不同主題下應有對應的顏色版本，並確保為 SVG 格式以實現無損縮放。 | **(品牌設計師)** Logo 是品牌的臉面，必須在任何情況下都清晰、美觀。 | `components/BrandLogo.tsx` | 1h |
+| **P1-052** ✅ | **Logo 優化：** `BrandLogo.tsx` 中的 Logo 在不同主題下應有對應的顏色版本，並確保為 SVG 格式以實現無損縮放。 | **(品牌設計師)** Logo 是品牌的臉面，必須在任何情況下都清晰、美觀。 | `components/BrandLogo.tsx` | 1h |
 | **P1-053** | **Footer 重新設計：** 當前的 Footer 信息過於簡單。需要重新設計，包含網站地圖、社交媒體鏈接、聯繫方式和版權信息。 | **(UX 設計師)** Footer 是用戶尋找信息的最後一站，其結構應清晰明了。 | `components/navigation/Footer.tsx` (需創建) | 4h |
-| **P1-054** | **滾動指示器 (Scroll Indicator)：** 在 Hero 區底部增加一個向下的箭頭或鼠標滾輪圖標，提示用戶向下滾動。該圖標在滾動後淡出。 | **(UX 設計師)** 給予用戶明確的行為暗示。 | `HomePageClient.tsx` | 1h |
+| **P1-054** ✅ | **滾動指示器 (Scroll Indicator)：** 在 Hero 區底部增加一個向下的箭頭或鼠標滾輪圖標，提示用戶向下滾動。該圖標在滾動後淡出。 | **(UX 設計師)** 給予用戶明確的行為暗示。 | `HomePageClient.tsx` | 1h |
 | **P1-055** | **視差滾動效果：** 首頁的背景元素或裝飾性圖形應在滾動時產生 subtle 的視差效果，增加頁面深度。 | **(動效設計師)** 視差效果能創造沉浸感。 | `HomePageClient.tsx` | 3h |
 | **P1-056** | **導航欄 active 狀態：** `Navigation.tsx` 中，當前所在頁面的導航鏈接應有明顯的 active 狀態（如下劃線、不同顏色或背景）。 | **(UI 設計師)** 幫助用戶定位自己在網站中的位置。 | `components/navigation/Navigation.tsx` | 1h |
 | **P1-057** | **用戶頭像與下拉菜單：** 登入後，導航欄右上角應顯示用戶頭像。點擊頭像彈出下拉菜單，包含「個人資料」、「設定」、「登出」等選項。 | **(UX 設計師)** 這是所有 SaaS 應用的標準用戶入口。 | `components/navigation/UserMenu.tsx` (需創建) | 4h |

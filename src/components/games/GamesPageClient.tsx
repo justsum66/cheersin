@@ -35,6 +35,27 @@ const RECENT_GAMES_KEY = 'cheersin_games_recent'
 const RECENT_GAMES_MAX = 5
 /** 任務 28：首次教學已讀 key */
 const TUTORIAL_DONE_KEY = 'cheersin_games_tutorial_done'
+/** P0-009：訪客試玩次數（sessionStorage），達 3 次後強制登入 */
+const GUEST_TRIAL_COUNT_KEY = 'cheersin_guest_trial_count'
+const GUEST_TRIAL_LIMIT = 3
+function getGuestTrialCount(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const v = sessionStorage.getItem(GUEST_TRIAL_COUNT_KEY)
+    return v ? Math.max(0, parseInt(v, 10)) : 0
+  } catch {
+    return 0
+  }
+}
+function incrementGuestTrialCount(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const n = getGuestTrialCount() + 1
+    sessionStorage.setItem(GUEST_TRIAL_COUNT_KEY, String(n))
+  } catch {
+    /* ignore */
+  }
+}
 /** GAMES_500 #100：Lobby 與 GameWrapper 切換動畫時長常數化 */
 const LOBBY_GAME_TRANSITION_MS = 300
 /** GAMES_500 #138：建立房間成功後「已複製」按鈕回饋顯示時長（ms） */
@@ -167,6 +188,8 @@ function GamesPageContent() {
   /** 任務 10：離開遊戲後彈出 1–5 星評分；EXPERT_60 P2：A/B 文案 variant（0=為剛才評分、1=喜歡嗎給個星） */
   const [gameIdToRate, setGameIdToRate] = useState<string | null>(null)
   const [ratingVariant, setRatingVariant] = useState<0 | 1>(() => (typeof window !== 'undefined' && Math.random() < 0.5 ? 0 : 1))
+  /** P0-009：訪客試玩達 3 次後顯示登入 modal */
+  const [showGuestTrialLimitModal, setShowGuestTrialLimitModal] = useState(false)
 
   /** EXPERT_60 P2：評分彈窗出現時送 analytics（variant 用於 A/B） */
   useEffect(() => {
@@ -836,6 +859,11 @@ function GamesPageContent() {
                   recentGameIds={recentGameIds}
                   weeklyPlayCounts={weeklyPlayCounts}
                   onSelect={(id) => {
+                    /** P0-009：訪客試玩 3 次後強制登入 */
+                    if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
+                      setShowGuestTrialLimitModal(true)
+                      return
+                    }
                     savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
                     setActiveGame(id)
                     saveLastSession(id)
@@ -872,8 +900,9 @@ function GamesPageContent() {
                     rateModalTimeoutRef.current = null
                     setGameIdToRate(exitedGame ?? null)
                   }, 500)
-                  /** T055 P1：試玩結束後引導登入（骰子、轉盤，非房間模式） */
+                  /** P0-009 / T055：試玩結束後計數並引導登入；達 3 次後下次點試玩會彈登入 modal */
                   if (!roomSlug && exitedGame && GUEST_TRIAL_GAME_IDS.includes(exitedGame)) {
+                    incrementGuestTrialCount()
                     toast(
                       (t) => (
                         <span className="flex items-center gap-2 flex-wrap">
@@ -908,6 +937,51 @@ function GamesPageContent() {
         <AnimatePresence>
           {showSettingsModal && (
             <SettingsModal key="settings-modal" onClose={() => setShowSettingsModal(false)} />
+          )}
+        </AnimatePresence>
+
+        {/* P0-009：訪客試玩 3 次後強制登入 modal */}
+        <AnimatePresence>
+          {showGuestTrialLimitModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setShowGuestTrialLimitModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="guest-trial-limit-title"
+                aria-describedby="guest-trial-limit-desc"
+              >
+                <h2 id="guest-trial-limit-title" className="text-xl font-bold text-white mb-2">試玩已達 3 次</h2>
+                <p id="guest-trial-limit-desc" className="text-white/70 text-sm mb-6">登入後可開房間、保存進度並暢玩全部遊戲。</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/login"
+                    className="min-h-[48px] inline-flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
+                    onClick={() => setShowGuestTrialLimitModal(false)}
+                  >
+                    前往登入
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShowGuestTrialLimitModal(false)}
+                    className="min-h-[48px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
+                    aria-label="關閉"
+                  >
+                    稍後再說
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

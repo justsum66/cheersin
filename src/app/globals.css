@@ -107,6 +107,30 @@
     padding: 0;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
+  /* P1-034：滾動條美化 — 纖細、主題色、hover 時更明顯 */
+  :root {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.5);
+  }
+  /* P1-038：焦點環 — 鍵盤導航時清晰可見 */
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+  }
   /* 280 安全區域：底部導航避開 iPhone 等劉海/Home 條；UX_LAYOUT_200 #35；UX-08 全站 main 底部留安全區 */
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -230,6 +254,16 @@
   }
   html.light .glass-2 {
     @apply bg-white/80 border-gray-200/60 backdrop-blur-xl;
+  }
+  /* P1-052：Logo 亮色主題時文字深色、保持可讀 */
+  html.light .brand-logo .font-display {
+    @apply text-gray-900;
+  }
+  html.light .brand-logo .text-primary-500 {
+    @apply text-[#8B0000];
+  }
+  html.light .brand-logo span.text-white\/40 {
+    @apply text-gray-500;
   }
 
   /* 125 字體大小調節全站：依 --text-scale 縮放根字級 */
@@ -564,9 +598,14 @@
   }
 
   /* 23 卡片圓角：lg 16px、xl 24px；24 陰影品牌色調 */
-  /* Phase 1 A3.4: glass-morphism hover 效果增強 */
+  /* Phase 1 A3.4: glass-morphism hover 效果增強；P1-033：無 backdrop-filter 時 fallback 背景 */
   .glass-card {
     @apply relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-all duration-500 shadow-glass-1;
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass-card {
+      background: rgba(10, 10, 26, 0.92);
+    }
   }
   .glass-card-xl {
     @apply rounded-3xl;

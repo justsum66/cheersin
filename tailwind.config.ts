@@ -165,6 +165,11 @@ const config: Config = {
         },
       },
       boxShadow: {
+        /* P1-044：層級化陰影（卡片/彈窗用），不覆蓋 Tailwind 預設 */
+        'card-sm': '0 1px 3px 0 rgb(0 0 0 / 0.08)',
+        'card-md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
+        'card-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
+        'card-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.04)',
         glow: '0 0 20px rgba(139, 0, 0, 0.25)',
         'glow-lg': '0 0 40px rgba(139, 0, 0, 0.35)',
         'glow-primary': '0 0 30px rgba(139, 0, 0, 0.4)',
