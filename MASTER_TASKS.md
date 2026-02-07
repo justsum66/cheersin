@@ -10,7 +10,7 @@
 | Phase 2 Course Optimization | 60 | 60 | 0 |
 | Game Strategy (50 Games) | 93 | 93 | 0 |
 | UX/UI Optimizations | 100 | 100 | 0 |
-| PWA/Security/Enterprise | ~250 | ~250 | 0 |
+| C. Infrastructure & Tech Debt (Optional) | 9 | 4 | 5 |
 
 ---
 
@@ -99,21 +99,21 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 
 ## C. Infrastructure & Tech Debt (Optional)
 
-### C1. PWA Enhancements
+### C1. PWA Enhancements ✅（3 項已完成）
 | ID | Task |
 |----|------|
-| PWA.1 | SW 更新提示優化 |
-| PWA.2 | 離線模式增強 |
-| PWA.3 | 推播通知系統 |
+| PWA.1 | SW 更新提示優化 ✅（稍後 24h 冷卻、aria、說明文案） |
+| PWA.2 | 離線模式增強 ✅（OfflineBanner、offline.html、SW fallback） |
+| PWA.3 | 推播通知系統 ✅（push_subscriptions 表、POST /api/push-subscribe、PushSubscribe 送後端） |
 
-### C2. Performance
+### C2. Performance（3 項未完成）
 | ID | Task |
 |----|------|
 | PERF.1 | 圖片 CDN 整合 |
 | PERF.2 | API 響應快取 |
 | PERF.3 | Bundle 分割優化 |
 
-### C3. Analytics
+### C3. Analytics（2 項未完成）
 | ID | Task |
 |----|------|
 | ANA.1 | 遊戲事件追蹤 ✅（game_start/game_end 持久化；GamesPageClient 進入/離開送 track） |

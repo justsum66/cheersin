@@ -4,9 +4,10 @@ const CACHE_VERSION = 'v2'
 const CACHE_NAME = `cheersin-${CACHE_VERSION}`
 const RUNTIME_CACHE = `cheersin-runtime-${CACHE_VERSION}`
 
-/* 靈態資源快取（cache-first） */
+/* 靈態資源快取（cache-first）；PWA.2 離線 fallback 頁 */
 const STATIC_URLS = [
   '/',
+  '/offline.html',
   '/favicon-32x32.png',
   '/favicon-16x16.png',
   '/logo.png',
@@ -90,7 +91,7 @@ self.addEventListener('fetch', (event) => {
     }).catch(() => {
       return caches.match(event.request).then((cached) => {
         if (cached) return cached
-        if (event.request.mode === 'navigate') return caches.match('/') || caches.match(STATIC_URLS[0])
+        if (event.request.mode === 'navigate') return caches.match('/offline.html').then((off) => off || caches.match('/'))
         return new Response('', { status: 503, statusText: 'Offline' })
       })
     })

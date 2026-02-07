@@ -38,7 +38,11 @@ export default function PushSubscribe() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_KEY) as BufferSource,
       })
-      /* 可將 subscription 送至後端：subscription.toJSON() */
+      fetch('/api/push-subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: subscription.toJSON() }),
+      }).catch(() => { /* 訂閱已成立，後端儲存為最佳努力 */ })
       setStatus('subscribed')
     } catch {
       setStatus('denied')
