@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useDeferredValue, useRef, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -1408,6 +1408,19 @@ export default function LearnPage() {
             <div>
               <h2 className="font-semibold text-white">知識圖譜</h2>
               <p className="text-white/50 text-sm">課程關聯視覺化，完成後可接續的課程</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          <Link
+            href="/learn/kol"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-amber-500/20">
+              <Users className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">KOL 推薦榜單</h2>
+              <p className="text-white/50 text-sm">網紅與專家精選課程（籌備中）</p>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>
