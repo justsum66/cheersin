@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { ClickableImage } from '@/components/ui/ImageLightbox'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles, Focus, ChevronDown, ChevronUp } from 'lucide-react'
 import { recordStudyToday, addPoints, getStreak, addLearnMinutes, getLearnMinutes, setCompletedChapterToday, addWeeklyChapterCount } from '@/lib/gamification'
 import { useGameSound } from '@/hooks/useGameSound'
 import { fireFullscreenConfetti } from '@/lib/celebration'
@@ -23,8 +23,29 @@ import { KeywordSummary, extractKeywords } from '@/components/learn/KeywordSumma
 import { ExamPointsReference } from '@/components/learn/ExamPointsReference'
 import { FontSizeControl } from '@/components/ui/FontSizeControl'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { WineGlossary } from '@/components/learn/WineGlossary'
+import { WineExamples } from '@/components/learn/WineExamples'
+import { InteractiveRegionMap } from '@/components/learn/InteractiveRegionMap'
+import { WineRecommendationDatabase } from '@/components/learn/WineRecommendationDatabase'
+import { SeasonalWineGuide } from '@/components/learn/SeasonalWineGuide'
+import { WhiskyGlossary } from '@/components/learn/WhiskyGlossary'
+import { InteractiveWhiskyMap } from '@/components/learn/InteractiveWhiskyMap'
+import { WhiskyRecommendationDatabase } from '@/components/learn/WhiskyRecommendationDatabase'
+import { SeasonalWhiskyGuide } from '@/components/learn/SeasonalWhiskyGuide'
+import { WhiskyExamples } from '@/components/learn/WhiskyExamples'
+import { BeerCiderGlossary } from '@/components/learn/BeerCiderGlossary'
+import { InteractiveBeerCiderMap } from '@/components/learn/InteractiveBeerCiderMap'
+import { BeerCiderRecommendationDatabase } from '@/components/learn/BeerCiderRecommendationDatabase'
+import { SeasonalBeerCiderGuide } from '@/components/learn/SeasonalBeerCiderGuide'
+import { BeerCiderExamples } from '@/components/learn/BeerCiderExamples'
+import { CocktailGlossary } from '@/components/learn/CocktailGlossary'
+import { CocktailExamples } from '@/components/learn/CocktailExamples'
+import { InteractiveCocktailMap } from '@/components/learn/InteractiveCocktailMap'
+import { CocktailRecommendationDatabase } from '@/components/learn/CocktailRecommendationDatabase'
+import { SeasonalCocktailGuide } from '@/components/learn/SeasonalCocktailGuide'
 import toast from 'react-hot-toast'
 import { COPY_TOAST_PROGRESS_SAVED } from '@/config/copy.config'
+import { getReadingListForCourse } from '@/config/learn-reading-list'
 
 const PROGRESS_KEY = 'cheersin_learn_progress'
 
@@ -136,6 +157,10 @@ export function LearnCourseContent({
 }: LearnCourseContentProps) {
   const total = chapters.length
   const { play } = useGameSound()
+  /** P2.D4.3 專注閱讀模式：隱藏側邊欄 */
+  const [focusMode, setFocusMode] = useState(false)
+  /** P2.D2.2 摺疊/展開控制：延伸閱讀區塊 */
+  const [readingListOpen, setReadingListOpen] = useState(true)
   const [progress, setProgress] = useState<Record<string, ProgressEntry>>({})
   /** AUDIT #25：當前章節 aria-current，依 hash 同步 */
   const [currentChId, setCurrentChId] = useState<number | null>(null)
@@ -336,10 +361,10 @@ export function LearnCourseContent({
       </motion.div>
       
     <main id="learn-main" ref={mainRef} className="min-h-screen px-2 sm:px-4 pt-0 pb-16 safe-area-px safe-area-pb" tabIndex={-1} role="main" aria-label="課程內容">
-      {/* Phase 2 D1.2: 二欄佈局 - 桌面版側邊導航 + 內容 */}
-      <div className="max-w-6xl mx-auto lg:grid lg:grid-cols-[220px_1fr] lg:gap-8">
-        {/* Phase 2 D1.2: 章節側邊導航 - 僅桌面版顯示 */}
-        <aside className="hidden lg:block">
+      {/* Phase 2 D1.2: 二欄佈局 - 桌面版側邊導航 + 內容；P2.D4.3 專注閱讀可隱藏側邊 */}
+      <div className={`max-w-6xl mx-auto ${focusMode ? '' : 'lg:grid lg:grid-cols-[220px_1fr] lg:gap-8'}`}>
+        {/* Phase 2 D1.2: 章節側邊導航 - 僅桌面版顯示；專注模式時隱藏 */}
+        <aside className={focusMode ? 'hidden' : 'hidden lg:block'}>
           <nav 
             className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent p-4 rounded-xl bg-white/5 border border-white/10"
             aria-label="章節導航"
@@ -417,13 +442,25 @@ export function LearnCourseContent({
         {/* UX_LAYOUT_200 #52：麵包屑結構化與連結 */}
         <Breadcrumb items={[{ href: '/', label: '首頁' }, { href: '/learn', label: '品酒學院' }, { label: title }]} className="mb-4" />
         {/* L60：返回學院連結 */}
-        <Link
-          href="/learn"
-          className="min-h-[48px] min-w-[48px] inline-flex items-center gap-1 text-white/60 hover:text-white mb-6 games-focus-ring rounded"
-        >
-          <ChevronLeft className="w-5 h-5" />
-          返回學院
-        </Link>
+        <div className="flex items-center justify-between gap-2 mb-6 flex-wrap">
+          <Link
+            href="/learn"
+            className="min-h-[48px] min-w-[48px] inline-flex items-center gap-1 text-white/60 hover:text-white games-focus-ring rounded"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            返回學院
+          </Link>
+          <button
+            type="button"
+            onClick={() => setFocusMode((v) => !v)}
+            className={`min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring ${focusMode ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/60 hover:text-white'}`}
+            title={focusMode ? '顯示章節導航' : '專注閱讀（隱藏側邊）'}
+            aria-pressed={focusMode}
+          >
+            <Focus className="w-4 h-4" />
+            {focusMode ? '顯示導航' : '專注閱讀'}
+          </button>
+        </div>
 
         {/* 39 課程內目錄錨點；Acad-09/680 目錄 RWD、48px、當前章節高亮、進度勾選 */}
         <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10">
@@ -947,6 +984,485 @@ export function LearnCourseContent({
             )
           })}
         </div>
+
+        {/* 專為wine-101新增的互動式學習工具 */}
+        {courseId === 'wine-basics' && (
+          <div className="mt-8 space-y-8">
+            {/* 互動式世界葡萄酒產區地圖 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🌐 世界葡萄酒產區探索</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  葡萄牙以高山大河成為區塊型：泰斗大陸連意大利在火坑底互相磨破,靠酒精燃料救業了 (Taylor Continental 迁 Northern Italy 在 Fire Bottom 互相磨破, 靠 Alcohol Fuel 救業了)
+                </p>
+              </div>
+              <InteractiveRegionMap />
+            </motion.section>
+
+            {/* 葡萄酒專業術語詞典 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-green-500/10 via-teal-500/10 to-blue-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📚 葡萄酒專業術語</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  學習葡萄酒專業術語，提升品酒專業度
+                </p>
+              </div>
+              <WineGlossary />
+            </motion.section>
+
+            {/* 季節性內容與推薦酒款 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🌸 季節性酒款推薦</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  根據不同季節與場合，為您推薦最適合的葡萄酒
+                </p>
+              </div>
+              <SeasonalWineGuide />
+            </motion.section>
+
+            {/* 葡萄酒歷史演進脈絡 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📜 葡萄酒歷史演進</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從古希臘羅馬到現代，探索葡萄酒的發展歷程
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">古代起源</h4>
+                  <p className="text-white/70 text-sm">
+                    葡萄酒的歷史可追溯至公元前6000年，最早起源於高加索地區（現今喬治亞）。古埃及、希臘、羅馬文明都對葡萄酒文化有重要貢獻。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">中世紀發展</h4>
+                  <p className="text-white/70 text-sm">
+                    修道院僧侶在中世紀扮演重要角色，他們不僅保存釀酒技術，更發展出精緻的釀酒工藝，奠定了現代葡萄酒產業基礎。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">近代革新</h4>
+                  <p className="text-white/70 text-sm">
+                    18-19世紀的科學革命帶來釀酒技術突破，路易·巴斯德發現發酵原理，現代釀酒科學由此誕生。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">現代演進</h4>
+                  <p className="text-white/70 text-sm">
+                    20世紀以來，新世界產區崛起，科技創新與傳統工藝結合，創造出多元化的葡萄酒風格。
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          </div>
+        )}
+        
+        {/* 專為whisky-101新增的互動式學習工具 */}
+        {courseId === 'whisky-101' && (
+          <div className="mt-8 space-y-8">
+            {/* 互動式世界威士忌產區地圖 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🥃 世界威士忌產區探索</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從蘇格蘭高地到日本山崎，探索全球威士忌產區的獨特風土條件
+                </p>
+              </div>
+              <InteractiveWhiskyMap />
+            </motion.section>
+
+            {/* 威士忌專業術語詞典 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-green-500/10 via-teal-500/10 to-blue-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📚 威士忌專業術語</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  學習威士忌專業術語，提升品酩專業度
+                </p>
+              </div>
+              <WhiskyGlossary />
+            </motion.section>
+
+            {/* 威士忌實例案例 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🥃 威士忌實例案例</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  精選代表性威士忌，了解不同風格與特色
+                </p>
+              </div>
+              <WhiskyExamples />
+            </motion.section>
+
+            {/* 威士忌推薦與季節性內容 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🌸 季節性威士忌推薦</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  根據不同季節與場合，為您推薦最適合的威士忌
+                </p>
+              </div>
+              <SeasonalWhiskyGuide />
+            </motion.section>
+
+            {/* 威士忌歷史演進脈絡 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📜 威士忌歷史演進</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從蘇格蘭起源到全球發展，探索威士忌的發展歷程
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">起源發展</h4>
+                  <p className="text-white/70 text-sm">
+                    威士忌起源於15世紀的蘇格蘭和愛爾蘭，最初作為藥用酒精，逐漸發展成今日的飲品。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">工業革命</h4>
+                  <p className="text-white/70 text-sm">
+                    18-19世紀的工業革命帶來大量生產技術，連續蒸餾器的發明改變了威士忌產業。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">現代發展</h4>
+                  <p className="text-white/70 text-sm">
+                    20世紀以來，調和威士忌技術成熟，日本等新興產區崛起，威士忌成為全球性飲品。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">新興趨勢</h4>
+                  <p className="text-white/70 text-sm">
+                    21世紀單一麥芽復興，台灣、澳洲等新興產區展現活力，工藝威士忌興起。
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          </div>
+        )}
+        
+        {/* 專為beer-cider新增的互動式學習工具 */}
+        {courseId === 'beer-cider' && (
+          <div className="mt-8 space-y-8">
+            {/* 互動式世界啤酒與蘋果酒產區地圖 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🍺 世界啤酒與蘋果酒產區探索</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從德國皮爾森到美國精釀啤酒革命，探索全球啤酒與蘋果酒產區的獨特風土條件
+                </p>
+              </div>
+              <InteractiveBeerCiderMap />
+            </motion.section>
+
+            {/* 啤酒與蘋果酒專業術語詞典 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-green-500/10 via-teal-500/10 to-blue-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📚 啤酒與蘋果酒專業術語</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  學習啤酒與蘋果酒專業術語，提升品飲專業度
+                </p>
+              </div>
+              <BeerCiderGlossary />
+            </motion.section>
+
+            {/* 啤酒與蘋果酒實例案例 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🍺 啤酒與蘋果酒實例案例</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  精選代表性啤酒與蘋果酒，了解不同風格與特色
+                </p>
+              </div>
+              <BeerCiderExamples />
+            </motion.section>
+
+            {/* 季節性內容與推薦酒款 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🌸 季節性啤酒與蘋果酒推薦</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  根據不同季節與場合，為您推薦最適合的啤酒與蘋果酒
+                </p>
+              </div>
+              <SeasonalBeerCiderGuide />
+            </motion.section>
+
+            {/* 啤酒與蘋果酒歷史演進脈絡 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📜 啤酒與蘋果酒歷史演進</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從古代釀造到現代精釀革命，探索啤酒與蘋果酒的發展歷程
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">古代起源</h4>
+                  <p className="text-white/70 text-sm">
+                    啤酒的歷史可追溯至公元前7000年，最早起源於美索不達米亞地區。古代蘇美爾人和埃及人都有釀造啤酒的記錄，被視為日常飲料。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">中世紀發展</h4>
+                  <p className="text-white/70 text-sm">
+                    修道院在中世紀扮演重要角色，僧侶們不僅保存釀造技術，更發展出精緻的釀造工藝。德國純淨法確立了現代啤酒標準。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">工業革命</h4>
+                  <p className="text-white/70 text-sm">
+                    18-19世紀的工業革命帶來大量生產技術，製冷設備和巴斯德消毒法的發明改變了啤酒產業。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">現代演進</h4>
+                  <p className="text-white/70 text-sm">
+                    20世紀精釀啤酒運動復興傳統工藝，21世紀精釀革命帶來無限創新，台灣本土品牌也逐漸崛起。
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          </div>
+        )}
+        
+        {/* 專為cocktail-basics新增的互動式學習工具 */}
+        {courseId === 'cocktail-basics' && (
+          <div className="mt-8 space-y-8">
+            {/* 互動式世界調酒產區地圖 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🍸 世界調酒產區探索</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從美國禁酒令時期到現代雞尾酒吧，探索全球調酒文化的演進與發展
+                </p>
+              </div>
+              <InteractiveCocktailMap />
+            </motion.section>
+
+            {/* 調酒專業術語詞典 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-green-500/10 via-teal-500/10 to-blue-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📚 調酒專業術語</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  學習調酒專業術語，提升品飲專業度
+                </p>
+              </div>
+              <CocktailGlossary />
+            </motion.section>
+
+            {/* 調酒實例案例 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🍸 調酒實例案例</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  精選代表性調酒，了解不同風格與特色
+                </p>
+              </div>
+              <CocktailExamples />
+            </motion.section>
+
+            {/* 調酒推薦與季節性內容 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-red-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">🌸 季節性調酒推薦</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  根據不同季節與場合，為您推薦最適合的調酒
+                </p>
+              </div>
+              <SeasonalCocktailGuide />
+            </motion.section>
+
+            {/* 調酒歷史演進脈絡 */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 border border-white/10"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">📜 調酒歷史演進</h3>
+                <p className="text-white/60 max-w-2xl mx-auto">
+                  從古典時代到現代，探索調酒的發展歷程
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">古典時期</h4>
+                  <p className="text-white/70 text-sm">
+                    調酒的歷史可追溯至19世紀初期，最早出現於美國酒吧文化中，以威士忌為基酒的調酒成為主流。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">禁酒令時期</h4>
+                  <p className="text-white/70 text-sm">
+                    1920年代美國禁酒令期間，地下酒吧繁榮發展，調酒技藝在隱蔽環境中精進。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">現代發展</h4>
+                  <p className="text-white/70 text-sm">
+                    1970年代後，調酒文化復興，專業調酒師地位提升，調酒成為藝術形式。
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-2">新興趨勢</h4>
+                  <p className="text-white/70 text-sm">
+                    21世紀工藝調酒興起，注重天然原料與手工技藝，台灣調酒文化也逐漸成熟。
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          </div>
+        )}
+
+        {/* P2.A4.1 延伸閱讀書單；P2.D2.2 摺疊/展開控制 */}
+        {(() => {
+          const reading = getReadingListForCourse(courseId)
+          if (reading.length === 0) return null
+          return (
+            <div className="mt-6 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setReadingListOpen((o) => !o)}
+                className="w-full flex items-center justify-between p-4 text-left games-focus-ring"
+                aria-expanded={readingListOpen}
+              >
+                <h3 className="text-sm font-semibold text-white/90">延伸閱讀</h3>
+                {readingListOpen ? <ChevronUp className="w-5 h-5 text-white/50" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
+              </button>
+              {readingListOpen && (
+                <ul className="space-y-2 px-4 pb-4">
+                  {reading.map((item, i) => (
+                    <li key={i}>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-300 hover:text-primary-200 text-sm underline underline-offset-2"
+                      >
+                        {item.title}
+                      </a>
+                      {item.note && <span className="text-white/50 text-xs ml-2">{item.note}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Phase 2 B2.1: 智慧推薦下一堂課程 */}
         {progressPct >= 100 && (() => {

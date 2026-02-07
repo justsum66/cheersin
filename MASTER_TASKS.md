@@ -7,48 +7,27 @@
 
 | Category | Total | Completed | Remaining |
 |----------|-------|-----------|-----------|
-| Phase 2 Course Optimization | 60 | 17 | 43 |
-| Game Strategy (50 Games) | 100 | 17 | 83 |
+| Phase 2 Course Optimization | 60 | 27 | 33 |
+| Game Strategy (50 Games) | 100 | 20 | 80 |
 | UX/UI Optimizations | 100 | 100 | 0 |
 | PWA/Security/Enterprise | ~250 | ~250 | 0 |
 
 ---
 
-## A. Phase 2 Course Optimization (43 Remaining)
+## A. Phase 2 Course Optimization (33 Remaining)
 
-### ✅ Completed (17 tasks)
-- P2.D1.2 章節側邊導航
-- P2.C1.1 測驗解析模式  
-- P2.D2.1 閱讀進度指示器
-- P2.B2.1 智慧推薦下一堂
-- P2.E1.1 IG Story 分享模板
-- P2.A2.2 互動產區地圖
-- P2.D4.1 深色/淺色主題
-- P2.C2.2 錯題本功能
-- P2.A1.1 考點對照表
-- P2.D1.3 底部快速操作列
-- P2.F2.1 發音播放按鈕
-- P2.D4.2 字體大小調整
-- P2.E1.2 證書分享連結
-- P2.B3.1 學習路線圖
-- P2.D2.3 燈箱放大功能
-- P2.A1.2 關鍵詞摘要卡
-- P2.C2.1 強弱項雷達圖
-
-### 🔴 High Priority (3 remaining)
+### 🔴 High Priority (2 remaining)
 | ID | Task | Description |
 |----|------|-------------|
-| P2.B1.1 | 學習計劃生成器 | 依目標選擇 WSET/CMS/MW 生成個人化計劃 |
 | P2.A2.1 | 品飲筆記模板 | 可下載 PDF + 可列印版 |
 | P2.C3.3 | 每日一題推播 | 實作每日推播通知 |
 
-### 🟡 Medium Priority (20 remaining)
+### 🟡 Medium Priority (18 remaining)
 | ID | Task | Description |
 |----|------|-------------|
 | P2.A2.3 | 風味輪對照圖 | 葡萄品種課視覺化學習 |
 | P2.A3.1 | 配方計算器 | 調酒課可調整份量 |
 | P2.A3.2 | 年份比較時間軸 | 威士忌課視覺化陳年差異 |
-| P2.A4.1 | 延伸閱讀書單 | 所有課程推薦書單與連結 |
 | P2.B1.2 | 知識圖譜 | 課程間關聯性視覺化 |
 | P2.B2.2 | 學習提醒排程 | 可自訂每日/每週目標 |
 | P2.B2.3 | 遺忘曲線複習 | 艾賓浩斯複習提醒 |
@@ -57,9 +36,6 @@
 | P2.C1.3 | 限時挑戰模式 | 模擬考試壓力 |
 | P2.C3.1 | 對戰測驗模式 | 好友 PK |
 | P2.C3.4 | 模擬考 | 完整認證考試格式 |
-| P2.D1.1 | 卡片/列表切換 | 課程列表檢視切換 |
-| P2.D2.2 | 摺疊/展開控制 | 內容區塊減少捲動 |
-| P2.D3.1 | 橫向滾動提示 | 表格行動版友善 |
 | P2.D3.2 | 快速預覽hover | 課程卡片桌面版效果 |
 | P2.E2.1 | 筆記公開分享 | 社群討論功能 |
 | P2.E2.2 | 評論點讚置頂 | 課程評論區互動 |
@@ -96,29 +72,22 @@
 
 Based on 70 experts + 50 influencers review. Target: 50 games total.
 
-### B1. Immediate Actions (5 tasks)
-| ID | Task | Description | Priority |
-|----|------|-------------|----------|
-| G0.1 | 删除「你喝」遊戲 | 與紅參遊戲重複 | P0 ✅ |
-| G0.2 | 删除「紅參遊戲」 | 與你喝重複 | P0 ✅ |
-| G0.3 | 删除「敬酒大師」 | 機制不清晰 | P0 ✅ |
-| G0.4 | 更新遊戲分類結構 | 新增18+辣味分類 | P0 ✅ |
-| G0.5 | 實作付費遊戲鎖定UI | 付費牆組件 | P0 ✅ |
+### B1. Immediate Actions (5 tasks) — 已完成，已從清單移除
 
 ### B2. Phase 1 Games - 競技對決類 (11 games, 22 tasks)
 | Game | Tasks |
 |------|-------|
-| 數字炸彈 | G1.1 遊戲邏輯 ✅, G1.2 UI實作 ✅ |
-| 369拍手 | G1.3 遊戲邏輯 ✅, G1.4 UI實作 ✅ |
-| Buzz禁語 | G1.5 遊戲邏輯 ✅, G1.6 UI實作 ✅ |
-| 分類接龍 | G1.7 遊戲邏輯 ✅, G1.8 詞庫建立 ✅ |
-| 骰子命運 | G1.9 遊戲邏輯, G1.10 動畫效果 |
-| 幸運抽籤 | G1.11 遊戲邏輯, G1.12 自訂功能 |
+| 數字炸彈 | G1.1 ✅, G1.2 ✅ |
+| 369拍手 | G1.3 ✅, G1.4 ✅ |
+| Buzz禁語 | G1.5 ✅, G1.6 ✅ |
+| 分類接龍 | G1.7 ✅, G1.8 ✅ |
+| 骰子命運 | G1.9 ✅, G1.10 ✅ |
+| 幸運抽籤 | G1.11 ✅, G1.12 ✅ |
 | 猜拳喝酒 | G1.13 遊戲邏輯, G1.14 連勝機制 |
-| 兩真一假 | G1.15 遊戲邏輯 ✅, G1.16 UI實作 ✅ |
-| 辣味真心話 | G1.17 複用框架 ✅, G1.18 18+題庫 ✅ |
-| 辣味我從來沒有 | G1.19 複用框架 ✅, G1.20 18+題庫 ✅ |
-| 辣味誰最可能 | G1.21 複用框架 ✅, G1.22 18+題庫 ✅ |
+| 兩真一假 | G1.15 ✅, G1.16 ✅ |
+| 辣味真心話 | G1.17 ✅, G1.18 ✅ |
+| 辣味我從來沒有 | G1.19 ✅, G1.20 ✅ |
+| 辣味誰最可能 | G1.21 ✅, G1.22 ✅ |
 
 ### B3. Phase 2 Games - 補齊40款 (10 games, 20 tasks)
 | Game | Tasks |
@@ -200,10 +169,8 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 
 ## Priority Execution Order
 
-### Batch 1 (Immediate)
-1. G0.1-G0.5 遊戲清理與架構
-2. G1.1-G1.10 競技對決前5款
-3. P2.B1.1 學習計劃生成器
+### Batch 1 (Immediate) — 已完成
+- G0.1–G0.5、G1.1–G1.12、P2.B1.1 學習計劃生成器 已完成
 
 ### Batch 2 (Week 1)
 1. G1.11-G1.22 競技對決後6款

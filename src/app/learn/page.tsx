@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useDeferredValue, useRef, useCallback } from 'react'
+import { useState, useEffect, useDeferredValue, useRef, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -11,6 +11,7 @@ import { UpgradeModal } from '@/components/UpgradeModal'
 import { getBookmarks } from '@/lib/learn-bookmarks'
 import { getPoints, getLeaderboard, getStreak, getLearnMinutes, getUnlockedBadges, BADGE_LABELS, getCompletedChapterToday, getWeeklyChapterCount, maybeUnlockHolidayBadge, getSommelierLevel, getFriendCompare, setFriendCompare } from '@/lib/gamification'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
+import { getCourseRating } from '@/lib/learn-course-ratings'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
@@ -36,7 +37,7 @@ const COURSES: {
   free: boolean
   previewImage: string | null
   level: CourseLevel
-  /** 155 課程評分（placeholder） */
+  /** 155 課程評分：優先從 getCourseRating(id) 取得，無則用此 fallback */
   rating?: number
   /** 19 課程標籤；15 入門必讀 */
   tags?: ('hot' | 'new' | 'essential' | 'quick')[]
@@ -487,6 +488,17 @@ const PREREQ_MAP: Record<string, string> = {
   'blind-tasting-advanced': 'CMS 演繹品飲法',
 }
 
+/** P2.D3.3 關鍵字高亮：將搜尋詞在文字中標出，回傳 React 可用的片段 */
+function highlightQuery(text: string, query: string): ReactNode {
+  if (!query.trim()) return text
+  const q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(`(${q})`, 'gi')
+  const parts = text.split(re)
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <mark key={i} className="bg-primary-500/30 text-primary-200 rounded px-0.5">{part}</mark> : part
+  )
+}
+
 /** 5/38/46 認證對應：WSET/CMS/MW */
 const CERT_MAP: Record<string, string> = {
   'wine-basics': 'WSET', 'whisky-101': 'WSET', 'wset-l1-spirits': 'WSET L1', 'wset-l2-wines': 'WSET L2',
@@ -519,6 +531,8 @@ export default function LearnPage() {
   const [certFilter, setCertFilter] = useState<string>(() => searchParams.get('cert') || 'all')
   const [quickOnly, setQuickOnly] = useState(() => searchParams.get('quick') === '1')
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '')
+  /** P2.D1.1 卡片/列表切換 */
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
   /** 32 搜尋防抖：useDeferredValue 延遲過濾，減少輸入時卡頓 */
   const deferredSearch = useDeferredValue(searchQuery)
   /** 161–165 遊戲化：等級徽章、排行榜、書籤 */
@@ -1204,6 +1218,32 @@ export default function LearnPage() {
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>
+          <Link
+            href="/learn/plan"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <Target className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">學習計劃生成器</h2>
+              <p className="text-white/50 text-sm">依 WSET / CMS / MW 目標取得個人化課程順序</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          <Link
+            href="/learn/badges"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <Award className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">徽章牆</h2>
+              <p className="text-white/50 text-sm">解鎖成就、展示學習徽章</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
         </motion.div>
 
         {/* L87：課程篩選區 aria-label */}
@@ -1339,6 +1379,30 @@ export default function LearnPage() {
         </motion.div>
         </div>
 
+        {/* P2.D1.1 卡片/列表切換 */}
+        {filteredCourses.length > 0 && (
+          <div className="flex items-center justify-end gap-2 mb-3" role="group" aria-label="檢視模式">
+            <button
+              type="button"
+              onClick={() => setViewMode('card')}
+              aria-pressed={viewMode === 'card'}
+              className={`p-2 rounded-lg transition-colors games-focus-ring ${viewMode === 'card' ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/50 hover:text-white'}`}
+              title="卡片檢視"
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              aria-pressed={viewMode === 'list'}
+              className={`p-2 rounded-lg transition-colors games-focus-ring ${viewMode === 'list' ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/50 hover:text-white'}`}
+              title="列表檢視"
+            >
+              <List className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Course Grid；147 進階課程鎖定；18 空篩選；11 專家佔位 */}
         {filteredCourses.length === 0 ? (
           <div className="py-16 md:py-20 text-center rounded-2xl bg-gradient-to-b from-white/5 to-transparent border border-white/10" role="status" aria-live="polite" aria-label="無符合篩選條件的課程">
@@ -1423,7 +1487,7 @@ export default function LearnPage() {
                   <span className="w-1 h-6 md:h-7 rounded-full bg-primary-500 shrink-0" aria-hidden />
                   <span>{LEVEL_LABELS[level]}（{levelCourses.length}）</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                <div className={viewMode === 'list' ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6'}>
           {levelCourses.map((course, index) => {
             const isProCourse = !course.free
             const hasAccess = canAccessPro || (isProCourse && tier === 'free' && proTrialAllowed)
@@ -1434,8 +1498,23 @@ export default function LearnPage() {
             const progressPct = totalChapters > 0 ? Math.round((completed / totalChapters) * 100) : 0
             return (
               <InViewAnimate key={course.id} delay={Math.min(index * 0.06, 0.4)} y={20} amount={0.15}>
-              {/* Phase 1 D1.1: 課程卡片 hover 動畫增強 - 3D 微傾 + 光暈 */}
-              {/* Phase 1 A5.1: 課程卡片細節優化 - 動態陰影與光暈 */}
+              {viewMode === 'list' ? (
+                <Link
+                  href={isLocked ? '/pricing' : `/learn/${course.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors"
+                  aria-label={`${course.title}，${course.lessons} 課`}
+                >
+                  <div className={`p-2 rounded-lg bg-gradient-to-br ${course.color} shrink-0`}>
+                    <course.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-white truncate">{highlightQuery(course.title, deferredSearch)}</h3>
+                    <p className="text-white/50 text-sm truncate">{highlightQuery(course.description, deferredSearch)}</p>
+                  </div>
+                  <span className="text-white/40 text-xs shrink-0">{course.lessons} 課 · {course.estimatedMinutes ?? course.duration}</span>
+                  <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
+                </Link>
+              ) : (
               <motion.div
                 style={{ transformStyle: 'preserve-3d' }}
                 whileHover={{
@@ -1524,7 +1603,7 @@ export default function LearnPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="home-heading-3 text-white leading-snug">{course.title}</h3>
+                        <h3 className="home-heading-3 text-white leading-snug">{highlightQuery(course.title, deferredSearch)}</h3>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">
                           {LEVEL_LABELS[course.level]}
                         </span>
@@ -1537,17 +1616,20 @@ export default function LearnPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-white/60 text-sm mb-3 line-clamp-2">{course.description}</p>
+                      <p className="text-white/60 text-sm mb-3 line-clamp-2">{highlightQuery(course.description, deferredSearch)}</p>
                       {/* AUDIT #41：每門課自訂「適合誰」或依 level 回退 */}
                       <p className="text-white/40 text-xs mb-2">{course.targetAudience ?? `適合：${LEVEL_LABELS[course.level]}者`}</p>
-                      {/* 155 課程評分 */}
-                      {course.rating != null && (
-                        <div className="flex items-center gap-1 mb-2 text-primary-400" title="學員評價">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span className="text-sm font-medium">{course.rating}</span>
-                          <span className="text-white/40 text-xs">評價</span>
-                        </div>
-                      )}
+                      {/* 155 課程評分：來自評分資料源 getCourseRating，無則用 course.rating */}
+                      {(() => {
+                        const displayRating = getCourseRating(course.id) ?? course.rating
+                        return displayRating != null ? (
+                          <div className="flex items-center gap-1 mb-2 text-primary-400" title="學員評價">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm font-medium">{displayRating}</span>
+                            <span className="text-white/40 text-xs">評價</span>
+                          </div>
+                        ) : null
+                      })()}
                       <div className="flex items-center gap-3 flex-wrap text-sm text-white/60">
                         <span className="font-medium">{course.lessons} 課</span>
                         <span className="text-white/40">•</span>
@@ -1621,6 +1703,7 @@ export default function LearnPage() {
                   </div>
                 </div>
               </motion.div>
+              )}
               </InViewAnimate>
             )
           })}

@@ -68,7 +68,8 @@ const markdownComponents = {
     )
   },
   table: ({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) => (
-    <div className="my-3 overflow-x-auto">
+    <div className="my-3 overflow-x-auto scrollbar-thin" role="region" aria-label="表格可左右滑動">
+      <p className="text-white/40 text-xs mb-1 sm:sr-only">行動版可左右滑動查看</p>
       <table className="min-w-full border-collapse border border-white/10 rounded-lg" {...props}>
         {children}
       </table>

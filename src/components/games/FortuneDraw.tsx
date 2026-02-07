@@ -68,6 +68,9 @@ export default function FortuneDraw() {
   const [fortune, setFortune] = useState<{ level: number; text: string; action: string } | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [history, setHistory] = useState<{ player: string; category: string; level: number }[]>([])
+  /** G1.12 自訂功能：自訂籤文指令 */
+  const [customActions, setCustomActions] = useState<string[]>([])
+  const [customInput, setCustomInput] = useState('')
 
   const drawFortune = useCallback((categoryType: string) => {
     setSelectedCategory(categoryType)
@@ -76,23 +79,26 @@ export default function FortuneDraw() {
 
     setTimeout(() => {
       const categoryFortunes = FORTUNES[categoryType as keyof typeof FORTUNES]
-      const randomFortune = categoryFortunes[Math.floor(Math.random() * categoryFortunes.length)]
-      setFortune(randomFortune)
+      const base = categoryFortunes[Math.floor(Math.random() * categoryFortunes.length)]
+      const action = customActions.length > 0
+        ? customActions[Math.floor(Math.random() * customActions.length)]
+        : base.action
+      setFortune({ level: base.level, text: base.text, action })
       setIsDrawing(false)
 
-      if (randomFortune.level >= 4) {
+      if (base.level >= 4) {
         play('correct')
-      } else if (randomFortune.level <= 2) {
+      } else if (base.level <= 2) {
         play('wrong')
       }
 
       setHistory(prev => [...prev, {
         player: players[currentPlayerIndex],
         category: categoryType,
-        level: randomFortune.level
+        level: base.level
       }])
     }, 1500)
-  }, [currentPlayerIndex, players, play])
+  }, [currentPlayerIndex, players, play, customActions])
 
   const nextPlayer = useCallback(() => {
     setFortune(null)
@@ -235,6 +241,14 @@ export default function FortuneDraw() {
         <RefreshCw className="w-4 h-4" />
         重新開始
       </button>
+      <div className="mt-6 w-full max-w-md bg-white/5 rounded-xl p-3 border border-white/10">
+        <p className="text-white/50 text-xs mb-2">自訂執行指令（抽籤時隨機選一條）</p>
+        <div className="flex gap-2 mb-2">
+          <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="例：喝一口" className="flex-1 min-h-[40px] px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm" onKeyDown={(e) => { if (e.key === 'Enter' && customInput.trim()) { setCustomActions((a) => [...a, customInput.trim()]); setCustomInput('') } }} />
+          <button type="button" onClick={() => { if (customInput.trim()) { setCustomActions((a) => [...a, customInput.trim()]); setCustomInput('') } }} className="px-3 py-2 rounded-lg bg-primary-500/30 text-primary-300 text-sm">新增</button>
+        </div>
+        {customActions.length > 0 && <div className="flex flex-wrap gap-1">{customActions.map((act, i) => <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/10 text-white/80 text-xs">{act} <button type="button" onClick={() => setCustomActions((a) => a.filter((_, j) => j !== i))} className="text-white/50 hover:text-white">×</button></span>)}</div>}
+      </div>
     </div>
   )
 }

@@ -19,7 +19,6 @@ import HotPotato from '../HotPotato'
 import SevenTap from '../SevenTap'
 import SpinBottle from '../SpinBottle'
 import DareDice from '../DareDice'
-import ToastMaster from '../ToastMaster'
 import RhythmGuess from '../RhythmGuess'
 import ToastRelay from '../ToastRelay'
 import KingsCup from '../KingsCup'
@@ -173,15 +172,15 @@ describe('Games key path smoke', () => {
     }, { timeout: 2000 })
   }, 8000)
 
-  it('ToastMaster renders and start button exists', () => {
-    render(wrap(ToastMaster))
+  it('ToastRelay renders and start button exists', () => {
+    render(wrap(ToastRelay))
     const start = screen.getByRole('button', { name: /開始一輪/ })
     expect(start).toBeInTheDocument()
     expect(start).not.toBeDisabled()
   })
 
-  it('ToastMaster shows result area after guess', async () => {
-    render(wrap(ToastMaster))
+  it('ToastRelay shows result area after guess', async () => {
+    render(wrap(ToastRelay))
     fireEvent.click(screen.getByTestId('toast-master-start'))
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /猜 玩家 1/ })).toBeInTheDocument()
