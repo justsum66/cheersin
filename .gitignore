@@ -122,6 +122,8 @@ temp/
 # Testing
 coverage/
 .nyc_output/
+test-reports/
+test-results/
 
 # Documentation
 docs/_book/
