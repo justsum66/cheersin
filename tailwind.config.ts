@@ -183,6 +183,12 @@ const config: Config = {
       backdropBlur: {
         xs: '2px',
       },
+      /* P1-045：8px 網格系統 — 使用 p-2(8px), p-4(16px), gap-4(16px) 等，避免 p-[7px] 硬編碼 */
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
+        '30': '7.5rem',
+      },
     },
   },
   plugins: [],

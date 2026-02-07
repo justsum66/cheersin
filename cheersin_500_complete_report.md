@@ -83,7 +83,7 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P1-026** | **字體系統重構：** 引入 `next/font` 以優化字體加載。定義清晰的字體層級（`h1`-`h6`, `body`, `caption`），並在 `globals.css` 中應用。 | **(Apple HIG 設計師)** 專業的排版是視覺質感的基礎。 | `layout.tsx`, `globals.css`, `tailwind.config.ts` | 3h |
+| **P1-026** ✅ | **字體系統重構：** 引入 `next/font` 以優化字體加載。定義清晰的字體層級（`h1`-`h6`, `body`, `caption`），並在 `globals.css` 中應用。 | **(Apple HIG 設計師)** 專業的排版是視覺質感的基礎。 | `layout.tsx`, `globals.css`, `tailwind.config.ts` | 3h |
 | **P1-027** | **動畫系統統一：** 使用 `framer-motion` 建立統一的動畫變體庫（`variants.ts`），用於頁面切換、彈窗、元素淡入等，取代零散的 `initial`, `animate` 寫法。 | **(Meta React 核心成員)** 統一管理動畫可以確保體驗一致，並方便全局禁用（reduce-motion）。 | `lib/variants.ts`, `components/**/*.tsx` | 5h |
 | **P1-028** | **建立 Icon 組件庫：** 將所有 `lucide-react` 圖標封裝成一個 `<Icon name="..." />` 組件，方便統一管理尺寸、顏色和替換。 | **(Airbnb 設計系統負責人)** 這是設計系統的基礎設施，便於未來迭代。 | `components/ui/Icon.tsx` | 3h |
 | **P1-029** | **完善亮色/暗色主題：** 當前的暗色主題是唯一的，需要設計並實現一套完整的亮色主題。顏色定義需在 `tailwind.config.ts` 中分離。 | **(Material Design 創始人)** 尊重用戶的系統偏好，提供選擇。 | `ThemeContext.tsx`, `tailwind.config.ts` | 8h |
@@ -92,7 +92,7 @@
 | **P1-032** | **統一表單元素風格：** `input`, `button`, `select` 等表單元素的風格不統一。需要在 `globals.css` 中為其定義基礎樣式，並在各處應用。 | **(設計系統負責人)** 一致的表單是專業感的體現。 | `globals.css`, `components/ui/Input.tsx` | 5h |
 | **P1-033** ✅ | **玻璃擬態效果優化：** `glass-card` 的 `backdrop-blur` 效果在不同瀏覽器上表現不一。需要增加 fallback 顏色，並優化模糊半徑和邊框透明度。 | **(Dribbble 藝術總監)** 細節決定成敗。一個精緻的玻璃效果能極大提升科技感。 | `globals.css` | 2h |
 | **P1-034** ✅ | **滾動條美化：** 美化全局滾動條樣式，使其更纖細、顏色與主題匹配，並在 hover 時才完全顯示。 | **(UI 設計師)** 滾動條是常駐元素，美化它能提升整體精緻度。 | `globals.css` | 1h |
-| **P1-035** | **建立骨架屏 (Skeleton) 組件：** 為 `GameCard`, `WineCard`, `Profile` 等需要異步加載數據的組件製作對應的骨架屏，提升加載體驗。 | **(Web Vitals 工程師)** 骨架屏能有效降低感知加載時間（Perceived Performance）。 | `components/ui/Skeleton.tsx` | 4h |
+| **P1-035** ✅ | **建立骨架屏 (Skeleton) 組件：** 為 `GameCard`, `WineCard`, `Profile` 等需要異步加載數據的組件製作對應的骨架屏，提升加載體驗。 | **(Web Vitals 工程師)** 骨架屏能有效降低感知加載時間（Perceived Performance）。 | `components/ui/Skeleton.tsx` | 4h |
 | **P1-036** ✅ | **響應式斷點規範：** 在 `tailwind.config.ts` 中明確定義 `sm`, `md`, `lg`, `xl`, `2xl` 的斷點值，並在整個專案中統一使用。 | **(前端架構師)** 避免在代碼中使用魔術數字（magic numbers）。 | `tailwind.config.ts` | 1h |
 | **P1-037** ✅ | **觸控目標尺寸：** 確保所有可點擊元素的最小觸控目標尺寸不小於 44x44px，符合 Apple HIG 和 Google Material Design 規範。 | **(Apple HIG 設計師)** 避免用戶誤觸，這是移動端體驗的基礎。 | `globals.css` | 3h |
 | **P1-038** ✅ | **焦點狀態 (Focus State) 美化：** 當前 `focus-visible` 樣式不明顯。需要設計一個清晰、美觀的全局焦點環，在鍵盤導航時高亮顯示。 | **(無障礙專家)** 讓鍵盤用戶能清楚地知道自己在哪裡。 | `globals.css` | 2h |
@@ -102,14 +102,14 @@
 | **P1-042** ✅ | **空狀態 (Empty State) 設計：** 為遊戲列表、聊天歷史、收藏夾等可能為空的頁面設計友好且帶有引導操作的空狀態插圖和文案。 | **(UX 設計師)** 空狀態是一個引導用戶的絕佳機會，而不是一個死胡同。 | `components/ui/EmptyState.tsx` | 3h |
 | **P1-043** ✅ | **錯誤頁面 (404, 500) 設計：** 設計自定義的 404 和 500 錯誤頁面，風格需與 App 保持一致，並提供返回首頁的明確指引。 | **(UX 設計師)** 即使用戶遇到錯誤，也要給他們提供良好的體驗。 | `app/not-found.tsx`, `app/error.tsx` | 2h |
 | **P1-044** ✅ | **陰影系統 (Box Shadow)：** 在 `tailwind.config.ts` 中定義一套層級化的陰影（`sm`, `md`, `lg`, `xl`），用於卡片、彈窗等元素的層級區分。 | **(UI 設計師)** 合理的陰影能創造空間感和層次感。 | `tailwind.config.ts` | 2h |
-| **P1-045** | **間距 (Spacing) 規範：** 統一使用 8px 網格系統。在 `tailwind.config.ts` 中定義 `spacing` 單位，並在代碼中用 `p-2`, `m-4` 等代替 `p-[7px]` 這樣的硬編碼。 | **(設計系統負責人)** 統一的間距是實現像素級完美的關鍵。 | `tailwind.config.ts` | 3h |
+| **P1-045** ✅ | **間距 (Spacing) 規範：** 統一使用 8px 網格系統。在 `tailwind.config.ts` 中定義 `spacing` 單位，並在代碼中用 `p-2`, `m-4` 等代替 `p-[7px]` 這樣的硬編碼。 | **(設計系統負責人)** 統一的間距是實現像素級完美的關鍵。 | `tailwind.config.ts` | 3h |
 
 ### 2.2 首頁 & 導航 (Home & Navigation) - 20 項
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
 | **P1-046** ✅ | **導航欄毛玻璃效果：** `Navigation.tsx` 的背景在滾動時應變為帶有 `backdrop-blur` 的毛玻璃效果，提升質感。 | **(Apple HIG 設計師)** 這是現代 App 設計的標配。 | `components/navigation/Navigation.tsx` | 2h |
-| **P1-047** | **Hero 區動畫增強：** `HomePageClient.tsx` 的 Hero 區標題和按鈕應使用 `staggerChildren` 實現錯落有致的入場動畫。 | **(動效設計師)** 有節奏的動畫能極大提升開場的衝擊力。 | `HomePageClient.tsx` | 3h |
+| **P1-047** ✅ | **Hero 區動畫增強：** `HomePageClient.tsx` 的 Hero 區標題和按鈕應使用 `staggerChildren` 實現錯落有致的入場動畫。 | **(動效設計師)** 有節奏的動畫能極大提升開場的衝擊力。 | `HomePageClient.tsx`, `home.config.ts` | 3h |
 | **P1-048** | **Bento Grid 互動效果：** 首頁的 Bento Grid 卡片在鼠標懸停時應有輕微的 3D 傾斜效果和光暈追隨效果。 | **(Dribbble 藝術總監)** 增加微互動，讓頁面「活」起來。 | `components/home/BentoGrid.tsx` (需創建) | 4h |
 | **P1-049** | **Testimonials 輪播優化：** `HomeTestimonials.tsx` 的輪播應改為無限循環滾動，並在底部增加可點擊的圓點指示器。 | **(UX 設計師)** 提升輪播的可控性和用戶感知。 | `HomeTestimonialsCarousel.tsx` | 3h |
 | **P1-050** ✅ | **FAQ 手風琴動畫：** `HomeFAQAccordion.tsx` 的展開和折疊應有平滑的高度變化動畫，而不是瞬間完成。 | **(動效設計師)** 平滑的過渡動畫符合用戶的物理直覺。 | `HomeFAQAccordion.tsx` | 2h |
@@ -122,11 +122,11 @@
 | **P1-057** | **用戶頭像與下拉菜單：** 登入後，導航欄右上角應顯示用戶頭像。點擊頭像彈出下拉菜單，包含「個人資料」、「設定」、「登出」等選項。 | **(UX 設計師)** 這是所有 SaaS 應用的標準用戶入口。 | `components/navigation/UserMenu.tsx` (需創建) | 4h |
 | **P1-058** ✅ | **CTA 按鈕懸停效果：** 所有主要的 CTA 按鈕在 hover 時應有漸變背景的輕微移動或光暈效果，吸引用戶點擊。 | **(UI 設計師)** 讓最重要的按鈕在視覺上脫穎而出。 | `globals.css` | 2h |
 | **P1-059** ✅ | **社會認證 (Social Proof) 動態化：** 首頁的「XXX 位用戶信賴」應使用 `CountUp` 組件實現數字滾動動畫，增加可信度。 | **(增長黑客)** 動態的數字比靜態的數字更有說服力。 | `HomePageClient.tsx`, `components/ui/CountUp.tsx` | 2h |
-| **P1-060** | **主題切換動畫：** 切換亮/暗主題時，應有一個平滑的顏色過渡動畫，而不是瞬間切換。 | **(動效設計師)** 提升主題切換的體驗。 | `ThemeContext.tsx` | 3h |
-| **P1-061** | **粘性導航欄 (Sticky Nav) 優化：** 導航欄在滾動變為 sticky 狀態時，其高度應有輕微的縮小，以節省屏幕空間。 | **(UI 設計師)** 在提供便利性的同時，最大化內容可視區域。 | `components/navigation/Navigation.tsx` | 2h |
-| **P1-062** | **頁面加載進度條：** 在頁面跳轉時，屏幕頂部顯示一個細長的加載進度條（如 NProgress），提升體驗。 | **(UX 設計師)** 讓用戶知道系統正在響應他們的操作。 | `layout.tsx` | 2h |
-| **P1-063** | **懶加載圖片：** 首頁的所有非首屏圖片都應使用懶加載，並在加載完成前顯示一個模糊的占位符（Blur Placeholder）。 | **(Web Vitals 工程師)** 顯著提升頁面加載速度和 LCP 指標。 | `HomePageClient.tsx` | 3h |
-| **P1-064** | **SEO Meta Tags 完善：** 為首頁、遊戲頁、定價頁等核心頁面添加完整且獨特的 `title`, `description`, `og:image` 等 meta 標籤。 | **(SEO 專家)** 這是獲取自然流量的基礎。 | `layout.tsx`, `(marketing)/page.tsx`, `games/page.tsx` | 4h |
+| **P1-060** ✅ | **主題切換動畫：** 切換亮/暗主題時，應有一個平滑的顏色過渡動畫，而不是瞬間切換。 | **(動效設計師)** 提升主題切換的體驗。 | `ThemeContext.tsx`, `globals.css` | 3h |
+| **P1-061** ✅ | **粘性導航欄 (Sticky Nav) 優化：** 導航欄在滾動變為 sticky 狀態時，其高度應有輕微的縮小，以節省屏幕空間。 | **(UI 設計師)** 在提供便利性的同時，最大化內容可視區域。 | `components/navigation/Navigation.tsx` | 2h |
+| **P1-062** ✅ | **頁面加載進度條：** 在頁面跳轉時，屏幕頂部顯示一個細長的加載進度條（如 NProgress），提升體驗。 | **(UX 設計師)** 讓用戶知道系統正在響應他們的操作。 | `layout.tsx`, `RouteChangeProgress.tsx` | 2h |
+| **P1-063** ✅ | **懶加載圖片：** 首頁的所有非首屏圖片都應使用懶加載，並在加載完成前顯示一個模糊的占位符（Blur Placeholder）。 | **(Web Vitals 工程師)** 顯著提升頁面加載速度和 LCP 指標。 | `HomePageClient.tsx` | 3h |
+| **P1-064** ✅ | **SEO Meta Tags 完善：** 為首頁、遊戲頁、定價頁等核心頁面添加完整且獨特的 `title`, `description`, `og:image` 等 meta 標籤。 | **(SEO 專家)** 這是獲取自然流量的基礎。 | `layout.tsx`, `(app)/games/page.tsx`, `pricing/layout.tsx` | 4h |
 | **P1-065** | **結構化數據 (JSON-LD)：** 為首頁添加 `Organization` 和 `WebSite` 的 JSON-LD 結構化數據，為遊戲頁添加 `VideoGame` 結構化數據。 | **(SEO 專家)** 幫助搜索引擎更好地理解你的頁面內容，可能獲得富媒體搜索結果。 | `HomePageJsonLd.tsx`, `GamesPageJsonLd.tsx` (需創建) | 3h |
 
 ### 2.3 其他頁面 (Other Pages) - 40 項
@@ -141,39 +141,39 @@
 | **P1-071** | **品酒學院課程列表：** `learn/page.tsx` 的課程列表應有卡片式和列表式兩種視圖切換，並增加篩選和排序功能。 | **(UX 設計師)** 滿足不同用戶的瀏覽習慣。 | `learn/page.tsx` | 5h |
 | **P1-072** | **課程詳情頁佈局：** `learn/[courseId]/page.tsx` 頁面需要重新佈局，左側為課程章節導航，右側為內容，並有清晰的進度指示。 | **(UI 設計師)** 提升學習體驗的結構性和導航效率。 | `learn/[courseId]/page.tsx` | 4h |
 | **P1-073** | **管理後台 UI 框架：** 為 `admin/` 引入一個開源的後台 UI 框架（如 Ant Design, Tremor），快速搭建專業的管理界面。 | **(後端架構師)** 不要在後台界面上重複造輪子，專注於核心業務邏輯。 | `admin/layout.tsx` | 3h |
-| **P1-074** | **輸入框驗證狀態：** 表單輸入框在驗證成功或失敗時，應有即時的視覺反饋（如綠色/紅色邊框和圖標）。 | **(UX 設計師)** 即時反饋能幫助用戶快速修正錯誤。 | `components/ui/Input.tsx` | 2h |
+| **P1-074** ✅ | **輸入框驗證狀態：** 表單輸入框在驗證成功或失敗時，應有即時的視覺反饋（如綠色/紅色邊框和圖標）。 | **(UX 設計師)** 即時反饋能幫助用戶快速修正錯誤。 | `globals.css` (.input-glass-error / .input-glass-success) | 2h |
 | **P1-075** | **密碼強度指示器：** 在註冊和修改密碼時，提供一個實時的密碼強度指示器。 | **(資安專家)** 引導用戶設置更安全的密碼。 | `login/page.tsx`, `profile/page.tsx` | 2h |
 | **P1-076** ✅ | **加載動畫統一：** 統一使用一種風格的加載動畫（Spinner/Loader），而不是在不同地方使用不同的樣式。 | **(設計系統負責人)** 保持品牌視覺的統一性。 | `components/ui/Loader.tsx` | 2h |
 | **P1-077** | **圖片畫廊/輪播組件：** 創建一個可用於展示多張圖片的畫廊或輪播組件，支持縮略圖、全屏預覽和手勢滑動。 | **(前端架構師)** 這是一個可複用的基礎組件，可用於酒款介紹、課程預覽等。 | `components/ui/Carousel.tsx` | 5h |
-| **P1-078** | **麵包屑導航 (Breadcrumbs)：** 在層級較深的頁面（如課程詳情頁、管理後台子頁面）增加麵包屑導航，幫助用戶理解當前位置。 | **(UX 設計師)** 提升網站的導航性和可尋性。 | `components/ui/Breadcrumbs.tsx` | 3h |
+| **P1-078** ✅ | **麵包屑導航 (Breadcrumbs)：** 在層級較深的頁面（如課程詳情頁、管理後台子頁面）增加麵包屑導航，幫助用戶理解當前位置。 | **(UX 設計師)** 提升網站的導航性和可尋性。 | `components/ui/Breadcrumb.tsx` | 3h |
 | **P1-079** ✅ | **標籤 (Tags/Badges) 組件：** 創建一個風格統一的標籤組件，用於遊戲卡片、課程狀態、用戶等級等。 | **(UI 設計師)** 標籤是信息組織和視覺掃描的重要元素。 | `components/ui/Badge.tsx` | 2h |
 | **P1-080** ✅ | **分割線 (Divider) 組件：** 創建一個帶有漸變或品牌元素的自定義分割線組件，取代單調的 `<hr>`。 | **(UI 設計師)** 即使是最小的元素，也能體現設計的精緻感。 | `components/ui/Divider.tsx` | 1h |
 
 ---
 
-| **P1-081** | **開關 (Switch/Toggle) 組件：** 設計一個帶有流暢動畫的自定義開關組件，用於設定頁等場景。 | **(Apple HIG 設計師)** 系統原生開關樣式不一，自定義能保證跨平台體驗一致。 | `components/ui/Switch.tsx` | 2h |
-| **P1-082** | **進度條 (Progress Bar) 組件：** 設計一個可用於顯示課程進度、經驗值等的進度條組件，支持動畫和標籤。 | **(遊戲化專家)** 可視化的進度能激勵用戶完成任務。 | `components/ui/ProgressBar.tsx` | 2h |
+| **P1-081** ✅ | **開關 (Switch/Toggle) 組件：** 設計一個帶有流暢動畫的自定義開關組件，用於設定頁等場景。 | **(Apple HIG 設計師)** 系統原生開關樣式不一，自定義能保證跨平台體驗一致。 | `components/ui/Switch.tsx` | 2h |
+| **P1-082** ✅ | **進度條 (Progress Bar) 組件：** 設計一個可用於顯示課程進度、經驗值等的進度條組件，支持動畫和標籤。 | **(遊戲化專家)** 可視化的進度能激勵用戶完成任務。 | `components/ui/ProgressBar.tsx` | 2h |
 | **P1-083** | **頭像 (Avatar) 組件：** 創建一個 Avatar 組件，支持圖片、首字母 fallback，並可顯示在線狀態或等級徽章。 | **(設計系統負責人)** 頭像是代表用戶的核心元素。 | `components/ui/Avatar.tsx` | 3h |
-| **P1-084** | **確認對話框 (Confirm Dialog)：** 設計一個統一的確認對話框，用於刪除、登出等危險操作，需有明確的警示和取消選項。 | **(UX 設計師)** 防止用戶因誤操作造成不可逆的損失。 | `components/ui/ConfirmDialog.tsx` | 2h |
+| **P1-084** ✅ | **確認對話框 (Confirm Dialog)：** 設計一個統一的確認對話框，用於刪除、登出等危險操作，需有明確的警示和取消選項。 | **(UX 設計師)** 防止用戶因誤操作造成不可逆的損失。 | `components/ui/ConfirmDialog.tsx` | 2h |
 | **P1-085** | **酒款卡片 (WineCard) 優化：** `WineCard.tsx` 需要重新設計，增加收藏按鈕、用戶評分、價格範圍等信息，並優化視覺層次。 | **(Master Sommelier)** 酒款卡片是 AI 推薦結果的載體，其信息密度和吸引力至關重要。 | `components/wine/WineCard.tsx` | 4h |
 | **P1-086** | **PWA 安裝提示：** 在支持的瀏覽器上，當用戶訪問達到一定頻次後，主動彈出一個友好的、非阻塞式的「添加到主屏幕」提示。 | **(PWA 專家)** 提升應用的留存和訪問入口。 | `components/pwa/InstallPrompt.tsx` | 3h |
 | **P1-087** | **複製按鈕反饋：** 所有複製操作（如邀請鏈接、AI 回答）後，應有即時的視覺反饋（如圖標變為「打勾」）和 Toast 提示。 | **(UX 設計師)** 給予用戶明確的操作成功反饋。 | `components/ui/CopyButton.tsx` | 2h |
 | **P1-088** | **下拉菜單 (Dropdown/Select) 美化：** 美化原生的 `<select>` 元素，或使用如 Radix UI 的無頭組件庫創建一個功能強大且風格統一的下拉菜單。 | **(UI 設計師)** 原生下拉菜單在各瀏覽器和系統上樣式差異巨大，體驗糟糕。 | `components/ui/Select.tsx` | 4h |
 | **P1-089** | **滑塊 (Slider) 組件：** 創建一個可用於篩選價格、酒精度等範圍的滑塊組件。 | **(前端架構師)** 這是篩選功能中常見的 UI 模式。 | `components/ui/Slider.tsx` | 3h |
 | **P1-090** | **日期選擇器 (Date Picker) 組件：** 為需要輸入日期的場景（如個人資料中的生日）設計一個風格統一的日期選擇器。 | **(UI 設計師)** 避免使用瀏覽器原生的、體驗不一的日期選擇器。 | `components/ui/DatePicker.tsx` | 4h |
-| **P1-091** | **工具提示 (Tooltip) 組件：** 創建一個 Tooltip 組件，在鼠標懸停於圖標按鈕等元素上時，顯示額外的文字說明。 | **(UX 設計師)** 在不佔用界面空間的情況下提供輔助信息。 | `components/ui/Tooltip.tsx` | 2h |
+| **P1-091** ✅ | **工具提示 (Tooltip) 組件：** 創建一個 Tooltip 組件，在鼠標懸停於圖標按鈕等元素上時，顯示額外的文字說明。 | **(UX 設計師)** 在不佔用界面空間的情況下提供輔助信息。 | `components/ui/Tooltip.tsx` | 2h |
 | **P1-092** | **響應式表格 (Responsive Table)：** 在小屏幕上，表格應能優雅地響應，例如將表頭和單元格堆疊顯示，或允許水平滾動。 | **(前端架構師)** 確保數據在任何設備上都清晰可讀。 | `components/ui/Table.tsx` | 3h |
 | **P1-093** ✅ | **卡片懸停效果：** 所有卡片式組件（GameCard, WineCard）在鼠標懸停時，應有統一的、輕微上浮和陰影加深的效果。 | **(UI 設計師)** 增加界面的互動性和呼吸感。 | `globals.css` | 1h |
 | **P1-094** ✅ | **鏈接樣式：** 統一所有文本鏈接的樣式，確保其在正文中足夠突出，並有 hover 和 active 狀態。 | **(UI 設計師)** 鏈接是網站導航的基礎，其可識別性非常重要。 | `globals.css` | 1h |
 | **P1-095** | **代碼塊 (Code Block) 樣式：** 在 AI 助理或教程中，用於顯示代碼的區塊需要美化，增加語法高亮和一鍵複製功能。 | **(開發者體驗專家)** 提升技術內容的可讀性。 | `components/assistant/MarkdownMessage.tsx` | 3h |
-| **P1-096** | **引用塊 (Blockquote) 樣式：** 美化 Markdown 中的引用塊樣式，使其在視覺上與普通文本有明顯區分。 | **(UI 設計師)** 突出引用的內容，增強文章的可讀性。 | `globals.css` | 1h |
-| **P1-097** | **可摺疊內容 (Accordion/Collapsible) 組件：** 創建一個通用的可摺疊內容組件，用於 FAQ、課程章節等。 | **(前端架構師)** 這是組織大量信息的常用模式。 | `components/ui/Accordion.tsx` | 3h |
+| **P1-096** ✅ | **引用塊 (Blockquote) 樣式：** 美化 Markdown 中的引用塊樣式，使其在視覺上與普通文本有明顯區分。 | **(UI 設計師)** 突出引用的內容，增強文章的可讀性。 | `globals.css` | 1h |
+| **P1-097** ✅ | **可摺疊內容 (Accordion/Collapsible) 組件：** 創建一個通用的可摺疊內容組件，用於 FAQ、課程章節等。 | **(前端架構師)** 這是組織大量信息的常用模式。 | `components/ui/Accordion.tsx` | 3h |
 | **P1-098** | **分頁 (Pagination) 組件：** 為需要分頁的列表（如酒款庫、用戶評論）設計一個分頁組件。 | **(UX 設計師)** 提升長列表的導航效率。 | `components/ui/Pagination.tsx` | 3h |
 | **P1-099** | **通知中心 (Notification Center)：** 導航欄的鈴鐺圖標應對應一個通知中心，展示系統通知、好友請求、遊戲邀請等。 | **(UX 設計師)** 將所有通知聚合到一個地方，方便用戶管理。 | `components/navigation/NotificationCenter.tsx` | 5h |
 | **P1-100** | **用戶引導 (Onboarding) 流程：** 為新註冊用戶設計一個簡短的引導流程，介紹核心功能（靈魂酒測、AI 助理、派對遊戲）。 | **(增長黑客)** 幫助用戶快速理解產品價值，提升激活率。 | `components/onboarding/OnboardingFlow.tsx` | 6h |
 | **P1-101** | **微互動音效：** 為點贊、收藏、完成任務等關鍵操作添加 subtle 的、令人愉悅的音效。 | **(遊戲化專家)** 音效是提升滿足感和反饋的重要手段。 | `hooks/useGameSound.ts` | 4h |
-| **P1-102** | **骨架屏動畫：** 骨架屏應有微弱的、從左到右的閃光動畫，讓用戶感知到正在加載。 | **(UI 設計師)** 靜態的骨架屏會讓用戶誤以為頁面卡死了。 | `components/ui/Skeleton.tsx` | 1h |
-| **P1-103** | **圖片加載失敗占位符：** 當圖片加載失敗時，顯示一個帶有圖標和錯誤信息的占位符，而不是瀏覽器默認的破碎圖標。 | **(UX 設計師)** 優雅地處理網絡異常。 | `components/ui/ImageWithFallback.tsx` | 2h |
+| **P1-102** ✅ | **骨架屏動畫：** 骨架屏應有微弱的、從左到右的閃光動畫，讓用戶感知到正在加載。 | **(UI 設計師)** 靜態的骨架屏會讓用戶誤以為頁面卡死了。 | `components/ui/Skeleton.tsx`, `globals.css` | 1h |
+| **P1-103** ✅ | **圖片加載失敗占位符：** 當圖片加載失敗時，顯示一個帶有圖標和錯誤信息的占位符，而不是瀏覽器默認的破碎圖標。 | **(UX 設計師)** 優雅地處理網絡異常。 | `components/ui/ImageWithFallback.tsx` | 2h |
 | **P1-104** ✅ | **全局 `::selection` 樣式：** 自定義用戶選中文本時的背景色和文字顏色，使其與品牌色匹配。 | **(品牌設計師)** 統一所有視覺細節。 | `globals.css` | 0.5h |
 | **P1-105** | **上下文菜單 (Context Menu)：** 在遊戲卡片或酒款卡片上實現右鍵點擊（或長按）彈出上下文菜單，提供「收藏」、「分享」、「評分」等快捷操作。 | **(Apple HIG 設計師)** 為高級用戶提供更高效的操作路徑。 | `components/games/GameCard.tsx` | 3h |
 

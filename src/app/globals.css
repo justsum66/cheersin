@@ -226,13 +226,22 @@
   li + li {
     margin-top: 0.25em;
   }
-  /* UX_LAYOUT_200 #13：引言 blockquote */
+  /* P1-026：字體層級 body/caption；h1–h6 見下方 */
+  .typography-body { font-size: var(--text-base); line-height: var(--line-height-body); }
+  .typography-caption { font-size: var(--text-xs); color: rgb(255 255 255 / 0.5); }
+  /* P1-096：引用塊 (Blockquote) 樣式 — 左側漸變、背景區分 */
   blockquote {
     margin: 1em 0;
-    padding-left: 1em;
-    border-left: 3px solid rgb(var(--primary) / 0.5);
+    padding: 0.75em 1em 0.75em 1.25em;
+    border-left: 4px solid transparent;
+    border-image: linear-gradient(180deg, rgb(var(--primary) / 0.8), rgb(var(--secondary) / 0.5)) 1;
     font-style: italic;
     color: rgb(var(--text-secondary));
+    background: rgb(255 255 255 / 0.03);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+  html.light blockquote {
+    background: rgb(0 0 0 / 0.04);
   }
   /* 背景漸層：深紫 #1a0a2e → 黑 #0a0a0a；P3 主題切換 300ms 過渡 */
   html:not(.light) body {
@@ -834,6 +843,7 @@
     color: rgba(255, 255, 255, 0.38);
     font-weight: 400;
   }
+  /* P1-074：輸入框驗證狀態 — 失敗/成功即時視覺反饋 */
   .input-glass.input-glass-error,
   .input-glass:invalid:not(:placeholder-shown) {
     border-color: rgb(var(--error) / 0.6);

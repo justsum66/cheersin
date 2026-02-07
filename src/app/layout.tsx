@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import Navigation from '@/components/navigation/Navigation'
 import AuroraBackground from '@/components/AuroraBackground'
 import ScrollProgress from '@/components/ui/ScrollProgress'
+import { RouteChangeProgress } from '@/components/ui/RouteChangeProgress'
 import { BackToTop } from '@/components/ui/BackToTop'
 import { ClientProviders } from '@/components/providers/ClientProviders'
 import { PageTransition } from '@/components/ui/PageTransition'
@@ -143,6 +144,7 @@ export default function RootLayout({
             <Navigation />
             {/* 278 底部導航：手機留 pb + safe-area；277 觸控 48px；UX-08 全站 main 底部安全區 */}
             <main id="main-content" className="relative min-h-screen pt-[48px] main-content-pb md:pb-0" tabIndex={-1}>
+              <RouteChangeProgress />
               <ScrollProgress />
               <ExpiryBanner />
               <ErrorBoundaryBlock blockName="頁面" fallback={<ErrorFallback />}>

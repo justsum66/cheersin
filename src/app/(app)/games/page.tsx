@@ -8,6 +8,17 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 const ROOM_TITLE_MAX = 30
 const OG_DESCRIPTION_MAX = 160
 
+/** P1-064：SEO Meta — 遊戲頁預設 title/description/og */
+const GAMES_DEFAULT_META: Metadata = {
+  title: '派對遊樂場 | Cheersin — 你的 AI 派對靈魂伴侶',
+  description: '真心話大冒險、國王杯、轉盤等酒桌派對遊戲。AI 幫你選遊戲、情侶模式、訪客試玩。未滿18歲請勿飲酒。',
+  openGraph: {
+    title: '派對遊樂場 | Cheersin',
+    description: '真心話、國王杯、轉盤等酒桌遊戲，AI 幫你選遊戲。',
+    url: `${BASE}/games`,
+  },
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -15,7 +26,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams
   const room = params?.room?.trim()
-  if (!room) return {}
+  if (!room) return GAMES_DEFAULT_META
   const roomShort = room.length > ROOM_TITLE_MAX ? room.slice(0, ROOM_TITLE_MAX) + '…' : room
   const desc = `派對遊樂場邀請 — 加入房間 ${roomShort} 一起玩。真心話大冒險、國王杯、轉盤等酒桌遊戲。`
   const ogDesc = desc.length > OG_DESCRIPTION_MAX ? desc.slice(0, OG_DESCRIPTION_MAX - 1) + '…' : desc
