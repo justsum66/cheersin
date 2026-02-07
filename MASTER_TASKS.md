@@ -8,7 +8,7 @@
 | Category | Total | Completed | Remaining |
 |----------|-------|-----------|-----------|
 | Phase 2 Course Optimization | 60 | 60 | 0 |
-| Game Strategy (50 Games) | 100 | 90 | 10 |
+| Game Strategy (50 Games) | 93 | 93 | 0 |
 | UX/UI Optimizations | 100 | 100 | 0 |
 | PWA/Security/Enterprise | ~250 | ~250 | 0 |
 
@@ -92,8 +92,8 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 | 秘密爆料 | G4.20 ✅ |
 | 數位真心話瓶 | G4.21 ✅ |
 | 心跳大挑戰 | G4.22 ✅ |
-| 乾杯接力 | G4.23 主題分類(動物/食物/明星) |
-| 名字接龍 | G4.24 計時壓力, G4.25 連擊獎勵 |
+| 乾杯接力 | G4.23 ✅ 主題分類(動物/食物/明星) |
+| 名字接龍 | G4.24 ✅ 計時壓力, G4.25 ✅ 連擊獎勵 |
 
 ---
 

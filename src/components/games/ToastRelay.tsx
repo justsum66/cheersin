@@ -9,7 +9,8 @@ import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
-const THEMES = ['酒類', '食物', '地名', '動物'] as const
+/** G4.23 主題分類：動物/食物/明星等 */
+const THEMES = ['酒類', '食物', '地名', '動物', '明星'] as const
 
 /** 乾杯接力：輪流說一個詞接龍，卡住或重複喝。 */
 export default function ToastRelay() {

@@ -7,10 +7,11 @@ import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
+const TURN_SECONDS = 10
 
 type OrderMode = 'list' | 'random'
 
-/** 依序喊名字，錯或慢罰。順序可調（依名單／每輪隨機）、錯慢統計。P2 #62：玩家數≤5 時鍵盤 1–5 對應選第 N 位。 */
+/** 依序喊名字，錯或慢罰。G4.24 計時壓力、G4.25 連擊獎勵。P2 #62：鍵盤 1–5 對應選第 N 位。 */
 export default function NameTrain() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
@@ -20,6 +21,12 @@ export default function NameTrain() {
   const [nextIndex, setNextIndex] = useState(1)
   const [wrong, setWrong] = useState(false)
   const [errorCount, setErrorCount] = useState(0)
+  /** G4.25 連擊獎勵：連續答對次數 */
+  const [combo, setCombo] = useState(0)
+  /** G4.24 計時壓力：本回合剩餘秒數，0 表示未啟用或已結束 */
+  const [timeLeft, setTimeLeft] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const startTimerRef = useRef<() => void>(() => {})
 
   const currentPlayer = players[currentIndex]
   const correctNext = players[nextIndex]
@@ -35,21 +42,61 @@ export default function NameTrain() {
     }
   }, [orderMode, players.length])
 
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    setTimeLeft(0)
+  }
+
+  const startTimer = () => {
+    stopTimer()
+    setTimeLeft(TURN_SECONDS)
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current)
+            timerRef.current = null
+          }
+          play('wrong')
+          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
+          setWrong(true)
+          setErrorCount((c) => c + 1)
+          setCombo(0)
+          setTimeout(() => {
+            setWrong(false)
+            startTimerRef.current?.()
+          }, 2000)
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+  }
+
   const say = (saidIndex: number) => {
     if (saidIndex === nextIndex) {
+      stopTimer()
       play('correct')
+      setCombo((c) => c + 1)
       setCurrentIndex(nextIndex)
       setNextIndex(getNextIndex(nextIndex))
       setWrong(false)
+      startTimer()
     } else {
       play('wrong')
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
       setWrong(true)
+      setCombo(0)
       setErrorCount((c) => c + 1)
+      stopTimer()
       if (wrongTimeoutRef.current) clearTimeout(wrongTimeoutRef.current)
       wrongTimeoutRef.current = setTimeout(() => {
         wrongTimeoutRef.current = null
         setWrong(false)
+        startTimer()
       }, 2000)
     }
   }
@@ -57,11 +104,24 @@ export default function NameTrain() {
   const wrongTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sayRef = useRef(say)
   sayRef.current = say
+  startTimerRef.current = startTimer
+
   useEffect(() => {
+    startTimer()
     return () => {
+      stopTimer()
       if (wrongTimeoutRef.current) {
         clearTimeout(wrongTimeoutRef.current)
         wrongTimeoutRef.current = null
+      }
+    }
+  }, [orderMode])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
       }
     }
   }, [])
@@ -89,6 +149,7 @@ export default function NameTrain() {
   }, [players.length])
 
   const switchMode = (mode: OrderMode) => {
+    stopTimer()
     setOrderMode(mode)
     setCurrentIndex(0)
     setNextIndex(mode === 'list' ? 1 : (() => {
@@ -97,6 +158,7 @@ export default function NameTrain() {
       return n
     })())
     setWrong(false)
+    setCombo(0)
   }
 
   return (
@@ -120,6 +182,12 @@ export default function NameTrain() {
         </button>
       </div>
       <p className="text-white/60 text-sm mb-2" aria-live="polite">本局錯誤：{errorCount}</p>
+      {combo > 0 && (
+        <p className="text-amber-400 text-sm font-medium mb-1" aria-live="polite">連擊 {combo} 次 🔥</p>
+      )}
+      {timeLeft > 0 && (
+        <p className="text-white/50 text-sm mb-1">剩餘 {timeLeft} 秒</p>
+      )}
       {players.length <= 5 && (
         <p className="text-white/40 text-xs mb-1">鍵盤 1–{players.length} 對應選第 N 位</p>
       )}
