@@ -25,9 +25,11 @@ const HOME_COPY = {
   /** H04：副標由 config 驅動，HOME_COPY 保留相容 */
   heroSubtitle: HERO_SUBTITLE_VARIANTS[0],
   heroSubtitleB: HERO_SUBTITLE_VARIANTS[1],
-  ctaQuiz: '開始檢測',
+  /** P0-007：首屏唯一主 CTA 為靈魂酒測 */
+  ctaQuiz: '開始靈魂酒測',
   ctaQuizHint: '免費 · 約 30 秒',
   ctaAssistant: 'AI 侍酒師諮詢',
+  ctaGames: '派對遊樂場',
   ctaBadge: '限時免費',
   featuresLabel: HOME_FEATURES_LABEL,
   featuresTitle: '重新定義品酒體驗',
@@ -235,8 +237,16 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
               </div>
             </Link>
-            {/* H14：次 CTA 並列且加圖標提升辨識 */}
+            {/* P0-007：派對遊樂場弱化為文字連結；主 CTA 僅靈魂酒測 */}
             <div className="order-1 sm:order-2 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+              <Link
+                href="/games"
+                className="text-white/60 hover:text-white/80 text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
+                aria-label="派對遊樂場"
+              >
+                <Gamepad2 className="w-4 h-4 shrink-0" aria-hidden />
+                {HOME_COPY.ctaGames}
+              </Link>
               <Link
                 href="/assistant"
                 className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"

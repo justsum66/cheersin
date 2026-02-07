@@ -6,7 +6,7 @@ import {
   ChevronLeft, Send, Bot, User, Sparkles, Wine,
   Mic, Image as ImageIcon, Camera, Settings, History, Zap, Crown,
   ThumbsUp, ThumbsDown, Copy, Volume2, Share2, Download,
-  Beer, Gift, Heart, Coins,
+  Beer, Gift, Heart, Coins, Gamepad2, Users,
   Search, BookOpen, Utensils, MessageSquare, Globe, ChevronDown, Square
 } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
@@ -113,9 +113,22 @@ const SUGGESTION_CATEGORIES = [
       '紹興酒怎麼品嚐',
     ]
   },
+  /** P0-006：派對選遊戲 — AI 成為派對組織者 */
+  {
+    title: '派對選遊戲',
+    icon: Gamepad2,
+    questions: [
+      '幫我選一款適合 2 人的遊戲',
+      '4 個人聚會推薦什麼遊戲？',
+      '不想喝酒的派對遊戲有哪些？',
+    ]
+  },
 ]
 
+/** P0-006：AI 侍酒師派對屬性 — 預設問題讓 AI 成為派對組織者 */
 const QUICK_PROMPTS = [
+  { icon: Gamepad2, text: '幫我選遊戲' },
+  { icon: Users, text: '我們 4 個人，推薦什麼派對遊戲？' },
   { icon: Gift, text: '送禮指南' },
   { icon: Heart, text: '約會選酒' },
   { icon: Coins, text: '高CP值推薦' },
