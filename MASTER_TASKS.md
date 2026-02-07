@@ -8,7 +8,7 @@
 | Category | Total | Completed | Remaining |
 |----------|-------|-----------|-----------|
 | Phase 2 Course Optimization | 60 | 47 | 13 |
-| Game Strategy (50 Games) | 100 | 32 | 68 |
+| Game Strategy (50 Games) | 100 | 34 | 66 |
 | UX/UI Optimizations | 100 | 100 | 0 |
 | PWA/Security/Enterprise | ~250 | ~250 | 0 |
 
@@ -81,7 +81,7 @@ Based on 70 experts + 50 influencers review. Target: 50 games total.
 | 俄羅斯輪盤 | G2.5 ✅, G2.6 ✅ |
 | 炸彈傳遞（熱土豆） | G2.7 ✅, G2.8 ✅ |
 | 情侶默契測試 | G2.9 ✅ 題庫建立, G2.10 ✅ 配對邏輯 |
-| 心有靈犀 | G2.11 遊戲邏輯, G2.12 UI實作 |
+| 心有靈犀 | G2.11 ✅, G2.12 ✅ |
 | 辣味終極二選一 | G2.13 複用框架, G2.14 18+題庫 |
 | 偏執遊戲 | G2.15 耳語機制, G2.16 投票邏輯 |
 | 禁忌告白 | G2.17 匿名系統, G2.18 投票邏輯 |

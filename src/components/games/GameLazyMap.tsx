@@ -40,7 +40,7 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'seven-tap': () => import(/* webpackChunkName: "games-reaction" */ './SevenTap'),
   'spin-bottle': () => import(/* webpackChunkName: "games-party" */ './SpinBottle'),
   'dare-dice': () => import(/* webpackChunkName: "games-draw" */ './DareDice'),
-  'rhythm-guess': () => import(/* webpackChunkName: "games-reaction" */ './RhythmGuess'),
+
   'toast-relay': () => import(/* webpackChunkName: "games-party" */ './ToastRelay'),
   'number-bomb': () => import(/* webpackChunkName: "games-guess" */ './NumberBomb'),
   '369-clap': () => import(/* webpackChunkName: "games-reaction" */ './ThreeSixNineClap'),
@@ -51,17 +51,17 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'spicy-never-have-i-ever': () => import(/* webpackChunkName: "games-adult" */ './SpicyNeverHaveIEver'),
   'spicy-who-most-likely': () => import(/* webpackChunkName: "games-adult" */ './SpicyWhoMostLikely'),
   // Phase 2 新遊戲
-  'quick-qa': () => import(/* webpackChunkName: "games-reaction" */ './QuickQA'),
+
   'between-cards': () => import(/* webpackChunkName: "games-guess" */ './BetweenCards'),
   'russian-roulette': () => import(/* webpackChunkName: "games-party" */ './RussianRoulette'),
 
   'couple-test': () => import(/* webpackChunkName: "games-facetoface" */ './CoupleTest'),
+  'soul-mate': () => import(/* webpackChunkName: "games-facetoface" */ './FaceToFace/SoulMate'),
 
   'spicy-would-you-rather': () => import(/* webpackChunkName: "games-adult" */ './SpicyWouldYouRather'),
   'paranoia-game': () => import(/* webpackChunkName: "games-party" */ './ParanoiaGame'),
   'secret-confession': () => import(/* webpackChunkName: "games-party" */ './SecretConfession'),
   'dare-cards': () => import(/* webpackChunkName: "games-party" */ './DareCards'),
-  'memory-game': () => import(/* webpackChunkName: "games-reaction" */ './MemoryGame'),
   'mind-reading': () => import(/* webpackChunkName: "games-facetoface" */ './MindReading'),
   'spicy-dice': () => import(/* webpackChunkName: "games-adult" */ './SpicyDice'),
   // Phase 3 新遊戲
@@ -78,29 +78,28 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'fortune-draw': () => import(/* webpackChunkName: "games-draw" */ './FortuneDraw'),
 
   'truth-wheel': () => import(/* webpackChunkName: "games-party" */ './TruthWheel'),
-  'word-guess': () => import(/* webpackChunkName: "games-guess" */ './WordGuess'),
+
   'photo-bomb': () => import(/* webpackChunkName: "games-party" */ './PhotoBomb'),
   // Phase 5 新遊戲
-  'flash-card': () => import(/* webpackChunkName: "games-reaction" */ './FlashCard'),
   'draw-guess': () => import(/* webpackChunkName: "games-party" */ './DrawGuess'),
   'taboo': () => import(/* webpackChunkName: "games-party" */ './Taboo'),
   'spot-diff': () => import(/* webpackChunkName: "games-reaction" */ './SpotDiff'),
   'quick-math': () => import(/* webpackChunkName: "games-reaction" */ './QuickMath'),
   'color-blind': () => import(/* webpackChunkName: "games-reaction" */ './ColorBlind'),
-  'rhythm-tap': () => import(/* webpackChunkName: "games-reaction" */ './RhythmTap'),
+
   'finger-point': () => import(/* webpackChunkName: "games-reaction" */ './FingerPoint'),
   'shot-roulette': () => import(/* webpackChunkName: "games-party" */ './ShotRoulette'),
   'music-chair': () => import(/* webpackChunkName: "games-party" */ './MusicChair'),
   'bottle-cap': () => import(/* webpackChunkName: "games-party" */ './BottleCap'),
   // Phase 6 新遊戲
-  'word-scramble': () => import(/* webpackChunkName: "games-reaction" */ './WordScramble'),
+
   'emotion-read': () => import(/* webpackChunkName: "games-reaction" */ './EmotionRead'),
   'fast-type': () => import(/* webpackChunkName: "games-reaction" */ './FastType'),
   'dice-war': () => import(/* webpackChunkName: "games-party" */ './DiceWar'),
   'price-guess': () => import(/* webpackChunkName: "games-guess" */ './PriceGuess'),
   'tongue-challenge': () => import(/* webpackChunkName: "games-party" */ './TongueChallenge'),
   'imitate-me': () => import(/* webpackChunkName: "games-party" */ './ImitateMe'),
-  'quiz-battle': () => import(/* webpackChunkName: "games-guess" */ './QuizBattle'),
+
   'lucky-draw': () => import(/* webpackChunkName: "games-draw" */ './LuckyDraw'),
   'time-freeze': () => import(/* webpackChunkName: "games-reaction" */ './TimeFreeze'),
   'stare-contest': () => import(/* webpackChunkName: "games-facetoface" */ './StareContest'),
@@ -114,6 +113,20 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'reverse-say': () => import(/* webpackChunkName: "games-reaction" */ './ReverseSay'),
   'riddle-guess': () => import(/* webpackChunkName: "games-party" */ './RiddleGuess'),
   'story-chain': () => import(/* webpackChunkName: "games-party" */ './StoryChain'),
+  // Phase 8 新遊戲
+  'sound-imitate': () => import(/* webpackChunkName: "games-party" */ './SoundImitate'),
+  'emoji-puzzle': () => import(/* webpackChunkName: "games-party" */ './EmojiPuzzle'),
+  'memory-match': () => import(/* webpackChunkName: "games-party" */ './MemoryMatch'),
+  'dance-battle': () => import(/* webpackChunkName: "games-party" */ './DanceBattle'),
+  'beer-pong-vr': () => import(/* webpackChunkName: "games-party" */ './BeerPongVR'),
+  'poker-face': () => import(/* webpackChunkName: "games-party" */ './PokerFace'),
+  'lip-sync-battle': () => import(/* webpackChunkName: "games-party" */ './LipSyncBattle'),
+  'voice-mod': () => import(/* webpackChunkName: "games-party" */ './VoiceMod'),
+  'gesture-guess': () => import(/* webpackChunkName: "games-party" */ './GestureGuess'),
+  'rhythm-master': () => import(/* webpackChunkName: "games-party" */ './RhythmMaster'),
+  'sound-sleuth': () => import(/* webpackChunkName: "games-party" */ './SoundSleuth'),
+  'pitch-perfect': () => import(/* webpackChunkName: "games-party" */ './PitchPerfect'),
+  'vocal-war': () => import(/* webpackChunkName: "games-party" */ './VocalWar'),
 }
 
 /** React.lazy 遊戲組件對照表：選中時才載入，減少首屏 bundle */
