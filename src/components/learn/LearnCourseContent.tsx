@@ -14,7 +14,7 @@ import { getNote, setNote } from '@/lib/learn-notes'
 import { addBookmark, removeBookmark, hasBookmark, getBookmarks, getBookmarkLimit } from '@/lib/learn-bookmarks'
 import { parseContentWithTerms, ParsedTerm } from '@/lib/learn-terms'
 import { PronunciationButton } from '@/components/ui/PronunciationButton'
-import { addWrongAnswer } from '@/lib/wrong-answers'
+import { addWrongAnswer, getWrongAnswersByCourseAndChapter } from '@/lib/wrong-answers'
 import { unlockBadge } from '@/lib/gamification'
 import VideoPlayer from '@/components/learn/VideoPlayer'
 import { ShareToStory } from '@/components/learn/ShareToStory'
@@ -828,14 +828,21 @@ export function LearnCourseContent({
                   className="mb-4"
                 />
 
-                {/* 158 穿插測驗：有 quiz 時先答題再完成本章 */}
-                {ch.quiz && ch.quiz.length > 0 && (
+                {/* 158 穿插測驗：有 quiz 時先答題再完成本章；P2.C2.3 題目難度自適應：曾錯題排後面 */}
+                {ch.quiz && ch.quiz.length > 0 && (() => {
+                  const wrongForChapter = getWrongAnswersByCourseAndChapter(courseId, ch.id)
+                  const wrongQuestionSet = new Set(wrongForChapter.map((w) => w.question))
+                  const orderedQuiz = [
+                    ...ch.quiz.filter((q) => !wrongQuestionSet.has(q.question)),
+                    ...ch.quiz.filter((q) => wrongQuestionSet.has(q.question)),
+                  ]
+                  return (
                   <div className="mt-4 p-4 rounded-xl bg-white/5 border border-primary-500/20 space-y-3">
                     <div className="flex items-center gap-2 text-primary-400 text-sm font-medium">
                       <HelpCircle className="w-4 h-4" />
                       小測驗
                     </div>
-                    {ch.quiz.map((q, qIdx) => {
+                    {orderedQuiz.map((q, qIdx) => {
                       const state = quizState[ch.id]
                       const step = state?.step ?? 0
                       const showCorrect = state?.showCorrect ?? false
@@ -968,11 +975,12 @@ export function LearnCourseContent({
                         </div>
                       )
                     })}
-                    {(quizState[ch.id]?.step ?? 0) >= (ch.quiz?.length ?? 0) && (
+                    {(quizState[ch.id]?.step ?? 0) >= orderedQuiz.length && (
                       <p className="text-primary-400 text-xs">測驗完成，可點下方「完成本章」</p>
                     )}
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* 完成本章；41 勾選動畫 */}
                 {/* Phase 1 D1.3: 課程完成勾選動畫增強 - 彈跳 + 光暈 */}

@@ -134,6 +134,11 @@ export function getWrongAnswersByCourse(courseId: string): WrongAnswer[] {
   return loadWrongAnswers().filter(a => a.courseId === courseId)
 }
 
+/** P2.C2.3 題目難度自適應：依錯題本取得該章節曾錯過的題目，用於測驗題排序（弱項放後） */
+export function getWrongAnswersByCourseAndChapter(courseId: string, chapterId: number): WrongAnswer[] {
+  return loadWrongAnswers().filter(a => a.courseId === courseId && a.chapterId === chapterId)
+}
+
 /**
  * 取得錯題統計
  */

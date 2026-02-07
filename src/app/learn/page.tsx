@@ -772,6 +772,20 @@ export default function LearnPage() {
   const completedCourseCount = Object.values(progress).filter((p) => p.total > 0 && p.completed >= p.total).length
   const sommelierLevel = getSommelierLevel(completedCourseCount)
 
+  /** P2.B2.3 遺忘曲線複習：艾賓浩斯建議 1/3/7 天後複習 */
+  const reviewSuggestions = (() => {
+    const today = new Date().toISOString().slice(0, 10)
+    const names: Record<string, string> = { ...Object.fromEntries(COURSES.map((c) => [c.id, c.title])) }
+    const out: { courseId: string; title: string; completedAt: string; daysAgo: number }[] = []
+    for (const [cid, v] of Object.entries(progress)) {
+      if (!v?.completedAt || v.total === 0 || v.completed < v.total) continue
+      const completed = v.completedAt.slice(0, 10)
+      const days = Math.floor((new Date(today).getTime() - new Date(completed).getTime()) / (24 * 60 * 60 * 1000))
+      if ([1, 2, 3, 4, 7, 8].includes(days)) out.push({ courseId: cid, title: names[cid] ?? cid, completedAt: completed, daysAgo: days })
+    }
+    return out.slice(0, 3)
+  })()
+
   /** 6/16 依學習路徑建議下一堂 */
   const nextCourseSuggestion = (() => {
     const path = LEARNING_PATH
@@ -1037,6 +1051,29 @@ export default function LearnPage() {
                   <span>{e.name}</span>
                   <span className="text-amber-400/90">{e.points} 分</span>
                 </span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* P2.B2.3 遺忘曲線複習：艾賓浩斯 1/3/7 天建議複習 */}
+        {reviewSuggestions.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h2 className="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              建議複習
+            </h2>
+            <p className="text-white/50 text-xs mb-3">根據艾賓浩斯曲線，以下課程適合近期複習</p>
+            <div className="flex flex-wrap gap-2">
+              {reviewSuggestions.map((r) => (
+                <Link
+                  key={r.courseId}
+                  href={`/learn/${r.courseId}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-300 text-sm border border-amber-500/20 hover:bg-amber-500/20"
+                >
+                  {r.title}
+                  <span className="text-white/50 text-xs">{r.daysAgo} 天前完成</span>
+                </Link>
               ))}
             </div>
           </motion.div>
