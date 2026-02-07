@@ -9,7 +9,7 @@ export const APP_DOMAIN = 'cheersin.app'
 /** localStorage 前綴，與既有 key 一致 */
 export const STORAGE_PREFIX = 'cheersin_'
 
-/** 常用 localStorage keys（與各頁面一致） */
+/** 常用 localStorage keys（與各頁面一致）；P2-236 集中管理，新代碼請由此引用 */
 export const STORAGE_KEYS = {
   CHAT_HISTORY: 'cheersin_assistant_history',
   WISHLIST: 'cheersin_wishlist',
@@ -17,6 +17,24 @@ export const STORAGE_KEYS = {
   LEARN_PROGRESS: 'cheersin_learn_progress',
   GAMES_STATS: 'cheersin_games_played',
   QUIZ_LAST_RESULT: 'quiz-last-result',
+  /** 遊戲大廳：玩家名單、房間加入狀態、最近玩過、教學完成 */
+  GAMES_PLAYERS: 'cheersin_games_players',
+  ROOM_JOINED: 'cheersin_room_joined',
+  RECENT_GAMES: 'cheersin_games_recent',
+  TUTORIAL_DONE: 'cheersin_games_tutorial_done',
+  /** 助理頁：聊天歷史、反饋記錄 */
+  ASSISTANT_FEEDBACK: 'cheersin_assistant_feedback',
+  /** 測驗進度 */
+  QUIZ_PROGRESS: 'quiz-progress',
+} as const
+
+/** API 路徑集中；P2-236 新代碼請由此引用 */
+export const API_ROUTES = {
+  ANALYTICS: '/api/analytics',
+  CHAT: '/api/chat',
+  REPORT: '/api/report',
+  SUBSCRIPTION: '/api/subscription',
+  HEALTH: '/api/health',
 } as const
 
 /** 預設分頁標題 */

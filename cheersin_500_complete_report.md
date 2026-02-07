@@ -144,7 +144,7 @@
 | **P1-074** ✅ | **輸入框驗證狀態：** 表單輸入框在驗證成功或失敗時，應有即時的視覺反饋（如綠色/紅色邊框和圖標）。 | **(UX 設計師)** 即時反饋能幫助用戶快速修正錯誤。 | `globals.css` (.input-glass-error / .input-glass-success) | 2h |
 | **P1-075** ✅ | **密碼強度指示器：** 在註冊和修改密碼時，提供一個實時的密碼強度指示器。 | **(資安專家)** 引導用戶設置更安全的密碼。 | `components/ui/PasswordStrength.tsx` | 2h |
 | **P1-076** ✅ | **加載動畫統一：** 統一使用一種風格的加載動畫（Spinner/Loader），而不是在不同地方使用不同的樣式。 | **(設計系統負責人)** 保持品牌視覺的統一性。 | `components/ui/Loader.tsx` | 2h |
-| **P1-077** | **圖片畫廊/輪播組件：** 創建一個可用於展示多張圖片的畫廊或輪播組件，支持縮略圖、全屏預覽和手勢滑動。 | **(前端架構師)** 這是一個可複用的基礎組件，可用於酒款介紹、課程預覽等。 | `components/ui/Carousel.tsx` | 5h |
+| **P1-077** ✅ | **圖片畫廊/輪播組件：** 創建一個可用於展示多張圖片的畫廊或輪播組件，支持縮略圖、全屏預覽和手勢滑動。 | **(前端架構師)** 這是一個可複用的基礎組件，可用於酒款介紹、課程預覽等。 | `components/ui/Carousel.tsx` (前後/圓點/可選自動播放) | 5h |
 | **P1-078** ✅ | **麵包屑導航 (Breadcrumbs)：** 在層級較深的頁面（如課程詳情頁、管理後台子頁面）增加麵包屑導航，幫助用戶理解當前位置。 | **(UX 設計師)** 提升網站的導航性和可尋性。 | `components/ui/Breadcrumb.tsx` | 3h |
 | **P1-079** ✅ | **標籤 (Tags/Badges) 組件：** 創建一個風格統一的標籤組件，用於遊戲卡片、課程狀態、用戶等級等。 | **(UI 設計師)** 標籤是信息組織和視覺掃描的重要元素。 | `components/ui/Badge.tsx` | 2h |
 | **P1-080** ✅ | **分割線 (Divider) 組件：** 創建一個帶有漸變或品牌元素的自定義分割線組件，取代單調的 `<hr>`。 | **(UI 設計師)** 即使是最小的元素，也能體現設計的精緻感。 | `components/ui/Divider.tsx` | 1h |
@@ -158,7 +158,7 @@
 | **P1-085** | **酒款卡片 (WineCard) 優化：** `WineCard.tsx` 需要重新設計，增加收藏按鈕、用戶評分、價格範圍等信息，並優化視覺層次。 | **(Master Sommelier)** 酒款卡片是 AI 推薦結果的載體，其信息密度和吸引力至關重要。 | `components/wine/WineCard.tsx` | 4h |
 | **P1-086** ✅ | **PWA 安裝提示：** 在支持的瀏覽器上，當用戶訪問達到一定頻次後，主動彈出一個友好的、非阻塞式的「添加到主屏幕」提示。 | **(PWA 專家)** 提升應用的留存和訪問入口。 | `components/pwa/AddToHomeScreenBanner.tsx` | 3h |
 | **P1-087** ✅ | **複製按鈕反饋：** 所有複製操作（如邀請鏈接、AI 回答）後，應有即時的視覺反饋（如圖標變為「打勾」）和 Toast 提示。 | **(UX 設計師)** 給予用戶明確的操作成功反饋。 | `components/ui/CopyButton.tsx` | 2h |
-| **P1-088** | **下拉菜單 (Dropdown/Select) 美化：** 美化原生的 `<select>` 元素，或使用如 Radix UI 的無頭組件庫創建一個功能強大且風格統一的下拉菜單。 | **(UI 設計師)** 原生下拉菜單在各瀏覽器和系統上樣式差異巨大，體驗糟糕。 | `components/ui/Select.tsx` | 4h |
+| **P1-088** ✅ | **下拉菜單 (Dropdown/Select) 美化：** 美化原生的 `<select>` 元素，或使用如 Radix UI 的無頭組件庫創建一個功能強大且風格統一的下拉菜單。 | **(UI 設計師)** 原生下拉菜單在各瀏覽器和系統上樣式差異巨大，體驗糟糕。 | `components/ui/Select.tsx` (玻璃風格、label/error) | 4h |
 | **P1-089** ✅ | **滑塊 (Slider) 組件：** 創建一個可用於篩選價格、酒精度等範圍的滑塊組件。 | **(前端架構師)** 這是篩選功能中常見的 UI 模式。 | `components/ui/Slider.tsx` | 3h |
 | **P1-090** | **日期選擇器 (Date Picker) 組件：** 為需要輸入日期的場景（如個人資料中的生日）設計一個風格統一的日期選擇器。 | **(UI 設計師)** 避免使用瀏覽器原生的、體驗不一的日期選擇器。 | `components/ui/DatePicker.tsx` | 4h |
 | **P1-091** ✅ | **工具提示 (Tooltip) 組件：** 創建一個 Tooltip 組件，在鼠標懸停於圖標按鈕等元素上時，顯示額外的文字說明。 | **(UX 設計師)** 在不佔用界面空間的情況下提供輔助信息。 | `components/ui/Tooltip.tsx` | 2h |
@@ -277,7 +277,7 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P2-221** | **升級 Next.js 到最新版本：** 確保專案使用的是最新的穩定版 Next.js，以獲得最新的性能優化、安全補丁和功能。 | **(Vercel 總監)** 緊跟框架版本是享受平台紅利的最簡單方式。 | `package.json` | 2h |
+| **P2-221** ✅ | **升級 Next.js 到最新版本：** 確保專案使用的是最新的穩定版 Next.js，以獲得最新的性能優化、安全補丁和功能。 | **(Vercel 總監)** 緊跟框架版本是享受平台紅利的最簡單方式。 | `package.json`, `README.md` (版本說明與升級註記) | 2h |
 | **P2-222** | **引入 Playwright 進行 E2E 測試：** 建立一套端到端測試用例，覆蓋核心用戶流程，如註冊、創建房間、完成一局遊戲、訂閱。 | **(測試工程師)** E2E 測試是保證核心功能不被破壞的最後一道防線。 | `playwright.config.ts`, `e2e/` | 12h |
 | **P2-223** | **實現組件級懶加載：** 除了頁面級，對於大型、非首屏的組件（如評論區、複雜的圖表），也應使用 `React.lazy` 進行懶加載。 | **(Webpack 核心維護者)** 進一步細化代碼分割，減少主包體積。 | `components/**/*.tsx` | 5h |
 | **P2-224** | **分析並優化 Webpack Bundle：** 使用 `@next/bundle-analyzer` 分析打包後的產物，找出並優化過大的模塊。 | **(Webpack 核心維護者)** 精確定位性能瓶頸，而不是靠猜。 | `next.config.js` | 3h |
@@ -292,7 +292,7 @@
 | **P2-233** | **TypeScript 嚴格模式：** 在 `tsconfig.json` 中開啟 `strict: true`，並修復所有由此產生的類型錯誤。 | **(TypeScript 編譯器貢獻者)** 充分利用 TypeScript 的類型保護能力，在編譯時捕獲潛在的 bug。 | `tsconfig.json` | 8h |
 | **P2-234** | **ESLint 和 Prettier 規則增強：** 引入更嚴格的 ESLint 規則（如 `eslint-plugin-react-hooks`），並在 CI 中強制執行代碼風格和質量檢查。 | **(前端架構師)** 自動化保證代碼質量和團隊協作的一致性。 | `.eslintrc.js`, `.prettierrc.js` | 3h |
 | **P2-235** | **Storybook 組件文檔：** 為核心 UI 組件（Button, Modal, Card 等）編寫 Storybook 文檔，方便單獨測試、預覽和複用。 | **(設計系統負責人)** Storybook 是開發和維護設計系統的利器。 | `stories/` | 12h |
-| **P2-236** | **抽離 `constants.ts`：** 將散落在代碼中的魔術字符串和數字（如 API 路徑、事件名稱、localStorage keys）統一抽離到 `lib/constants.ts` 中。 | **(前端架構師)** 提高代碼的可維護性和可讀性。 | `lib/constants.ts` | 4h |
+| **P2-236** ✅ | **抽離 `constants.ts`：** 將散落在代碼中的魔術字符串和數字（如 API 路徑、事件名稱、localStorage keys）統一抽離到 `lib/constants.ts` 中。 | **(前端架構師)** 提高代碼的可維護性和可讀性。 | `lib/constants.ts` (STORAGE_KEYS 擴充、API_ROUTES) | 4h |
 | **P2-237** | **使用 CSS 變量：** 將 Tailwind CSS 配置中的設計令牌（顏色、字體大小）生成為 CSS 變量，方便在 JS 中動態讀取或修改。 | **(CSS 專家)** 打破 JS 和 CSS 之間的壁壘，實現更動態的樣式控制。 | `tailwind.config.ts` | 3h |
 | **P2-238** | **虛擬化長列表 (Virtualization)：** 對於可能非常長的列表（如 AI 聊天歷史、酒款庫），使用 `react-window` 或 `tanstack-virtual` 進行虛擬化，只渲染可視區域內的項目。 | **(性能優化專家)** 即使有 10000 個列表項，也能保持流暢滾動。 | `assistant/page.tsx` | 6h |
 | **P2-239** | **拆分大型 Context：** 將功能繁多的 `UserContext` 或 `GameContext` 拆分為更小的、更專注的 Context，避免不相關的更新導致大範圍重渲染。 | **(React 核心成員)** Context 的粒度越小，性能越好。 | `contexts/` | 5h |
