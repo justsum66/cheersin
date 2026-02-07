@@ -192,9 +192,9 @@
   /* RWD 20：遊戲區中央對齊由 GameWrapper 內層 text-center 提供 */
   /* RWD 21：重要數字由 tabular-nums 類提供 */
   /* RWD 22：文案區使用 min-w-0 max-w-full 不固定寬度 */
-  /* 任務 83：觸控目標 44px 覆查 — 全站可點擊元素 ≥44px；已用 .games-touch-target / .min-touch / min-h-[48px] 覆蓋主要按鈕 */
-  /* RWD 23–52：觸控/按鈕/表單/卡片/圖示（第三批）；重複優化：48px 觸控區請用 .games-touch-target 避免散落 min-h-[48px] min-w-[48px] */
+  /* 任務 83 / P1-037：觸控目標 ≥44px（Apple HIG / Material）；全站可點擊用 .games-touch-target 或 .min-touch-44 */
   .games-touch-target { min-height: 48px; min-width: 48px; }
+  .min-touch-44 { min-height: 44px; min-width: 44px; }
   .games-cta { min-height: 48px; padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
   .games-btn-group { display: flex; flex-wrap: wrap; gap: 0.75rem; }
   @media (min-width: 768px) { .games-btn-group { gap: 1rem; } }
@@ -664,10 +664,28 @@
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(to right, #8B0000, #D4AF37);
   }
-  /* P2 任務 17：全站內容連結 hover 底線一致（排除按鈕、skip-link、nav、footer；顏色由各區塊自訂） */
+  /* P2 任務 17 / P1-094：全站內容連結 hover 底線、focus-visible 焦點環 */
   a:not([class*="btn-"]):not(.skip-link):not([class*="nav-link"]):not([class*="home-footer-link"]):hover {
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+  a:not([class*="btn-"]):focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* P1-093：卡片懸停統一（非 glass-card 的卡片可加 .card-hover） */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.2);
+  }
+  /* P1-104：選取文字時品牌色 */
+  ::selection {
+    background: rgba(139, 0, 0, 0.25);
+    color: inherit;
   }
 
   /* Buttons：觸控區域 ≥44px；P0 完美像素：200ms 過渡 + 陰影/高光微調 */
@@ -687,7 +705,7 @@
   .btn-primary:hover {
     box-shadow: 0 10px 28px -4px rgba(139, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     will-change: transform;
-    /* Phase 1 A1.1: 按鈕 hover 漸層反饋 */
+    /* Phase 1 A1.1 / P1-058：CTA hover 漸層與光暈 */
     background-image: linear-gradient(to right, #9B0000, #8B0000, #9B0000);
     background-size: 200% auto;
   }

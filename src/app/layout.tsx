@@ -182,6 +182,11 @@ export default function RootLayout({
               iconTheme: { primary: '#b91c1c', secondary: '#fff' },
               ariaProps: { role: 'alert', 'aria-live': 'assertive' },
             },
+            /* P1-039：Toast 警告狀態 */
+            custom: {
+              iconTheme: { primary: '#c2410c', secondary: '#fff' },
+              ariaProps: { role: 'status', 'aria-live': 'polite' },
+            },
           }}
         />
       </body>
