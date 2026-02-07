@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useCallback } from 'react'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
@@ -114,6 +114,13 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
 
   /** H10：滾動指示器約 3s 內保持可見後淡出 */
   const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.05, 0.2], [1, 1, 0])
+
+  /** P1-055：Features 區背景裝飾視差 — 滾動時 subtle 位移增加深度 */
+  const featuresParallaxY = useTransform(
+    scrollYProgress,
+    reducedMotion ? [0.2, 0.6] : [0.15, 0.35, 0.55],
+    reducedMotion ? ['0%', '0%'] : ['0%', '6%', '12%']
+  )
 
   return (
     <div ref={containerRef} className="relative overflow-x-hidden home-brand-pattern" role="region" aria-label="Cheersin 首頁">
@@ -322,9 +329,16 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         </section>
       )}
 
-      {/* B07/B39：Features 區 aria-labelledby、id 供錨點 */}
+      {/* B07/B39：Features 區 aria-labelledby、id 供錨點；P1-055 視差裝飾 */}
       <section id="home-features" className="py-10 md:py-14 px-4 relative z-10 bg-white/[0.01]" aria-labelledby="home-features-heading">
-        <div className="max-w-7xl xl:max-w-[1440px] mx-auto">
+        <motion.div
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{ y: featuresParallaxY }}
+          aria-hidden
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[120px] opacity-20" style={{ backgroundColor: 'var(--hero-glow-primary)' }} />
+        </motion.div>
+        <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
           {/* B09/B10：Core Features 標籤與主標可配置 */}
           <InViewAnimate delay={0} y={16} amount={0.15} reducedMotion={!!reducedMotion}>
             <div className="text-center mb-6 md:mb-8">
@@ -557,7 +571,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
   )
 }
 
-/** FeatureCard 純展示；任務 19：Bento hover 3D 傾角微調更自然；AUDIT #33 可再微調 duration */
+/** P1-048：Bento 卡片 hover 光暈追隨鼠標；任務 19：3D 傾角 */
 const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description, delay, badge, reducedMotion }: {
   href: string
   icon: LucideIcon
@@ -567,24 +581,50 @@ const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description
   badge?: string
   reducedMotion?: boolean
 }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [glow, setGlow] = useState<{ x: number; y: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (reducedMotion) return
+    const el = cardRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setGlow({ x, y })
+  }, [reducedMotion])
+
+  const handleMouseLeave = useCallback(() => setGlow(null), [])
+
   return (
     <InViewAnimate delay={delay} y={16} duration={0.4} reducedMotion={!!reducedMotion}>
       <Link href={href} className="block h-full rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] transition-[box-shadow] duration-200" aria-label={`${title}：${description}`}>
-        {/* H59：Bento 卡片 hover 微動（3D 傾角 + 輕微 scale） */}
-        {/* Phase 1 A3.4: 增加卡片 hover 光暈效果 */}
         <motion.div
+          ref={cardRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           whileHover={reducedMotion ? undefined : { rotateX: 1.5, rotateY: -1.5, translateZ: 6, scale: 1.02 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="card-3d card-glow-hover glass-card-spotlight bento-card-hover p-4 md:p-5 group hover:border-primary-500/30 hover:shadow-glass-hover h-full flex flex-col"
+          className="card-3d card-glow-hover glass-card-spotlight bento-card-hover p-4 md:p-5 group hover:border-primary-500/30 hover:shadow-glass-hover h-full flex flex-col relative overflow-hidden"
         >
-          <div className="flex items-start justify-between mb-2 md:mb-3">
+          {/* P1-048：鼠標追隨光暈，僅在非 reduced-motion 且 hover 時顯示 */}
+          {!reducedMotion && glow && (
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              aria-hidden
+              style={{
+                background: `radial-gradient(circle 80px at ${glow.x}% ${glow.y}%, rgb(var(--primary) / 0.25) 0%, transparent 70%)`,
+              }}
+            />
+          )}
+          <div className="flex items-start justify-between mb-2 md:mb-3 relative z-10">
             <FeatureIcon icon={Icon} size="md" color="primary" />
             {badge && (
               <span className="home-badge">{badge}</span>
             )}
           </div>
-          <h3 className="home-heading-3 text-white mb-1 md:mb-2 group-hover:text-primary-400 transition-colors duration-200">{title}</h3>
-              <p className="home-body text-white/60 text-xs md:text-sm leading-relaxed line-clamp-2 flex-1">{description}</p>
+          <h3 className="home-heading-3 text-white mb-1 md:mb-2 group-hover:text-primary-400 transition-colors duration-200 relative z-10">{title}</h3>
+          <p className="home-body text-white/60 text-xs md:text-sm leading-relaxed line-clamp-2 flex-1 relative z-10">{description}</p>
         </motion.div>
       </Link>
     </InViewAnimate>

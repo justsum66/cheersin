@@ -110,16 +110,16 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **P1-046** ✅ | **導航欄毛玻璃效果：** `Navigation.tsx` 的背景在滾動時應變為帶有 `backdrop-blur` 的毛玻璃效果，提升質感。 | **(Apple HIG 設計師)** 這是現代 App 設計的標配。 | `components/navigation/Navigation.tsx` | 2h |
 | **P1-047** ✅ | **Hero 區動畫增強：** `HomePageClient.tsx` 的 Hero 區標題和按鈕應使用 `staggerChildren` 實現錯落有致的入場動畫。 | **(動效設計師)** 有節奏的動畫能極大提升開場的衝擊力。 | `HomePageClient.tsx`, `home.config.ts` | 3h |
-| **P1-048** | **Bento Grid 互動效果：** 首頁的 Bento Grid 卡片在鼠標懸停時應有輕微的 3D 傾斜效果和光暈追隨效果。 | **(Dribbble 藝術總監)** 增加微互動，讓頁面「活」起來。 | `components/home/BentoGrid.tsx` (需創建) | 4h |
+| **P1-048** ✅ | **Bento Grid 互動效果：** 首頁的 Bento Grid 卡片在鼠標懸停時應有輕微的 3D 傾斜效果和光暈追隨效果。 | **(Dribbble 藝術總監)** 增加微互動，讓頁面「活」起來。 | `HomePageClient.tsx` (BentoCard 光暈追隨) | 4h |
 | **P1-049** ✅ | **Testimonials 輪播優化：** `HomeTestimonials.tsx` 的輪播應改為無限循環滾動，並在底部增加可點擊的圓點指示器。 | **(UX 設計師)** 提升輪播的可控性和用戶感知。 | `HomeTestimonialsCarousel.tsx` | 3h |
 | **P1-050** ✅ | **FAQ 手風琴動畫：** `HomeFAQAccordion.tsx` 的展開和折疊應有平滑的高度變化動畫，而不是瞬間完成。 | **(動效設計師)** 平滑的過渡動畫符合用戶的物理直覺。 | `HomeFAQAccordion.tsx` | 2h |
 | **P1-051** ✅ | **移動端漢堡菜單：** `Navigation.tsx` 的移動端菜單從左側滑出，並帶有遮罩層。菜單項應有入場動畫。 | **(UI 設計師)** 這是移動端導航的標準實踐。 | `components/navigation/Navigation.tsx` | 3h |
 | **P1-052** ✅ | **Logo 優化：** `BrandLogo.tsx` 中的 Logo 在不同主題下應有對應的顏色版本，並確保為 SVG 格式以實現無損縮放。 | **(品牌設計師)** Logo 是品牌的臉面，必須在任何情況下都清晰、美觀。 | `components/BrandLogo.tsx` | 1h |
 | **P1-053** ✅ | **Footer 重新設計：** 當前的 Footer 信息過於簡單。需要重新設計，包含網站地圖、社交媒體鏈接、聯繫方式和版權信息。 | **(UX 設計師)** Footer 是用戶尋找信息的最後一站，其結構應清晰明了。 | `components/navigation/Footer.tsx` | 4h |
 | **P1-054** ✅ | **滾動指示器 (Scroll Indicator)：** 在 Hero 區底部增加一個向下的箭頭或鼠標滾輪圖標，提示用戶向下滾動。該圖標在滾動後淡出。 | **(UX 設計師)** 給予用戶明確的行為暗示。 | `HomePageClient.tsx` | 1h |
-| **P1-055** | **視差滾動效果：** 首頁的背景元素或裝飾性圖形應在滾動時產生 subtle 的視差效果，增加頁面深度。 | **(動效設計師)** 視差效果能創造沉浸感。 | `HomePageClient.tsx` | 3h |
+| **P1-055** ✅ | **視差滾動效果：** 首頁的背景元素或裝飾性圖形應在滾動時產生 subtle 的視差效果，增加頁面深度。 | **(動效設計師)** 視差效果能創造沉浸感。 | `HomePageClient.tsx` (Hero + Features 區視差) | 3h |
 | **P1-056** ✅ | **導航欄 active 狀態：** `Navigation.tsx` 中，當前所在頁面的導航鏈接應有明顯的 active 狀態（如下劃線、不同顏色或背景）。 | **(UI 設計師)** 幫助用戶定位自己在網站中的位置。 | `components/navigation/Navigation.tsx` | 1h |
-| **P1-057** | **用戶頭像與下拉菜單：** 登入後，導航欄右上角應顯示用戶頭像。點擊頭像彈出下拉菜單，包含「個人資料」、「設定」、「登出」等選項。 | **(UX 設計師)** 這是所有 SaaS 應用的標準用戶入口。 | `components/navigation/UserMenu.tsx` (需創建) | 4h |
+| **P1-057** ✅ | **用戶頭像與下拉菜單：** 登入後，導航欄右上角應顯示用戶頭像。點擊頭像彈出下拉菜單，包含「個人資料」、「設定」、「登出」等選項。 | **(UX 設計師)** 這是所有 SaaS 應用的標準用戶入口。 | `components/navigation/UserMenu.tsx` | 4h |
 | **P1-058** ✅ | **CTA 按鈕懸停效果：** 所有主要的 CTA 按鈕在 hover 時應有漸變背景的輕微移動或光暈效果，吸引用戶點擊。 | **(UI 設計師)** 讓最重要的按鈕在視覺上脫穎而出。 | `globals.css` | 2h |
 | **P1-059** ✅ | **社會認證 (Social Proof) 動態化：** 首頁的「XXX 位用戶信賴」應使用 `CountUp` 組件實現數字滾動動畫，增加可信度。 | **(增長黑客)** 動態的數字比靜態的數字更有說服力。 | `HomePageClient.tsx`, `components/ui/CountUp.tsx` | 2h |
 | **P1-060** ✅ | **主題切換動畫：** 切換亮/暗主題時，應有一個平滑的顏色過渡動畫，而不是瞬間切換。 | **(動效設計師)** 提升主題切換的體驗。 | `ThemeContext.tsx`, `globals.css` | 3h |
@@ -156,7 +156,7 @@
 | **P1-083** ✅ | **頭像 (Avatar) 組件：** 創建一個 Avatar 組件，支持圖片、首字母 fallback，並可顯示在線狀態或等級徽章。 | **(設計系統負責人)** 頭像是代表用戶的核心元素。 | `components/ui/Avatar.tsx` | 3h |
 | **P1-084** ✅ | **確認對話框 (Confirm Dialog)：** 設計一個統一的確認對話框，用於刪除、登出等危險操作，需有明確的警示和取消選項。 | **(UX 設計師)** 防止用戶因誤操作造成不可逆的損失。 | `components/ui/ConfirmDialog.tsx` | 2h |
 | **P1-085** | **酒款卡片 (WineCard) 優化：** `WineCard.tsx` 需要重新設計，增加收藏按鈕、用戶評分、價格範圍等信息，並優化視覺層次。 | **(Master Sommelier)** 酒款卡片是 AI 推薦結果的載體，其信息密度和吸引力至關重要。 | `components/wine/WineCard.tsx` | 4h |
-| **P1-086** | **PWA 安裝提示：** 在支持的瀏覽器上，當用戶訪問達到一定頻次後，主動彈出一個友好的、非阻塞式的「添加到主屏幕」提示。 | **(PWA 專家)** 提升應用的留存和訪問入口。 | `components/pwa/InstallPrompt.tsx` | 3h |
+| **P1-086** ✅ | **PWA 安裝提示：** 在支持的瀏覽器上，當用戶訪問達到一定頻次後，主動彈出一個友好的、非阻塞式的「添加到主屏幕」提示。 | **(PWA 專家)** 提升應用的留存和訪問入口。 | `components/pwa/AddToHomeScreenBanner.tsx` | 3h |
 | **P1-087** ✅ | **複製按鈕反饋：** 所有複製操作（如邀請鏈接、AI 回答）後，應有即時的視覺反饋（如圖標變為「打勾」）和 Toast 提示。 | **(UX 設計師)** 給予用戶明確的操作成功反饋。 | `components/ui/CopyButton.tsx` | 2h |
 | **P1-088** | **下拉菜單 (Dropdown/Select) 美化：** 美化原生的 `<select>` 元素，或使用如 Radix UI 的無頭組件庫創建一個功能強大且風格統一的下拉菜單。 | **(UI 設計師)** 原生下拉菜單在各瀏覽器和系統上樣式差異巨大，體驗糟糕。 | `components/ui/Select.tsx` | 4h |
 | **P1-089** ✅ | **滑塊 (Slider) 組件：** 創建一個可用於篩選價格、酒精度等範圍的滑塊組件。 | **(前端架構師)** 這是篩選功能中常見的 UI 模式。 | `components/ui/Slider.tsx` | 3h |
@@ -169,7 +169,7 @@
 | **P1-096** ✅ | **引用塊 (Blockquote) 樣式：** 美化 Markdown 中的引用塊樣式，使其在視覺上與普通文本有明顯區分。 | **(UI 設計師)** 突出引用的內容，增強文章的可讀性。 | `globals.css` | 1h |
 | **P1-097** ✅ | **可摺疊內容 (Accordion/Collapsible) 組件：** 創建一個通用的可摺疊內容組件，用於 FAQ、課程章節等。 | **(前端架構師)** 這是組織大量信息的常用模式。 | `components/ui/Accordion.tsx` | 3h |
 | **P1-098** ✅ | **分頁 (Pagination) 組件：** 為需要分頁的列表（如酒款庫、用戶評論）設計一個分頁組件。 | **(UX 設計師)** 提升長列表的導航效率。 | `components/ui/Pagination.tsx` | 3h |
-| **P1-099** | **通知中心 (Notification Center)：** 導航欄的鈴鐺圖標應對應一個通知中心，展示系統通知、好友請求、遊戲邀請等。 | **(UX 設計師)** 將所有通知聚合到一個地方，方便用戶管理。 | `components/navigation/NotificationCenter.tsx` | 5h |
+| **P1-099** ✅ | **通知中心 (Notification Center)：** 導航欄的鈴鐺圖標應對應一個通知中心，展示系統通知、好友請求、遊戲邀請等。 | **(UX 設計師)** 將所有通知聚合到一個地方，方便用戶管理。 | `components/navigation/NotificationPanel.tsx`，Navigation 已整合 | 5h |
 | **P1-100** | **用戶引導 (Onboarding) 流程：** 為新註冊用戶設計一個簡短的引導流程，介紹核心功能（靈魂酒測、AI 助理、派對遊戲）。 | **(增長黑客)** 幫助用戶快速理解產品價值，提升激活率。 | `components/onboarding/OnboardingFlow.tsx` | 6h |
 | **P1-101** | **微互動音效：** 為點贊、收藏、完成任務等關鍵操作添加 subtle 的、令人愉悅的音效。 | **(遊戲化專家)** 音效是提升滿足感和反饋的重要手段。 | `hooks/useGameSound.ts` | 4h |
 | **P1-102** ✅ | **骨架屏動畫：** 骨架屏應有微弱的、從左到右的閃光動畫，讓用戶感知到正在加載。 | **(UI 設計師)** 靜態的骨架屏會讓用戶誤以為頁面卡死了。 | `components/ui/Skeleton.tsx`, `globals.css` | 1h |

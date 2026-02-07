@@ -9,8 +9,6 @@ import {
   Sun,
   Moon,
   Contrast,
-  Bell,
-  User,
   Menu,
   X,
 } from 'lucide-react'
@@ -21,6 +19,8 @@ import { useThrottle } from '@/hooks/useThrottle'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { BrandLogo } from '@/components/BrandLogo'
+import { NotificationPanel } from '@/components/navigation/NotificationPanel'
+import { UserMenu } from '@/components/navigation/UserMenu'
 import {
   NAV_ITEMS,
   SCROLL_COMPACT_PX,
@@ -46,7 +46,6 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
-  const notificationsRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
@@ -79,18 +78,6 @@ export default function Navigation() {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [notificationsOpen, isMobileMenuOpen])
-
-  /** N12：通知點擊外關閉 — useCallback 穩定 */
-  const handleNotificationOutside = useCallback((e: MouseEvent) => {
-    if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
-      setNotificationsOpen(false)
-    }
-  }, [])
-  useEffect(() => {
-    if (!notificationsOpen) return
-    document.addEventListener('mousedown', handleNotificationOutside)
-    return () => document.removeEventListener('mousedown', handleNotificationOutside)
-  }, [notificationsOpen, handleNotificationOutside])
 
   /** N03：行動選單開啟時焦點到第一個連結；關閉時回開關按鈕 */
   useEffect(() => {
@@ -223,55 +210,15 @@ export default function Navigation() {
               </Link>
               <div className="h-6 w-px flex-shrink-0 bg-white/10" role="separator" aria-hidden />
 
-              {/* N16/N24：通知下拉 max-height、overflow；空狀態 id */}
-              <div className="relative" ref={notificationsRef}>
-                <button
-                  type="button"
-                  onClick={() => setNotificationsOpen((v) => !v)}
-                  className="p-2 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-colors games-touch-target flex items-center justify-center games-focus-ring"
-                  aria-label="站內通知"
-                  aria-expanded={notificationsOpen}
-                >
-                  <Bell className="w-5 h-5" />
-                </button>
-                <AnimatePresence>
-                  {notificationsOpen && (
-                    <motion.div
-                      className="absolute right-0 top-full mt-1 w-64 max-h-[70vh] overflow-auto rounded-xl bg-[#1a0a2e] border border-white/10 py-2 shadow-xl z-[60]"
-                      role="menu"
-                      aria-label="通知列表"
-                      aria-describedby="nav-notifications-empty"
-                      id="nav-notifications-panel"
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.15 }}
-                    >
-                      <p id="nav-notifications-empty" className="px-4 py-2 text-white/50 text-sm">
-                        尚無通知
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              {/* P1-099：通知中心 — 使用 NotificationPanel 組件 */}
+              <NotificationPanel
+                notificationsOpen={notificationsOpen}
+                setNotificationsOpen={setNotificationsOpen}
+                prefersReducedMotion={!!prefersReducedMotion}
+              />
 
-              {/* UX_LAYOUT_200 #62：登入/註冊入口明顯 — 顯示「登入」文字 */}
-              <Link
-                href="/profile"
-                aria-label="登入或個人頁面"
-                className="icon-interact games-focus-ring rounded-full flex items-center gap-2 min-h-[48px]"
-              >
-                <motion.span
-                  className="min-h-[48px] min-w-[48px] w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 p-[1px] shadow-glow-secondary hover:shadow-glow-secondary inline-flex items-center justify-center"
-                  whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
-                  whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
-                >
-                  <span className="w-full h-full rounded-full bg-[#0a0a0a] flex items-center justify-center">
-                    <User className="w-5 h-5 text-white" aria-hidden />
-                  </span>
-                </motion.span>
-                <span className="text-sm font-medium text-white/90 hidden sm:inline">登入</span>
-              </Link>
+              {/* P1-057：用戶頭像與下拉選單（登入後：個人資料/設定/登出） */}
+              <UserMenu />
             </div>
 
             {/* N07/N29：行動選單按鈕 aria-controls、ref 供焦點回歸 */}
