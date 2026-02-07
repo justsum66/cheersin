@@ -115,7 +115,7 @@ const nextConfig: NextConfig = {
   /* P3-72：靜態資源 Cache-Control — 圖片/字體/_next/static max-age=1 年 */
   /* SEC-01～04：全站安全標頭 — 先匹配靜態再匹配全站，確保皆有 security + 靜態有 cache */
   async headers() {
-    /** SEC-18：CSP 評估 — 先以 report-only 觀察，不阻擋；正式上線可改 Content-Security-Policy 強制 */
+    /** P0-019 / SEC-18：CSP 防 XSS。預設 report-only；正式上線設 CSP_REPORT_ONLY=false 強制執行。 */
     const cspReportOnly = process.env.CSP_REPORT_ONLY !== 'false'
     const cspHeaderName = cspReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
     const cspValue = [
@@ -126,6 +126,8 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https:",
       "connect-src 'self' https://*.supabase.co https://api.groq.com https://openrouter.ai https://api.pinecone.io https://api-m.paypal.com https://api-m.sandbox.paypal.com https://www.google-analytics.com wss:",
       "frame-src 'self' https://www.paypal.com",
+      "frame-ancestors 'self'",
+      "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
     ].join('; ')

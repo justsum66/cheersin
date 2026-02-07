@@ -1,6 +1,6 @@
-# Cheersin - 派對遊樂場 🎉
+# Cheersin - 你的 AI 派對靈魂伴侶 🎉
 
-一個現代化的線上派對遊戲平台，提供超過30種互動式派對遊戲，專為朋友聚會、公司團建和社交活動設計。
+現代化派對遊戲與靈魂酒測平台：超過 90+ 款互動遊戲、AI 侍酒師、品酒學院與 18+ 辣味專區。專為聚會、情侶與派對設計。
 
 ## 🚀 功能特色
 
@@ -92,13 +92,14 @@ cd cheersin
 npm install
 ```
 
-3. **環境配置**
+3. **環境配置（必讀）**
 ```bash
-# 複製環境變數範本
+# 複製環境變數範本（完整變量與註解見 .env.example）
 cp .env.example .env.local
 
 # 編輯 .env.local 並填入你的配置
 ```
+**關鍵環境變量：** `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`（後端）、`GROQ_API_KEY` 或 `OPENROUTER_API_KEY`（AI）、PayPal 相關（`PAYPAL_CLIENT_ID`、`PAYPAL_CLIENT_SECRET`、`PAYPAL_WEBHOOK_ID`）。詳見 [.env.example](.env.example)。
 
 4. **啟動開發伺服器**
 ```bash
@@ -107,6 +108,13 @@ npm run dev
 
 5. **訪問應用**
 打開瀏覽器訪問 `http://localhost:3000`
+
+### 常用指令
+```bash
+npm run lint      # ESLint 檢查
+npm run build     # 生產建置
+npm run test:run  # 單次全量測試
+```
 
 ## 🎯 部署
 
@@ -131,14 +139,19 @@ npm start
 ## 🧪 測試
 
 ```bash
-# 運行所有測試
+# 開發模式（watch）
 npm test
 
-# 運行特定測試
-npm test -- src/components/games/MyGame.test.tsx
+# 單次執行全部測試（CI）
+npm run test:run
+# 或
+npx vitest run
 
-# 生成測試覆蓋率報告
-npm run test:coverage
+# 單一檔案或路徑
+npx vitest run src/lib/example.test.ts
+
+# 遊戲 smoke 測試
+npx vitest run src/components/games/__tests__/games.smoke.test.tsx
 ```
 
 ## 📊 監控與日誌
