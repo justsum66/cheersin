@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
-import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react'
+import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import { Modal } from '@/components/ui/Modal'
 import { GameCard } from './GameCard'
@@ -117,6 +117,35 @@ const DISPLAY_ICONS: Record<DisplayCategory, LucideIcon> = {
   random: Shuffle,
   two: Users,
 }
+/** P1-106：解析 players 字串取得 min/max 人數 */
+function parsePlayersRange(players: string): { min: number; max: number } {
+  const match = players.match(/(\d+)\s*[-~–]\s*(\d+)/)
+  if (match) return { min: parseInt(match[1], 10), max: parseInt(match[2], 10) }
+  const single = players.match(/(\d+)\s*人/)
+  if (single) {
+    const n = parseInt(single[1], 10)
+    return { min: n, max: n }
+  }
+  if (/無限|1\+\s*人|1\+人/.test(players)) return { min: 1, max: 999 }
+  return { min: 1, max: 999 }
+}
+
+type PlayerCountFilter = 'all' | '2' | '2-4' | '4-8' | '8+'
+type DurationFilter = 'all' | 'short' | 'medium' | 'long'
+const PLAYER_COUNT_OPTIONS: { value: PlayerCountFilter; label: string }[] = [
+  { value: 'all', label: '不限人數' },
+  { value: '2', label: '2 人' },
+  { value: '2-4', label: '2–4 人' },
+  { value: '4-8', label: '4–8 人' },
+  { value: '8+', label: '8+ 人' },
+]
+const DURATION_OPTIONS: { value: DurationFilter; label: string }[] = [
+  { value: 'all', label: '不限時長' },
+  { value: 'short', label: '5 分內' },
+  { value: 'medium', label: '5–10 分' },
+  { value: 'long', label: '10 分+' },
+]
+
 const DISPLAY_TO_INTERNAL: Record<DisplayCategory, GameCategory[] | null> = {
   couple: null,
   all: null,
@@ -158,6 +187,9 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       setInternalFilter(cat)
     }
   }, [onDisplayFilterChange])
+  /** P1-106：適合人數與遊戲時長篩選 */
+  const [playerCountFilter, setPlayerCountFilter] = useState<PlayerCountFilter>('all')
+  const [durationFilter, setDurationFilter] = useState<DurationFilter>('all')
   /** 任務 4：收藏 ID 列表，用於頂置與心形狀態 */
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteGameIds())
   /** 任務 10：遊戲評分，用於卡片顯示與更新 */
@@ -192,19 +224,38 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
     [games, displayFilter]
   )
 
+  /** P1-106：適合人數與時長篩選；人數解析 players 字串、時長依 estimatedMinutes */
+  const filteredBySecondary = useMemo(() => {
+    return filteredByCategory.filter((g) => {
+      if (playerCountFilter !== 'all') {
+        const { min, max } = parsePlayersRange(g.players)
+        const wantMin = playerCountFilter === '2' ? 2 : playerCountFilter === '2-4' ? 2 : playerCountFilter === '4-8' ? 4 : 8
+        const wantMax = playerCountFilter === '2' ? 2 : playerCountFilter === '2-4' ? 4 : playerCountFilter === '4-8' ? 8 : 999
+        if (max < wantMin || min > wantMax) return false
+      }
+      if (durationFilter !== 'all') {
+        const mins = g.estimatedMinutes ?? 10
+        if (durationFilter === 'short' && mins > 5) return false
+        if (durationFilter === 'medium' && (mins <= 5 || mins > 10)) return false
+        if (durationFilter === 'long' && mins <= 10) return false
+      }
+      return true
+    })
+  }, [filteredByCategory, playerCountFilter, durationFilter])
+
   /** 任務 5：搜尋匹配名稱、描述或拼音/關鍵字 searchKeys；AUDIT #16 min length 再送 filter 減少運算 */
   const filteredGames = useMemo(
     () => {
       const q = deferredQuery.trim().toLowerCase()
-      if (!q || q.length < 2) return filteredByCategory
-      return filteredByCategory.filter(
+      if (!q || q.length < 2) return filteredBySecondary
+      return filteredBySecondary.filter(
         (g) =>
           g.name.toLowerCase().includes(q) ||
           g.description.toLowerCase().includes(q) ||
           (g.searchKeys != null && g.searchKeys.toLowerCase().includes(q))
       )
     },
-    [filteredByCategory, deferredQuery]
+    [filteredBySecondary, deferredQuery]
   )
 
   /** 任務 4：收藏頂置，收藏的遊戲排在最前 */
@@ -279,10 +330,10 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
     categoryTabRefs.current[i]?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
   }, [displayFilter])
 
-  /** GAMES_500 #83：篩選變更時捲動至列表頂部（可選） */
+  /** GAMES_500 #83：篩選變更時捲動至列表頂部（可選）；P1-106 含人數與時長 */
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [displayFilter, deferredQuery])
+  }, [displayFilter, deferredQuery, playerCountFilter, durationFilter])
 
   /** GAMES_500 #81：按 / 聚焦搜尋時不觸發遊戲選擇 */
   useEffect(() => {
@@ -487,6 +538,37 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
             </button>
           )
         })}
+      </div>
+      {/* P1-106：適合人數與遊戲時長篩選 chip */}
+      <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label="人數與時長篩選">
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <Users className="w-4 h-4 text-white/50 shrink-0" aria-hidden />
+          {PLAYER_COUNT_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPlayerCountFilter(value)}
+              className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring ${playerCountFilter === value ? 'bg-primary-500/30 text-primary-200 border border-primary-500/50' : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'}`}
+              aria-pressed={playerCountFilter === value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <Clock className="w-4 h-4 text-white/50 shrink-0" aria-hidden />
+          {DURATION_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setDurationFilter(value)}
+              className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring ${durationFilter === value ? 'bg-primary-500/30 text-primary-200 border border-primary-500/50' : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'}`}
+              aria-pressed={durationFilter === value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
       {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；P1-114 隨機選一個 */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

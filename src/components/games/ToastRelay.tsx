@@ -107,8 +107,10 @@ export default function ToastRelay() {
           </button>
         ))}
       </div>
-      {/* G3D-ToastRelay-07：輪到誰玩家名排版、truncate 樣式 */}
-      <p className="text-white/70 text-base sm:text-lg md:text-xl mb-2 w-full max-w-xs text-center px-2 games-helper" aria-live="polite">輪到：<span className="tabular-nums truncate inline-block max-w-[10rem] sm:max-w-none align-bottom" title={currentPlayer}>{currentPlayer}</span></p>
+      {/* G3D-ToastRelay-07 + P1-130：輪到誰玩家名排版、truncate、輪到你了醒目提示（脈動發光） */}
+      <p className="text-white/70 text-base sm:text-lg md:text-xl mb-2 w-full max-w-xs text-center px-2 games-helper" aria-live="polite">
+        輪到：<span className="tabular-nums truncate inline-block max-w-[10rem] sm:max-w-none align-bottom animate-pulse text-primary-300 font-bold shadow-[0_0_12px_rgb(139_0_0_/_0.5)]" title={currentPlayer}>{currentPlayer}</span>
+      </p>
       {chain.length > 0 && (
         <p className="text-primary-300 font-bold text-lg sm:text-xl md:text-2xl mb-2 w-full max-w-xs text-center px-2 games-question" role="status" aria-live="polite">
           接「{lastChar}」
