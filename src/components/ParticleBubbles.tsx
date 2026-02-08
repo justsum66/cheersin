@@ -4,11 +4,13 @@ import { useEffect, useRef } from 'react'
 
 /** 30 Hero 動態酒液流動粒子：深酒紅/香檳金氣泡；任務 9：prefers-reduced-motion 時停用 */
 /** Phase 1 A1.4: 增強粒子效果 - 更多色彩、微妙發光 */
+/** absolute：用於 Hero 區內，填滿父層（absolute inset-0）；預設 fixed 全螢幕 */
 const WINE_COLORS = ['rgba(139,0,0,', 'rgba(212,175,55,', 'rgba(255,255,255,', 'rgba(138,43,226,']
 const PARTICLE_COUNT = 40
 
-export default function ParticleBubbles({ reducedMotion = false }: { reducedMotion?: boolean }) {
+export default function ParticleBubbles({ reducedMotion = false, absolute = false }: { reducedMotion?: boolean; absolute?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (reducedMotion) return
@@ -31,13 +33,17 @@ export default function ParticleBubbles({ reducedMotion = false }: { reducedMoti
     const count = PARTICLE_COUNT
 
     const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      if (bubbles.length === 0) {
+      const w = absolute && containerRef.current ? containerRef.current.offsetWidth : window.innerWidth
+      const h = absolute && containerRef.current ? containerRef.current.offsetHeight : window.innerHeight
+      const safeW = Math.max(1, w)
+      const safeH = Math.max(1, h)
+      canvas.width = safeW
+      canvas.height = safeH
+      if (bubbles.length === 0 && safeW > 1 && safeH > 1) {
         for (let i = 0; i < count; i++) {
           bubbles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
+            x: Math.random() * safeW,
+            y: Math.random() * safeH,
             r: 2 + Math.random() * 10,
             vx: (Math.random() - 0.5) * 0.4,
             vy: -0.15 - Math.random() * 0.5,
@@ -74,18 +80,29 @@ export default function ParticleBubbles({ reducedMotion = false }: { reducedMoti
     }
 
     resize()
+    if (absolute) {
+      const tid = setTimeout(resize, 150)
+      window.addEventListener('resize', resize)
+      draw()
+      return () => {
+        clearTimeout(tid)
+        window.removeEventListener('resize', resize)
+        cancelAnimationFrame(animationId)
+      }
+    }
     window.addEventListener('resize', resize)
     draw()
     return () => {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animationId)
     }
-  }, [reducedMotion])
+  }, [reducedMotion, absolute])
 
   return (
+    <div ref={containerRef} className={absolute ? 'absolute inset-0 pointer-events-none z-[2]' : 'contents'}>
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
+      className={absolute ? 'absolute inset-0 w-full h-full pointer-events-none' : 'fixed inset-0 pointer-events-none z-0'}
       data-print-skip
       style={{
         opacity: reducedMotion ? 0 : 0.7,
@@ -95,5 +112,6 @@ export default function ParticleBubbles({ reducedMotion = false }: { reducedMoti
       }}
       aria-hidden
     />
+    </div>
   )
 }

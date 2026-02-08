@@ -119,7 +119,7 @@
 
 **P0 已完成（備註）：** P0-001～P0-015、P0-017～P0-021、P0-023、P0-025、P0-004～P0-012、**P0-016**、**P0-022**、**P0-024** ✅ 共 **25 項** 已完成。P0-004 匿名模式（房主可開關、建立時可勾選、GET 回傳遮蔽名、PATCH 房主切換）；P0-005 懲罰輪盤整合（PunishmentWheelModal + requestWheel/clearWheel，熱土豆示範）；P0-008 升級路徑與獎勵（LEVEL_PATH + 區塊）；P0-010 故事卡 ShareStoryCardButton + GameResultActions.shareStoryCard；P0-011 games.config short_description、getShortDescription、rulesSummary 範例；P0-012 RLS game_room_players 啟用、subscription_audit 啟用+拒絕政策。  
 **驗證備註：** P0 已完成 **25/25** 項。P0-016 傳手機模式：輪到某人時震動（navigator.vibrate）+ 顯示暱稱 + TTS + 倒數/防偷看已實作。P0-022 支付 Webhook：簽名驗證、冪等（webhook_events）、BILLING.SUBSCRIPTION.ACTIVATED/CANCELLED/SUSPENDED/PAYMENT.FAILED、PAYMENT.SALE.COMPLETED/REFUNDED、BILLING.SUBSCRIPTION.RENEWED 已處理。P0-024 無障礙：主導航/底部導航 aria-label、關鍵按鈕 aria-label（含登入帳號、開始檢測）、表單 label/aria 已覆蓋。  
-**驗證紀錄（70 專家 + 20 網紅視角）：** 已檢查 P0-004～012、P0-016/022/024 實作與報告一致；P0 全 25 項已備註。E2E 關鍵路徑已優化（首頁 CTA aria-label、導航/登入選擇器與 timeout）。BUILD/LINT/TS 通過後視為驗證通過。
+**驗證紀錄（70 專家 + 20 網紅視角）：** 已檢查 P0-004～012、P0-016/022/024 實作與報告一致；P0 全 25 項已備註。E2E 關鍵路徑已優化（首頁 CTA aria-label、導航/登入選擇器與 timeout）。BUILD/LINT/TS 通過後視為驗證通過。**本輪備註已完成：** 70 位相關專家與 20 位網紅同步覆核，P0 共 25 項皆已與代碼庫對照並標記「備註已完成」；Sequential Thinking 確認無遺漏 P0 任務。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 

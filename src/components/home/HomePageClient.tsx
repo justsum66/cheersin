@@ -132,6 +132,8 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pt-0 overflow-hidden home-hero-gradient safe-area-pb-hero"
         aria-label="你的 AI 派對靈魂伴侶：靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。"
       >
+        {/* 氣泡動畫延伸至 Hero：absolute 填滿 Hero 區，z-[2] 在漸層之上、內容之下 */}
+        <ParticleBubbles reducedMotion={!!reducedMotion} absolute />
         {/* 任務 6：暗角 vignette，四角輕微變暗 */}
         <div className="absolute inset-0 z-[1] pointer-events-none home-hero-vignette" aria-hidden />
         {/* H23：光暈 will-change 僅在動畫時，減少重繪 */}

@@ -818,7 +818,7 @@ export default function LearnPage() {
   })()
 
   return (
-    <main id="learn-main" className="relative min-h-screen px-2 sm:px-4 pt-0 pb-8 safe-area-px safe-area-pb" tabIndex={-1} role="main" aria-label="品酒學院課程列表">
+    <main id="learn-main" className="relative min-h-screen px-3 sm:px-6 md:px-8 pt-0 pb-10 md:pb-12 safe-area-px safe-area-pb" tabIndex={-1} role="main" aria-label="品酒學院課程列表">
         {/* 172 skip link；66-70 RWD：鍵盤 Tab 可見 */}
         <a
           href="#learn-main"
@@ -826,21 +826,21 @@ export default function LearnPage() {
         >
           跳到主要內容
         </a>
-        <div className="max-w-4xl xl:max-w-[1440px] mx-auto px-2 sm:px-4">
+        <div className="max-w-4xl xl:max-w-[1440px] mx-auto px-0 sm:px-2 space-y-8 md:space-y-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
           <Link href="/" className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-1 text-white/60 hover:text-white">
             <ChevronLeft className="w-5 h-5" />
             返回
           </Link>
         </div>
 
-        {/* L01：學院主標字級與字重階層明確；Hero 區 */}
+        {/* L01：學院主標字級與字重階層明確；Hero 區；排版優化：間距與圓角 */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-6 px-2 sm:px-4 py-6 md:py-8 rounded-2xl bg-gradient-to-b from-primary-500/8 via-transparent to-transparent"
+          className="text-center px-4 sm:px-6 py-8 md:py-10 rounded-2xl md:rounded-3xl bg-gradient-to-b from-primary-500/8 via-transparent to-transparent"
           aria-labelledby="learn-hero-title"
         >
           <h1 id="learn-hero-title" className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-2 leading-tight tracking-tight">
