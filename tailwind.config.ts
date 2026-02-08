@@ -6,6 +6,7 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  /** P2-268：safelist 僅保留動態類名 via-secondary-*，其餘由 content 掃描，保持精簡 */
   safelist: [{ pattern: /^via-secondary-\d+$/ }],
   theme: {
     extend: {

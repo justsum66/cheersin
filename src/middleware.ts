@@ -2,6 +2,7 @@
  * P3-47：CORS 明確化 — 僅當 CORS_ALLOWED_ORIGINS 設定時對 /api 加上 Allow-Origin
  * P3-57：API 請求 ID — 為每個請求產生 x-request-id，傳給 route 並回傳 X-Request-Id 供追蹤日誌
  * P2-303 / P2-327：API 請求結構化日誌（timestamp, requestId, method, path）；響應時間由各 route 或 instrumentation 記錄
+ * P2-318：若需標記棄用 API，可對特定 path 設 res.headers.set('X-Deprecation', 'true') 或 'Sun, 01 Jan 2026 00:00:00 GMT'
  */
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'

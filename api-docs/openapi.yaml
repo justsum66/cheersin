@@ -1,0 +1,36 @@
+# P2-308：OpenAPI 草稿 — 供前端/第三方對照與生成類型
+openapi: 3.0.3
+info:
+  title: Cheersin API
+  description: Cheersin 派對靈魂伴侶 API 草稿
+  version: 1.0.0
+servers:
+  - url: https://cheersin.app
+    description: Production
+  - url: http://localhost:3000
+    description: Local
+paths:
+  /api/health:
+    get:
+      summary: 健康檢查
+      responses:
+        '200':
+          description: 服務與依賴狀態
+  /api/games/rooms:
+    get:
+      summary: 取得房間列表
+    post:
+      summary: 建立房間
+  /api/subscription:
+    post:
+      summary: 訂閱操作 (create/capture/cancel)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action: { type: string }
+                planType: { type: string }
+                subscriptionId: { type: string }

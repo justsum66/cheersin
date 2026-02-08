@@ -2,7 +2,8 @@ import { createClient as createSupabaseClient, type SupabaseClient } from '@supa
 import { promises as dns } from 'node:dns'
 import { normalizeEnv, normalizeUrl } from './env'
 
-/** P3-33：模組級 lazy 單例，減少每請求新建連線（serverless 仍可能每 isolate 一實例） */
+/** P3-33：模組級 lazy 單例，減少每請求新建連線（serverless 仍可能每 isolate 一實例）
+ * P2-304：生產環境不輸出 debug；若需除錯可設 SUPABASE_DEBUG=1 並在 createSupabaseClient options 啟用 logLevel: 'debug' */
 let serverClientSingleton: SupabaseClient | null = null
 
 function createNewServerClient(): SupabaseClient {

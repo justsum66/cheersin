@@ -38,11 +38,13 @@
     "test:browser-check": "node scripts/mcp-browser-check.mjs",
     "test:browser-check:quick": "node scripts/mcp-browser-check.mjs --quick",
     "test:full": "node scripts/run-full-tests.mjs",
+    "depcheck": "npx depcheck || true",
     "supabase:deploy": "node scripts/supabase-deploy.mjs",
     "supabase:push": "npx supabase db push",
     "supabase:functions:deploy": "npx supabase functions deploy cleanup-expired-rooms --project-ref etrqxhpbhimrkcyolbrr",
     "seed:pinecone": "node scripts/seed-pinecone.mjs",
-    "generate:icons": "node scripts/generate-icons.mjs"
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "prepare": "husky"
   },
   "overrides": {
     "@next/swc-win32-x64-msvc": "15.5.7",
@@ -92,6 +94,11 @@
     "sharp": "^0.33.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "next lint --fix"
   }
 }

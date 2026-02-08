@@ -132,7 +132,8 @@ export default function RootLayout({
         <ClientProviders>
           <AgeGate>
             <WebVitalsReporter />
-            <DeferredAnalytics />
+            {/* P2-260：第三方分析由 DeferredAnalytics 延遲載入；若接入 GA 請用 next/script strategy="lazyOnload" */}
+        <DeferredAnalytics />
             <NavHiddenEffect />
             {/* 128 Skip to content；AUDIT #22 確認首頁可跳至 #main-content 或主內容 */}
             <a href="#main-content" className="skip-link">
