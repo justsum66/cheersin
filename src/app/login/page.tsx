@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase'
 import { getSafeNextPath } from '@/lib/redirect-safe'
 import { scrollToFirstError } from '@/lib/scroll-to-first-error'
 import toast from 'react-hot-toast'
+import { useTranslation } from '@/contexts/I18nContext'
 import { ERROR_FORM_HEADING } from '@/config/errors.config'
 import { COPY_TOAST_LOGIN_REDIRECT } from '@/config/copy.config'
 
@@ -18,6 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [magicSent, setMagicSent] = useState(false)
   const [magicEmail, setMagicEmail] = useState('')
@@ -85,17 +87,17 @@ export default function LoginPage() {
     return getSafeNextPath(n)
   }, [searchParams])
 
-  /** E08：登入後將回到的頁面標籤（友善顯示用） */
+  /** E08：登入後將回到的頁面標籤（友善顯示用）；i18n 使用 nav / subscription.manage */
   const nextPathLabel: Record<string, string> = {
-    '/profile': '個人頁',
-    '/quiz': '測驗',
-    '/assistant': 'AI 侍酒師',
-    '/games': '派對遊戲',
-    '/learn': '品酒學院',
-    '/pricing': '方案',
-    '/subscription': '訂閱管理',
+    '/profile': t('nav.profile'),
+    '/quiz': t('nav.quiz'),
+    '/assistant': t('nav.assistant'),
+    '/games': t('nav.games'),
+    '/learn': t('nav.learn'),
+    '/pricing': t('nav.pricing'),
+    '/subscription': t('subscription.manage'),
   }
-  const nextLabel = nextPathLabel[nextPath.split('?')[0]] ?? '個人頁'
+  const nextLabel = nextPathLabel[nextPath.split('?')[0]] ?? t('nav.profile')
 
   /** UX_LAYOUT_200 #89：電子郵件格式驗證（簡單 regex） */
   const emailFormatValid = useMemo(() => {
@@ -219,10 +221,10 @@ export default function LoginPage() {
                 <Wine className="w-8 h-8 text-white" />
               </div>
             </Link>
-            <h1 className="text-3xl font-display font-bold text-white mb-2">歡迎回來</h1>
-            <p className="text-white/50">登入以繼續您的品酒之旅</p>
+            <h1 className="text-3xl font-display font-bold text-white mb-2">{t('login.welcomeBack')}</h1>
+            <p className="text-white/50">{t('login.continueJourney')}</p>
             {nextPath !== '/profile' && (
-              <p className="text-primary-400/90 text-sm mt-1" role="status">登入成功後將回到：{nextLabel}</p>
+              <p className="text-primary-400/90 text-sm mt-1" role="status">{t('login.redirectTo')}：{nextLabel}</p>
             )}
             {/* UX_LAYOUT_200 #160 / 任務 39：頂部僅顯示通用錯誤，欄位錯誤僅 inline 不重複 */}
             {(errorMessage || loginError || showEmailFormatError) && (
@@ -257,7 +259,7 @@ export default function LoginPage() {
                   aria-describedby={showEmailFormatError ? 'login-email-format-error' : (errorMessage || loginError) ? 'login-error-message' : undefined}
                 />
                 <label htmlFor="login-email" className={`absolute left-12 transition-all duration-200 pointer-events-none ${emailFocus || emailValue ? 'top-2 text-xs text-primary-400' : 'top-1/2 -translate-y-1/2 text-sm text-white/50'}`}>
-                  Email <span className="text-red-400" aria-hidden>*</span>
+                  {t('login.email')} <span className="text-red-400" aria-hidden>*</span>
                 </label>
               </div>
               {showEmailFormatError && (
@@ -285,13 +287,13 @@ export default function LoginPage() {
                   aria-invalid={!!(errorMessage || loginError)}
                 />
                 <label htmlFor="login-password" className={`absolute left-12 transition-all duration-200 pointer-events-none ${passwordFocus || passwordValue ? 'top-2 text-xs text-primary-400' : 'top-1/2 -translate-y-1/2 text-sm text-white/50'}`}>
-                  密碼 <span className="text-red-400" aria-hidden>*</span>
+                  {t('login.password')} <span className="text-red-400" aria-hidden>*</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center text-white/50 hover:text-white rounded-lg games-focus-ring"
-                  aria-label={showPassword ? '隱藏密碼' : '顯示密碼'}
+                  aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                   tabIndex={0}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -301,9 +303,9 @@ export default function LoginPage() {
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer text-white/60 hover:text-white">
                 <input type="checkbox" className="rounded border-white/20 bg-white/10" />
-                記住我
+                {t('login.rememberMe')}
               </label>
-              <a href="#" className="text-primary-500 hover:text-primary-400">忘記密碼？</a>
+              <Link href="/auth/forgot-password" className="text-primary-500 hover:text-primary-400">{t('login.forgotPassword')}</Link>
             </div>
             <button
               type="submit"
@@ -315,48 +317,47 @@ export default function LoginPage() {
               {loading ? (
                 <span className="flex items-center gap-2 min-w-[7rem] justify-center">
                   <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full shrink-0" aria-hidden />
-                  登入中...
+                  {t('login.loading')}
                 </span>
               ) : (
                 <>
-                  Email 登入
+                  {t('login.emailLogin')}
                   <ArrowRight className="w-5 h-5" aria-hidden />
                 </>
               )}
             </button>
           </form>
           <p className="text-center text-white/60 text-sm mt-2">
-            <Link href="/auth/forgot-password" className="text-primary-400 hover:underline">忘記密碼？重設密碼</Link>
+            <Link href="/auth/forgot-password" className="text-primary-400 hover:underline">{t('login.forgotPasswordReset')}</Link>
           </p>
 
-          {/* P2 任務 32：魔法連結說明區塊層次 — 標題與表單區分、間距 token */}
           <div className="mt-6 pt-6 border-t border-white/10" style={{ marginTop: 'var(--space-section, 1.5rem)' }}>
-            <h3 className="text-sm font-semibold text-white/90 mb-1" id="login-magic-heading">寄送登入連結</h3>
-            <p className="text-sm text-white/70 mb-2">無需密碼，寄送登入連結至信箱</p>
+            <h3 className="text-sm font-semibold text-white/90 mb-1" id="login-magic-heading">{t('login.magicHeading')}</h3>
+            <p className="text-sm text-white/70 mb-2">{t('login.magicDescription')}</p>
             {magicSent ? (
-              <p className="text-primary-400 text-sm">已寄出！請至信箱點擊連結登入。</p>
+              <p className="text-primary-400 text-sm">{t('login.magicSent')}</p>
             ) : (
-              <form onSubmit={handleMagicLink} className="flex gap-2" aria-labelledby="login-magic-heading" aria-label="魔法連結登入">
+              <form onSubmit={handleMagicLink} className="flex gap-2" aria-labelledby="login-magic-heading" aria-label={t('login.magicHeading')}>
                 <input
                   id="magic-email"
                   type="email"
                   autoComplete="email"
                   value={magicEmail}
                   onChange={(e) => setMagicEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t('login.emailPlaceholder')}
                   className="input-glass flex-1 min-h-[48px]"
-                  aria-label="信箱（用於寄送登入連結）"
+                  aria-label={t('login.email')}
                 />
                 <button type="submit" disabled={loading} className="btn-secondary min-h-[48px] px-4 flex items-center gap-2 games-focus-ring rounded">
                   <Send className="w-4 h-4" />
-                  寄送連結
+                  {t('login.sendLink')}
                 </button>
               </form>
             )}
           </div>
 
           <div className="divider text-center text-white/30 text-sm mt-6">
-            或使用以下方式登入
+            {t('login.orSignInWith')}
           </div>
 
           {/* 201–205：Google / Apple / Line */}
@@ -366,7 +367,7 @@ export default function LoginPage() {
               onClick={() => handleOAuth('google')}
               disabled={loading}
               className="min-h-[48px] py-3 rounded-xl bg-white hover:bg-white/90 text-gray-800 font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border border-white/20 shadow-sm games-focus-ring"
-              aria-label="使用 Google 登入"
+              aria-label={`${t('login.orSignInWith')} Google`}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27c3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10c5.35 0 9.25-3.67 9.25-9.09c0-1.15-.15-1.81-.15-1.81Z" /></svg>
               <span className="hidden sm:inline">Google</span>
@@ -376,7 +377,7 @@ export default function LoginPage() {
               onClick={() => handleOAuth('apple')}
               disabled={loading}
               className="min-h-[48px] py-3 rounded-xl bg-white hover:bg-white/90 text-gray-800 font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border border-white/20 shadow-sm games-focus-ring"
-              aria-label="使用 Apple 登入"
+              aria-label={`${t('login.orSignInWith')} Apple`}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-1.18 1.62-2.09 3.23-3.68 4.44zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" /></svg>
               <span className="hidden sm:inline">Apple</span>
@@ -394,13 +395,12 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* E23：隱私政策連結於登入頁 */}
           <p className="text-center mt-6 text-white/40 text-sm">
-            登入即表示同意我們的{' '}
-            <Link href="/privacy" className="text-primary-500 hover:text-primary-400 font-medium underline underline-offset-1">隱私政策</Link>。
+            {t('login.agreePrivacy')}{' '}
+            <Link href="/privacy" className="text-primary-500 hover:text-primary-400 font-medium underline underline-offset-1">{t('footer.privacy')}</Link>。
           </p>
           <p className="text-center mt-2 text-white/40 text-sm">
-            還沒有帳號？ <Link href="/register" className="text-primary-500 hover:text-primary-400 font-medium">免費註冊</Link>
+            {t('login.noAccount')} <Link href="/register" className="text-primary-500 hover:text-primary-400 font-medium">{t('login.registerFree')}</Link>
           </p>
         </div>
       </motion.div>

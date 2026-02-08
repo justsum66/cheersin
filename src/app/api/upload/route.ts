@@ -15,7 +15,10 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const file = formData.get('file')
     if (!file || typeof file === 'string') {
-      return NextResponse.json({ error: 'Missing or invalid file field' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing or invalid file field' }, {
+        status: 400,
+        headers: { 'X-Content-Type-Options': 'nosniff' },
+      })
     }
     const blob = file as Blob
     const type = blob.type?.toLowerCase()
@@ -46,7 +49,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path)
-      return NextResponse.json({ url: urlData.publicUrl, path: data.path })
+      return NextResponse.json({ url: urlData.publicUrl, path: data.path }, {
+        headers: { 'X-Content-Type-Options': 'nosniff' },
+      })
     }
     return NextResponse.json(
       { error: 'Upload not configured' },

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAccordion } from '@/hooks/useAccordion'
 import { motion } from 'framer-motion'
+import { useTranslation } from '@/contexts/I18nContext'
 import {
   Crown,
   Check,
@@ -56,8 +57,9 @@ const FAQ_ITEMS = [
 
 /** E48：用戶見證從 config 讀取，可更新頭像與文案（已於上方 import） */
 
-/** E81 P2：倒數從 config/env 讀取，無活動時不顯示倒數 */
+/** E81 P2：倒數從 config/env 讀取，無活動時不顯示倒數；i18n 接線 pricing.* */
 export default function PricingPage() {
+  const { t } = useTranslation()
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
   const [faqOpen, setFaqOpen] = useAccordion(null)
   const [testimonialIndex, setTestimonialIndex] = useState(0)
@@ -105,7 +107,7 @@ export default function PricingPage() {
       {/* E81：限時優惠倒數與實際活動結束時間一致；無 PROMO_END 時不顯示 */}
       {promoEndMs > 0 && promoRemaining != null && promoRemaining > 0 && (
         <div className="sticky top-0 z-50 w-full py-2.5 px-4 bg-red-700 text-white text-center text-sm font-medium shadow-lg">
-          限時優惠倒數：{formatPromoRemaining(promoRemaining)} · 首月半價
+          {t('pricing.promoCountdown')}：{formatPromoRemaining(promoRemaining)} · {t('pricing.promoFirstHalf')}
           <span className="block text-white/80 text-xs mt-0.5">實際優惠期限以本站公告為準</span>
         </div>
       )}
@@ -119,16 +121,15 @@ export default function PricingPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary-500/30 bg-primary-500/10 text-primary-400 text-sm font-bold uppercase tracking-widest mb-3"
           >
             <Crown className="w-4 h-4" />
-            解鎖極致體驗
+            {t('pricing.badge')}
           </motion.div>
           <h1 className="home-heading-1 font-display font-bold mb-4 text-white">
-            選擇您的<span className="gradient-text">方案</span>
+            {t('pricing.heading')}<span className="gradient-text">{t('pricing.headingHighlight')}</span>
           </h1>
           <p className="text-white/40 text-xl max-w-2xl mx-auto mb-2">
-            永久免費方案與個人／VIP 升級，依需求解鎖完整功能。
+            {t('pricing.subheading')}
           </p>
-          {/* T022：定價前加飲酒過量有害健康，合規 */}
-          <p className="text-white/50 text-xs mb-6" role="note">飲酒過量有害健康</p>
+          <p className="text-white/50 text-xs mb-6" role="note">{t('pricing.disclaimer')}</p>
 
           <div className="inline-flex p-1 rounded-2xl bg-white/5 border border-white/10 relative">
             <div
@@ -143,7 +144,7 @@ export default function PricingPage() {
                 billingCycle === 'monthly' ? 'text-white font-bold' : 'text-white/40'
               }`}
             >
-              月繳
+              {t('pricing.monthly')}
             </button>
             <button
               type="button"
@@ -152,7 +153,7 @@ export default function PricingPage() {
                 billingCycle === 'yearly' ? 'text-white font-bold' : 'text-white/40'
               }`}
             >
-              年繳 <span className="text-primary-400 text-[10px] ml-1">買 10 送 2</span>
+              {t('pricing.yearly')} <span className="text-primary-400 text-[10px] ml-1">{t('pricing.yearlyBadge')}</span>
             </button>
           </div>
         </div>
@@ -161,16 +162,16 @@ export default function PricingPage() {
         <div className="flex flex-wrap items-center justify-center gap-6 py-4 mb-4 text-white/60 text-sm">
           <span className="inline-flex items-center gap-2">
             <Shield className="w-4 h-4 text-primary-400" aria-hidden />
-            安全加密付款
+            {t('pricing.trustSecure')}
           </span>
-          <span>隨時取消</span>
-          <span>不滿意全額退款</span>
+          <span>{t('pricing.trustCancel')}</span>
+          <span>{t('pricing.trustRefund')}</span>
           <span className="inline-flex items-center gap-1.5">
             <Users className="w-4 h-4 text-primary-400" aria-hidden />
             {SOCIAL_PROOF_USER_COUNT.toLocaleString('en-US')}+ 用戶信賴 Cheersin
           </span>
-          <Link href="/terms" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">服務條款</Link>
-          <Link href="/terms#refund" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">退款政策</Link>
+          <Link href="/terms" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">{t('pricing.terms')}</Link>
+          <Link href="/terms#refund" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">{t('pricing.refundPolicy')}</Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
@@ -188,7 +189,7 @@ export default function PricingPage() {
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-semibold tracking-widest shadow-lg shadow-primary-500/30">
-                  最受歡迎
+                  {t('pricing.mostPopular')}
                 </div>
               )}
               <div className="mb-6">
@@ -274,11 +275,10 @@ export default function PricingPage() {
                     : 'btn-secondary hover:bg-white/10'
                 }`}
               >
-                {plan.price === 0 ? '立即開始' : plan.id === 'pro' ? '升級無限暢聊' : '免費試用 7 天'}
+                {plan.price === 0 ? t('pricing.startFree') : plan.id === 'pro' ? t('pricing.upgradePro') : t('pricing.trial7')}
               </Link>
-              {/* T086：Trust badge — 隨時取消、安全付款，減少猶豫 */}
               <p className="text-center text-[10px] text-white/30 mt-4 uppercase tracking-wider">
-                {plan.price === 0 ? '無需信用卡' : '隨時取消 · 安全付款 · 不滿意全額退款'}
+                {plan.price === 0 ? t('pricing.noCard') : t('pricing.cancelSecureRefund')}
               </p>
             </motion.div>
           ))}
@@ -291,16 +291,15 @@ export default function PricingPage() {
           transition={{ delay: 0.4 }}
           className="mt-16"
         >
-          <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">方案功能對比</h2>
-          <div className="overflow-x-auto min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] -mx-4 px-4 sm:mx-0 sm:px-0" role="region" aria-label="方案功能對比表">
-            {/* 任務 87：比較表 a11y — th scope + id、td headers 對應，螢幕閱讀器可讀表意 */}
-            <table className="w-full min-w-[600px] text-left text-sm" role="table" aria-label="方案功能對比">
+          <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">{t('pricing.compareTitle')}</h2>
+          <div className="overflow-x-auto min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] -mx-4 px-4 sm:mx-0 sm:px-0" role="region" aria-label={t('pricing.compareTitle')}>
+            <table className="w-full min-w-[600px] text-left text-sm" role="table" aria-label={t('pricing.compareTitle')}>
               <thead>
                 <tr className="border-b border-white/10">
-                  <th id="pricing-col-feature" scope="col" className="p-4 font-semibold text-white/80">功能</th>
-                  <th id="pricing-col-starter" scope="col" className="p-4 font-semibold text-white/80">免費</th>
-                  <th id="pricing-col-pro" scope="col" className="p-4 font-semibold text-primary-400">個人（最受歡迎）</th>
-                  <th id="pricing-col-elite" scope="col" className="p-4 font-semibold text-accent-400">VIP</th>
+                  <th id="pricing-col-feature" scope="col" className="p-4 font-semibold text-white/80">{t('pricing.feature')}</th>
+                  <th id="pricing-col-starter" scope="col" className="p-4 font-semibold text-white/80">{t('pricing.free')}</th>
+                  <th id="pricing-col-pro" scope="col" className="p-4 font-semibold text-primary-400">{t('pricing.proLabel')}</th>
+                  <th id="pricing-col-elite" scope="col" className="p-4 font-semibold text-accent-400">{t('pricing.vip')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -330,7 +329,7 @@ export default function PricingPage() {
           transition={{ delay: 0.5 }}
           className="mt-16"
         >
-          <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">用戶見證</h2>
+          <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">{t('pricing.testimonials')}</h2>
           <div className="max-w-xl mx-auto p-6 rounded-2xl bg-white/5 border border-white/10">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
@@ -375,7 +374,7 @@ export default function PricingPage() {
         >
           <h2 id="faq-heading" className="home-heading-2 font-display font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
             <HelpCircle className="w-5 h-5" />
-            常見問題
+            {t('pricing.faq')}
           </h2>
           <div className="max-w-2xl mx-auto space-y-2">
             {FAQ_ITEMS.map((item, i) => (
@@ -417,24 +416,24 @@ export default function PricingPage() {
           transition={{ delay: 0.6 }}
           className="mt-16 text-center"
         >
-          <p className="text-white/50 text-sm mb-2">安全付款 · 支援信用卡與 PayPal</p>
+          <p className="text-white/50 text-sm mb-2">{t('pricing.safePayment')}</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/subscription"
               className="inline-flex items-center gap-2 min-h-[48px] text-primary-400 hover:text-primary-300 text-sm font-medium games-focus-ring rounded"
             >
-              前往訂閱與訂閱管理
+              {t('pricing.subscribeManage')}
             </Link>
             <Link
               href="#faq"
               className="inline-flex items-center gap-2 min-h-[48px] text-white/60 hover:text-white text-sm font-medium scroll-smooth games-focus-ring rounded"
             >
               <HelpCircle className="w-4 h-4" />
-              常見問題
+              {t('pricing.faq')}
             </Link>
             <span className="text-white/40">·</span>
             <a href="mailto:hello@cheersin.app" className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm font-medium">
-              有問題？聯絡我們
+              {t('pricing.contact')}
             </a>
           </div>
         </motion.section>
@@ -449,7 +448,7 @@ export default function PricingPage() {
           {/* T066 P2：企業/團體需求請聯絡 — 定價頁入口 */}
           <h2 className="text-xl font-display font-bold text-white mb-2 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-primary-400" />
-            團隊方案 · 企業需求請聯絡
+            {t('pricing.teamTitle')}
           </h2>
           <p className="text-white/60 text-sm mb-4">
             企業／團體客製化方案：專屬題庫、品牌露出、數據報表。填寫需求或來信，我們將與您聯繫。
@@ -513,14 +512,14 @@ export default function PricingPage() {
             <div className="flex flex-wrap gap-3">
               <button type="submit" className="btn-primary min-h-[48px] px-6 inline-flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
-                送出詢價
+                {t('pricing.enterpriseSubmit')}
               </button>
               <Link
                 href="mailto:enterprise@cheersin.app?subject=預約 Demo"
                 className="btn-secondary min-h-[48px] px-6 inline-flex items-center gap-2"
               >
                 <Calendar className="w-4 h-4" />
-                預約 Demo
+                {t('pricing.bookDemo')}
               </Link>
             </div>
           </form>
@@ -530,7 +529,7 @@ export default function PricingPage() {
         <a
           href="mailto:support@cheersin.app?subject=定價方案諮詢"
           className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-500 text-white shadow-lg shadow-primary-500/40 hover:bg-primary-400 transition-all hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
-          aria-label="即時客服"
+          aria-label={t('pricing.support')}
         >
           <MessageCircle className="w-6 h-6" />
         </a>

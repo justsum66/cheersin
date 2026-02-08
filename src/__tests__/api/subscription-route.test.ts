@@ -32,4 +32,16 @@ describe('POST /api/subscription', () => {
     const json = await res.json()
     expect(json).toHaveProperty('error')
   })
+
+  it('回傳 400 當 body 無效或缺少必要欄位', async () => {
+    const req = new NextRequest('http://localhost/api/subscription', {
+      method: 'POST',
+      body: JSON.stringify({}),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await POST(req)
+    expect([400, 503]).toContain(res.status)
+    const json = await res.json()
+    expect(json).toHaveProperty('error')
+  })
 })

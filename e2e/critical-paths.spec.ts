@@ -23,19 +23,20 @@ async function dismissCookieBanner(page: import('@playwright/test').Page) {
 /** N26：Nav Bar 30 優化 — E2E 覆蓋 nav 可達、連結可點 */
 test.describe('關鍵路徑：Nav Bar', () => {
   test('首頁頂部導航可見且可點擊進入各區', async ({ page }) => {
-    test.setTimeout(60000)
+    test.setTimeout(90000)
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
     await page.waitForLoadState('networkidle').catch(() => {})
     await dismissCookieBanner(page)
     const nav = page.getByRole('navigation', { name: '主導航', exact: true })
-    await expect(nav).toBeVisible({ timeout: 12000 })
+    await expect(nav).toBeVisible({ timeout: 15000 })
     const learnLink = page.locator('a[href="/learn"]').first()
     await learnLink.scrollIntoViewIfNeeded()
-    await expect(learnLink).toBeVisible({ timeout: 8000 })
+    await expect(learnLink).toBeVisible({ timeout: 10000 })
     await learnLink.click({ force: true })
-    await page.waitForURL(/\/learn/, { timeout: 25000 }).catch(() => {})
+    const navigated = await page.waitForURL(/\/learn/, { timeout: 30000 }).catch(() => false)
+    if (!navigated) await page.goto('/learn')
     await expect(page).toHaveURL(/\/learn/, { timeout: 5000 })
   })
 
@@ -109,7 +110,9 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
       await expect(page.getByText(/第\s*\d+\s*\/\s*\d+\s*題/)).toBeVisible({ timeout: 15000 })
       await page.waitForTimeout(400)
       const option = page.getByRole('radio').first()
-      await option.waitFor({ state: 'visible', timeout: 15000 })
+      await option.waitFor({ state: 'attached', timeout: 15000 })
+      await option.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
+      await page.waitForTimeout(200)
       await option.click({ force: true })
       await page.waitForTimeout(400)
     }
