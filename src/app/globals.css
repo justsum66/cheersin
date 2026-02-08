@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* P0-013：設計規範單一來源為 src/lib/design-tokens.ts；本檔案 :root 與其對齊，變更時請同步。 */
+
 /* Phase 1 E4.1: 首頁 LCP 優化 - 預加載及字體顯示優化 */
 /* 第一屏關鍵元素優先渲染 */
 .lcp-priority {

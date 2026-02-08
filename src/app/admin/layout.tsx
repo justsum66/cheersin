@@ -6,9 +6,10 @@
  */
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, BarChart3, ChevronLeft } from 'lucide-react'
+import { BookOpen, BarChart3, Users, ChevronLeft } from 'lucide-react'
 
 const NAV = [
+  { href: '/admin/users', label: '用戶與訂閱', icon: Users },
   { href: '/admin/knowledge', label: '知識庫', icon: BookOpen },
   { href: '/admin/usage', label: 'API 使用', icon: BarChart3 },
 ] as const

@@ -41,8 +41,8 @@
 
 ## 1. [P0] 根本性重塑 (Fundamental Reshaping) - 25 項
 
-**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020 ✅ 已完成（價值主張、18+ 付費牆、情侶模式、訪客試玩、定價場景化、env.example、API 錯誤格式、CSP、README、遊戲大廳懶加載、日誌系統關鍵路徑）。  
-**本輪驗證（非任務項）：** 已修復 6 個 ESLint 警告（StoryChain useMemo players、Telephone useEffect generateResults、EmojiPuzzle useEffect checkAnswers、MusicChair useCallback startRound、NameTrain useEffect startTimer、PhotoGuess jsx-a11y/alt-text）；Build + Lint + 147 tests 通過。
+**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020、**P0-013**、**P0-023** ✅ 已完成（價值主張、18+ 付費牆、情侶模式、訪客試玩、定價場景化、env.example、API 錯誤格式、CSP、README、遊戲大廳懶加載、日誌系統關鍵路徑、**Design Tokens 抽離**、**管理後台基礎：用戶查找與訂閱狀態管理**）。  
+**本輪驗證（非任務項）：** 已修復 6 個 ESLint 警告（StoryChain、Telephone、EmojiPuzzle、MusicChair、NameTrain、PhotoGuess）；Build + Lint + 147 tests 通過。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 
@@ -60,7 +60,7 @@
 | **P0-010** | **設計「病毒式分享」機制：** 任何遊戲結果頁（如真心話題目、懲罰結果）都應有一鍵生成「故事卡片」並分享到 IG/FB 的功能。卡片需帶有 Cheersin 的 Logo 和網址。 | **(網紅KOL)** 讓用戶成為你的免費廣告牌。分享的內容必須有趣、有槽點。 | `GameWrapper.tsx`, `CopyResultButton.tsx` | 5h |
 | **P0-011** | **重構 `games.config.ts`：** 目前 98 個遊戲定義混亂。必須按 `party`, `guess`, `reaction`, `adult` 等核心分類重組，並為每個遊戲增加 `short_description` 和 `rules_summary` 字段。 | **(Netflix 架構師)** 這是所有遊戲邏輯的源頭，必須清晰、可擴展。 | `games.config.ts` | 8h |
 | **P0-012** | **實現 Supabase RLS (Row Level Security)：** 當前數據庫訪問控制薄弱。必須為 `game_rooms`, `profiles` 等核心表格設定嚴格的 RLS 策略，確保用戶只能訪問自己的數據。 | **(資安專家)** 這是 P0 級別的安全漏洞，必須立即修復。 | `supabase` 後台配置 | 6h |
-| **P0-013** | **抽離 Design Tokens：** `tailwind.config.ts` 和 `globals.css` 中存在大量硬編碼顏色和尺寸。必須將所有設計規範（顏色、字體、間距、圓角）抽離到 `design-tokens.ts`。 | **(Airbnb 設計師)** 這是確保視覺一致性和未來快速換膚的基礎。 | `tailwind.config.ts`, `globals.css`, `design-tokens.ts` | 5h |
+| **P0-013** ✅ | **抽離 Design Tokens：** `tailwind.config.ts` 和 `globals.css` 中存在大量硬編碼顏色和尺寸。必須將所有設計規範（顏色、字體、間距、圓角）抽離到 `design-tokens.ts`。 | **(Airbnb 設計師)** 這是確保視覺一致性和未來快速換膚的基礎。 | `tailwind.config.ts`, `globals.css`, `design-tokens.ts` | 5h |
 | **P0-014** ✅ | **建立完整的 `env.example`：** 當前的 `.env.example` 缺少大量關鍵變量（如 `PAYPAL_WEBHOOK_ID`）。必須提供一個完整的、帶有詳細註釋的範例文件。 | **(Vercel 總監)** 讓新開發者能在 30 分鐘內跑起項目，而不是花半天時間猜環境變量。 | `.env.example` | 2h |
 | **P0-015** ✅ | **統一 API 錯誤響應格式：** API 錯誤格式不一。必須定義統一的錯誤響應結構（`{ success: false, error: { code: '...', message: '...' } }`），並在所有 `route.ts` 中實施。 | **(後端架構師)** 規範化是可維護性的前提。前端可以依此建立統一的錯誤處理邏輯。 | `api-response.ts`, 所有 `api/**/*.ts` | 4h |
 | **P0-016** | **實現「傳手機模式」：** `PassPhoneMode` 相關功能不完整。必須完成該模式，讓單一設備的多人遊戲體驗流暢。輪到某人時，手機應震動並顯示其暱稱。 | **(UX 設計師)** 這是線下聚會的核心場景，必須做到極致。 | `PassPhoneMode.tsx`, `PassPhoneProvider.tsx` | 6h |
@@ -70,7 +70,7 @@
 | **P0-020** ✅ | **引入日誌系統：** 當前缺乏有效的後端日誌。應引入 `pino` 或類似庫，並在所有 API 路由的關鍵路徑（如支付、創建房間）添加結構化日誌。 | **(DevOps 專家)** 沒有日誌，就等於蒙著眼睛開車。出現問題時無法追蹤和診斷。 | `logger.ts`, `api/**/*.ts` | 4h |
 | **P0-021** ✅ | **重寫 `README.md`：** 當前的 README 文件過於簡單。需要重寫，包含清晰的專案介紹、技術棧、本地啟動步驟、環境變量說明和貢獻指南。 | **(開源專家)** README 是一個專案的門面，直接影響協作效率和外部開發者的第一印象。 | `README.md` | 3h |
 | **P0-022** | **整合支付 Webhook：** `paypal/route.ts` 中的 Webhook 處理邏輯不完整且不安全。必須嚴格驗證 Webhook 簽名，並處理 `SUBSCRIPTION.CANCELLED`, `PAYMENT.SALE.COMPLETED` 等核心事件。 | **(支付安全專家)** 這是資金安全的命脈。Webhook 處理失敗或被偽造，會導致用戶付了錢但沒開通服務，或服務被惡意取消。 | `api/webhooks/paypal/route.ts` | 8h |
-| **P0-023** | **建立管理後台基礎：** `admin/` 目錄下的頁面是孤立的。需要建立一個統一的後台佈局，並首先實現一個「用戶查找」和「訂閱狀態管理」的功能。 | **(後端架構師)** 必須有一個客服和運營的入口，處理用戶問題和查看系統狀態。 | `admin/layout.tsx`, `admin/users/page.tsx` | 6h |
+| **P0-023** ✅ | **建立管理後台基礎：** `admin/` 目錄下的頁面是孤立的。需要建立一個統一的後台佈局，並首先實現一個「用戶查找」和「訂閱狀態管理」的功能。 | **(後端架構師)** 必須有一個客服和運營的入口，處理用戶問題和查看系統狀態。 | `admin/layout.tsx`, `admin/users/page.tsx` | 6h |
 | **P0-024** | **設計「無障礙」規範：** 專案缺乏無障礙設計。必須為所有可互動元素（按鈕、鏈接、輸入框）添加明確的 `aria-label`，並確保顏色對比度符合 WCAG AA 標準。 | **(Apple HIG 設計師)** 無障礙不是一個選項，而是一種責任。這也擴大了你的潛在用戶群。 | `globals.css`, 所有 `tsx` 文件 | 5h |
 | **P0-025** | **移除所有 Mock數據和硬編碼：** `profile/page.tsx` 等處存在大量 Mock 數據。必須全部移除，改為從 API 或 Supabase 獲取真實數據，並處理好 loading 和 empty 狀態。 | **(Netflix 架構師)** Mock 數據是開發階段的產物，留在生產代碼中是不可接受的。 | `profile/page.tsx`, `assistant/page.tsx` | 4h |
 
