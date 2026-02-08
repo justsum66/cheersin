@@ -1,0 +1,5 @@
+[
+  { "id": "truth-or-dare", "name": "真心話大冒險", "description": "經典派對遊戲，揭開秘密或接受挑戰。" },
+  { "id": "roulette", "name": "命運轉盤", "description": "命運指針決定誰來喝一口。可自訂玩家名稱！" },
+  { "id": "trivia", "name": "酒神隨堂考", "description": "考驗酒類知識，答錯請喝！" }
+]

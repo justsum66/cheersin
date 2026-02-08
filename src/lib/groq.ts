@@ -54,6 +54,8 @@ export interface SommelierUserContext {
   recentTurns?: { role: string; content: string }[]
   /** EXPERT_60 P3 B1-50：偏好回覆語言（如 en、ja）；未設或 zh-TW 則預設繁中 */
   preferredLanguage?: string
+  /** P2-378 / P2-404：遊戲列表摘要，供推薦遊戲與派對/遊戲配酒時使用 */
+  gamesListForPrompt?: string
 }
 
 const PERSONALITY_PRO = `請以「嚴謹專業」侍酒師風格回答：用詞精準、少用口語與表情符號、著重產區與品種、適時引用專業術語。`
@@ -87,6 +89,10 @@ export function getSommelierSystemPrompt(userContext?: SommelierUserContext): st
   }
   if (userContext.ragContext) {
     systemPrompt += `\n\n參考以下內容回答，並在引用處標注來源編號 [1]、[2] 等：\n${userContext.ragContext}`
+  }
+  /** P2-378 推薦遊戲 / P2-404 派對・遊戲配酒：注入遊戲列表與行為指示 */
+  if (userContext.gamesListForPrompt) {
+    systemPrompt += `\n\n派對遊戲與配酒：\n- 當用戶問「推薦遊戲」「玩什麼」「幾個人玩」「派對玩什麼」時，請從以下列表依人數與氛圍推薦 2～3 款，並可提及本站遊戲頁 /games。\n- 當用戶問「派對配酒」「遊戲配酒」「玩 XX 喝什麼酒」時，請推薦 2～3 款適合該場合的酒款並簡短說明理由。\n遊戲列表：\n${userContext.gamesListForPrompt}`
   }
   /** P2-398：AI 多語言 — 依 preferredLanguage 要求回覆語言（六語系：繁中/簡中/粵/英/日/韓） */
   const localeToLangName: Record<string, string> = {

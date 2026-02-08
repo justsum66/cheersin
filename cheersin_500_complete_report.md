@@ -9,24 +9,26 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 394 項 |
-| **名義完成率** | 394 ÷ 500 = **78.8%** |
+| **報告已標記完成（✅）** | 399 項 |
+| **名義完成率** | 399 ÷ 500 = **79.8%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 148 / 190 = **77.9%** |
+| **P2 完成率** | 153 / 190 = **80.5%** |
 | **P3 完成率** | 7 / 90 = **7.8%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 ✓ · E2E 關鍵路徑 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **78.8%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **79.8%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：148 / 190 = **77.9%**
+- **P2 完成率**：153 / 190 = **80.5%**
 - **P3 完成率**：7 / 90 = **7.8%**
 
 **本輪 3 項 P2 真實完成（分批實作）：** P2-398 AI 多語言（assistant 傳 locale、groq getSommelierSystemPrompt 六語系指令）、P2-390 Fallback 策略優化（失敗時 recordApiCall(success: false) + recordChatFailure 日誌）、P2-410 Token 追蹤（Groq chatWithSommelier 回傳 usage、chat 路徑寫入 promptTokens/completionTokens/totalTokens）。P2 完成 **145/190 = 76.3%**。
 
 **本輪 3 項 P2 真實完成（下一批）：** P2-348 登入嘗試限制（GET /api/auth/login-limit、POST /api/auth/login-failure、lib/login-limit.ts 5 次/15 分鐘、login 送出前檢查與失敗時記錄）、P2-385 AI 反饋送後端（POST /api/chat/feedback、ai_feedback 表、assistant 讚/倒讚與 submitFeedback 呼叫 API）、P2-397 對話導出（assistant 已有 exportConversation 匯出 .txt）。P2 完成 **148/190 = 77.9%**。
+
+**本輪 5 項 P2 真實完成：** P2-357 安全文件上傳（POST /api/upload、白名單 image/jpeg|png|webp、5MB、隨機檔名、Supabase Storage bucket uploads）、P2-378 AI 推薦遊戲（getGamesListForPrompt、groq 系統提示注入遊戲列表與「推薦遊戲/玩什麼」指示）、P2-395 AI 回答長期快取（lib/chat-response-cache 24h/100 筆、常見問句寫入長期快取）、P2-404 酒款配對推薦（系統提示「派對/遊戲配酒」指示）、P2-409 AI 生成遊戲規則摘要（scripts/generate-rules-summary.mjs + scripts/data/games-list.json）。P2 完成 **153/190 = 80.5%**。
 
 **本輪 i18n 15 項真實完成（70 專家 + 20 網紅視角）：** 導航改為 t('nav.*')（NAV_ITEMS 改 navKey）、首頁 Hero/CTA 改為 t('common.cta')、t('common.heroTitle1/2')、次連結 t('nav.games/assistant/learn')、AgeGate 全文案 t('ageGate.*')、Footer 已有 LocaleSwitcher 與 t('footer.*')、六語系 messages 補齊 ageGate/ common.heroTitle、主內容區 RWD 統一 page-container-mobile（Hero、Quiz、Learn、Pricing、Assistant、Profile、Login）、docs/i18n-tasks.md 15 項清單。BUILD ✓ TS ✓ test:run 147 ✓。
 
@@ -469,7 +471,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **P2-376** ✅ | **聊天歷史記錄：** `chat/route.ts` 需要實現聊天歷史的持久化存儲（存入 Supabase），並在 `assistant/page.tsx` 中加載和顯示。 | **(後端架構師)** 這是實現多輪對話和上下文記憶的基礎。 | `chat/route.ts`, `assistant/page.tsx` | 5h |
 | **P2-377** | **RAG (檢索增強生成) 流程優化：** 當前的 Embedding 和檢索流程較為基礎。應優化 Chunking 策略，並在檢索時使用混合搜索（關鍵字 + 向量），提升 AI 回答的相關性。 | **(ML 科學家)** RAG 的效果直接決定了 AI 助理的專業度。 | `lib/embedding.ts`, `lib/pinecone.ts` | 8h |
-| **P2-378** | **AI 推薦遊戲：** 在 AI 助理中加入「推薦遊戲」的意圖識別。AI 可以根據用戶描述的場景（人數、氛圍、是否有新人）推薦合適的遊戲。 | **(Master Sommelier)** 將 AI 的能力從「酒」擴展到「遊戲」，成為真正的派對顧問。 | `chat/route.ts` | 6h |
+| **P2-378** ✅ | **AI 推薦遊戲：** 在 AI 助理中加入「推薦遊戲」的意圖識別。AI 可以根據用戶描述的場景（人數、氛圍、是否有新人）推薦合適的遊戲。 | **(Master Sommelier)** 將 AI 的能力從「酒」擴展到「遊戲」，成為真正的派對顧問。 | `lib/games-for-ai.ts`、groq 系統提示、chat 注入 gamesListForPrompt | 6h |
 | **P2-379** ✅ | **流式響應 (Streaming Response)：** `chat/route.ts` 應使用流式響應，讓 AI 的回答像打字一樣逐字出現，而不是等待全部生成完畢再顯示。 | **(Vercel 總監)** 極大降低用戶感知的等待時間，提升交互體驗。 | `chat/route.ts`, `assistant/page.tsx` | 4h |
 | **P2-380** | **協同過濾推薦遊戲：** 收集用戶玩遊戲的行為數據，基於用戶的遊戲歷史，使用協同過濾算法推薦「玩過這個遊戲的人還喜歡玩...」。 | **(ML 科學家)** 實現個性化推薦，提升用戶發現新遊戲的效率和興趣。 | `api/recommendations/games/route.ts` | 12h |
 
@@ -712,7 +714,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-354** ✅ | **Cookie 同意橫幅：** 如果使用了非必要的 Cookie（如分析 Cookie），需要在用戶首次訪問時顯示 Cookie 同意橫幅。 | **(GDPR 顧問)** 合規要求。 | `components/CookieConsent.tsx` | 3h |
 | **P2-355** ✅ | **數據加密 (At Rest)：** 確保 Supabase 數據庫中的敏感數據（如用戶郵箱、支付信息）在靜態存儲時是加密的。 | **(資安專家)** 即使數據庫被洩露，數據也無法被直接讀取。 | `Supabase Dashboard` | 2h |
 | **P2-356** ✅ | **HTTPS 強制跳轉：** 確保所有 HTTP 請求都被 301 重定向到 HTTPS。 | **(資安專家)** 基礎的傳輸安全。 | `vercel.json` | 1h |
-| **P2-357** | **安全的文件上傳：** 如果支持文件上傳，必須限制文件類型（白名單）、大小，並使用隨機文件名存儲，防止路徑遍歷攻擊。 | **(滲透測試大師)** 文件上傳是高風險的攻擊向量。 | `api/upload/route.ts` | 4h |
+| **P2-357** ✅ | **安全的文件上傳：** 如果支持文件上傳，必須限制文件類型（白名單）、大小，並使用隨機文件名存儲，防止路徑遍歷攻擊。 | **(滲透測試大師)** 文件上傳是高風險的攻擊向量。 | `api/upload/route.ts`（image 白名單 5MB、隨機檔名、Supabase Storage） | 4h |
 | **P2-358** ✅ | **防止 Open Redirect：** 在所有重定向邏輯中，驗證目標 URL 是否為站內地址，防止被利用進行釣魚攻擊。 | **(XSS/CSRF 防護專家)** 一個常見但容易被忽視的漏洞。 | `login/page.tsx`, `middleware.ts` | 2h |
 | **P2-359** ✅ | **安全的錯誤日誌：** 確保錯誤日誌不包含用戶的敏感信息（如密碼、Token），並對 PII 數據進行脫敏。 | **(GDPR 顧問)** 日誌洩露是數據洩露的常見原因之一。 | `lib/logger.ts` | 2h |
 | **P2-360** ✅ | **Dependency Pinning：** 在 `package.json` 中使用精確版本號（而不是 `^` 或 `~`），並使用 `package-lock.json` 鎖定依賴樹。 | **(滲透測試大師)** 防止因依賴自動升級引入的安全漏洞。 | `package.json` | 1h |
@@ -752,7 +754,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-392** ✅ | **AI 預設問題 (Quick Prompts)：** 在 AI 助理的輸入框上方，提供一組預設問題按鈕（如「推薦一款紅酒」、「今晚派對玩什麼」），降低使用門檻。 | **(UX 設計師)** 引導用戶開始對話。 | `assistant/page.tsx` | 2h |
 | **P2-393** | **AI 知識庫更新機制：** 建立一個定期更新 Pinecone 向量數據庫的機制，確保 AI 的知識是最新的。 | **(ML 科學家)** 過時的知識會降低 AI 的可信度。 | `scripts/update-embeddings.ts` | 5h |
 | **P2-394** ✅ | **AI 成本監控：** 監控每日/每月的 AI API 調用量和費用，並設置預算告警。 | **(DevOps 專家)** 控制 AI 的運營成本。 | `lib/api-usage.ts` | 3h |
-| **P2-395** | **AI 回答緩存：** 對於常見的、答案不變的問題（如「什麼是單寧？」），緩存 AI 的回答，減少 API 調用和延遲。 | **(Redis 架構師)** 降低成本，提升響應速度。 | `chat/route.ts` | 4h |
+| **P2-395** ✅ | **AI 回答緩存：** 對於常見的、答案不變的問題（如「什麼是單寧？」），緩存 AI 的回答，減少 API 調用和延遲。 | **(Redis 架構師)** 降低成本，提升響應速度。 | `lib/chat-response-cache.ts` 24h 長期快取、chat/route 查寫 | 4h |
 | **P2-396** ✅ | **AI 人格設定：** 為 AI 助理設定一個獨特的人格（如「一位幽默風趣的侍酒師」），使其回答更有個性和品牌特色。 | **(Master Sommelier)** 讓 AI 不僅僅是一個工具，而是一個有魅力的角色。 | `chat/route.ts` (System Prompt) | 2h |
 | **P2-397** ✅ | **AI 對話導出：** 允許用戶將與 AI 的對話導出為 PDF 或文本文件。 | **(UX 設計師)** 讓用戶保存有價值的對話內容。 | `assistant/page.tsx`（exportConversation 匯出 .txt） | 3h |
 | **P2-398** ✅ | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
@@ -761,12 +763,12 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-401** | **AI 情感分析：** 分析用戶在聊天中的情感傾向，當檢測到用戶不滿或困惑時，主動提供幫助或轉接客服。 | **(ML 科學家)** 提升 AI 的情商和服務質量。 | `chat/route.ts` | 5h |
 | **P2-402** | **AI 推薦引擎 A/B 測試：** 為 AI 推薦算法建立 A/B 測試框架，持續優化推薦效果。 | **(ML 科學家)** 數據驅動的算法優化。 | `api/recommendations` | 6h |
 | **P2-403** | **AI 生成派對邀請函：** 允許用戶通過 AI 生成個性化的派對邀請函（文字+圖片），並一鍵分享。 | **(AI 科學家)** 增加 AI 的應用場景和趣味性。 | `api/generate-invitation` | 6h |
-| **P2-404** | **AI 酒款配對推薦：** 根據用戶選擇的遊戲或派對主題，AI 推薦搭配的酒款。 | **(Master Sommelier)** 將遊戲和品酒完美結合，體現 Cheersin 的獨特定位。 | `chat/route.ts` | 4h |
+| **P2-404** ✅ | **AI 酒款配對推薦：** 根據用戶選擇的遊戲或派對主題，AI 推薦搭配的酒款。 | **(Master Sommelier)** 將遊戲和品酒完美結合，體現 Cheersin 的獨特定位。 | groq 系統提示「派對/遊戲配酒」指示、gamesListForPrompt | 4h |
 | **P2-405** | **AI 對話分析儀表盤：** 在管理後台，提供一個 AI 對話分析儀表盤，展示常見問題、用戶滿意度、對話量等指標。 | **(數據分析師)** 用數據了解用戶需求，指導 AI 優化方向。 | `admin/ai-analytics/page.tsx` | 8h |
 | **P2-406** | **AI 知識圖譜 (可選)：** 構建一個酒類知識圖譜，讓 AI 能更精確地理解酒款之間的關係（如產區、葡萄品種、風味特徵）。 | **(ML 科學家)** 提升 AI 推薦和問答的深度和準確性。 | `scripts/build-knowledge-graph.ts` | 15h |
 | **P2-407** | **AI 自動標籤：** 利用 AI 自動為新上架的酒款或課程添加標籤，減少人工操作。 | **(ML 科學家)** 提升內容管理的效率。 | `api/auto-tag` | 5h |
 | **P2-408** | **AI 聊天機器人 Widget：** 在網站的每個頁面右下角，提供一個可展開的 AI 聊天機器人 Widget，方便用戶隨時提問。 | **(UX 設計師)** 讓 AI 助理無處不在，觸手可及。 | `components/ChatWidget.tsx` | 5h |
-| **P2-409** | **AI 生成遊戲規則摘要：** 利用 AI 自動為每個遊戲生成簡短的規則摘要，確保 `rulesSummary` 字段的質量和一致性。 | **(AI 科學家)** 自動化內容生成，提升效率。 | `scripts/generate-rules-summary.ts` | 3h |
+| **P2-409** ✅ | **AI 生成遊戲規則摘要：** 利用 AI 自動為每個遊戲生成簡短的規則摘要，確保 `rulesSummary` 字段的質量和一致性。 | **(AI 科學家)** 自動化內容生成，提升效率。 | `scripts/generate-rules-summary.mjs`、`scripts/data/games-list.json`（Groq 一句話摘要） | 3h |
 | **P2-410** ✅ | **AI Token 使用量追蹤：** 精確追蹤每個用戶的 AI Token 使用量，為未來可能的按量計費做準備。 | **(後端架構師)** 為商業模式的靈活調整提供數據基礎。 | `lib/api-usage.ts` | 3h |
 
 ---

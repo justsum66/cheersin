@@ -20,6 +20,8 @@ import { CHAT_FALLBACK_ORDER } from '@/config/chat.config'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { persistChatHistory } from '@/lib/chat-history-persist'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { getLongCached, setLongCached, shouldLongCache } from '@/lib/chat-response-cache'
+import { getGamesListForPrompt } from '@/lib/games-for-ai'
 
 const NAMESPACE_KNOWLEDGE = 'knowledge'
 const NAMESPACE_WINES = 'wines'
@@ -301,6 +303,7 @@ export async function POST(request: NextRequest) {
     const userContext: SommelierUserContext = {
       ...rawContext,
       recentTurns: last5Turns?.slice(-10)?.slice(-5),
+      gamesListForPrompt: getGamesListForPrompt(),
     }
     const contextWithRag = await enrichContextWithRag(messages, userContext)
     const sources = contextWithRag?.ragSources?.map((s) => ({ index: s.index, source: s.source })) ?? []
@@ -344,7 +347,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    /** 非串流：快取命中則直接回傳（P1-17：key 含 subscriptionTier） */
+    /** 非串流：快取命中則直接回傳（P1-17 短期；P2-395 長期常見問答） */
     if (!useStream && !imageDataUrl) {
       const cached = getCached(lastUserStr, subscriptionTier)
       if (cached) {
@@ -352,6 +355,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { message: messageText, wines: wines?.length ? wines : undefined, sources: cached.sources, similarQuestions: cached.similarQuestions },
           { headers: { 'X-Cache': 'HIT' } }
+        )
+      }
+      const longCached = getLongCached(lastUserStr, subscriptionTier)
+      if (longCached) {
+        const { text: messageText, wines } = parseWinesFromResponse(longCached.message)
+        return NextResponse.json(
+          { message: messageText, wines: wines?.length ? wines : undefined, sources: longCached.sources, similarQuestions: longCached.similarQuestions },
+          { headers: { 'X-Cache': 'HIT-LONG' } }
         )
       }
     }
@@ -451,6 +462,9 @@ export async function POST(request: NextRequest) {
     }
     const similarQuestions = await getSimilarQuestions(responseMessage, lastUser)
     setCached(lastUser, subscriptionTier, { message: responseMessage, sources, similarQuestions })
+    if (shouldLongCache(lastUserStr)) {
+      setLongCached(lastUserStr, subscriptionTier, { message: responseMessage, sources, similarQuestions })
+    }
     const { text: messageText, wines } = parseWinesFromResponse(responseMessage)
 
     /** P3-64：fire-and-forget 寫入 chat_history，不阻塞回應 */
