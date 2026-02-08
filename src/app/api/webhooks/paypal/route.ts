@@ -46,7 +46,17 @@ async function verifyWebhookSignature(
       body: 'grant_type=client_credentials',
     })
 
-    const { access_token } = await tokenResponse.json()
+    if (!tokenResponse.ok) {
+      const err = (await tokenResponse.json()) as { error_description?: string }
+      logApiError('webhooks/paypal', new Error(err?.error_description ?? `token HTTP ${tokenResponse.status}`), { action: 'token', requestId })
+      return false
+    }
+    const tokenData = (await tokenResponse.json()) as { access_token?: string }
+    const access_token = tokenData.access_token
+    if (!access_token) {
+      logApiError('webhooks/paypal', new Error('No access_token in PayPal token response'), { action: 'token', requestId })
+      return false
+    }
 
     // Verify the webhook signature
     const verifyResponse = await fetch(
@@ -69,8 +79,13 @@ async function verifyWebhookSignature(
       }
     )
 
-    const { verification_status } = await verifyResponse.json()
-    return verification_status === 'SUCCESS'
+    if (!verifyResponse.ok) {
+      const errBody = (await verifyResponse.json()) as { message?: string }
+      logApiError('webhooks/paypal', new Error(errBody?.message ?? `verify HTTP ${verifyResponse.status}`), { action: 'verify-signature', requestId })
+      return false
+    }
+    const verifyData = (await verifyResponse.json()) as { verification_status?: string }
+    return verifyData.verification_status === 'SUCCESS'
   } catch (error) {
     logApiError('webhooks/paypal', error, { action: 'verify-signature', isP0: true, requestId })
     return false

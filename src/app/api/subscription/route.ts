@@ -18,6 +18,7 @@ const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
 
+/** 取得 PayPal OAuth2 access token；失敗時拋出以便回傳 503 */
 async function getAccessToken(): Promise<string> {
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
 
@@ -30,7 +31,14 @@ async function getAccessToken(): Promise<string> {
     body: 'grant_type=client_credentials',
   });
 
-  const data = await response.json();
+  const data = (await response.json()) as { access_token?: string; error_description?: string };
+  if (!response.ok) {
+    const msg = typeof data?.error_description === 'string' ? data.error_description : `HTTP ${response.status}`;
+    throw new Error(`PAYPAL_AUTH_FAILED: ${msg}`);
+  }
+  if (!data?.access_token) {
+    throw new Error('PAYPAL_AUTH_FAILED: No access_token in response');
+  }
   return data.access_token;
 }
 
@@ -105,7 +113,11 @@ export async function POST(request: NextRequest) {
             category: 'EDUCATIONAL_AND_TEXTBOOKS',
           }),
         });
-        const product = await productResponse.json();
+        if (!productResponse.ok) {
+          const errBody = (await productResponse.json()) as { message?: string };
+          throw new Error(`PayPal product create failed: ${errBody?.message ?? productResponse.statusText}`);
+        }
+        const product = (await productResponse.json()) as { id: string };
         const billingPlanResponse = await fetch(`${PAYPAL_API_BASE}/v1/billing/plans`, {
           method: 'POST',
           headers: {
@@ -128,8 +140,12 @@ export async function POST(request: NextRequest) {
             payment_preferences: { auto_bill_outstanding: true, payment_failure_threshold: 3 },
           }),
         });
-        const billingPlan = await billingPlanResponse.json();
-        planId = billingPlan.id
+        if (!billingPlanResponse.ok) {
+          const errBody = (await billingPlanResponse.json()) as { message?: string };
+          throw new Error(`PayPal plan create failed: ${errBody?.message ?? billingPlanResponse.statusText}`);
+        }
+        const billingPlan = (await billingPlanResponse.json()) as { id: string };
+        planId = billingPlan.id;
       }
 
       // Create subscription（P0-06：傳 custom_id 供 Webhook 對應用戶）
@@ -153,11 +169,15 @@ export async function POST(request: NextRequest) {
         }),
       });
 
-      const subscription = await subscriptionResponse.json();
+      if (!subscriptionResponse.ok) {
+        const errBody = (await subscriptionResponse.json()) as { message?: string };
+        throw new Error(`PayPal subscription create failed: ${errBody?.message ?? subscriptionResponse.statusText}`);
+      }
+      const subscription = (await subscriptionResponse.json()) as { id: string; links?: import('@/types/api-bodies').PayPalLink[] };
       
       return NextResponse.json({
         subscriptionId: subscription.id,
-        approvalUrl: (subscription.links as import('@/types/api-bodies').PayPalLink[] | undefined)?.find((l) => l.rel === 'approve')?.href,
+        approvalUrl: subscription.links?.find((l) => l.rel === 'approve')?.href,
       });
     }
 
@@ -174,9 +194,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const subscription = await response.json();
+      if (!response.ok) {
+        const errBody = (await response.json()) as { message?: string };
+        return errorResponse(400, 'PayPal subscription fetch failed', { message: errBody?.message ?? '無法取得訂閱狀態，請稍後再試' });
+      }
+      const subscription = (await response.json()) as { status?: string; billing_info?: { next_billing_time?: string }; start_time?: string; subscriber?: { payer_id?: string }; plan_id?: string };
       /** P3-54：回傳 current_period_end 供成功頁顯示「下次扣款日」 */
-      const nextBilling = subscription.billing_info?.next_billing_time ?? subscription.start_time
+      const nextBilling = subscription.billing_info?.next_billing_time ?? subscription.start_time;
       const currentPeriodEnd = nextBilling
         ? (typeof nextBilling === 'string' ? nextBilling : new Date(nextBilling).toISOString()).slice(0, 10)
         : null
@@ -228,11 +252,17 @@ export async function POST(request: NextRequest) {
 
     return errorResponse(400, 'Invalid action', { message: '不支援的 action' });
   } catch (error) {
-    if (error instanceof Error && error.message === 'PAYPAL_NOT_CONFIGURED') {
-      logApiError('subscription', error, { action: 'config-check', isP0: true, requestId })
-      return errorResponse(503, 'PayPal not configured', { message: '訂閱金流尚未設定，請稍後再試或聯繫客服。' })
+    if (error instanceof Error) {
+      if (error.message === 'PAYPAL_NOT_CONFIGURED') {
+        logApiError('subscription', error, { action: 'config-check', isP0: true, requestId });
+        return errorResponse(503, 'PayPal not configured', { message: '訂閱金流尚未設定，請稍後再試或聯繫客服。' });
+      }
+      if (error.message.startsWith('PAYPAL_AUTH_FAILED:')) {
+        logApiError('subscription', error, { action: 'paypal-auth', isP0: true, requestId });
+        return errorResponse(503, 'PayPal auth failed', { message: '訂閱服務暫時無法連線，請稍後再試或聯繫客服。' });
+      }
     }
-    logApiError('subscription', error, { isP0: true, requestId })
+    logApiError('subscription', error, { isP0: true, requestId });
     return serverErrorResponse(error);
   }
 }
