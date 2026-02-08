@@ -3,7 +3,7 @@
 import type React from 'react'
 import { lazy, Suspense } from 'react'
 
-/** 任務 2：遊戲 chunk 載入器；任務 3：依分類打包成單一 chunk 減少請求數 */
+/** R2-012：依分類動態 Code Splitting，webpackChunkName 為 games-${category}，用戶只下載當前分類遊戲代碼 */
 type GameLoader = () => Promise<{ default: React.ComponentType }>
 const GAME_LOADERS: Record<string, GameLoader> = {
   'truth-or-dare': () => import(/* webpackChunkName: "games-party" */ './TruthOrDare'),

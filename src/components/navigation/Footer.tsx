@@ -1,9 +1,12 @@
 'use client'
 
-/** P1-053：Footer — 網站地圖、社交連結、語系切換、版權；i18n 六語系 */
+/** P1-053 + footer-30：網站地圖、派對/劇本殺導流、語系、版權；觸控 44px、focus-visible、無障礙 */
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/I18nContext'
 import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
+
+const LINK_CLASS =
+  'text-white/60 hover:text-white text-sm transition-colors min-h-[44px] min-w-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded'
 
 export function Footer() {
   const year = new Date().getFullYear()
@@ -15,6 +18,11 @@ export function Footer() {
     { href: '/assistant', label: t('nav.assistant') },
     { href: '/learn', label: t('nav.learn') },
   ]
+  const experienceLinks = [
+    { href: '/script-murder', label: '酒局劇本殺' },
+    { href: '/party-dj', label: '派對 DJ' },
+    { href: '/party-room', label: '派對房' },
+  ]
   const companyLinks = [
     { href: '/pricing', label: t('nav.pricing') },
     { href: '/privacy', label: t('footer.privacy') },
@@ -22,15 +30,27 @@ export function Footer() {
   ]
 
   return (
-    <footer className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 safe-area-pb" role="contentinfo">
+    <footer className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 safe-area-pb print:py-6" role="contentinfo">
       <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">{t('footer.sectionProduct')}</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2" aria-label={t('footer.sectionProduct')}>
               {productLinks.map(({ href, label }) => (
                 <li key={href}>
-                  <Link href={href} className="text-white/60 hover:text-white text-sm transition-colors min-h-[44px] flex items-center">
+                  <Link href={href} className={LINK_CLASS} aria-label={label}>
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">體驗</h3>
+            <ul className="space-y-2" aria-label="體驗">
+              {experienceLinks.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} className={LINK_CLASS} aria-label={label}>
                     {label}
                   </Link>
                 </li>
@@ -39,10 +59,10 @@ export function Footer() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">{t('footer.sectionCompany')}</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2" aria-label={t('footer.sectionCompany')}>
               {companyLinks.map(({ href, label }) => (
                 <li key={href}>
-                  <Link href={href} className="text-white/60 hover:text-white text-sm transition-colors min-h-[44px] flex items-center">
+                  <Link href={href} className={LINK_CLASS} aria-label={label}>
                     {label}
                   </Link>
                 </li>
@@ -56,7 +76,7 @@ export function Footer() {
         </div>
         <div className="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-white/50 text-sm text-center sm:text-left">{t('footer.copyright').replace('©', `© ${year} `)}</p>
-          <p className="text-white/40 text-xs">飲酒過量有害健康</p>
+          <p className="text-white/40 text-xs" aria-label="飲酒警語">飲酒過量有害健康</p>
         </div>
       </div>
     </footer>
