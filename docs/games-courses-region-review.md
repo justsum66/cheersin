@@ -27,12 +27,11 @@
 | ultimate-code | 終極密碼 | 數字範圍猜謎，泛亞 | NumberBomb |
 | support-front | 支援前線 | 隨機抽人/抽籤，派對熱門 | RandomPicker |
 
-## 課程：刪除 5 個最低吸引力
+## 課程：刪除 5 個最低吸引力（已實作）
 
-（課程清單與章節依 `lib/courses` 或 CMS 來源；本文件僅記錄決策，實際刪除需對應資料來源。）
+已從 `getCourseIds()` 與 `COURSE_META` 移除：`wset-d4-sparkling-pro`、`mw-viticulture`、`mw-vinification`、`mw-business`、`wine-law-regions`（過於冷門/專業考試向）。
 
-建議刪除類型：過於冷門產區、重複主題、完課率極低的章節。
+## 課程：新增 2 個符合六地 persona（已實作）
 
-## 課程：新增 2 個符合六地 persona
-
-建議：日韓清酒/燒酎入門、新加坡/香港調酒與法規禮儀。
+- **sake-shochu-intro**：日韓清酒與燒酎入門（`data/courses/sake-shochu-intro.json`）
+- **hk-sg-cocktail-etiquette**：新加坡・香港調酒與法規禮儀（`data/courses/hk-sg-cocktail-etiquette.json`）

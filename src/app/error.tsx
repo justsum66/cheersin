@@ -2,10 +2,9 @@
 
 import { useEffect } from 'react'
 import { PageErrorContent } from '@/components/PageErrorContent'
-import { COPY_CTA_START_QUIZ, COPY_BUTTON_RETRY, COPY_LINK_HOME } from '@/config/copy.config'
-import { ERROR_PAGE_GENERIC_TITLE, ERROR_PAGE_GENERIC_DESCRIPTION } from '@/config/errors.config'
+import { useTranslation } from '@/contexts/I18nContext'
 
-/** E83 P2：全域錯誤頁 — DEDUP #7 使用 PageErrorContent 統一版面；P3-46 不暴露 stack */
+/** E83 P2：全域錯誤頁 — DEDUP #7 使用 PageErrorContent 統一版面；i18n 接線 error.* */
 export default function Error({
   error,
   reset,
@@ -13,27 +12,27 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const { t } = useTranslation()
   useEffect(() => {
     console.error('App error:', error?.message ?? error)
   }, [error])
 
   return (
     <PageErrorContent
-      title={ERROR_PAGE_GENERIC_TITLE}
-      description={ERROR_PAGE_GENERIC_DESCRIPTION}
+      title={t('error.title')}
+      description={t('error.description')}
       onRetry={reset}
-      retryLabel={COPY_BUTTON_RETRY}
+      retryLabel={t('error.retry')}
       links={[
-        { href: '/', label: COPY_LINK_HOME },
-        { href: '/quiz', label: COPY_CTA_START_QUIZ },
+        { href: '/', label: t('notFound.back') },
+        { href: '/quiz', label: t('nav.quiz') },
       ]}
       footer={
         <p className="text-white/50 text-xs">
-          若問題持續，請聯絡{' '}
+          {t('error.footer')}{' '}
           <a href="mailto:hello@cheersin.app" className="text-primary-400 hover:text-primary-300 underline">
-            客服
+            hello@cheersin.app
           </a>
-          。
         </p>
       }
     />
