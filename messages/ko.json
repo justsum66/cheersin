@@ -206,7 +206,10 @@
     "errorFetch": "Failed to get plan",
     "errorGeneric": "Something went wrong. Please try again.",
     "sharePlanAria": "Share plan result",
-    "retry": "Retry"
+    "retry": "Retry",
+    "upgradeToUnlock": "Upgrade to unlock longer plans",
+    "offlineHint": "Please check your connection and try again",
+    "emptyState": "No plan yet. Fill the form above and click \"Generate party flow\"."
   },
   "status": {
     "title": "Service status (live)",

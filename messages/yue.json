@@ -206,7 +206,10 @@
     "errorFetch": "無法取得編排",
     "errorGeneric": "發生錯誤，請稍後再試",
     "sharePlanAria": "分享編排結果",
-    "retry": "重試"
+    "retry": "重試",
+    "upgradeToUnlock": "升級方案可解鎖更長編排",
+    "offlineHint": "請連線後再試",
+    "emptyState": "尚未生成編排，填寫上方表單後點擊「生成派對流程」"
   },
   "status": {
     "title": "服務連線狀態（即時）",

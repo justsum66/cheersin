@@ -21,7 +21,7 @@
 - **CI**：Build ✅、Lint ✅、Smoke（test:run）✅、TS ✅；E2E 已知環境問題（並行時 ECONNRESET），建議依 close-node-windows 關閉多餘 Node 後本地重跑 critical-paths
 - **本輪修復**：AuroraBackground framer-motion 改靜態 import；/logo.png → rewrite 至 logo_monochrome_gold.png；SW v4 + activate 清理；BackToTop 滑入動畫、GameCard New 脈衝；docs/service-worker-audit.md、close-node-windows.md
 - **本輪 P0**：雙 Footer 合併（首頁單一 footer）；analytics/party-dj Zod；report/analytics/party-dj requestId+duration 日誌；games/rooms scriptId stripHtml；globals 移除未使用 lcp 區塊；R2-021 題庫 200+200 已有
-- **Party DJ 30 項**：本輪實作並勾選 #2 重試、#3 Loading 骨架、#4 useAiTransition 開關、#7 無障礙 aria、#10 Analytics 事件（party-dj-30-optimization-tasks.md）
+- **Party DJ 30 項**：本輪實作並勾選 #2 重試、#3 Loading 骨架、#4 useAiTransition 開關、#7 無障礙 aria、#10 Analytics；下一批 #1 付費牆+升級連結、#17 離線提示、#19 空狀態、#20 印列樣式
 
 ## 公式
 
@@ -38,3 +38,4 @@
 - i18n 30 項：docs/i18n-tasks-30.md、common.errorNetwork/sessionExpired、partyDj.useAiTransition/retry
 - E2E：critical-paths 選器與 timeout 調整（Quiz 結果、FAQ、truth-or-dare、取消訂閱頁）
 - 文件：ux-redesign-assessment.md、supabase-advisors-fixes.md、close-node-windows 建議、function search_path 遷移
+- **本批**：Supabase 9 表 RLS 政策、4 支外鍵 index；Party DJ #1/#17/#19/#20；supabase-advisors-fixes 更新

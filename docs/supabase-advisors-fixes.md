@@ -8,15 +8,15 @@
 
 | 表 | 狀態 | 說明 |
 |----|------|------|
-| public.api_calls | 待修 | RLS 已開但無 policy；建議：service_role 寫入、authenticated 可 insert 自身 user_id |
-| public.certificates | 待修 | 建議：authenticated 讀寫自身 user_id |
-| public.chapter_quizzes | 待修 | 建議：authenticated 讀寫自身 |
-| public.game_states | 待修 | 建議：依 room 或 authenticated 讀寫 |
-| public.learning_notes | 待修 | 建議：user_id = auth.uid() |
-| public.payment_failures | 待修 | 建議：僅 service_role |
-| public.payments | 待修 | 建議：user 讀自身、service 寫入 |
-| public.promo_codes | 待修 | 建議：anon/authenticated 可 SELECT 驗證用 |
-| public.user_friends | 待修 | 建議：user_id = auth.uid() |
+| public.api_calls | 已修 | migration: authenticated INSERT (user_id null or own) |
+| public.certificates | 已修 | migration: authenticated CRUD own |
+| public.chapter_quizzes | 已修 | migration: authenticated CRUD own |
+| public.game_states | 已修 | migration: authenticated 全權（app 依 room 限制） |
+| public.learning_notes | 已修 | migration: authenticated CRUD own |
+| public.payment_failures | 已修 | migration: authenticated USING(false)（僅 service_role 寫入） |
+| public.payments | 已修 | migration: authenticated USING(false) |
+| public.promo_codes | 已修 | migration: anon/authenticated SELECT |
+| public.user_friends | 已修 | migration: authenticated CRUD own |
 
 [Remediation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
 
@@ -43,10 +43,10 @@
 
 | 表 | 外鍵 | 狀態 |
 |----|------|------|
-| public.api_calls | api_calls_user_id_fkey | 待修 |
-| public.chat_history | chat_history_user_id_fkey | 待修 |
-| public.game_sessions | game_sessions_host_user_id_fkey | 待修 |
-| public.user_friends | user_friends_friend_id_fkey | 待修 |
+| public.api_calls | api_calls_user_id_fkey | 已修（idx_api_calls_user_id） |
+| public.chat_history | chat_history_user_id_fkey | 已修（idx_chat_history_user_id） |
+| public.game_sessions | game_sessions_host_user_id_fkey | 已修（idx_game_sessions_host_user_id） |
+| public.user_friends | user_friends_friend_id_fkey | 已修（idx_user_friends_friend_id） |
 
 [Remediation](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys)
 

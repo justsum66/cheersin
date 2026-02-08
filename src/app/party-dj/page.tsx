@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Music2, Sparkles, Play, ChevronRight, Share2 } from 'lucide-react'
 import { fireFullscreenConfetti } from '@/lib/celebration'
@@ -27,6 +27,19 @@ export default function PartyDJPage() {
   const [error, setError] = useState<string | null>(null)
   const [plan, setPlan] = useState<{ phases: Phase[]; totalMin: number } | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
+  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onOnline = () => setOnline(true)
+    const onOffline = () => setOnline(false)
+    window.addEventListener('online', onOnline)
+    window.addEventListener('offline', onOffline)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      window.removeEventListener('offline', onOffline)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +91,11 @@ export default function PartyDJPage() {
         {t('partyDj.subtitle')}
       </p>
 
+      {!online && (
+        <p className="text-amber-400 text-sm text-center px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30" role="status">
+          {t('partyDj.offlineHint')}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4" aria-label={t('partyDj.title')}>
         <label className="text-white/80 text-sm">
           {t('partyDj.people')}
@@ -103,7 +121,12 @@ export default function PartyDJPage() {
             aria-label={t('partyDj.durationMin')}
           />
           {isFree && (
-            <p className="mt-1 text-amber-400/90 text-xs">{t('partyDj.freeLimitHint')}</p>
+            <>
+              <p className="mt-1 text-amber-400/90 text-xs">{t('partyDj.freeLimitHint')}</p>
+              <p className="mt-1 text-white/60 text-xs">
+                <Link href="/pricing" className="underline hover:text-primary-400">{t('partyDj.upgradeToUnlock')}</Link>
+              </p>
+            </>
           )}
         </label>
         <label className="flex items-center gap-2 text-white/80 min-h-[44px] items-center">
@@ -114,13 +137,19 @@ export default function PartyDJPage() {
           <input type="checkbox" checked={useAiTransition} onChange={(e) => setUseAiTransition(e.target.checked)} className="rounded" aria-label={t('partyDj.useAiTransition')} />
           {t('partyDj.useAiTransition')}
         </label>
-        <button type="submit" disabled={loading} className="min-h-[48px] px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-medium games-focus-ring" aria-busy={loading}>
+        <button type="submit" disabled={loading || !online} className="min-h-[48px] px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-medium games-focus-ring" aria-busy={loading}>
           {loading ? t('partyDj.submitLoading') : t('partyDj.submit')}
         </button>
       </form>
 
+      {!plan && !loading && !error && (
+        <p className="text-white/50 text-sm text-center max-w-sm" role="status">
+          {t('partyDj.emptyState')}
+        </p>
+      )}
+
       {loading && (
-        <div className="w-full max-w-lg space-y-4 animate-pulse" role="status" aria-live="polite">
+        <div className="w-full max-w-lg space-y-4 animate-pulse print:hidden" role="status" aria-live="polite">
           <div className="h-6 bg-white/10 rounded w-1/2 mx-auto" />
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="rounded-xl bg-white/10 border border-white/20 p-4 h-24" />
@@ -155,7 +184,7 @@ export default function PartyDJPage() {
               )}
             </div>
           ))}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 print:hidden">
             <button
               type="button"
               onClick={() => {
