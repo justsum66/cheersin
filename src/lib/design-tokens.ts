@@ -177,6 +177,15 @@ export const backgroundImage = {
   'divider-gradient': 'linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.4) 50%, transparent 100%)',
 } as const
 
+/** RWD 斷點（與 Tailwind 預設對齊，便於文件與覆寫）：mobile-first */
+export const screens = {
+  sm: '640px',
+  md: '768px',
+  lg: '1024px',
+  xl: '1280px',
+  '2xl': '1536px',
+} as const
+
 /** 供 Tailwind theme.extend 使用（可變型別以相容 Config） */
 export const themeExtend = {
   colors,
@@ -192,4 +201,5 @@ export const themeExtend = {
   width: iconSize,
   height: iconSize,
   backdropBlur: { xs: '2px' },
+  screens,
 }

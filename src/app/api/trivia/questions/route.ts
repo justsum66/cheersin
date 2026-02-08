@@ -1,20 +1,25 @@
 /**
  * P2-388 / The Trivia API 整合：代理題目，供 Trivia 遊戲使用
  * GET ?limit=8&difficulty=easy|medium|hard
- * 需設定 TRIVIA_API_KEY（the-trivia-api.com 註冊取得）
+ * TRIVIA_API_KEY 未設定時使用本地題庫（source: 'local'），不擋部署。
  */
 import { NextResponse } from 'next/server'
+import { getTriviaFallback } from '@/data/trivia-fallback'
 
 const TRIVIA_API = 'https://the-trivia-api.com/v2/questions'
+type Difficulty = 'easy' | 'medium' | 'hard'
+const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 
 export async function GET(request: Request) {
   const apiKey = process.env.TRIVIA_API_KEY?.trim()
   const { searchParams } = new URL(request.url)
   const limit = Math.min(20, Math.max(1, parseInt(searchParams.get('limit') ?? '8', 10)))
-  const difficulty = searchParams.get('difficulty') ?? ''
+  const difficultyParam = searchParams.get('difficulty') ?? ''
+  const difficulty = DIFFICULTIES.includes(difficultyParam as Difficulty) ? (difficultyParam as Difficulty) : ''
 
   if (!apiKey) {
-    return NextResponse.json({ error: 'Trivia API not configured' }, { status: 503 })
+    const questions = getTriviaFallback(limit, difficulty)
+    return NextResponse.json({ questions, source: 'local' })
   }
 
   try {

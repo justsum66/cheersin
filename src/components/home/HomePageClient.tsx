@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
@@ -17,6 +18,13 @@ import {
   ChevronDown,
   Quote,
 } from 'lucide-react'
+
+/** Code splitting：首屏外組件延後載入，縮小首頁 bundle */
+const ResubscribeBanner = dynamic(() => import('@/components/ResubscribeBanner'), { ssr: false, loading: () => null })
+const SpringDrag = dynamic(
+  () => import('@/components/ui/SpringDrag').then((m) => ({ default: m.SpringDrag })),
+  { ssr: false, loading: () => null }
+)
 
 /** 任務 30 / HOME_30：多語預留；T018 P2：品牌感年輕、適合社交 — 用語一致「派對」「輕鬆」「一起」 */
 const HOME_COPY = {
@@ -50,9 +58,7 @@ import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import { HERO_SUBTITLE_VARIANTS, HERO_ANIMATION_DELAYS, HOME_TRUST_COPY, HOME_AVATAR_LETTERS, HOME_FEATURES_LABEL, FOOTER_DRINK_NOTE, FOOTER_DRINK_NOTE_BOTTOM, BENTO_CARDS } from '@/config/home.config'
 import { COPY_CTA_IMMEDIATE_QUIZ } from '@/config/copy.config'
 import toast from 'react-hot-toast'
-import { SpringDrag } from '@/components/ui/SpringDrag'
 import { CountUp } from '@/components/ui/CountUp'
-import ResubscribeBanner from '@/components/ResubscribeBanner'
 
 interface HomePageClientProps {
   testimonials: ReactNode

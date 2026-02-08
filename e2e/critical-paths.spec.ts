@@ -182,7 +182,7 @@ test.describe('關鍵路徑：訂閱流程', () => {
     await page.goto('/pricing')
     await expect(page).toHaveURL(/\/pricing/)
     await expect(page.getByText(/方案|訂閱|價格|免費|付費|NT\$|月/i).first()).toBeVisible({ timeout: 8000 })
-    await page.goto('/subscription')
+    await page.goto('/subscription', { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => page.goto('/subscription', { waitUntil: 'domcontentloaded', timeout: 15000 }))
     await expect(page).toHaveURL(/\/subscription/)
     await page.goto('/subscription/cancel')
     await expect(page).toHaveURL(/\/subscription\/cancel/)

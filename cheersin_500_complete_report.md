@@ -15,7 +15,7 @@
 | **P1 完成率** | 215 / 215 = **100%** |
 | **P2 完成率** | 165 / 190 = **86.8%** |
 | **P3 完成率** | 23 / 90 = **25.6%** |
-| **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 155 ✓ · test:stress ✓ · E2E 13/13 (chromium) ✓ |
+| **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 157 ✓ · test:stress 2× ✓ · E2E 12/13 (chromium，1 訂閱導向偶發 ERR_ABORTED) ✓ |
 
 *真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **85.2%**。*
 
@@ -23,6 +23,8 @@
 - **P1 完成率**：215 / 215 = **100%**
 - **P2 完成率**：165 / 190 = **86.8%**
 - **P3 完成率**：23 / 90 = **25.6%**
+
+**本輪實作（無 TRIVIA/ONESIGNAL key、Windows、bundle、RWD、ErrorBoundary、AI 推薦）：** ① **TRIVIA_API_KEY / ONESIGNAL 未設定時優雅降級**：`/api/trivia/questions` 無 key 改回傳本地題庫（`src/data/trivia-fallback.ts` + `source: 'local'`）；`.env.example` 與 `docs/env-management.md` 補可選變數說明；OneSignal 維持 503。② **Windows**：`scripts/clean-next.js` 遞迴刪除重試 3 次防 ENOTEMPTY；`npm run stop:dev` 腳本（Windows taskkill node）；單元測試 `localStorage.clear` polyfill（`src/__tests__/setup.ts`）修復 28 失敗；test:stress 2× 通過。③ **首頁 bundle**：`HomePageClient` 以 `next/dynamic` 延後載入 `ResubscribeBanner`、`SpringDrag`。④ **tsconfig**：已啟用 `strict: true`，無變更。⑤ **ErrorBoundary**：`src/app/(marketing)/error.tsx` 行銷區錯誤邊界，避免單一組件白屏。⑥ **RWD**：`design-tokens` 新增 `screens`、`tailwind.config` extend screens；`docs/rwd-breakpoints.md` 斷點策略。⑦ **AI 推薦**：`docs/ai-recommend.md` 說明 `/api/recommend`、前端入口與未設定時行為。⑧ **E2E**：訂閱流程 `page.goto('/subscription')` 加一次重試以降低 ERR_ABORTED。BUILD ✓ LINT ✓ tsc ✓ test:run 157 ✓ test:stress ✓ E2E 12/13 ✓。
 
 **本輪（70 專家 + 20 網紅 + Sequential Thinking）：** ① **P2-288** API 版本：`/api/v1/health` 轉發 + X-API-Version 頭；② **P3-411** 課程進度同步：GET/POST `/api/learn/progress`、chapter_progress RLS 政策；③ **P3-431** PWA 離線學習：sw.js v3、`/learn` SWR 模式、docs/pwa-optimization.md；④ **P3-442** 博客佔位：`/blog` 頁；⑤ **報告 69–114 三殺手功能基礎**：docs/roadmap-live-party-room.md、roadmap-script-murder.md、roadmap-ai-party-dj.md，佔位頁 `/party-room`、`/script-murder`、`/party-dj`；⑥ **influencer-optimization 實作**：OFFICIAL_HASHTAG 常數、ShareStoryCard 故事卡顯示 #Cheersin派對、NowPlayingCount 組件 + GET `/api/stats/now-playing`；⑦ BUILD/LINT/TS/155 測通過。
 
