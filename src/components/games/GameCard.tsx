@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useState, useEffect, useCallback } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ChevronRight, Users, Heart, Star, Share2, Crown, HelpCircle, type LucideIcon } from 'lucide-react'
@@ -110,7 +111,10 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
   const reducedMotion = useReducedMotion()
   const lineClampClass = lineClampLines === 1 ? 'line-clamp-1' : lineClampLines === 3 ? 'line-clamp-3' : 'line-clamp-2'
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const [isHovered, setIsHovered] = useState(false)
   const closeMenu = useCallback(() => setContextMenu(null), [])
+  /** P1-108：hover 顯示規則與評分覆蓋層；有 rulesSummary 或評分 UI 時顯示 */
+  const showFlipOverlay = !reducedMotion && isHovered && (!!game.rulesSummary || !!game.onRate)
   useEffect(() => {
     if (!contextMenu) return
     const onGlobal = () => closeMenu()
@@ -150,6 +154,10 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
       ref={buttonRef}
       role="listitem"
       tabIndex={0}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
       className={`virtual-scroll-card rounded-2xl glass-card-spotlight p-4 md:p-6 text-left group flex flex-col gap-4 relative overflow-hidden h-full min-h-[180px] transition-all duration-300 border shadow-glass-2 hover:shadow-glass-hover outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring ${colorHoverGlow[game.color] ?? ''}`}
       style={{ transformStyle: 'preserve-3d' }}
       title={game.rulesSummary ?? game.name}
@@ -289,6 +297,21 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
         </div>
       </div>
+      {/* P1-108：hover 顯示規則與評分覆蓋層（背面效果） */}
+      <AnimatePresence>
+        {showFlipOverlay && (
+          <motion.div
+            initial={{ opacity: 0, y: '100%' }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: '100%' }}
+            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0a0a1a]/95 backdrop-blur-sm border border-white/10"
+          >
+            {game.rulesSummary && <p className="text-white/90 text-sm leading-relaxed text-center mb-2 line-clamp-4">{game.rulesSummary}</p>}
+            <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
     {contextMenu && typeof document !== 'undefined' && createPortal(
       <div
