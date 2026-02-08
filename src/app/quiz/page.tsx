@@ -38,6 +38,7 @@ import {
   QUIZ_HISTORY_MAX,
 } from '@/config/quiz.config'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
+import { fireFullscreenConfetti } from '@/lib/celebration'
 
 /** Quiz 頁 20 項優化 #17：分享用 base URL，SSR 安全 */
 function getShareBaseUrl(): string {
@@ -282,6 +283,8 @@ export default function QuizPage() {
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   /** Quiz 頁 20 項優化 #5：尊重減少動態 */
   const prefersReducedMotion = usePrefersReducedMotion()
+  /** P1-070：問題切換方向 — 下一題向右滑入、上一題向左滑入 */
+  const [questionDirection, setQuestionDirection] = useState<'next' | 'prev'>('next')
   /** Quiz 頁 20 項優化 #3 #4：歷史彈窗焦點陷阱與 Esc 關閉用 */
   const historyModalRef = useRef<HTMLDivElement>(null)
   const historyModalCloseButtonRef = useRef<HTMLButtonElement>(null)
@@ -405,6 +408,7 @@ export default function QuizPage() {
   const handleAnswer = (optionId: string, trait: string) => {
     setAnswers(prev => ({ ...prev, [currentQuestion]: trait }))
     if (currentQuestion < displayQuestions.length - 1) {
+      setQuestionDirection('next')
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300)
     } else {
       calculateResult(trait)
@@ -445,9 +449,10 @@ export default function QuizPage() {
     }
   }
 
-  /** 55 上一題 */
+  /** 55 上一題；P1-070：上一題時向左滑入 */
   const handlePrev = () => {
     if (currentQuestion <= 0) return
+    setQuestionDirection('prev')
     const next = currentQuestion - 1
     setCurrentQuestion(next)
     setAnswers(prev => {
@@ -588,6 +593,8 @@ export default function QuizPage() {
     }
     setResult(newResult)
     setStep('result')
+    /** P1-070：結果頁慶祝動畫 — 全螢幕彩帶；尊重 prefers-reduced-motion */
+    if (!prefersReducedMotion) fireFullscreenConfetti()
     /** T035 P2：追蹤測驗完成未登入比例，供 A/B 結果頁登入 CTA 優化 */
     try {
       fetch('/api/analytics', {
@@ -929,10 +936,10 @@ export default function QuizPage() {
           {step === 'questions' && (
             <motion.div
               key={`question-${currentQuestion}`}
-              initial={{ opacity: 0, x: 100 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, x: questionDirection === 'next' ? 100 : -100 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.25 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, x: questionDirection === 'next' ? -100 : 100 }}
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
               className="max-w-3xl mx-auto"
             >
               {/* 51 進度條：sticky 固定頂部；#19 列印隱藏 */}

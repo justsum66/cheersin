@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { getFontSize, getReduceMotion } from '@/lib/games-settings'
-import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown } from 'lucide-react'
+import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown, GripVertical } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
@@ -362,12 +362,39 @@ function GamesPageContent() {
     setCreateInvite({ slug: result.slug, inviteUrl: result.inviteUrl })
   }, [createRoom, roomCreatePassword, mapCreateRoomError])
 
-  /** T057 P1：再玩一局（新房間）— 建立同款新房間並導向；GAMES_500 #39 用 replace 不堆疊 history */
+  /** T057 P1-144：再玩一局（新房間）— 建立新房間、自動加入、複製邀請連結、導向；無需返回大廳 */
   const handlePlayAgain = useCallback(async () => {
     const result = await createRoom(roomCreatePassword || undefined)
     if ('error' in result) return
-    router.replace(`/games?room=${result.slug}&game=${activeGame ?? ''}`)
-  }, [createRoom, roomCreatePassword, activeGame, router])
+    const newSlug = result.slug
+    const inviteUrl = result.inviteUrl ?? (typeof window !== 'undefined' ? `${window.location.origin}/games?room=${newSlug}` : '')
+    if (joinedDisplayName) {
+      try {
+        const res = await fetch(`/api/games/rooms/${encodeURIComponent(newSlug)}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            displayName: joinedDisplayName,
+            password: roomCreatePassword?.trim() || undefined,
+            isSpectator: joinedAsSpectator ?? false,
+          }),
+        })
+        if (res.ok) {
+          const raw = localStorage.getItem(ROOM_JOINED_KEY)
+          const obj = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {}
+          obj[newSlug] = { displayName: joinedDisplayName, isSpectator: joinedAsSpectator ?? false }
+          localStorage.setItem(ROOM_JOINED_KEY, JSON.stringify(obj))
+        }
+        if (inviteUrl && typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(inviteUrl)
+          toast.success('新房間已建立，邀請連結已複製')
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    router.replace(`/games?room=${newSlug}&game=${activeGame ?? ''}`)
+  }, [createRoom, roomCreatePassword, activeGame, router, joinedDisplayName, joinedAsSpectator])
 
   const selectedGame = activeGame ? getGameMeta(activeGame) : undefined
 
@@ -414,6 +441,15 @@ function GamesPageContent() {
     setPlayers(players.filter((_, i) => i !== index))
   // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable from useState
   }, [players, setPlayers])
+
+  /** P1-109：玩家拖拽排序 — 僅本地模式；移動 fromIndex 至 toIndex */
+  const reorderPlayers = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= players.length || toIndex >= players.length) return
+    const next = [...players]
+    const [removed] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, removed)
+    setLocalPlayers(next)
+  }, [players])
 
   /** 91-95 載入上次名單：從 localStorage 讀取並填入（非房間模式） */
   const loadLastSavedList = useCallback(() => {
@@ -1145,8 +1181,24 @@ function GamesPageContent() {
                         </div>
                       ))
                     : players.map((player, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
-                          <span className="text-white font-medium truncate min-w-0" title={player}>{player}</span>
+                        <div
+                          key={i}
+                          draggable
+                          onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(i)); e.dataTransfer.effectAllowed = 'move' }}
+                          onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
+                          onDrop={(e) => {
+                            e.preventDefault()
+                            const from = parseInt(e.dataTransfer.getData('text/plain'), 10)
+                            if (!Number.isNaN(from) && from !== i) reorderPlayers(from, i)
+                          }}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2 cursor-grab active:cursor-grabbing hover:bg-white/[0.07] transition-colors group"
+                          role="listitem"
+                          aria-label={`玩家 ${player}，可拖拽排序`}
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <GripVertical className="w-4 h-4 shrink-0 text-white/40 group-hover:text-white/60" aria-hidden />
+                            <span className="text-white font-medium truncate" title={player}>{player}</span>
+                          </span>
                           <button
                             onClick={() => removePlayer(i)}
                             className="p-1 hover:bg-red-500/20 rounded text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
