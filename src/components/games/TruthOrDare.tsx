@@ -95,6 +95,17 @@ export default function TruthOrDare() {
     }
   }, [customTruth, customDare])
 
+  /** P1-139：懲罰歷史變動時同步趣味統計「本局懲罰王」至設定面板 */
+  useEffect(() => {
+    if (!punishment || !gameStats) return
+    const lb = punishment.getLeaderboard()
+    if (lb.length > 0 && lb[0].count > 0) {
+      gameStats.setStats({ funFacts: [{ label: '本局懲罰王', value: lb[0].playerName }] })
+    } else {
+      gameStats.setStats({ funFacts: [] })
+    }
+  }, [punishment?.history?.length, punishment, gameStats])
+
   /** 45 計時器：出題後 30 秒倒數，時間到提示 */
   useEffect(() => {
     if (content && mode !== 'menu') {
@@ -207,7 +218,7 @@ export default function TruthOrDare() {
     setUsedTruth(new Set())
     setUsedDare(new Set())
     setSecondsLeft(null)
-    gameStats?.setStats({ punishmentCount: 0 })
+    gameStats?.setStats({ punishmentCount: 0, funFacts: [] })
   }, [gameStats])
 
   const addCustom = useCallback(

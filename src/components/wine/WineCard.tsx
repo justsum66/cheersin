@@ -3,6 +3,7 @@
 import { memo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Star, Heart, ExternalLink } from 'lucide-react'
 
 export interface WineCardData {
@@ -16,6 +17,8 @@ export interface WineCardData {
   imageUrl?: string | null
   /** 141 價格（顯示用，如 "NT$ 1,200"） */
   price?: string | null
+  /** P1-085：價格範圍（如 "NT$ 800–1,200"） */
+  priceRange?: string | null
   /** 141 評分 1–5 或 0–100 */
   rating?: number | null
   /** 143 購買連結 */
@@ -74,7 +77,7 @@ const WineCardInner = function WineCard({
         </div>
       )}
       {onAddToWishlist && (
-        <button
+        <motion.button
           type="button"
           onClick={() => onAddToWishlist(wine)}
           className={`absolute top-2 left-2 p-2 games-touch-target rounded-full transition-colors flex items-center justify-center games-focus-ring ${
@@ -82,14 +85,16 @@ const WineCardInner = function WineCard({
           }`}
           title="加入願望清單"
           aria-label={inWishlist ? '已加入願望清單' : '加入願望清單'}
+          whileTap={{ scale: 1.15 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
           <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} aria-hidden />
-        </button>
+        </motion.button>
       )}
     </div>
   )
 
-  /** WineRec-08/16：標題/描述 truncate、line-clamp；WineRec-19 購買連結 48px */
+  /** WineRec-08/16：標題/描述 truncate、line-clamp；P1-085 視覺層次：標題 > 產區 > 評分區 > 價格區 > 描述 > 操作 */
   const infoBlock = (
     <div className={variant === 'horizontal' ? 'flex-1 min-w-0 p-4 flex flex-col justify-center' : 'p-4'}>
       <h3 className="font-display font-bold text-white text-lg mb-1 truncate" title={wine.name}>{wine.name || '酒款'}</h3>
@@ -97,11 +102,21 @@ const WineCardInner = function WineCard({
         {[wine.region, wine.country].filter(Boolean).join(' · ')}
         {wine.variety ? ` · ${wine.variety}` : ''}
       </p>
+      {rating != null && (
+        <p className="flex items-center gap-1.5 text-primary-400 text-sm font-medium mb-2" aria-label={`評分 ${rating.toFixed(1)}`}>
+          <Star className="w-4 h-4 fill-current shrink-0" aria-hidden />
+          <span className="tabular-nums">{rating.toFixed(1)}</span>
+          <span className="text-white/40 text-xs font-normal">評分</span>
+        </p>
+      )}
+      {(wine.price != null && wine.price !== '') && (
+        <p className="text-primary-400 font-semibold text-sm mb-0.5 tabular-nums">{wine.price}</p>
+      )}
+      {wine.priceRange != null && wine.priceRange !== '' && !(wine.price != null && wine.price !== '') && (
+        <p className="text-primary-400/90 font-medium text-sm mb-0.5 tabular-nums">{wine.priceRange}</p>
+      )}
       {(wine.description != null && wine.description !== '') && (
         <p className="text-white/70 text-sm mb-2 line-clamp-2 leading-relaxed">{wine.description}</p>
-      )}
-      {wine.price && (
-        <p className="text-primary-400 font-semibold text-sm mb-2 tabular-nums">{wine.price}</p>
       )}
       {review && (
         <p className="text-white/60 text-xs italic mb-2 line-clamp-2">「{review}」</p>

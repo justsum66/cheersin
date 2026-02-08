@@ -50,11 +50,13 @@ export function useGamePause() {
   return useContext(GamePauseContext)
 }
 
-/** 任務 26：本局統計，子遊戲可註冊時長/答對數/懲罰次數 */
+/** 任務 26：本局統計，子遊戲可註冊時長/答對數/懲罰次數；P1-139 趣味數據 */
 export interface GameStatsSnapshot {
   durationSec?: number
   correctCount?: number
   punishmentCount?: number
+  /** P1-139：趣味統計，如「本局懲罰王：小明」 */
+  funFacts?: Array<{ label: string; value: string }>
 }
 export const GameStatsContext = createContext<{
   stats: GameStatsSnapshot
@@ -413,7 +415,7 @@ function GameWrapperHeader({
                     <RotateCw className="w-4 h-4" /> 重新開始
                   </button>
                 )}
-                {gameStats && (gameStats.durationSec != null || gameStats.correctCount != null || gameStats.punishmentCount != null) && (
+                {gameStats && (gameStats.durationSec != null || gameStats.correctCount != null || gameStats.punishmentCount != null || (gameStats.funFacts?.length ?? 0) > 0) && (
                   <div className="border-t border-white/10 mt-2 pt-2 px-2">
                     <p className="text-white/50 text-xs mb-1">本局統計</p>
                     <div className="flex flex-wrap gap-2 text-xs text-white/70">
@@ -433,6 +435,16 @@ function GameWrapperHeader({
                         </span>
                       )}
                     </div>
+                    {/* P1-139：趣味統計，如本局懲罰王、真心話大王 */}
+                    {gameStats.funFacts && gameStats.funFacts.length > 0 && (
+                      <div className="mt-1.5 pt-1.5 border-t border-white/5 space-y-0.5">
+                        {gameStats.funFacts.map((f, i) => (
+                          <p key={i} className="text-primary-300/90 text-xs font-medium">
+                            {f.label}：{f.value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 {replayEvents.length > 0 && (
