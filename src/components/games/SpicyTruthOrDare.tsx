@@ -2,71 +2,49 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flame, RotateCcw, Shuffle, AlertTriangle } from 'lucide-react'
+import { Flame, RotateCcw, Shuffle, AlertTriangle, Lock } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
 import CopyResultButton from './CopyResultButton'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
+import { useSubscription } from '@/hooks/useSubscription'
+import { UpgradeModal } from '@/components/UpgradeModal'
+import { getAdultTruthPool, getAdultDarePool } from '@/lib/truth-or-dare'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 
-/** 18+ 辣味真心話題庫 */
-const SPICY_TRUTHS = [
+/** 免費用戶預覽用少量題（付費解鎖 400+ 題庫） */
+const TEASER_TRUTHS = [
   '你最尷尬的約會經歷是什麼？',
   '你曾經偷偷喜歡過朋友的另一半嗎？',
-  '你做過最瘋狂的一夜情故事？',
   '你有什麼不為人知的性癖好？',
   '你曾在什麼奇怪的地方做過？',
-  '你的初夜發生在什麼地方？',
-  '你做過最後悔的感情決定是什麼？',
   '你曾對另一半撒過最大的謊是什麼？',
-  '你有沒有同時跟兩個人交往過？',
-  '你最近一次自我滿足是什麼時候？',
-  '描述你最糟糕的接吻經歷',
-  '你有沒有在公共場所被抓包過？',
-  '你曾經偷看過誰的私密照片？',
-  '你有沒有跟同事或上司發生過關係？',
-  '你曾經為了性而說謊嗎？',
-  '你有沒有曖昧過已婚的人？',
-  '你最想跟在場誰有更深入的了解？',
-  '你曾經有過 3P 的念頭嗎？',
-  '你有沒有買過成人用品？',
-  '你曾在什麼情況下被撩到心動？',
 ]
-
-/** 18+ 辣味大冒險題庫 */
-const SPICY_DARES = [
+const TEASER_DARES = [
   '對你左邊的人說一句最撩的情話',
-  '模仿你做過最性感的動作',
   '讓在場最帥/美的人餵你喝一口酒',
-  '解開一顆扣子或脫掉一件配飾',
-  '用最性感的聲音念一段文字',
   '跟你對面的人深情對視 30 秒',
-  '做出你認為最誘惑的表情',
   '跟你右邊的人擁抱 10 秒',
-  '讓別人用一個詞形容你的身材',
-  '示範你最拿手的撩人技巧',
-  '讓在場的人投票你最性感的部位',
-  '打電話給你前任說「我想你」',
-  '讓你喜歡的人摸摸你的頭髮',
-  '表演一段挑逗的舞蹈動作',
-  '對鏡頭擺出三個性感姿勢',
-  '讓別人猜你最敏感的部位',
-  '跟選定的人玩親親蘋果',
-  '用身體語言表達你現在的想法',
   '對在場最帥/美的人告白',
-  '讓大家看你手機最後一張照片',
 ]
 
-/** G1.17-G1.18：辣味真心話大冒險 - 18+ 成人版 */
+/** G1.17-G1.18：辣味真心話大冒險 - 18+ 成人版；付費解鎖 400+ 題庫 */
 export default function SpicyTruthOrDare() {
+  const { tier } = useSubscription()
+  const isPaid = tier === 'basic' || tier === 'premium'
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const reducedMotion = useGameReduceMotion()
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
-  // 遊戲狀態
+  const adultTruths = useMemo(() => getAdultTruthPool().map((t) => t.text), [])
+  const adultDares = useMemo(() => getAdultDarePool().map((t) => t.text), [])
+  const truthQuestions = isPaid ? adultTruths : TEASER_TRUTHS
+  const dareQuestions = isPaid ? adultDares : TEASER_DARES
+
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [choice, setChoice] = useState<'truth' | 'dare' | null>(null)
   const [question, setQuestion] = useState<string | null>(null)
@@ -77,26 +55,19 @@ export default function SpicyTruthOrDare() {
 
   const currentPlayer = players[currentPlayerIndex]
 
-  // 取得隨機題目
   const getRandomQuestion = useCallback((type: 'truth' | 'dare') => {
-    const questions = type === 'truth' ? SPICY_TRUTHS : SPICY_DARES
+    const questions = type === 'truth' ? truthQuestions : dareQuestions
     const used = type === 'truth' ? usedTruths : usedDares
-    
-    const available = questions.map((q, i) => i).filter(i => !used.has(i))
-    
+    const setUsed = type === 'truth' ? setUsedTruths : setUsedDares
+    const available = questions.map((_, i) => i).filter((i) => !used.has(i))
     if (available.length === 0) {
-      // 重置已用題目
-      if (type === 'truth') setUsedTruths(new Set())
-      else setUsedDares(new Set())
+      setUsed(new Set())
       return questions[Math.floor(Math.random() * questions.length)]
     }
-    
     const idx = available[Math.floor(Math.random() * available.length)]
-    if (type === 'truth') setUsedTruths(prev => new Set([...prev, idx]))
-    else setUsedDares(prev => new Set([...prev, idx]))
-    
+    setUsed((prev) => new Set([...prev, idx]))
     return questions[idx]
-  }, [usedTruths, usedDares])
+  }, [truthQuestions, dareQuestions, usedTruths, usedDares])
 
   // 選擇真心話或大冒險
   const handleChoice = useCallback((type: 'truth' | 'dare') => {
@@ -177,10 +148,20 @@ export default function SpicyTruthOrDare() {
       <GameRules rules={`成人版真心話大冒險 🔥\n選擇真心話回答私密問題，或選擇大冒險執行挑戰。\n不願意執行可以喝酒代替！`} />
       
       {/* 標題 */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-2">
         <Flame className="w-6 h-6 text-red-400" />
         <h2 className="text-xl font-bold text-red-400">18+ 辣味版</h2>
       </div>
+      {!isPaid && (
+        <button
+          type="button"
+          onClick={() => setShowUpgradeModal(true)}
+          className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 text-sm font-medium games-focus-ring"
+        >
+          <Lock className="w-4 h-4" />
+          解鎖 400+ 18+ 題庫（付費）
+        </button>
+      )}
 
       {/* 輪到誰 */}
       <p className="text-white/70 text-lg mb-6">
@@ -291,6 +272,8 @@ export default function SpicyTruthOrDare() {
           </div>
         </div>
       )}
+
+      <UpgradeModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
     </div>
   )
 }

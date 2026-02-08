@@ -4,7 +4,7 @@
  * P0-023：管理後台 — 用戶查找與訂閱狀態管理
  * 依 email 或 user id 查詢，顯示 profile 與訂閱紀錄；可更新訂閱階級。
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { getErrorMessage } from '@/lib/api-response'
 import { Users, Search, Loader2, RefreshCw } from 'lucide-react'
 import { SUBSCRIPTION_TIERS, type SubscriptionTier } from '@/lib/subscription'
@@ -33,8 +33,19 @@ interface SubRow {
 
 export default function AdminUsersPage() {
   const [query, setQuery] = useState('')
+  const [queryDebounced, setQueryDebounced] = useState('')
   const [adminSecret, setAdminSecret] = useState('')
   const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setQueryDebounced(query.trim()), 300)
+    return () => clearTimeout(t)
+  }, [query])
+  useEffect(() => {
+    if (queryDebounced.length < 3) return
+    search(queryDebounced)
+    // 僅在防抖後 query 變更時觸發搜尋，不依賴 search 避免重複請求
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryDebounced])
   const [profile, setProfile] = useState<Profile | null>(null)
   const [subscriptions, setSubscriptions] = useState<SubRow[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -49,8 +60,8 @@ export default function AdminUsersPage() {
     ...(adminSecret ? { 'x-admin-secret': adminSecret } : {}),
   }), [adminSecret])
 
-  const search = useCallback(async () => {
-    const q = query.trim()
+  const search = useCallback(async (qOverride?: string) => {
+    const q = (qOverride ?? queryDebounced ?? query).toString().trim()
     if (!q) {
       setError('請輸入 email 或 user id')
       return
@@ -73,7 +84,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false)
     }
-  }, [query, headers])
+  }, [query, queryDebounced, headers])
 
   const updateTier = useCallback(async (userId: string, subscription_tier: SubscriptionTier) => {
     setSavingTier(true)
@@ -122,14 +133,14 @@ export default function AdminUsersPage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && search()}
+            onKeyDown={(e) => e.key === 'Enter' && search(query.trim())}
             placeholder="user@example.com 或 uuid"
             className="flex-1 min-w-[200px] px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm min-h-[44px]"
             aria-label="查詢 email 或 user id"
           />
           <button
             type="button"
-            onClick={search}
+            onClick={() => search(query.trim())}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium min-h-[44px] disabled:opacity-50"
             aria-label="搜尋用戶"

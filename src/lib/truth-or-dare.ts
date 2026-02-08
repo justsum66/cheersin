@@ -207,3 +207,74 @@ export function getTruthPool(): TruthDareItem[] {
 export function getDarePool(): TruthDareItem[] {
   return darePool
 }
+
+/** 18+ 專用題庫：僅 adult 等級，至少 200 真心話 + 200 大冒險，僅付費用戶可解鎖 */
+const ADULT_TRUTH_MIN = 200
+const ADULT_DARE_MIN = 200
+
+function getAdultFromJson(type: 'truth' | 'dare'): TruthDareItem[] {
+  const full = type === 'truth' ? truthFromJson : dareFromJson
+  return full.filter((item) => item.level === 'adult')
+}
+
+const adultTruthFromJson = getAdultFromJson('truth')
+const adultDareFromJson = getAdultFromJson('dare')
+
+const adultTruthInline: TruthDareItem[] = [
+  { text: '你最尷尬的約會經歷是什麼？', level: 'adult', stars: 5 },
+  { text: '你曾經偷偷喜歡過朋友的另一半嗎？', level: 'adult', stars: 5 },
+  { text: '你有什麼不為人知的性癖好？', level: 'adult', stars: 5 },
+  { text: '你曾在什麼奇怪的地方做過？', level: 'adult', stars: 5 },
+  { text: '你的初夜發生在什麼地方？', level: 'adult', stars: 5 },
+  { text: '你曾對另一半撒過最大的謊是什麼？', level: 'adult', stars: 5 },
+  { text: '你有沒有同時跟兩個人交往過？', level: 'adult', stars: 5 },
+  { text: '你最近一次自我滿足是什麼時候？', level: 'adult', stars: 5 },
+  { text: '描述你最糟糕的接吻經歷', level: 'adult', stars: 5 },
+  { text: '你有沒有在公共場所被抓包過？', level: 'adult', stars: 5 },
+  { text: '你曾經偷看過誰的私密照片？', level: 'adult', stars: 5 },
+  { text: '你有沒有跟同事或上司發生過關係？', level: 'adult', stars: 5 },
+  { text: '你曾經為了性而說謊嗎？', level: 'adult', stars: 5 },
+  { text: '你有沒有曖昧過已婚的人？', level: 'adult', stars: 5 },
+  { text: '你最想跟在場誰有更深入的了解？', level: 'adult', stars: 5 },
+  { text: '你曾經有過 3P 的念頭嗎？', level: 'adult', stars: 5 },
+  { text: '你有沒有買過成人用品？', level: 'adult', stars: 5 },
+  { text: '你曾在什麼情況下被撩到心動？', level: 'adult', stars: 5 },
+  { text: '你手機裡有誰的裸照或曖昧訊息？', level: 'adult', stars: 5 },
+  { text: '你最後一次自慰是什麼時候？', level: 'adult', stars: 5 },
+]
+
+const adultDareInline: TruthDareItem[] = [
+  { text: '對你左邊的人說一句最撩的情話', level: 'adult', stars: 5 },
+  { text: '模仿你做過最性感的動作', level: 'adult', stars: 5 },
+  { text: '讓在場最帥/美的人餵你喝一口酒', level: 'adult', stars: 5 },
+  { text: '解開一顆扣子或脫掉一件配飾', level: 'adult', stars: 5 },
+  { text: '用最性感的聲音念一段文字', level: 'adult', stars: 5 },
+  { text: '跟你對面的人深情對視 30 秒', level: 'adult', stars: 5 },
+  { text: '做出你認為最誘惑的表情', level: 'adult', stars: 5 },
+  { text: '跟你右邊的人擁抱 10 秒', level: 'adult', stars: 5 },
+  { text: '讓別人用一個詞形容你的身材', level: 'adult', stars: 5 },
+  { text: '示範你最拿手的撩人技巧', level: 'adult', stars: 5 },
+  { text: '讓在場的人投票你最性感的部位', level: 'adult', stars: 5 },
+  { text: '打電話給你前任說「我想你」', level: 'adult', stars: 5 },
+  { text: '讓你喜歡的人摸摸你的頭髮', level: 'adult', stars: 5 },
+  { text: '表演一段挑逗的舞蹈動作', level: 'adult', stars: 5 },
+  { text: '對鏡頭擺出三個性感姿勢', level: 'adult', stars: 5 },
+  { text: '讓別人猜你最敏感的部位', level: 'adult', stars: 5 },
+  { text: '跟選定的人玩親親蘋果', level: 'adult', stars: 5 },
+  { text: '用身體語言表達你現在的想法', level: 'adult', stars: 5 },
+  { text: '對在場最帥/美的人告白', level: 'adult', stars: 5 },
+  { text: '讓大家看你手機最後一張照片', level: 'adult', stars: 5 },
+]
+
+const adultTruthCombined = [...adultTruthFromJson, ...adultTruthInline]
+const adultDareCombined = [...adultDareFromJson, ...adultDareInline]
+export const adultTruthPool: TruthDareItem[] = adultTruthCombined.length >= ADULT_TRUTH_MIN ? adultTruthCombined : expandPool(adultTruthCombined, ADULT_TRUTH_MIN)
+export const adultDarePool: TruthDareItem[] = adultDareCombined.length >= ADULT_DARE_MIN ? adultDareCombined : expandPool(adultDareCombined, ADULT_DARE_MIN)
+
+export function getAdultTruthPool(): TruthDareItem[] {
+  return adultTruthPool
+}
+
+export function getAdultDarePool(): TruthDareItem[] {
+  return adultDarePool
+}

@@ -7,15 +7,16 @@ import { Crown, Sparkles } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import type { SubscriptionTier } from '@/lib/subscription'
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription'
+import { useTranslation } from '@/contexts/I18nContext'
 
 /**
- * 144 升級提示 Modal：觸及付費功能時顯示方案比較與升級按鈕；P3 無障礙：開啟時焦點移至關閉鈕
+ * 144 升級提示 Modal：觸及付費功能時顯示方案比較與升級按鈕；P3 無障礙；i18n Phase 3 t('upgrade.*')
  */
 export function UpgradeModal({
   open,
   onClose,
-  title = '升級以解鎖更多',
-  description = '此功能需要更高方案，升級後享更多 AI 對話、遊戲人數與進階課程。',
+  title,
+  description,
   requiredTier = 'basic',
 }: {
   open: boolean
@@ -24,6 +25,9 @@ export function UpgradeModal({
   description?: string
   requiredTier?: SubscriptionTier
 }) {
+  const { t } = useTranslation()
+  const modalTitle = title ?? t('upgrade.title')
+  const modalDescription = description ?? t('upgrade.description')
   const tierOrder: SubscriptionTier[] = ['free', 'basic', 'premium']
   const requiredIndex = tierOrder.indexOf(requiredTier)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -123,12 +127,12 @@ export function UpgradeModal({
                     <Crown className="w-6 h-6 text-primary-500" />
                   </div>
                   <h2 id="upgrade-modal-title" className="text-xl font-bold text-white">
-                    {title}
+                    {modalTitle}
                   </h2>
                 </div>
-                <ModalCloseButton ref={closeButtonRef} onClick={handleClose} aria-label="關閉" />
+                <ModalCloseButton ref={closeButtonRef} onClick={handleClose} aria-label={t('common.close')} />
               </div>
-              <p className="text-white/60 text-sm mb-6">{description}</p>
+              <p className="text-white/60 text-sm mb-6">{modalDescription}</p>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
                 {tierOrder.map((tier, i) => {
                   const meta = SUBSCRIPTION_TIERS[tier]
@@ -140,7 +144,7 @@ export function UpgradeModal({
                     >
                       <span className="block text-sm font-medium text-white">{meta.label}</span>
                       <span className="block text-xs text-white/50 mt-0.5">
-                        {meta.maxAICallsPerDay < 0 ? '無限' : meta.maxAICallsPerDay} 次/天
+                        {meta.maxAICallsPerDay < 0 ? t('upgrade.infinite') : meta.maxAICallsPerDay} {t('upgrade.perDay')}
                       </span>
                     </div>
                   )
@@ -152,7 +156,7 @@ export function UpgradeModal({
                 className="flex items-center justify-center gap-2 w-full min-h-[48px] py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold transition-colors games-focus-ring"
               >
                 <Sparkles className="w-5 h-5" />
-                查看方案與升級
+                {t('upgrade.cta')}
               </Link>
             </div>
           </motion.div>

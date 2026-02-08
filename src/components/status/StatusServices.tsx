@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Server, CreditCard, Database, Cpu, Cloud, Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 
 type ServiceStatus = 'connected' | 'error' | 'checking' | 'not_configured'
 
@@ -28,8 +29,9 @@ const ICON_MAP = {
   PayPal: CreditCard,
 }
 
-/** 狀態頁即時服務狀態：呼叫 /api/health，顯示 Supabase / PayPal 等連線結果，解決「未連接」除錯 */
+/** 狀態頁即時服務狀態：呼叫 /api/health，顯示 Supabase / PayPal 等連線結果；i18n Phase 3 t('status.*') */
 export default function StatusServices() {
+  const { t } = useTranslation()
   const [data, setData] = useState<HealthResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,19 +46,19 @@ export default function StatusServices() {
         if (!cancelled) setData(json)
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : '無法取得狀態')
+        if (!cancelled) setError(e instanceof Error ? e.message : t('status.errorFetch'))
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   if (loading) {
     return (
       <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center gap-2 text-white/60">
         <Loader2 className="w-5 h-5 animate-spin" aria-hidden />
-        <span>正在檢查服務連線…</span>
+        <span>{t('status.checking')}</span>
       </div>
     )
   }
@@ -64,7 +66,7 @@ export default function StatusServices() {
   if (error || !data?.services?.length) {
     return (
       <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-amber-400 text-sm">
-        {error ?? '無法取得服務狀態。請確認 .env.local 已設定並重啟 dev server。'}
+        {error ?? t('status.errorHint')}
       </div>
     )
   }
@@ -72,7 +74,7 @@ export default function StatusServices() {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
       <h2 className="text-sm font-semibold text-white/90 mb-3">
-        服務連線狀態（即時）
+        {t('status.title')}
         <span className="ml-2 text-white/50 font-normal">{data.summary}</span>
       </h2>
       <ul className="space-y-2" role="list">
@@ -80,7 +82,7 @@ export default function StatusServices() {
           const Icon = ICON_MAP[svc.name as keyof typeof ICON_MAP] ?? Server
           const isOk = svc.status === 'connected'
           const isNotConfigured = svc.status === 'not_configured'
-          const statusText = isOk ? '已連接' : isNotConfigured ? '未設定' : '異常'
+          const statusText = isOk ? t('status.connected') : isNotConfigured ? t('status.notConfigured') : t('status.error')
           const StatusIcon = isOk ? CheckCircle : isNotConfigured ? AlertCircle : XCircle
           const statusColor = isOk ? 'text-emerald-400' : isNotConfigured ? 'text-amber-400' : 'text-red-400'
           return (

@@ -9,7 +9,10 @@
     "error": "Something went wrong",
     "save": "Save",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "back": "Back",
+    "share": "Share",
+    "copied": "Copied"
   },
   "nav": {
     "home": "Home",
@@ -49,9 +52,14 @@
   "subscription": { "success": "Subscribed", "cancel": "Cancel subscription", "manage": "Subscription" },
   "profile": { "stats": "Stats", "history": "History" },
   "games": { "filterAll": "All", "empty": "No games yet" },
-  "learn": { "sectionContinue": "Continue learning", "sectionAll": "All courses" },
+  "learn": { "sectionContinue": "Continue learning", "sectionAll": "All courses", "todayChapters": "Completed today", "noFilterMatch": "No courses match your filters", "searchPlaceholder": "Search course name or description", "clearFilter": "Clear all filters" },
   "validation": { "required": "Required", "email": "Enter a valid email" },
   "actions": { "submit": "Submit", "loading": "Loading…" },
   "auth": { "forgotPassword": "Forgot password", "setPassword": "Set new password" },
-  "gamesRoom": { "create": "Create room", "join": "Join room" }
+  "gamesRoom": { "create": "Create room", "join": "Join room" },
+  "partyRoom": { "title": "Party room", "subtitle": "4–12 people in one room, sync games. Try the cheers button below.", "roomStatus": "Room status", "peopleCount": "Currently", "peopleCountValue": "people", "hostSelectGame": "Host picks game", "inviteLink": "Invite link", "cheers": "Cheers!", "cheersCount": "Cheers count", "continueGames": "Go to party games", "backHome": "Back to home", "copyInviteAria": "Copy invite link" },
+  "partyDj": { "title": "AI Party DJ", "subtitle": "Enter headcount and duration; AI plans: warm-up → build-up → peak → wind-down.", "people": "People", "durationMin": "Duration (min)", "allow18": "Include 18+ games", "freeLimitHint": "Free users: max 30 min. Subscribe for longer plans.", "submit": "Generate party flow", "submitLoading": "Planning…", "planTitle": "Party flow", "minutes": "min", "gamesLabel": "Games", "sharePlan": "Share plan", "startParty": "Start party", "backHome": "Back to home", "askAssistant": "Ask AI Sommelier first", "errorFetch": "Failed to get plan", "errorGeneric": "Something went wrong. Please try again.", "sharePlanAria": "Share plan result" },
+  "status": { "title": "Service status (live)", "checking": "Checking services…", "errorFetch": "Failed to fetch status", "errorHint": "Could not get service status. Check .env.local and restart dev server.", "connected": "Connected", "notConfigured": "Not configured", "error": "Error", "pageTitle": "System status", "pageDescription": "If the homepage shows a maintenance notice, we are under maintenance and some features may be temporarily unavailable. Below is the live service status: Not configured means the service variable is not set in .env.local; Error means connection or key issue—fix as suggested.", "backHome": "Back to home", "contactUs": "Contact us", "reportIntro": "If something is wrong, report via ", "reportSuffix": "." },
+  "gamesError": { "title": "Games page failed to load", "desc": "Party games could not load. Refresh or return to the lobby and try again.", "retry": "Try again", "backLobby": "Back to lobby" },
+  "upgrade": { "title": "Upgrade to unlock more", "description": "This feature requires a higher plan. Upgrade for more AI chats, players, and advanced courses.", "cta": "View plans & upgrade", "infinite": "Unlimited", "perDay": "/day" }
 }
