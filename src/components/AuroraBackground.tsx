@@ -1,13 +1,9 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import { ComponentProps } from 'react'
+import { motion } from 'framer-motion'
 
-// P001: Dynamic import for framer-motion to reduce initial bundle by ~45KB
-const MotionDiv = dynamic(
-  () => import('framer-motion').then((mod) => mod.motion.div),
-  { ssr: false }
-) as typeof import('framer-motion').motion.div
+/** 裝飾用背景；原 P001 動態載入 motion.div 在 Next 15 + webpack 下可能回傳 undefined 導致 runtime "reading 'call'" 錯誤，改為直接 import（optimizePackageImports 已做 tree-shake） */
+const MotionDiv = motion.div
 
 /** A11y: 純裝飾背景，標記 aria-hidden 避免 region 違規 */
 export default function AuroraBackground() {

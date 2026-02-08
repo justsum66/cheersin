@@ -194,9 +194,9 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           <Crown className="w-3 h-3" /> Pro
         </span>
       )}
-      {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 New 標籤 */}
+      {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
       {game.isNew && !game.isPremium && (
-        <span className="absolute top-2 right-2 z-10">
+        <span className="absolute top-2 right-2 z-10 animate-[pulse_2s_ease-in-out_infinite]">
           <Badge variant="accent" size="sm">New</Badge>
         </span>
       )}

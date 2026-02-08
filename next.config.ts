@@ -70,11 +70,13 @@ const nextConfig: NextConfig = {
     
     // P007: Persistent cache for production builds - 30% faster rebuilds
     // cacheDirectory 必須為絕對路徑（Windows/Webpack 5 要求）
+    // buildDependencies 使用專案內 next.config.ts 路徑，避免解析 next.config.compiled.js 失敗
     if (!dev && !isServer) {
+      const configPath = path.join(process.cwd(), 'next.config.ts')
       config.cache = {
         type: 'filesystem',
         buildDependencies: {
-          config: [__filename],
+          config: [configPath],
         },
         cacheDirectory: path.join(process.cwd(), '.next', 'cache', 'webpack'),
       }
@@ -113,6 +115,12 @@ const nextConfig: NextConfig = {
     /* 28 modulepreload 關鍵 chunks；減少 framer-motion / motion-dom 載入錯誤 */
     optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
+  /** 舊路徑相容：/logo.png 改寫為 logo_monochrome_gold.png，回傳 200+圖片本體，避免 Image 優化器報 "invalid image received null"（僅 rewrite，不 302） */
+  async rewrites() {
+    return [
+      { source: '/logo.png', destination: '/logo_monochrome_gold.png' },
+    ]
+  },
   /* P3-72：靜態資源 Cache-Control — 圖片/字體/_next/static max-age=1 年 */
   /* SEC-01～04：全站安全標頭 — 先匹配靜態再匹配全站，確保皆有 security + 靜態有 cache */
   async headers() {
@@ -134,7 +142,7 @@ const nextConfig: NextConfig = {
       "font-src 'self' https://fonts.gstatic.com data:",
       `img-src ${imgSrcHosts}`,
       "connect-src 'self' https://*.supabase.co https://api.groq.com https://openrouter.ai https://api.pinecone.io https://api-m.paypal.com https://api-m.sandbox.paypal.com https://www.google-analytics.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io wss:",
-      "frame-src 'self' https://www.paypal.com",
+      "frame-src 'self' https://www.paypal.com https://challenges.cloudflare.com",
       "frame-ancestors 'self'",
       "object-src 'none'",
       "base-uri 'self'",

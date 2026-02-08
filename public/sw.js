@@ -1,6 +1,6 @@
 /* 291 Service Worker：離線快取靜態資源與 fallback（PWA 離線支援） */
-/* Phase 1 E2.1: Service Worker 優化 - 智能快取策略 */
-const CACHE_VERSION = 'v3'
+/* Phase 1 E2.1: Service Worker 優化 - 智能快取策略；v4：修正 activate 清理舊 runtime 快取、移除 /logo.png 依賴 */
+const CACHE_VERSION = 'v4'
 const CACHE_NAME = `cheersin-${CACHE_VERSION}`
 const RUNTIME_CACHE = `cheersin-runtime-${CACHE_VERSION}`
 
@@ -8,11 +8,11 @@ const RUNTIME_CACHE = `cheersin-runtime-${CACHE_VERSION}`
 const STATIC_URLS = [
   '/',
   '/offline.html',
-  '/favicon-32x32.png',
-  '/favicon-16x16.png',
-  '/logo.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/sizes/favicon_32.png',
+  '/sizes/favicon_16.png',
+  '/logo_monochrome_gold.png',
+  '/sizes/android_192.png',
+  '/sizes/android_512.png'
 ]
 
 /* 動態資源快取模式（stale-while-revalidate）；P3-431 納入 /learn 頁面 */
@@ -37,7 +37,10 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))).then(() => self.clients.claim())
+    caches.keys().then((keys) => {
+      const toDelete = keys.filter((k) => k !== CACHE_NAME && k !== RUNTIME_CACHE)
+      return Promise.all(toDelete.map((k) => caches.delete(k)))
+    }).then(() => self.clients.claim())
   )
 })
 
@@ -113,8 +116,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      icon: '/sizes/android_192.png',
+      badge: '/sizes/android_192.png',
       tag: 'cheersin-push',
       renotify: true
     })
