@@ -19,6 +19,7 @@ import { WineCard } from '@/components/wine/WineCard'
 import { parseWinesFromResponse, type WineCardDataFromAI } from '@/lib/wine-response'
 import { useApiLoading } from '@/contexts/ApiLoadingContext'
 import { useErrorAnnouncer } from '@/contexts/ErrorAnnouncerContext'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { canUseAICall, getMaxAICallsPerDay, getAiCallsUsedToday, incrementAiCallsUsedToday } from '@/lib/subscription'
 import { UpgradeModal } from '@/components/UpgradeModal'
@@ -185,6 +186,7 @@ export default function AssistantPage() {
     }
   })
   const { tier } = useSubscription()
+  const { locale } = useTranslation()
   const usedToday = getAiCallsUsedToday()
   const maxPerDay = getMaxAICallsPerDay(tier)
   const canSend = canUseAICall(tier, usedToday)
@@ -334,8 +336,8 @@ export default function AssistantPage() {
         occasion: occasion ?? undefined,
         budget: budget ?? undefined,
         preferredWineTypes: preferredWineTypes.length > 0 ? preferredWineTypes : undefined,
-        /** EXPERT_60 P3 B1-50: preferred reply language for backend prompt */
-        preferredLanguage: language === 'en' ? 'en' : 'zh-TW',
+        /** P2-398：依全站 locale 讓 AI 以對應語言回覆（六語系） */
+        preferredLanguage: locale,
       },
     }
     if (imageBase64) body.imageBase64 = imageBase64
@@ -776,7 +778,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col relative overflow-hidden bg-dark-950 safe-area-px" role="main" aria-label="AI 侍酒師">
+    <main className="min-h-screen flex flex-col relative overflow-hidden bg-dark-950 safe-area-px page-container-mobile" role="main" aria-label="AI 侍酒師">
       {/* EXPERT_60 P1：額度用盡時固定橫幅 — 「今日 X 次已用完，升級無限暢聊」+ 按鈕直連 /pricing */}
       {!canSend && (
         <div className="sticky top-0 z-[60] w-full py-3 px-4 bg-primary-900/95 border-b border-primary-500/30 text-center flex flex-wrap items-center justify-center gap-3">

@@ -75,7 +75,18 @@ function sanitizeUserInput(text: string): string {
   return s
 }
 
-/** P3-51：Chat 主線依 CHAT_FALLBACK_ORDER 依序嘗試；記錄 model 與 latency */
+/** P2-390：失敗時記錄 success: false 與 latency，供監控與 Fallback 分析 */
+function recordChatFailure(provider: string, model: string, startMs: number, reason?: string): void {
+  recordApiCall({
+    endpoint: 'chat',
+    model: `${provider}/${model}`,
+    success: false,
+    latencyMs: Date.now() - startMs,
+  })
+  if (reason) console.warn(`[chat fallback] ${provider} failed:`, reason)
+}
+
+/** P3-51 / P2-410 / P2-390：Chat 主線依 CHAT_FALLBACK_ORDER 依序嘗試；記錄 model、latency、Token 用量；失敗時記錄供監控 */
 async function chatWithGroqOrFallback(
   messages: ChatMessage[],
   userContext?: SommelierUserContext,
@@ -86,16 +97,29 @@ async function chatWithGroqOrFallback(
     { role: 'system', content: systemPrompt },
     ...messages,
   ]
+  const began = startMs ?? Date.now()
 
   for (const provider of CHAT_FALLBACK_ORDER) {
     if (provider === 'groq') {
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
-          const text = await chatWithSommelier(messages, userContext)
+          const { text, usage } = await chatWithSommelier(messages, userContext)
           const model = 'groq/llama-3.3-70b'
-          if (startMs != null) recordApiCall({ endpoint: 'chat', model, success: true, latencyMs: Date.now() - startMs })
+          if (startMs != null) {
+            recordApiCall({
+              endpoint: 'chat',
+              model,
+              success: true,
+              latencyMs: Date.now() - startMs,
+              promptTokens: usage?.prompt_tokens,
+              completionTokens: usage?.completion_tokens,
+              totalTokens: usage?.total_tokens,
+            })
+          }
           return { message: text, model }
         } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error)
+          if (startMs != null) recordChatFailure('groq', 'llama-3.3-70b', startMs, reason)
           if (attempt < MAX_RETRIES) console.warn(`Groq attempt ${attempt + 1} failed, retrying...`, error)
           else break
         }
@@ -109,6 +133,8 @@ async function chatWithGroqOrFallback(
         if (startMs != null) recordApiCall({ endpoint: 'chat', model, success: true, latencyMs: Date.now() - startMs })
         return { message: text, model }
       } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        if (startMs != null) recordChatFailure('nim', 'llama', startMs, reason)
         console.warn('NIM chat failed, trying next provider:', error)
       }
       continue
@@ -120,11 +146,14 @@ async function chatWithGroqOrFallback(
         if (startMs != null) recordApiCall({ endpoint: 'chat', model, success: true, latencyMs: Date.now() - startMs })
         return { message: text, model }
       } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        if (startMs != null) recordChatFailure('openrouter', 'fallback', startMs, reason)
         console.warn('OpenRouter chat failed, trying next provider:', error)
       }
     }
   }
 
+  if (startMs != null) recordApiCall({ endpoint: 'chat', model: 'all-failed', success: false, latencyMs: Date.now() - startMs })
   throw new Error('All chat providers failed')
 }
 

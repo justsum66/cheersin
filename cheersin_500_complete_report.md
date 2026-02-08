@@ -9,20 +9,22 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 388 項 |
-| **名義完成率** | 388 ÷ 500 = **77.6%** |
+| **報告已標記完成（✅）** | 391 項 |
+| **名義完成率** | 391 ÷ 500 = **78.2%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 142 / 190 = **74.7%** |
+| **P2 完成率** | 145 / 190 = **76.3%** |
 | **P3 完成率** | 7 / 90 = **7.8%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 ✓ · E2E 關鍵路徑 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **77.6%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **78.2%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
 - **P2 完成率**：142 / 190 = **74.7%**
 - **P3 完成率**：7 / 90 = **7.8%**
+
+**本輪 3 項 P2 真實完成（分批實作）：** P2-398 AI 多語言（assistant 傳 locale、groq getSommelierSystemPrompt 六語系指令）、P2-390 Fallback 策略優化（失敗時 recordApiCall(success: false) + recordChatFailure 日誌）、P2-410 Token 追蹤（Groq chatWithSommelier 回傳 usage、chat 路徑寫入 promptTokens/completionTokens/totalTokens）。P2 完成 **145/190 = 76.3%**。
 
 **本輪 i18n 15 項真實完成（70 專家 + 20 網紅視角）：** 導航改為 t('nav.*')（NAV_ITEMS 改 navKey）、首頁 Hero/CTA 改為 t('common.cta')、t('common.heroTitle1/2')、次連結 t('nav.games/assistant/learn')、AgeGate 全文案 t('ageGate.*')、Footer 已有 LocaleSwitcher 與 t('footer.*')、六語系 messages 補齊 ageGate/ common.heroTitle、主內容區 RWD 統一 page-container-mobile（Hero、Quiz、Learn、Pricing、Assistant、Profile、Login）、docs/i18n-tasks.md 15 項清單。BUILD ✓ TS ✓ test:run 147 ✓。
 
@@ -743,7 +745,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-387** | **AI 語音輸入 (可選)：** 允許用戶通過語音與 AI 助理對話，使用 Web Speech API 或 Whisper。 | **(ML 科學家)** 在派對場景中，語音輸入比打字更方便。 | `assistant/page.tsx` | 8h |
 | **P2-388** | **AI 生成遊戲題目：** 利用 AI 動態生成「真心話」、「我從來沒有」等遊戲的題目，確保題目永遠新鮮。 | **(AI 科學家)** 解決題庫有限的問題，讓遊戲永不重複。 | `api/games/generate-question` | 6h |
 | **P2-389** | **AI 派對策劃師：** 在 AI 助理中增加「派對策劃」功能，用戶描述派對場景（人數、主題、預算），AI 生成完整的派對方案（遊戲順序、酒款推薦、音樂列表）。 | **(Master Sommelier)** 將 AI 的能力從單一功能擴展到完整的場景解決方案。 | `chat/route.ts` | 8h |
-| **P2-390** | **AI 模型 Fallback 策略優化：** 當前的 Groq -> NIM -> OpenRouter 的 Fallback 策略需要更精細的錯誤處理和延遲監控，確保切換是無感的。 | **(前AWS架構師)** 確保 AI 服務的高可用性。 | `chat/route.ts` | 4h |
+| **P2-390** ✅ | **AI 模型 Fallback 策略優化：** 當前的 Groq -> NIM -> OpenRouter 的 Fallback 策略需要更精細的錯誤處理和延遲監控，確保切換是無感的。 | **(前AWS架構師)** 確保 AI 服務的高可用性。 | `chat/route.ts` | 4h |
 | **P2-391** ✅ | **AI 回答格式化：** AI 的回答應使用 Markdown 格式化（如列表、粗體、表格），並在前端正確渲染。 | **(UX 設計師)** 格式化的回答更易讀、更專業。 | `assistant/page.tsx` | 3h |
 | **P2-392** ✅ | **AI 預設問題 (Quick Prompts)：** 在 AI 助理的輸入框上方，提供一組預設問題按鈕（如「推薦一款紅酒」、「今晚派對玩什麼」），降低使用門檻。 | **(UX 設計師)** 引導用戶開始對話。 | `assistant/page.tsx` | 2h |
 | **P2-393** | **AI 知識庫更新機制：** 建立一個定期更新 Pinecone 向量數據庫的機制，確保 AI 的知識是最新的。 | **(ML 科學家)** 過時的知識會降低 AI 的可信度。 | `scripts/update-embeddings.ts` | 5h |
@@ -751,7 +753,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-395** | **AI 回答緩存：** 對於常見的、答案不變的問題（如「什麼是單寧？」），緩存 AI 的回答，減少 API 調用和延遲。 | **(Redis 架構師)** 降低成本，提升響應速度。 | `chat/route.ts` | 4h |
 | **P2-396** ✅ | **AI 人格設定：** 為 AI 助理設定一個獨特的人格（如「一位幽默風趣的侍酒師」），使其回答更有個性和品牌特色。 | **(Master Sommelier)** 讓 AI 不僅僅是一個工具，而是一個有魅力的角色。 | `chat/route.ts` (System Prompt) | 2h |
 | **P2-397** | **AI 對話導出：** 允許用戶將與 AI 的對話導出為 PDF 或文本文件。 | **(UX 設計師)** 讓用戶保存有價值的對話內容。 | `assistant/page.tsx` | 3h |
-| **P2-398** | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
+| **P2-398** ✅ | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
 | **P2-399** | **AI 回答中的互動元素：** AI 的回答中可以嵌入可點擊的元素（如酒款卡片、遊戲鏈接），讓用戶可以直接從對話中跳轉到相關頁面。 | **(UX 設計師)** 讓 AI 的回答更具行動力。 | `assistant/page.tsx` | 5h |
 | **P2-400** | **AI 學習助手：** 在品酒學院中，集成一個 AI 學習助手，用戶可以針對當前課程內容提問，AI 提供解答和補充知識。 | **(學習專家)** 將 AI 融入學習場景，提升學習效果。 | `learn/[courseId]/page.tsx` | 6h |
 | **P2-401** | **AI 情感分析：** 分析用戶在聊天中的情感傾向，當檢測到用戶不滿或困惑時，主動提供幫助或轉接客服。 | **(ML 科學家)** 提升 AI 的情商和服務質量。 | `chat/route.ts` | 5h |
@@ -763,7 +765,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-407** | **AI 自動標籤：** 利用 AI 自動為新上架的酒款或課程添加標籤，減少人工操作。 | **(ML 科學家)** 提升內容管理的效率。 | `api/auto-tag` | 5h |
 | **P2-408** | **AI 聊天機器人 Widget：** 在網站的每個頁面右下角，提供一個可展開的 AI 聊天機器人 Widget，方便用戶隨時提問。 | **(UX 設計師)** 讓 AI 助理無處不在，觸手可及。 | `components/ChatWidget.tsx` | 5h |
 | **P2-409** | **AI 生成遊戲規則摘要：** 利用 AI 自動為每個遊戲生成簡短的規則摘要，確保 `rulesSummary` 字段的質量和一致性。 | **(AI 科學家)** 自動化內容生成，提升效率。 | `scripts/generate-rules-summary.ts` | 3h |
-| **P2-410** | **AI Token 使用量追蹤：** 精確追蹤每個用戶的 AI Token 使用量，為未來可能的按量計費做準備。 | **(後端架構師)** 為商業模式的靈活調整提供數據基礎。 | `lib/api-usage.ts` | 3h |
+| **P2-410** ✅ | **AI Token 使用量追蹤：** 精確追蹤每個用戶的 AI Token 使用量，為未來可能的按量計費做準備。 | **(後端架構師)** 為商業模式的靈活調整提供數據基礎。 | `lib/api-usage.ts` | 3h |
 
 ---
 

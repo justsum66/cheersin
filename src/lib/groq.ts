@@ -59,6 +59,7 @@ export interface SommelierUserContext {
 const PERSONALITY_PRO = `請以「嚴謹專業」侍酒師風格回答：用詞精準、少用口語與表情符號、著重產區與品種、適時引用專業術語。`
 const PERSONALITY_FUN = `請以「幽默輕鬆」風格回答：可適時使用表情符號、口語化、穿插酒類冷知識或趣味比喻。`
 
+/** P2-396：AI 人格設定 — 依 userContext.personality 切換專業/幽默風格，單一來源供所有 chat 路徑使用 */
 /** 依 userContext 建出完整系統提示（單一來源）；140 台灣在地酒款資料庫一併注入 */
 export function getSommelierSystemPrompt(userContext?: SommelierUserContext): string {
   let systemPrompt = SOMMELIER_SYSTEM_PROMPT
@@ -87,18 +88,33 @@ export function getSommelierSystemPrompt(userContext?: SommelierUserContext): st
   if (userContext.ragContext) {
     systemPrompt += `\n\n參考以下內容回答，並在引用處標注來源編號 [1]、[2] 等：\n${userContext.ragContext}`
   }
-  /** P3 B1-50：非繁中時要求以該語言回覆，擴大非繁中 TA */
-  if (userContext.preferredLanguage && userContext.preferredLanguage !== 'zh-TW' && userContext.preferredLanguage !== 'zh') {
-    const langName = userContext.preferredLanguage === 'en' ? 'English' : userContext.preferredLanguage === 'ja' ? '日本語' : userContext.preferredLanguage
-    systemPrompt += `\n\n請以用戶偏好語言回覆：${langName}。若用戶以該語言提問，請全程使用該語言回答。`
+  /** P2-398：AI 多語言 — 依 preferredLanguage 要求回覆語言（六語系：繁中/簡中/粵/英/日/韓） */
+  const localeToLangName: Record<string, string> = {
+    'zh-TW': '繁體中文',
+    'zh-CN': '简体中文',
+    'yue': '粵語',
+    'en': 'English',
+    'ja': '日本語',
+    'ko': '한국어',
+  }
+  if (userContext?.preferredLanguage) {
+    const langName = localeToLangName[userContext.preferredLanguage] ?? userContext.preferredLanguage
+    systemPrompt += `\n\n請以以下語言回覆：${langName}。若用戶以該語言提問，請全程使用該語言回答。`
   }
   return systemPrompt
+}
+
+/** P2-410：Groq 回傳 usage 供 Token 追蹤 */
+export interface ChatUsage {
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
 }
 
 export async function chatWithSommelier(
   messages: ChatMessage[],
   userContext?: SommelierUserContext
-): Promise<string> {
+): Promise<{ text: string; usage?: ChatUsage }> {
   const systemPrompt = getSommelierSystemPrompt(userContext)
 
   const completion = await groq.chat.completions.create({
@@ -111,7 +127,15 @@ export async function chatWithSommelier(
     max_tokens: 1024,
   })
 
-  return completion.choices[0]?.message?.content || '抱歉，我暫時無法回答，請稍後再試。'
+  const text = completion.choices[0]?.message?.content || '抱歉，我暫時無法回答，請稍後再試。'
+  const usage = completion.usage
+    ? {
+        prompt_tokens: completion.usage.prompt_tokens ?? 0,
+        completion_tokens: completion.usage.completion_tokens ?? 0,
+        total_tokens: completion.usage.total_tokens ?? 0,
+      }
+    : undefined
+  return { text, usage }
 }
 
 /** Groq streaming：逐 token 回傳，供打字機效果使用 */
