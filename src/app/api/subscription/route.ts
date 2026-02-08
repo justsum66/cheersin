@@ -66,7 +66,7 @@ const SUBSCRIPTION_ACTIONS = ['create-subscription', 'capture-subscription', 'ca
 const MAX_SUBSCRIPTION_ID_LENGTH = 256
 
 export async function POST(request: NextRequest) {
-  const requestId = request.headers.get('x-request-id') ?? undefined
+  const requestId = request.headers.get('x-request-id') ?? undefined;
   try {
     ensurePayPalConfig()
     let body: import('@/types/api-bodies').SubscriptionPostBody

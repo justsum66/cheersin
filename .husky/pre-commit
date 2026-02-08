@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# P2-263：pre-commit 時執行 lint-staged（lint --fix 僅對 staged 檔案），確保代碼質量
+npx lint-staged

@@ -1,6 +1,7 @@
 /**
  * P3-47：CORS 明確化 — 僅當 CORS_ALLOWED_ORIGINS 設定時對 /api 加上 Allow-Origin
  * P3-57：API 請求 ID — 為每個請求產生 x-request-id，傳給 route 並回傳 X-Request-Id 供追蹤日誌
+ * P2-303 / P2-327：API 請求結構化日誌（timestamp, requestId, method, path）；響應時間由各 route 或 instrumentation 記錄
  */
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
@@ -13,9 +14,28 @@ function generateRequestId(): string {
   return crypto.randomUUID()
 }
 
+/** P2-327：結構化 API 請求日誌格式，便於搜尋與分析 */
+function logApiRequest(requestId: string, method: string, path: string): void {
+  if (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'preview') {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      requestId,
+      method,
+      path,
+      level: 'info',
+      type: 'api_request',
+    }
+    console.info(JSON.stringify(payload))
+  }
+}
+
 export function middleware(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? generateRequestId()
   const isApi = request.nextUrl.pathname.startsWith('/api')
+
+  if (isApi) {
+    logApiRequest(requestId, request.method, request.nextUrl.pathname)
+  }
 
   let res: NextResponse
   if (isApi) {

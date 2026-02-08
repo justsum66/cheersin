@@ -180,13 +180,15 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   /** T051：預設「經典派對」= 熱門類型；P1-122 受控時用 props，否則用內部 state */
   const [internalFilter, setInternalFilter] = useState<DisplayCategory>('classic')
   const displayFilter = controlledFilter ?? internalFilter
+  const [isPending, startTransition] = useTransition()
+  /** P2-279：篩選切換以 startTransition 標記為低優先級，避免阻塞輸入 */
   const setDisplayFilter = useCallback((cat: DisplayCategory) => {
     if (onDisplayFilterChange) {
       onDisplayFilterChange(cat)
     } else {
-      setInternalFilter(cat)
+      startTransition(() => setInternalFilter(cat))
     }
-  }, [onDisplayFilterChange])
+  }, [onDisplayFilterChange, startTransition])
   /** P1-106：適合人數與遊戲時長篩選 */
   const [playerCountFilter, setPlayerCountFilter] = useState<PlayerCountFilter>('all')
   const [durationFilter, setDurationFilter] = useState<DurationFilter>('all')
@@ -202,7 +204,6 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   /** 79 搜尋遊戲：依名稱或描述篩選；useDeferredValue 取代手動 debounce */
   const [searchQuery, setSearchQuery] = useState('')
   const deferredQuery = useDeferredValue(searchQuery)
-  const [isPending, startTransition] = useTransition()
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const categoryTabListRef = useRef<HTMLDivElement>(null)

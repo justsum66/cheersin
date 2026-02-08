@@ -1,13 +1,19 @@
 /**
  * 120 慶祝動畫：遊戲獲勝時全螢幕彩帶 + confetti 效果
+ * P2-245：canvas-confetti 以動態 import 載入，減少主包體積
  */
-import confetti from 'canvas-confetti'
-
 const COLORS = ['#8B0000', '#D4AF37', '#8A2BE2', '#FFD700', '#b91c1c']
 
+/** 動態載入 confetti，僅在需要時加載 */
+async function getConfetti(): Promise<typeof import('canvas-confetti').default> {
+  const mod = await import('canvas-confetti')
+  return mod.default
+}
+
 /** 全螢幕慶祝：多發彩帶 + 中央爆發 */
-export function fireFullscreenConfetti(): void {
+export async function fireFullscreenConfetti(): Promise<void> {
   if (typeof window === 'undefined') return
+  const confetti = await getConfetti()
   const duration = 2500
   const end = Date.now() + duration
 
@@ -40,12 +46,13 @@ export function fireFullscreenConfetti(): void {
   }, 200)
 }
 
-/** 任務 25：失敗／平局效果 — 短震動 + 深色彩帶（可選） */
-export function showFailureEffect(): void {
+/** 任務 25：失敗／平局效果 — 短震動 + 深色彩帶（可選）；P2-245 動態載入 confetti */
+export async function showFailureEffect(): Promise<void> {
   if (typeof window === 'undefined') return
   if (window.navigator?.vibrate?.(200)) {
     setTimeout(() => window.navigator.vibrate?.(100), 250)
   }
+  const confetti = await getConfetti()
   confetti({
     particleCount: 30,
     spread: 70,

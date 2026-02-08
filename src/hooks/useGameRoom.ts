@@ -40,12 +40,12 @@ export function useGameRoom(slug: string | null) {
   /** GAMES_500 #167：房間不存在時不重複請求 — 410/過期後 visibility 不 refetch */
   const permanentErrorSlugRef = useRef<string | null>(null)
 
-  /** 任務 11：房間取得；失敗時重試 2 次，410/過期則設為「房間已過期」 */
-  const fetchRoom = useCallback(async (s: string, retryCount = 0) => {
+  /** 任務 11：房間取得；失敗時重試 2 次，410/過期則設為「房間已過期」；P2-273 卸載時以 AbortController 取消請求 */
+  const fetchRoom = useCallback(async (s: string, retryCount = 0, signal?: AbortSignal) => {
     const maxRetries = 2
     try {
       setError(null)
-      const res = await fetch(`/api/games/rooms/${encodeURIComponent(s)}`)
+      const res = await fetch(`/api/games/rooms/${encodeURIComponent(s)}`, { signal })
       if (res.status === 410) {
         permanentErrorSlugRef.current = s
         setError('房間已過期')
@@ -65,9 +65,9 @@ export function useGameRoom(slug: string | null) {
           setLoading(false)
           return
         }
-        if (retryCount < maxRetries) {
+        if (retryCount < maxRetries && !signal?.aborted) {
           await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)))
-          return fetchRoom(s, retryCount + 1)
+          return fetchRoom(s, retryCount + 1, signal)
         }
         throw new Error(msg)
       }
@@ -85,10 +85,11 @@ export function useGameRoom(slug: string | null) {
       })))
       setInviteUrl((prev) => prev || (data.room?.slug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${data.room.slug}` : null))
     } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return
       const msg = e instanceof Error ? e.message : 'Unknown error'
-      if (retryCount < maxRetries && /network|fetch|failed/i.test(msg)) {
+      if (retryCount < maxRetries && !signal?.aborted && /network|fetch|failed/i.test(msg)) {
         await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)))
-        return fetchRoom(s, retryCount + 1)
+        return fetchRoom(s, retryCount + 1, signal)
       }
       setError(msg)
       setRoomId(null)
@@ -113,8 +114,10 @@ export function useGameRoom(slug: string | null) {
       setLoading(false)
       return
     }
+    const controller = new AbortController()
     setLoading(true)
-    fetchRoom(slug)
+    fetchRoom(slug, 0, controller.signal)
+    return () => controller.abort()
   }, [slug, fetchRoom])
 
   /** 輪詢：每 5 秒拉一次玩家列表（房間模式時可於上層呼叫） */

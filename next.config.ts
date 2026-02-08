@@ -104,10 +104,10 @@ const nextConfig: NextConfig = {
     ],
     dangerouslyAllowSVG: true,
   },
+  /** P2-314：Server Actions 請求體大小限制，防止過大 payload 耗盡資源 */
+  /** P2-314：Server Actions 請求體大小限制，防止過大 payload */
   experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
+    serverActions: { bodySizeLimit: '2mb' },
     /* PPR 需 next@canary；穩定版暫不啟用。啟用後可實現 <100ms TTFB */
     /* 28 modulepreload 關鍵 chunks；減少 framer-motion / motion-dom 載入錯誤 */
     optimizePackageImports: ['framer-motion', 'lucide-react'],

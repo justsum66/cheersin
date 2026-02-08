@@ -242,119 +242,55 @@ export const GAMES_META: GameMeta[] = [
   { id: 'vocal-war', name: '歌喉戰', description: '展現你的歌喉，爭奪歌王寶座！', icon: Mic, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 20, searchKeys: 'gehou zhan vocal war', rulesSummary: '歌唱比賽投票遊戲。' },
 ]
 
-/** 遊戲 ID → 分類對照 */
-export const GAME_CATEGORY_BY_ID: Record<string, GameCategory> = {
-  'truth-or-dare': 'party', roulette: 'party', trivia: 'guess', dice: 'draw',
-  'never-have-i-ever': 'party', 'kings-cup': 'party', 'baskin-robbins-31': 'guess',
-  'up-down-stairs': 'guess', 'countdown-toast': 'reaction',
-  'random-picker': 'draw', 'drink-or-safe': 'draw',
-  'high-low': 'guess',
-  titanic: 'other', 'finger-guessing': 'other',
-  'name-train': 'party', 'liar-dice': 'draw',
-  'coin-flip': 'draw',
-  'who-is-undercover': 'facetoface', 'werewolf-lite': 'facetoface', 'heartbeat-challenge': 'facetoface',
-  'mimic-face': 'facetoface', 'chemistry-test': 'facetoface', charades: 'facetoface',
-  'would-you-rather': 'facetoface',
-  'punishment-wheel': 'other',
-  'who-most-likely': 'party',
-  'secret-reveal': 'party',
-  'thirteen-cards': 'other',
-  blackjack: 'other',
-  'hot-potato': 'reaction',
-  'seven-tap': 'reaction',
-  'spin-bottle': 'party',
-  'dare-dice': 'draw',
+/** P2-271：遊戲 ID → 分類對照，使用 Map 以獲得更穩定的查找性能（大數據量下優於 Object） */
+const GAME_CATEGORY_MAP = new Map<string, GameCategory>([
+  ['truth-or-dare', 'party'], ['roulette', 'party'], ['trivia', 'guess'], ['dice', 'draw'],
+  ['never-have-i-ever', 'party'], ['kings-cup', 'party'], ['baskin-robbins-31', 'guess'],
+  ['up-down-stairs', 'guess'], ['countdown-toast', 'reaction'],
+  ['random-picker', 'draw'], ['drink-or-safe', 'draw'], ['high-low', 'guess'],
+  ['titanic', 'other'], ['finger-guessing', 'other'], ['name-train', 'party'], ['liar-dice', 'draw'],
+  ['coin-flip', 'draw'],
+  ['who-is-undercover', 'facetoface'], ['werewolf-lite', 'facetoface'], ['heartbeat-challenge', 'facetoface'],
+  ['mimic-face', 'facetoface'], ['chemistry-test', 'facetoface'], ['charades', 'facetoface'],
+  ['would-you-rather', 'facetoface'], ['punishment-wheel', 'other'], ['who-most-likely', 'party'],
+  ['secret-reveal', 'party'], ['thirteen-cards', 'other'], ['blackjack', 'other'],
+  ['hot-potato', 'reaction'], ['seven-tap', 'reaction'], ['spin-bottle', 'party'], ['dare-dice', 'draw'],
+  ['toast-relay', 'party'], ['number-bomb', 'guess'], ['369-clap', 'reaction'], ['buzz-game', 'reaction'],
+  ['category-chain', 'party'], ['two-truths-one-lie', 'facetoface'], ['spicy-truth-or-dare', 'adult'],
+  ['spicy-never-have-i-ever', 'adult'], ['spicy-who-most-likely', 'adult'],
+  ['between-cards', 'guess'], ['russian-roulette', 'party'], ['couple-test', 'facetoface'],
+  ['soul-mate', 'facetoface'], ['spicy-would-you-rather', 'adult'], ['paranoia-game', 'party'],
+  ['secret-confession', 'party'], ['dare-cards', 'party'], ['mind-reading', 'facetoface'], ['spicy-dice', 'adult'],
+  ['reaction-master', 'reaction'], ['drunk-truth', 'party'], ['late-night', 'party'],
+  ['drinking-word', 'party'], ['guess-song', 'party'], ['photo-guess', 'party'], ['word-chain', 'party'],
+  ['team-guess', 'facetoface'], ['balance-game', 'guess'], ['fortune-draw', 'draw'], ['truth-wheel', 'party'],
+  ['photo-bomb', 'party'], ['draw-guess', 'party'], ['taboo', 'party'], ['spot-diff', 'reaction'],
+  ['quick-math', 'reaction'], ['color-blind', 'reaction'], ['finger-point', 'reaction'],
+  ['shot-roulette', 'party'], ['music-chair', 'party'], ['bottle-cap', 'party'],
+  ['emotion-read', 'reaction'], ['fast-type', 'reaction'], ['dice-war', 'facetoface'], ['price-guess', 'guess'],
+  ['tongue-challenge', 'party'], ['imitate-me', 'party'], ['lucky-draw', 'draw'], ['time-freeze', 'reaction'],
+  ['stare-contest', 'facetoface'], ['bluffing', 'party'], ['telephone', 'party'], ['finish-lyric', 'party'],
+  ['tic-tac-shot', 'facetoface'], ['compliment-battle', 'party'], ['cocktail-mix', 'party'],
+  ['reverse-say', 'reaction'], ['riddle-guess', 'party'], ['story-chain', 'party'],
+  ['sound-imitate', 'party'], ['emoji-puzzle', 'party'], ['memory-match', 'party'], ['dance-battle', 'party'],
+  ['beer-pong-vr', 'party'], ['poker-face', 'party'], ['lip-sync-battle', 'party'], ['voice-mod', 'party'],
+  ['gesture-guess', 'party'], ['rhythm-master', 'party'], ['sound-sleuth', 'party'], ['pitch-perfect', 'party'],
+  ['vocal-war', 'party'],
+])
 
-  'toast-relay': 'party',
-  'number-bomb': 'guess',
-  '369-clap': 'reaction',
-  'buzz-game': 'reaction',
-  'category-chain': 'party',
-  'two-truths-one-lie': 'facetoface',
-  'spicy-truth-or-dare': 'adult',
-  'spicy-never-have-i-ever': 'adult',
-  'spicy-who-most-likely': 'adult',
-  // Phase 2 新遊戲分類
-
-  'between-cards': 'guess',
-  'russian-roulette': 'party',
-  'couple-test': 'facetoface',
-  'soul-mate': 'facetoface',
-  'spicy-would-you-rather': 'adult',
-  'paranoia-game': 'party',
-  'secret-confession': 'party',
-  'dare-cards': 'party',
-  'mind-reading': 'facetoface',
-  'spicy-dice': 'adult',
-  // Phase 3 新遊戲分類
-  'reaction-master': 'reaction',
-  'drunk-truth': 'party',
-  'late-night': 'party',
-  // Phase 4 新遊戲分類
-  'drinking-word': 'party',
-  'guess-song': 'party',
-  'photo-guess': 'party',
-  'word-chain': 'party',
-  'team-guess': 'facetoface',
-  'balance-game': 'guess',
-  'fortune-draw': 'draw',
-  'truth-wheel': 'party',
-
-  'photo-bomb': 'party',
-  // Phase 5 新遊戲分類
-  'draw-guess': 'party',
-  'taboo': 'party',
-  'spot-diff': 'reaction',
-  'quick-math': 'reaction',
-  'color-blind': 'reaction',
-
-  'finger-point': 'reaction',
-  'shot-roulette': 'party',
-  'music-chair': 'party',
-  'bottle-cap': 'party',
-  // Phase 6 新遊戲分類
-
-  'emotion-read': 'reaction',
-  'fast-type': 'reaction',
-  'dice-war': 'facetoface',
-  'price-guess': 'guess',
-  'tongue-challenge': 'party',
-  'imitate-me': 'party',
-
-  'lucky-draw': 'draw',
-  'time-freeze': 'reaction',
-  'stare-contest': 'facetoface',
-  'bluffing': 'party',
-  // Phase 7 新遊戲分類
-  'telephone': 'party',
-  'finish-lyric': 'party',
-  'tic-tac-shot': 'facetoface',
-  'compliment-battle': 'party',
-  'cocktail-mix': 'party',
-  'reverse-say': 'reaction',
-  'riddle-guess': 'party',
-  'story-chain': 'party',
-  // Phase 8 新遊戲分類
-  'sound-imitate': 'party',
-  'emoji-puzzle': 'party',
-  'memory-match': 'party',
-  'dance-battle': 'party',
-  'beer-pong-vr': 'party',
-  'poker-face': 'party',
-  'lip-sync-battle': 'party',
-  'voice-mod': 'party',
-  'gesture-guess': 'party',
-  'rhythm-master': 'party',
-  'sound-sleuth': 'party',
-  'pitch-perfect': 'party',
-  'vocal-war': 'party',
+/** 依遊戲 ID 取得分類；相容舊的 Record 用法，對外保留 getter */
+export function getGameCategoryById(id: string): GameCategory {
+  return GAME_CATEGORY_MAP.get(id) ?? 'other'
 }
 
-/** 帶分類的遊戲列表（供 Lobby 使用）；P1-195 付費角標 */
+/** @deprecated 請改用 getGameCategoryById；保留僅供既有程式碼相容 */
+export const GAME_CATEGORY_BY_ID: Record<string, GameCategory> = Object.fromEntries(GAME_CATEGORY_MAP)
+
+/** 帶分類的遊戲列表（供 Lobby 使用）；P1-195 付費角標；P2-271 使用 Map 查找 */
 export type GameWithCategory = GameMeta & { category: GameCategory; isPremium?: boolean }
 
 export const gamesWithCategory: GameWithCategory[] = GAMES_META.map((g) => {
-  const category = GAME_CATEGORY_BY_ID[g.id] ?? 'other'
+  const category = getGameCategoryById(g.id)
   return { ...g, category, isPremium: category === 'adult' }
 })
 
