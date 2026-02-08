@@ -129,7 +129,9 @@ export default function PhotoGuess() {
 
       {!gameStarted ? (
         <div className="text-center">
-          <Image className="w-16 h-16 text-primary-400 mx-auto mb-4" />
+          {/* decorative icon: Lucide Image is SVG, no alt; a11y 以 aria-hidden 標示 */}
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image className="w-16 h-16 text-primary-400 mx-auto mb-4" aria-hidden />
           <p className="text-white/70 mb-6">準備好看圖猜謎了嗎？</p>
           <button
             type="button"

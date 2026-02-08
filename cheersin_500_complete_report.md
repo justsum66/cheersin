@@ -41,7 +41,8 @@
 
 ## 1. [P0] 根本性重塑 (Fundamental Reshaping) - 25 項
 
-**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020 ✅ 已完成（價值主張、18+ 付費牆、情侶模式、訪客試玩、定價場景化、env.example、API 錯誤格式、CSP、README、遊戲大廳懶加載、日誌系統關鍵路徑）。
+**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020 ✅ 已完成（價值主張、18+ 付費牆、情侶模式、訪客試玩、定價場景化、env.example、API 錯誤格式、CSP、README、遊戲大廳懶加載、日誌系統關鍵路徑）。  
+**本輪驗證（非任務項）：** 已修復 6 個 ESLint 警告（StoryChain useMemo players、Telephone useEffect generateResults、EmojiPuzzle useEffect checkAnswers、MusicChair useCallback startRound、NameTrain useEffect startTimer、PhotoGuess jsx-a11y/alt-text）；Build + Lint + 147 tests 通過。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 

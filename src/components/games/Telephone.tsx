@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, RotateCcw, Volume2 } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
@@ -44,6 +44,26 @@ export default function Telephone() {
   const currentPlayer = players[currentPlayerIndex]
   const nextPlayer = players[(currentPlayerIndex + 1) % players.length]
 
+  const calculateMessageChange = useCallback((original: string, final: string): number => {
+    const originalWords = original.split('')
+    const finalWords = final.split('')
+    let matches = 0
+    for (let i = 0; i < Math.min(originalWords.length, finalWords.length); i++) {
+      if (originalWords[i] === finalWords[i]) matches++
+    }
+    return Math.round(100 - (matches / Math.max(originalWords.length, finalWords.length)) * 100)
+  }, [])
+
+  const generateResults = useCallback(() => {
+    setGameResults([
+      '傳話遊戲結果：',
+      `原始訊息：${originalMessage}`,
+      `最終訊息：${messages[messages.length - 1]}`,
+      `傳遞輪數：${players.length}輪`,
+      `訊息變化程度：${calculateMessageChange(originalMessage, messages[messages.length - 1])}%`
+    ])
+  }, [originalMessage, messages, players.length, calculateMessageChange])
+
   useEffect(() => {
     if (gameState === 'playing' && isSpeaking) {
       const timer = setTimeout(() => {
@@ -58,7 +78,7 @@ export default function Telephone() {
       }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [gameState, isSpeaking, currentPlayerIndex, players.length, play])
+  }, [gameState, isSpeaking, currentPlayerIndex, players.length, play, generateResults])
 
   const startGame = () => {
     const randomMessage = TELEPHONE_MESSAGES[Math.floor(Math.random() * TELEPHONE_MESSAGES.length)]
@@ -81,32 +101,6 @@ export default function Telephone() {
         return newMessages
       })
     }
-  }
-
-  const generateResults = () => {
-    const results = [
-      `傳話遊戲結果：`,
-      `原始訊息：${originalMessage}`,
-      `最終訊息：${messages[messages.length - 1]}`,
-      `傳遞輪數：${players.length}輪`,
-      `訊息變化程度：${calculateMessageChange(originalMessage, messages[messages.length - 1])}%`
-    ]
-    setGameResults(results)
-  }
-
-  const calculateMessageChange = (original: string, final: string): number => {
-    // Simple similarity calculation
-    const originalWords = original.split('')
-    const finalWords = final.split('')
-    let matches = 0
-    
-    for (let i = 0; i < Math.min(originalWords.length, finalWords.length); i++) {
-      if (originalWords[i] === finalWords[i]) {
-        matches++
-      }
-    }
-    
-    return Math.round(100 - (matches / Math.max(originalWords.length, finalWords.length)) * 100)
   }
 
   const resetGame = () => {

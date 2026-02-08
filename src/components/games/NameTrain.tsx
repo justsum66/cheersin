@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -45,15 +45,15 @@ export default function NameTrain() {
     }
   }, [orderMode, players.length])
 
-  const stopTimer = () => {
+  const stopTimer = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
     setTimeLeft(0)
-  }
+  }, [])
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     stopTimer()
     setTimeLeft(TURN_SECONDS)
     timerRef.current = setInterval(() => {
@@ -77,7 +77,7 @@ export default function NameTrain() {
         return t - 1
       })
     }, 1000)
-  }
+  }, [play, stopTimer])
 
   const say = (saidIndex: number) => {
     if (saidIndex === nextIndex) {
@@ -118,7 +118,7 @@ export default function NameTrain() {
         wrongTimeoutRef.current = null
       }
     }
-  }, [orderMode])
+  }, [orderMode, startTimer, stopTimer])
 
   useEffect(() => {
     return () => {

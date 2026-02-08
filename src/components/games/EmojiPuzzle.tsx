@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Smile, RotateCcw, Trophy, Clock } from 'lucide-react'
@@ -63,11 +63,10 @@ export default function EmojiPuzzle() {
     }
   }
 
-  // 檢查答案
-  const checkAnswers = () => {
+  // 檢查答案（useCallback 以滿足 useEffect 依賴，避免 exhaustive-deps 警告）
+  const checkAnswers = useCallback(() => {
     setShowAnswer(true)
     play('correct')
-    
     setTimeout(() => {
       if (currentPuzzleIndex < EMOJI_PUZZLES.length - 1) {
         setCurrentPuzzleIndex(prev => prev + 1)
@@ -79,7 +78,7 @@ export default function EmojiPuzzle() {
         play('win')
       }
     }, 3000)
-  }
+  }, [currentPuzzleIndex, play])
 
   // 跳過題目
   const skipPuzzle = () => {
@@ -114,7 +113,7 @@ export default function EmojiPuzzle() {
     } else if (timeLeft === 0 && gameState === 'playing' && !showAnswer) {
       checkAnswers()
     }
-  }, [timeLeft, gameState, showAnswer])
+  }, [timeLeft, gameState, showAnswer, checkAnswers])
 
   if (gameState === 'setup') {
     return (

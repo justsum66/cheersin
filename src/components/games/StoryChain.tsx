@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BookOpen, RotateCcw, Trophy, PenTool } from 'lucide-react'
 import GameRules from './GameRules'
@@ -39,7 +39,11 @@ export default function StoryChain() {
   const [round, setRound] = useState(1)
   const [newPart, setNewPart] = useState('')
 
-  const players = contextPlayers.length >= 2 ? contextPlayers : ['玩家1', '玩家2', '玩家3']
+  /** 穩定 players 參考，避免 useCallback 依賴每輪變動（react-hooks/exhaustive-deps） */
+  const players = useMemo(
+    () => (contextPlayers.length >= 2 ? contextPlayers : ['玩家1', '玩家2', '玩家3']),
+    [contextPlayers]
+  )
 
   const startGame = useCallback(() => {
     const starter = STORY_STARTERS[Math.floor(Math.random() * STORY_STARTERS.length)]

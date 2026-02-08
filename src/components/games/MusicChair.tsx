@@ -25,13 +25,6 @@ export default function MusicChair() {
   const [countdown, setCountdown] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const startGame = useCallback(() => {
-    setRemainingPlayers([...players])
-    setRoundCount(0)
-    setDrinkCount({})
-    startRound([...players])
-  }, [players])
-
   const startRound = useCallback((activePlayers: string[]) => {
     if (activePlayers.length <= 1) {
       setGamePhase('result')
@@ -60,6 +53,13 @@ export default function MusicChair() {
       })
     }, 1000)
   }, [play])
+
+  const startGame = useCallback(() => {
+    setRemainingPlayers([...players])
+    setRoundCount(0)
+    setDrinkCount({})
+    startRound([...players])
+  }, [players, startRound])
 
   const selectEliminated = useCallback((playerName: string) => {
     setEliminatedPlayer(playerName)
