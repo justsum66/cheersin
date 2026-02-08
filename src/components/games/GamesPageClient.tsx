@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { getFontSize, getReduceMotion } from '@/lib/games-settings'
-import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown, GripVertical } from 'lucide-react'
+import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown, GripVertical, Plus, Shuffle } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
@@ -136,6 +136,9 @@ function GamesPageContent() {
   const [activeGame, setActiveGame] = useState<GameId>(null)
   /** GAMES_500 #37：離開遊戲返回 Lobby 還原捲動位置 */
   const savedScrollYRef = useRef(0)
+  /** P1-169：FAB 滾動至建立房間區塊 */
+  const createRoomSectionRef = useRef<HTMLDivElement>(null)
+  const [fabOpen, setFabOpen] = useState(false)
   /** GAMES_500 #37：返回 Lobby 時還原捲動位置 */
   useEffect(() => {
     if (!activeGame && typeof window !== 'undefined') {
@@ -143,6 +146,31 @@ function GamesPageContent() {
     }
   }, [activeGame])
   const navVisibility = useNavVisibility()
+  /** P1-169：隨機選遊戲（與 Lobby 隨機按鈕邏輯一致） */
+  const handleRandomGame = useCallback(() => {
+    if (gamesWithCategory.length === 0) return
+    const id = gamesWithCategory[Math.floor(Math.random() * gamesWithCategory.length)].id
+    if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
+      setShowGuestTrialLimitModal(true)
+      return
+    }
+    savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
+    setActiveGame(id)
+    saveLastSession(id)
+    incrementWeeklyPlay(id)
+    setWeeklyPlayCounts(getWeeklyPlayCounts())
+    setShowRestoreBanner(false)
+    try {
+      const raw = localStorage.getItem(RECENT_GAMES_KEY)
+      const arr = raw ? (JSON.parse(raw) as string[]) : []
+      const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
+      localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
+      setRecentGameIds(next)
+    } catch { /* ignore */ }
+    setFabOpen(false)
+  // gamesWithCategory 來自 config 常數，穩定；roomSlug 影響試玩限制邏輯
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: gamesWithCategory is module-level
+  }, [roomSlug])
   const [localPlayers, setLocalPlayers] = useState<string[]>([])
   const [showPlayerModal, setShowPlayerModal] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
@@ -768,7 +796,7 @@ function GamesPageContent() {
                 )}
 
                 {/* AUDIT #6：建立房間 CTA 與加入房間表單視覺層級分明 — 建立房間區塊標題與邊框 */}
-                <div className="flex flex-wrap gap-3 justify-center items-start">
+                <div className="flex flex-wrap gap-3 justify-center items-start" ref={createRoomSectionRef}>
                   <button
                     type="button"
                     onClick={() => setShowSettingsModal(true)}
@@ -1018,6 +1046,50 @@ function GamesPageContent() {
             </GameErrorBoundary>
           ) : null}
         </AnimatePresence>
+
+        {/* P1-169：移動端浮動操作按鈕 — 創建房間、隨機遊戲 */}
+        {!activeGame && (
+          <div className="fixed bottom-20 right-4 z-30 md:hidden flex flex-col items-end gap-2">
+            <AnimatePresence>
+              {fabOpen && (
+                <>
+                  <motion.button
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    type="button"
+                    onClick={() => { createRoomSectionRef.current?.scrollIntoView({ behavior: 'smooth' }); setFabOpen(false) }}
+                    className="min-h-[48px] px-4 py-2 rounded-full bg-primary-500/90 hover:bg-primary-500 text-white text-sm font-medium shadow-lg flex items-center gap-2"
+                    aria-label="捲動至建立房間"
+                  >
+                    <Users className="w-4 h-4" /> 創建房間
+                  </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    type="button"
+                    onClick={handleRandomGame}
+                    disabled={gamesWithCategory.length === 0}
+                    className="min-h-[48px] px-4 py-2 rounded-full bg-white/90 hover:bg-white text-[#0a0a1a] text-sm font-medium shadow-lg flex items-center gap-2 disabled:opacity-50"
+                    aria-label="隨機選一個遊戲"
+                  >
+                    <Shuffle className="w-4 h-4" /> 隨機來一個
+                  </motion.button>
+                </>
+              )}
+            </AnimatePresence>
+            <motion.button
+              type="button"
+              onClick={() => setFabOpen((o) => !o)}
+              className="min-h-[56px] min-w-[56px] rounded-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg flex items-center justify-center games-focus-ring"
+              aria-label={fabOpen ? '關閉快捷選單' : '開啟快捷選單'}
+              aria-expanded={fabOpen}
+            >
+              <Plus className={`w-6 h-6 transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
+            </motion.button>
+          </div>
+        )}
 
         {/* Settings Modal：獨立 AnimatePresence，不與 mode="wait" 混用 */}
         <AnimatePresence>
