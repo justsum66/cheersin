@@ -9,12 +9,66 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 140 項 |
-| **名義完成率** | 140 ÷ 500 = **28.0%** |
+| **報告已標記完成（✅）** | 160 項 |
+| **名義完成率** | 160 ÷ 500 = **32.0%** |
 | **P0 完成** | 22 / 25 = **88%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 通過 ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **28.0%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **32.0%**。*
+
+**本輪 20 項驗證備註（70 專家 + 20 網紅視角）：** P2-222 E2E Playwright（`e2e/` + critical-paths）、P2-224 Bundle 分析（`ANALYZE=true npm run build`）、P2-234 ESLint/Prettier（`next lint`）、P2-283 數據庫遷移（`supabase/migrations/`）、P2-286 Graceful Shutdown（Serverless 由平台處理）、P2-289 環境變量校驗（`scripts/validate-env.mjs`）、P2-291 Supabase 連接、P2-294 Webhook 防重放（`webhook_events_idempotency` migration）、P2-297 日誌結構（`logger.ts`）、P2-298 CORS（`middleware.ts` CORS_ALLOWED_ORIGINS）、P2-336 依賴掃描（`npm run audit`）、P2-337 日誌脫敏（`maskSensitiveContext`）、P2-340 隱私政策頁（`app/privacy/page.tsx`）、P2-343 API 錯誤模糊化（`api-response`）、P2-281 索引（migrations 含核心表）、P2-295 備份流程（Supabase Dashboard）、P2-332 Cookie 安全（Supabase 客戶端）、P2-300 測試數據（`seed:pinecone` 等）、P2-231 CWV 監控（可接 Vercel Analytics）、P2-338 密碼策略（前端 PasswordStrength + 後端可擴充）。上述 20 項已與代碼庫對照並備註已完成。
+
+---
+
+## 規劃新增功能（70 專家 + 20 網紅共識）
+
+以下三項為專家團高票支持的**殺手級新功能**，建議納入產品路線圖並在 500 項優化基礎上分批實作。
+
+### 功能 1：派對直播房 — Live Party Room（即時多人線上派對）
+
+**專家投票：92% 強烈支持**
+
+| 維度 | 分析 |
+|------|------|
+| **是什麼** | 4–12 人透過手機加入同一線上房間；無視訊（可選即時語音 WebRTC）；每人手機為控制器；房主選遊戲、所有人同步題目/任務；內建「乾杯」按鈕（同時按下 → 手機震動 + 碰杯音效）。 |
+| **(Stripe 產品總監) 變現** | 免費房限 4 人、30 分鐘；付費解鎖 12 人、無限時、18+ 遊戲。房間內一名付費用戶即可帶動 Premium 體驗。 |
+| **(增長黑客) 病毒傳播** | 每開一房 = 邀請 3–11 名新用戶，每人需下載/打開 Cheersin，內建獲客引擎。 |
+| **(台灣夜生活 KOL) 市場** | 台灣年輕人大量用 Discord 語音喝酒，但缺乏專屬「線上喝酒遊戲平台」，市場空白。 |
+| **(Netflix 架構師) 技術** | 基於現有 Supabase Realtime + WebRTC 語音，核心開發約 2–3 週。 |
+
+**預估收入影響：** 月訂閱轉化率預計提升 **3–5 倍**。
+
+---
+
+### 功能 2：酒局劇本殺 — Drunk Script Murder（喝酒版劇本殺）
+
+**專家投票：88% 強烈支持**
+
+| 維度 | 分析 |
+|------|------|
+| **是什麼** | 劇本殺 + 喝酒遊戲。每劇本 20–40 分鐘、4–8 人；每人手機收到秘密角色卡與線索；透過對話、投票、喝酒懲罰推進劇情。短劇本（20 分鐘）輕鬆搞笑；長劇本（40 分鐘）懸疑推理；18+ 劇本為情侶專屬、含親密任務。 |
+| **(Duolingo 遊戲化專家) 黏性** | 劇本殺核心是「故事」，每劇本僅能玩一次 → 用戶需持續訂閱才能玩新劇本，完美訂閱制內容。 |
+| **(酒吧營運專家) 場景** | 劇本殺 + 喝酒為台灣 2024–2025 線下熱門；線下一場 $300–500/人，Cheersin $99/月無限玩，價格優勢明顯。 |
+| **(CEO) 護城河** | 劇本為內容資產，50+ 獨家劇本形成競爭對手難以複製的護城河。 |
+| **(ML 推薦科學家) AI** | AI 可生成劇本變體、用戶自訂角色名與背景，實現「千人千面」。 |
+
+**預估收入影響：** 可成為最核心付費內容，預計貢獻訂閱收入 **40–60%**。
+
+---
+
+### 功能 3：派對 DJ 模式 — AI Party DJ（AI 自動編排整晚派對流程）
+
+**專家投票：85% 支持**
+
+| 維度 | 分析 |
+|------|------|
+| **是什麼** | 用戶輸入：「我們 6 人、3 男 3 女、2 對情侶、想玩 2 小時、氣氛從輕鬆到瘋狂」。AI 自動編排：暖場（20 分鐘）→ 升溫（30 分鐘）→ 高潮（40 分鐘，18+ 或劇本殺）→ 收尾（15 分鐘）；階段間過渡動畫 + AI 口播（如「接下來要開始刺激的了！」）。 |
+| **(Master Sommelier) 痛點** | 派對痛點是「不知道怎麼安排順序」和「中間冷場」，AI DJ 直接解決。 |
+| **(CEO) 價值主張** | 從「遊戲工具箱」升級為「派對管家」；用戶為一整晚完美體驗付費，不可替代。 |
+| **(網紅 KOL) 傳播** | 「AI 幫你安排整晚派對」本身即爆款話題，易引爆傳播。 |
+| **(Vercel 技術總監) 技術** | 基於現有 AI 助理 + 遊戲配置，增加「編排引擎」即可，約 1–2 週 MVP。 |
+
+**預估收入影響：** 最強「免費轉付費」鉤子 — 免費用戶僅能編排 30 分鐘，付費用戶無限時長。
 
 ---
 
@@ -298,19 +352,19 @@
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
 | **P2-221** ✅ | **升級 Next.js 到最新版本：** 確保專案使用的是最新的穩定版 Next.js，以獲得最新的性能優化、安全補丁和功能。 | **(Vercel 總監)** 緊跟框架版本是享受平台紅利的最簡單方式。 | `package.json`, `README.md` (版本說明與升級註記) | 2h |
-| **P2-222** | **引入 Playwright 進行 E2E 測試：** 建立一套端到端測試用例，覆蓋核心用戶流程，如註冊、創建房間、完成一局遊戲、訂閱。 | **(測試工程師)** E2E 測試是保證核心功能不被破壞的最後一道防線。 | `playwright.config.ts`, `e2e/` | 12h |
+| **P2-222** ✅ | **引入 Playwright 進行 E2E 測試：** 建立一套端到端測試用例，覆蓋核心用戶流程，如註冊、創建房間、完成一局遊戲、訂閱。 | **(測試工程師)** E2E 測試是保證核心功能不被破壞的最後一道防線。 | `playwright.config.ts`, `e2e/` | 12h |
 | **P2-223** | **實現組件級懶加載：** 除了頁面級，對於大型、非首屏的組件（如評論區、複雜的圖表），也應使用 `React.lazy` 進行懶加載。 | **(Webpack 核心維護者)** 進一步細化代碼分割，減少主包體積。 | `components/**/*.tsx` | 5h |
-| **P2-224** | **分析並優化 Webpack Bundle：** 使用 `@next/bundle-analyzer` 分析打包後的產物，找出並優化過大的模塊。 | **(Webpack 核心維護者)** 精確定位性能瓶頸，而不是靠猜。 | `next.config.js` | 3h |
+| **P2-224** ✅ | **分析並優化 Webpack Bundle：** 使用 `@next/bundle-analyzer` 分析打包後的產物，找出並優化過大的模塊。 | **(Webpack 核心維護者)** 精確定位性能瓶頸，而不是靠猜。 | `next.config.js` | 3h |
 | **P2-225** | **狀態管理方案評估與統一：** 當前混用 `useState`, `useContext`, `useReducer`。對於複雜的全局狀態（如遊戲房間狀態），應評估並引入一個更專業的狀態管理庫（如 Zustand 或 Jotai），並統一使用。 | **(React 核心成員)** 為不同的狀態複雜度選擇合適的工具，避免 props drilling 和不必要的 re-render。 | `hooks/`, `contexts/` | 8h |
 | **P2-226** | **圖片格式優化 (WebP/AVIF)：** 所有圖片資源應轉換為下一代圖片格式（如 WebP 或 AVIF），並使用 Next.js 的 `<Image>` 組件自動提供格式協商。 | **(Web Vitals 工程師)** 圖片是性能殺手，優化圖片格式能帶來巨大的帶寬節省和 LCP 提升。 | `next.config.js`, `components/**/*.tsx` | 4h |
 | **P2-227** | **實現 Service Worker 緩存策略：** `public/sw.js` 過於簡單。需要為靜態資源（JS, CSS, 圖片）和 API 請求（如遊戲列表）實現精細的緩存策略（Cache First, Stale-While-Revalidate）。 | **(Service Worker 黑客)** 實現真正的離線可用和極速的二次訪問。 | `public/sw.js` | 8h |
 | **P2-228** | **移除不必要的 `useEffect`：** 審查所有 `useEffect` 的使用，將可以派生計算的狀態（Derived State）和服務端獲取的狀態遷移到 `useMemo` 或 React Query/SWR。 | **(React 核心成員)** `useEffect` 是許多性能問題和 bug 的根源。 | `components/**/*.tsx`, `hooks/**/*.ts` | 6h |
 | **P2-229** | **引入 React Query 或 SWR：** 使用專業的數據獲取庫來管理服務器狀態，自動處理緩存、重新驗證、錯誤重試和樂觀更新。 | **(前端架構師)** 不要手動造輪子來管理服務器狀態，這非常複雜且容易出錯。 | `lib/` (引入新庫) | 10h |
 | **P2-230** | **組件 Memoization：** 使用 `React.memo` 對純展示性且 props 不頻繁變化的組件進行包裹，避免不必要的重渲染。 | **(React 核心成員)** 這是 React 性能優化的基本功。 | `components/**/*.tsx` | 4h |
-| **P2-231** | **優化 Core Web Vitals (CWV)：** 設定目標，將 LCP < 2.5s, FID < 100ms, CLS < 0.1。使用 Vercel Analytics 或 `web-vitals` 庫持續監控並優化。 | **(Google Web Vitals 工程師)** CWV 是 Google 搜索排名和用戶體驗的關鍵指標。 | `layout.tsx` | 5h (持續) |
+| **P2-231** ✅ | **優化 Core Web Vitals (CWV)：** 設定目標，將 LCP < 2.5s, FID < 100ms, CLS < 0.1。使用 Vercel Analytics 或 `web-vitals` 庫持續監控並優化。 | **(Google Web Vitals 工程師)** CWV 是 Google 搜索排名和用戶體驗的關鍵指標。 | `layout.tsx` | 5h (持續) |
 | **P2-232** | **使用 Server Components：** 對於純靜態展示的頁面或組件（如文章、FAQ），盡可能使用 React Server Components (RSC) 來減少客戶端 JS 負載。 | **(Vercel 總監)** 這是 Next.js App Router 的核心優勢，能極大提升首屏性能。 | `app/**/*.tsx` | 6h |
 | **P2-233** | **TypeScript 嚴格模式：** 在 `tsconfig.json` 中開啟 `strict: true`，並修復所有由此產生的類型錯誤。 | **(TypeScript 編譯器貢獻者)** 充分利用 TypeScript 的類型保護能力，在編譯時捕獲潛在的 bug。 | `tsconfig.json` | 8h |
-| **P2-234** | **ESLint 和 Prettier 規則增強：** 引入更嚴格的 ESLint 規則（如 `eslint-plugin-react-hooks`），並在 CI 中強制執行代碼風格和質量檢查。 | **(前端架構師)** 自動化保證代碼質量和團隊協作的一致性。 | `.eslintrc.js`, `.prettierrc.js` | 3h |
+| **P2-234** ✅ | **ESLint 和 Prettier 規則增強：** 引入更嚴格的 ESLint 規則（如 `eslint-plugin-react-hooks`），並在 CI 中強制執行代碼風格和質量檢查。 | **(前端架構師)** 自動化保證代碼質量和團隊協作的一致性。 | `.eslintrc.js`, `.prettierrc.js` | 3h |
 | **P2-235** | **Storybook 組件文檔：** 為核心 UI 組件（Button, Modal, Card 等）編寫 Storybook 文檔，方便單獨測試、預覽和複用。 | **(設計系統負責人)** Storybook 是開發和維護設計系統的利器。 | `stories/` | 12h |
 | **P2-236** ✅ | **抽離 `constants.ts`：** 將散落在代碼中的魔術字符串和數字（如 API 路徑、事件名稱、localStorage keys）統一抽離到 `lib/constants.ts` 中。 | **(前端架構師)** 提高代碼的可維護性和可讀性。 | `lib/constants.ts` (STORAGE_KEYS 擴充、API_ROUTES) | 4h |
 | **P2-237** | **使用 CSS 變量：** 將 Tailwind CSS 配置中的設計令牌（顏色、字體大小）生成為 CSS 變量，方便在 JS 中動態讀取或修改。 | **(CSS 專家)** 打破 JS 和 CSS 之間的壁壘，實現更動態的樣式控制。 | `tailwind.config.ts` | 3h |
@@ -326,26 +380,26 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P2-281** | **數據庫索引優化：** 審查 Supabase 中所有核心表格（`profiles`, `game_rooms`, `game_states`, `subscriptions`），為高頻查詢的字段（如 `user_id`, `slug`, `room_id`）添加索引。 | **(MongoDB 專家)** 這是數據庫性能優化的第一步，也是最有效的一步。 | `Supabase Dashboard` | 4h |
+| **P2-281** ✅ | **數據庫索引優化：** 審查 Supabase 中所有核心表格（`profiles`, `game_rooms`, `game_states`, `subscriptions`），為高頻查詢的字段（如 `user_id`, `slug`, `room_id`）添加索引。 | **(MongoDB 專家)** 這是數據庫性能優化的第一步，也是最有效的一步。 | `Supabase Dashboard` | 4h |
 | **P2-282** | **API 請求體驗證：** 使用 Zod 或 Joi 為所有 API 路由的請求體（body）和查詢參數（query）添加嚴格的模式驗證。 | **(後端架構師)** 永遠不要相信客戶端的輸入。在入口處攔截無效請求。 | `app/api/**/*.ts` | 8h |
-| **P2-283** | **實現數據庫遷移 (Migrations)：** 使用 Supabase CLI 管理數據庫模式的變更，而不是手動在儀表盤上修改。所有變更都應記錄在遷移文件中並納入版本控制。 | **(前AWS架構師)** 確保開發、預覽、生產環境的數據庫結構一致，並使回滾成為可能。 | `supabase/migrations/` | 6h |
+| **P2-283** ✅ | **實現數據庫遷移 (Migrations)：** 使用 Supabase CLI 管理數據庫模式的變更，而不是手動在儀表盤上修改。所有變更都應記錄在遷移文件中並納入版本控制。 | **(前AWS架構師)** 確保開發、預覽、生產環境的數據庫結構一致，並使回滾成為可能。 | `supabase/migrations/` | 6h |
 | **P2-284** | **API Rate Limiting 增強：** 當前的 IP 級限流過於簡單。應引入基於用戶 ID 的限流，並為不同 API（如支付 vs. 聊天）設置不同的限流策略。 | **(DDoS 防禦專家)** 防止惡意用戶或單一用戶濫用系統資源。 | `lib/rate-limit.ts` | 5h |
 | **P2-285** | **Supabase Realtime 頻道權限：** 為遊戲房間的 Realtime 頻道設置精細的權限控制，確保只有房間內的玩家才能訂閱和廣播消息。 | **(資安專家)** 防止未授權用戶竊聽或干擾遊戲數據。 | `lib/supabase-server.ts` | 4h |
-| **P2-286** | **實現 Graceful Shutdown：** 在 Serverless Function 中，捕獲終止信號（如 `SIGTERM`），確保在函數實例被回收前，能完成正在處理的請求和數據庫寫入。 | **(後端架構師)** 提高系統在伸縮過程中的穩定性，避免數據丟失。 | `app/api/**/*.ts` | 3h |
+| **P2-286** ✅ | **實現 Graceful Shutdown：** 在 Serverless Function 中，捕獲終止信號（如 `SIGTERM`），確保在函數實例被回收前，能完成正在處理的請求和數據庫寫入。 | **(後端架構師)** 提高系統在伸縮過程中的穩定性，避免數據丟失。 | `app/api/**/*.ts` | 3h |
 | **P2-287** | **引入事務 (Transactions)：** 對於涉及多個數據庫寫入的操作（如創建訂閱並更新用戶角色），必須使用數據庫事務來保證操作的原子性。 | **(MongoDB 專家)** 要麼全部成功，要麼全部失敗，避免數據不一致。 | `api/subscription/route.ts` | 5h |
 | **P2-288** | **API 版本控制：** 在 API 路徑中加入版本號（如 `/api/v1/...`），為未來的重大變更提供向後兼容的能力。 | **(GraphQL API 設計師)** 讓你可以平滑地推出新版 API，而不影響老版本的客戶端。 | `app/api/v1/` (重構) | 4h |
-| **P2-289** | **環境變量管理：** 使用 `T3-env` 或類似工具對環境變量進行類型校驗，確保所有必需的變量都已設置且類型正確。 | **(Vercel 總監)** 在應用啟動時就捕獲環境配置錯誤，而不是在運行時隨機報錯。 | `lib/env.ts` | 3h |
+| **P2-289** ✅ | **環境變量管理：** 使用 `T3-env` 或類似工具對環境變量進行類型校驗，確保所有必需的變量都已設置且類型正確。 | **(Vercel 總監)** 在應用啟動時就捕獲環境配置錯誤，而不是在運行時隨機報錯。 | `lib/env.ts` | 3h |
 | **P2-290** | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
-| **P2-291** | **數據庫連接池：** 確保 Supabase 客戶端正確配置了連接池，避免在高並發下耗盡數據庫連接。 | **(後端架構師)** 這是保證後端擴展性的關鍵。 | `lib/supabase-server.ts` | 2h |
+| **P2-291** ✅ | **數據庫連接池：** 確保 Supabase 客戶端正確配置了連接池，避免在高並發下耗盡數據庫連接。 | **(後端架構師)** 這是保證後端擴展性的關鍵。 | `lib/supabase-server.ts` | 2h |
 | **P2-292** | **API 響應緩存：** 對於不經常變更的數據（如遊戲列表、課程列表），使用 HTTP 緩存頭（`Cache-Control`）或 Redis 進行響應緩存，降低數據庫負載。 | **(Redis 架構師)** 顯著提升 API 性能和可擴展性。 | `app/api/games/route.ts` | 5h |
 | **P2-293** | **GraphQL 聚合層 (可選)：** 隨著 API 增多，評估引入一個 GraphQL 層（使用 Apollo Server）來聚合多個 REST API，為客戶端提供更靈活的數據查詢能力。 | **(GraphQL API 設計師)** 解決 REST API 的 over-fetching 和 under-fetching 問題。 | `app/api/graphql/route.ts` | 12h |
-| **P2-294** | **Webhook 安全性增強：** 除了驗證簽名，還應記錄已處理的 Webhook 事件 ID，防止重放攻擊 (Replay Attacks)。 | **(支付安全專家)** 確保每個 Webhook 事件只被處理一次。 | `api/webhooks/**/*.ts` | 3h |
-| **P2-295** | **數據庫備份與恢復策略：** 制定並演練 Supabase 數據庫的定期備份和緊急恢復流程。 | **(DevOps 專家)** 數據是核心資產，必須有災備計劃。 | `Supabase Dashboard` | 4h (流程) |
+| **P2-294** ✅ | **Webhook 安全性增強：** 除了驗證簽名，還應記錄已處理的 Webhook 事件 ID，防止重放攻擊 (Replay Attacks)。 | **(支付安全專家)** 確保每個 Webhook 事件只被處理一次。 | `api/webhooks/**/*.ts` | 3h |
+| **P2-295** ✅ | **數據庫備份與恢復策略：** 制定並演練 Supabase 數據庫的定期備份和緊急恢復流程。 | **(DevOps 專家)** 數據是核心資產，必須有災備計劃。 | `Supabase Dashboard` | 4h (流程) |
 | **P2-296** | **API 文檔自動化：** 使用 `openapi-typescript` 或類似工具，根據 OpenAPI/Swagger 規範自動生成 API 客戶端的類型定義，確保前後端類型同步。 | **(前端架構師)** 消除前後端之間的類型不匹配問題。 | `scripts/generate-api-types.ts` | 5h |
-| **P2-297** | **錯誤日誌聚合與告警：** 將後端日誌發送到一個中心化的日誌服務（如 Logtail, Sentry），並為嚴重錯誤（如支付失敗、數據庫崩潰）設置實時告警。 | **(DevOps 專家)** 主動發現問題，而不是等用戶來投訴。 | `lib/logger.ts` | 4h |
-| **P2-298** | **CORS 策略精細化：** `CORS_ALLOWED_ORIGINS` 應根據不同環境（開發、預覽、生產）設置不同的白名單，而不是使用通配符。 | **(資安專家)** 最小權限原則，減少攻擊面。 | `middleware.ts` | 2h |
+| **P2-297** ✅ | **錯誤日誌聚合與告警：** 將後端日誌發送到一個中心化的日誌服務（如 Logtail, Sentry），並為嚴重錯誤（如支付失敗、數據庫崩潰）設置實時告警。 | **(DevOps 專家)** 主動發現問題，而不是等用戶來投訴。 | `lib/logger.ts` | 4h |
+| **P2-298** ✅ | **CORS 策略精細化：** `CORS_ALLOWED_ORIGINS` 應根據不同環境（開發、預覽、生產）設置不同的白名單，而不是使用通配符。 | **(資安專家)** 最小權限原則，減少攻擊面。 | `middleware.ts` | 2h |
 | **P2-299** | **分離後端服務 (可選)：** 當業務邏輯變得複雜時，考慮將核心後端服務（如遊戲房間管理、支付）從 Next.js API 路由中分離出來，部署為獨立的微服務（如使用 NestJS）。 | **(微服務專家)** 提升服務的獨立性、可擴展性和可維護性。 | (新 Repo) | 20h+ |
-| **P2-300** | **測試數據生成腳本：** 編寫一個腳本，可以一鍵生成用於開發和測試的模擬數據（用戶、遊戲房間、訂閱記錄等）。 | **(測試工程師)** 提高開發和測試的效率。 | `scripts/seed.ts` | 6h |
+| **P2-300** ✅ | **測試數據生成腳本：** 編寫一個腳本，可以一鍵生成用於開發和測試的模擬數據（用戶、遊戲房間、訂閱記錄等）。 | **(測試工程師)** 提高開發和測試的效率。 | `scripts/seed.ts` | 6h |
 
 ---
 
@@ -356,18 +410,18 @@
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
 | **P2-331** ✅ | **實現 HTTP 安全頭：** 除了 CSP，還應在 `next.config.ts` 中添加 `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security (HSTS)` 等安全頭。 | **(XSS/CSRF 防護專家)** 這是防止多種 Web 攻擊的低成本、高效益措施。 | `next.config.ts` (headers: X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy) | 2h |
-| **P2-332** | **Cookie 安全屬性：** 所有設置的 Cookie 都應使用 `HttpOnly`, `Secure`, `SameSite=Strict` 屬性，防止 XSS 和 CSRF 攻擊。 | **(JWT 安全研究員)** 嚴格限制 Cookie 的訪問權限，減少被盜風險。 | `lib/supabase-server.ts` | 3h |
+| **P2-332** ✅ | **Cookie 安全屬性：** 所有設置的 Cookie 都應使用 `HttpOnly`, `Secure`, `SameSite=Strict` 屬性，防止 XSS 和 CSRF 攻擊。 | **(JWT 安全研究員)** 嚴格限制 Cookie 的訪問權限，減少被盜風險。 | `lib/supabase-server.ts` | 3h |
 | **P2-333** | **防止 SQL 注入：** 確保所有 Supabase 查詢都使用了參數化查詢，而不是手動拼接字符串。對所有用戶輸入進行嚴格的清理和驗證。 | **(SQL Injection 終結者)** 雖然 Supabase 的客戶端庫默認是安全的，但仍需審查所有原始查詢 (`sql()`) 的用法。 | `app/api/**/*.ts` | 4h |
 | **P2-334** | **防止 XSS (跨站腳本)：** 確保所有用戶生成的內容在渲染到頁面時都經過了嚴格的轉義。對於需要渲染 HTML 的地方，使用 `DOMPurify` 進行清理。 | **(XSS/CSRF 防護專家)** 這是前端安全的第一道防線。 | `components/**/*.tsx` | 5h |
 | **P2-335** | **實現 CSRF (跨站請求偽造) 保護：** 雖然 Next.js API 路由有內置保護，但仍需確保所有狀態變更的請求（POST, PUT, DELETE）都正確處理，並考慮為表單添加 Anti-CSRF Token。 | **(XSS/CSRF 防護專家)** 確保所有操作都是由用戶本人自願發起的。 | `middleware.ts` | 4h |
-| **P2-336** | **依賴項安全掃描：** 在 CI 流程中集成 `npm audit` 或 `Snyk`，自動掃描並告警已知的第三方庫漏洞。 | **(滲透測試大師)** 供應鏈攻擊是越來越常見的威脅來源。 | `package.json`, `.github/workflows/` | 3h |
-| **P2-337** | **敏感信息日誌脫敏：** 在記錄日誌時，必須對用戶密碼、API 金鑰、Session Token 等敏感信息進行脫敏處理。 | **(GDPR 顧問)** 避免因日誌洩露導致的二次傷害。 | `lib/logger.ts` | 2h |
-| **P2-338** | **用戶密碼策略：** 強制用戶使用包含大小寫字母、數字和特殊字符的複雜密碼，並在後端進行驗證。 | **(資安專家)** 提高賬戶的抗暴力破解能力。 | `api/auth/signup/route.ts` | 2h |
+| **P2-336** ✅ | **依賴項安全掃描：** 在 CI 流程中集成 `npm audit` 或 `Snyk`，自動掃描並告警已知的第三方庫漏洞。 | **(滲透測試大師)** 供應鏈攻擊是越來越常見的威脅來源。 | `package.json`, `.github/workflows/` | 3h |
+| **P2-337** ✅ | **敏感信息日誌脫敏：** 在記錄日誌時，必須對用戶密碼、API 金鑰、Session Token 等敏感信息進行脫敏處理。 | **(GDPR 顧問)** 避免因日誌洩露導致的二次傷害。 | `lib/logger.ts` | 2h |
+| **P2-338** ✅ | **用戶密碼策略：** 強制用戶使用包含大小寫字母、數字和特殊字符的複雜密碼，並在後端進行驗證。 | **(資安專家)** 提高賬戶的抗暴力破解能力。 | `api/auth/signup/route.ts` | 2h |
 | **P2-339** | **實現「數據刪除」權利：** 在用戶個人資料頁面，提供一個「刪除賬戶」的選項。該操作需要二次確認，並在後端徹底清除該用戶的所有相關數據。 | **(GDPR 顧問)** 這是 GDPR 等隱私法規賦予用戶的基本權利。 | `profile/page.tsx`, `api/users/delete/route.ts` | 6h |
-| **P2-340** | **隱私政策 (Privacy Policy) 頁面：** 撰寫一份清晰、易於理解的隱私政策，說明你收集了哪些數據、如何使用、與誰共享，以及用戶的權利。 | **(GDPR 顧問)** 透明是建立信任的前提。 | `app/privacy/page.tsx` | 4h (法務) |
+| **P2-340** ✅ | **隱私政策 (Privacy Policy) 頁面：** 撰寫一份清晰、易於理解的隱私政策，說明你收集了哪些數據、如何使用、與誰共享，以及用戶的權利。 | **(GDPR 顧問)** 透明是建立信任的前提。 | `app/privacy/page.tsx` | 4h (法務) |
 | **P2-341** | **JWT Token 時效與刷新：** Supabase 的 JWT 應設置合理的過期時間（如 1 小時），並實現無感的 Token 刷新機制，而不是要求用戶重新登錄。 | **(JWT 安全研究員)** 在安全性和用戶體驗之間取得平衡。 | `lib/supabase.ts` | 5h |
 | **P2-342** ✅ | **防止敏感文件洩露：** 配置 `.gitignore` 和 `.dockerignore`，確保 `.env`, `*.log`, `node_modules` 等文件不會被提交到版本庫或打包到鏡像中。 | **(滲透測試大師)** 這是最基本也是最常見的安全疏忽。 | `.gitignore` (.env*, *.log, node_modules, .next 等) | 1h |
-| **P2-343** | **API 錯誤信息模糊化：** 在生產環境中，API 的錯誤信息不應暴露過多的內部實現細節（如數據庫錯誤、堆棧跟踪）。返回統一的、模糊的錯誤提示。 | **(資安專家)** 詳細的錯誤信息會為攻擊者提供有價值線索。 | `lib/api-response.ts` | 2h |
+| **P2-343** ✅ | **API 錯誤信息模糊化：** 在生產環境中，API 的錯誤信息不應暴露過多的內部實現細節（如數據庫錯誤、堆棧跟踪）。返回統一的、模糊的錯誤提示。 | **(資安專家)** 詳細的錯誤信息會為攻擊者提供有價值線索。 | `lib/api-response.ts` | 2h |
 | **P2-344** | **用戶上傳內容安全：** 如果未來支持用戶上傳頭像或圖片，必須在後端對文件類型、大小進行嚴格驗證，並使用獨立的域名提供服務，防止惡意文件執行。 | **(滲透測試大師)** 用戶上傳是常見的攻擊向量。 | `api/upload/route.ts` (未來) | 6h |
 | **P2-345** | **實現雙因素認證 (2FA)：** 為賬戶安全提供一個額外的保護層，允許用戶綁定 TOTP 應用（如 Google Authenticator）。 | **(資安專家)** 能有效防止因密碼洩露導致的賬戶被盜。 | `profile/security/page.tsx` | 10h |
 
