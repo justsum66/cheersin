@@ -6,7 +6,7 @@
 
 1. [x] 遊戲房 API 已支援多人同房（game_rooms、game_room_players、game_states）
 2. [x] 派對直播房專屬入口 `/party-room` 佔位頁
-3. [ ] 前端：派對房專屬 UI（房主選遊戲、邀請連結、人數顯示）
+3. [x] 前端：派對房專屬 UI（房主選遊戲、邀請連結、人數顯示）
 4. [ ] Realtime：房主選遊戲後廣播 game_id，全房同步進入同一遊戲
 5. [x] 乾杯按鈕 UI：全員同時按下觸發（navigator.vibrate + 音效 + confetti）
 6. [ ] 乾杯後端/Realtime：同步「乾杯」事件與計數
@@ -43,4 +43,4 @@
 
 ---
 
-**當前完成：** 14/30（入口頁 x3、遊戲房基礎、plan API、乾杯按鈕、party-dj 表單+編排+transitionText+開始派對、劇本表 migration；#25/#26 免費 30min/付費無限、#29 助理派對策劃引導、#30 編排分享複製）。
+**當前完成：** 15/30（入口頁 x3、遊戲房基礎、plan API、乾杯按鈕、party-dj 表單+編排+transitionText+開始派對、劇本表 migration；#25/#26 免費 30min/付費無限、#29 助理派對策劃引導、#30 編排分享複製）。

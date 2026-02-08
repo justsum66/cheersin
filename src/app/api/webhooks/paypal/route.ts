@@ -441,7 +441,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const event: PayPalWebhookEvent = JSON.parse(body)
+    let event: PayPalWebhookEvent
+    try {
+      event = JSON.parse(body) as PayPalWebhookEvent
+    } catch {
+      logApiError('webhooks/paypal', new Error('Invalid JSON body'), { action: 'parse-body', requestId })
+      return errorResponse(400, 'INVALID_JSON', { message: 'Invalid JSON body' })
+    }
+    if (!event?.event_type || !event?.resource) {
+      logApiError('webhooks/paypal', new Error('Missing event_type or resource'), { action: 'validate-payload', requestId })
+      return errorResponse(400, 'INVALID_PAYLOAD', { message: 'Missing event_type or resource' })
+    }
     const eventId = event.id ?? null
 
     const supabase = createServerClientOptional()

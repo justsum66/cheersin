@@ -104,7 +104,7 @@ export default function Navigation() {
   return (
     <>
       <motion.nav
-        className="fixed top-0 left-0 right-0 backdrop-blur-2xl print:hidden"
+        className="fixed top-0 left-0 right-0 backdrop-blur-2xl print:hidden safe-area-pt"
         style={{
           zIndex: Z_NAV_TOP,
           paddingTop: navCompact ? 6 : 10,

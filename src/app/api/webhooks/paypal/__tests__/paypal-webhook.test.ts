@@ -93,17 +93,17 @@ describe('PayPal webhook POST', () => {
     expect(json.duplicate).toBe(true)
   })
 
-  it('無效 JSON body 回 500', async () => {
+  it('無效 JSON body 回 400', async () => {
     vi.mocked(createServerClientOptional).mockReturnValue(null)
     const req = new NextRequest('http://localhost/api/webhooks/paypal', {
       method: 'POST',
       body: 'not json {{{',
     })
     const res = await POST(req)
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(400)
     const json = await res.json()
     expect(json.success).toBe(false)
-    expect((json.error && typeof json.error === 'object' && 'message' in json.error ? (json.error as { message: string }).message : (json as { error?: string }).error) ?? '').toContain('failed')
+    expect((json.error as { code?: string })?.code).toBe('INVALID_JSON')
   })
 })
 

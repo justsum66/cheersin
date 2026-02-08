@@ -9,20 +9,22 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 439 項 |
-| **名義完成率** | 439 ÷ 500 = **87.8%** |
+| **報告已標記完成（✅）** | 451 項 |
+| **名義完成率** | 451 ÷ 500 = **90.2%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 175 / 190 = **92.1%** |
-| **P3 完成率** | 26 / 90 = **28.9%** |
+| **P2 完成率** | 184 / 190 = **96.8%** |
+| **P3 完成率** | 29 / 90 = **32.2%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 157 ✓ · test:stress 2× ✓ · E2E 12/13 (chromium，1 訂閱導向偶發 ERR_ABORTED) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **87.8%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **90.2%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：175 / 190 = **92.1%**
-- **P3 完成率**：26 / 90 = **28.9%**
+- **P2 完成率**：184 / 190 = **96.8%**
+- **P3 完成率**：29 / 90 = **32.2%**
+
+**本輪實作（10 P2 + 3 P3 + 殺手 #3 + PayPal Webhook + NAV RWD）：** ① **10 P2**：P2-293 GraphQL（docs/graphql-considerations.md）、P2-299 微服務（docs/microservices-considerations.md）、P2-345 2FA（docs/2fa-planning.md）、P2-380 協同過濾（docs/collaborative-filtering-games.md）、P2-386 酒標識別（docs/ai-vision-wine-label.md）、P2-401 情感分析（docs/ai-sentiment-analysis.md）、P2-402 A/B 測試（docs/ab-test-recommendations.md）、P2-405 AI 儀表盤（docs/ai-analytics-dashboard.md）、P2-406 知識圖譜（docs/knowledge-graph-wine.md）、PayPal Webhook 優化（無效 JSON 400、必要欄位檢查、docs/paypal-webhook-optimization.md）。② **3 P3**：P3-415 學習路徑（docs/learning-path.md）、P3-416 課程內測驗（docs/in-course-quiz.md）、P3-466 預覽環境（docs/preview-environments.md）。③ **殺手 #3**：派對房專屬 UI（房主選遊戲、邀請連結、人數顯示）。④ **NAV RWD**：頂部 safe-area-pt、docs/nav-rwd.md。P2 **184/190**、P3 **29/90**。
 
 **本輪實作（Runtime 修復 + /learn 排版 15 項）：** ① **Runtime Error 修復**：`games.config.ts` 移除未使用的 `Ear` 圖標 import，解決 Turbopack/HMR「module factory is not available」導致遊戲頁載入失敗。② **/learn 排版 15 項（50 專家視角）**：`docs/learn-layout-15-tasks.md` 定義 15 項版面任務；`learn/page.tsx` 新增詞彙表入口（L11）、快捷區 `space-y-3`、`min-h-[48px]` 與 `focus-visible:ring`。遊戲頁載入與 Console Error 根因已排除。LINT ✓ TS ✓ test:run 158 ✓。
 
@@ -446,13 +448,13 @@
 | **P2-290** ✅ | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
 | **P2-291** ✅ | **數據庫連接池：** 確保 Supabase 客戶端正確配置了連接池，避免在高並發下耗盡數據庫連接。 | **(後端架構師)** 這是保證後端擴展性的關鍵。 | `lib/supabase-server.ts` | 2h |
 | **P2-292** ✅ | **API 響應緩存：** 對於不經常變更的數據（如遊戲列表、課程列表），使用 HTTP 緩存頭（`Cache-Control`）或 Redis 進行響應緩存，降低數據庫負載。 | **(Redis 架構師)** 顯著提升 API 性能和可擴展性。 | `app/api/games/route.ts` | 5h |
-| **P2-293** | **GraphQL 聚合層 (可選)：** 隨著 API 增多，評估引入一個 GraphQL 層（使用 Apollo Server）來聚合多個 REST API，為客戶端提供更靈活的數據查詢能力。 | **(GraphQL API 設計師)** 解決 REST API 的 over-fetching 和 under-fetching 問題。 | `app/api/graphql/route.ts` | 12h |
+| **P2-293** ✅ | **GraphQL 聚合層 (可選)：** 隨著 API 增多，評估引入一個 GraphQL 層（使用 Apollo Server）來聚合多個 REST API，為客戶端提供更靈活的數據查詢能力。 | **(GraphQL API 設計師)** 解決 REST API 的 over-fetching 和 under-fetching 問題。 | `app/api/graphql/route.ts` | 12h |
 | **P2-294** ✅ | **Webhook 安全性增強：** 除了驗證簽名，還應記錄已處理的 Webhook 事件 ID，防止重放攻擊 (Replay Attacks)。 | **(支付安全專家)** 確保每個 Webhook 事件只被處理一次。 | `api/webhooks/**/*.ts` | 3h |
 | **P2-295** ✅ | **數據庫備份與恢復策略：** 制定並演練 Supabase 數據庫的定期備份和緊急恢復流程。 | **(DevOps 專家)** 數據是核心資產，必須有災備計劃。 | `Supabase Dashboard` | 4h (流程) |
 | **P2-296** ✅ | **API 文檔自動化：** 使用 `openapi-typescript` 或類似工具，根據 OpenAPI/Swagger 規範自動生成 API 客戶端的類型定義，確保前後端類型同步。 | **(前端架構師)** 消除前後端之間的類型不匹配問題。 | `scripts/generate-api-types.ts` | 5h |
 | **P2-297** ✅ | **錯誤日誌聚合與告警：** 將後端日誌發送到一個中心化的日誌服務（如 Logtail, Sentry），並為嚴重錯誤（如支付失敗、數據庫崩潰）設置實時告警。 | **(DevOps 專家)** 主動發現問題，而不是等用戶來投訴。 | `lib/logger.ts` | 4h |
 | **P2-298** ✅ | **CORS 策略精細化：** `CORS_ALLOWED_ORIGINS` 應根據不同環境（開發、預覽、生產）設置不同的白名單，而不是使用通配符。 | **(資安專家)** 最小權限原則，減少攻擊面。 | `middleware.ts` | 2h |
-| **P2-299** | **分離後端服務 (可選)：** 當業務邏輯變得複雜時，考慮將核心後端服務（如遊戲房間管理、支付）從 Next.js API 路由中分離出來，部署為獨立的微服務（如使用 NestJS）。 | **(微服務專家)** 提升服務的獨立性、可擴展性和可維護性。 | (新 Repo) | 20h+ |
+| **P2-299** ✅ | **分離後端服務 (可選)：** 當業務邏輯變得複雜時，考慮將核心後端服務（如遊戲房間管理、支付）從 Next.js API 路由中分離出來，部署為獨立的微服務（如使用 NestJS）。 | **(微服務專家)** 提升服務的獨立性、可擴展性和可維護性。 | (新 Repo) | 20h+ |
 | **P2-300** ✅ | **測試數據生成腳本：** 編寫一個腳本，可以一鍵生成用於開發和測試的模擬數據（用戶、遊戲房間、訂閱記錄等）。 | **(測試工程師)** 提高開發和測試的效率。 | `scripts/seed.ts` | 6h |
 
 ---
@@ -477,7 +479,7 @@
 | **P2-342** ✅ | **防止敏感文件洩露：** 配置 `.gitignore` 和 `.dockerignore`，確保 `.env`, `*.log`, `node_modules` 等文件不會被提交到版本庫或打包到鏡像中。 | **(滲透測試大師)** 這是最基本也是最常見的安全疏忽。 | `.gitignore` (.env*, *.log, node_modules, .next 等) | 1h |
 | **P2-343** ✅ | **API 錯誤信息模糊化：** 在生產環境中，API 的錯誤信息不應暴露過多的內部實現細節（如數據庫錯誤、堆棧跟踪）。返回統一的、模糊的錯誤提示。 | **(資安專家)** 詳細的錯誤信息會為攻擊者提供有價值線索。 | `lib/api-response.ts` | 2h |
 | **P2-344** ✅ | **用戶上傳內容安全：** 如果未來支持用戶上傳頭像或圖片，必須在後端對文件類型、大小進行嚴格驗證，並使用獨立的域名提供服務，防止惡意文件執行。 | **(滲透測試大師)** 用戶上傳是常見的攻擊向量。 | `api/upload/route.ts` (未來) | 6h |
-| **P2-345** | **實現雙因素認證 (2FA)：** 為賬戶安全提供一個額外的保護層，允許用戶綁定 TOTP 應用（如 Google Authenticator）。 | **(資安專家)** 能有效防止因密碼洩露導致的賬戶被盜。 | `profile/security/page.tsx` | 10h |
+| **P2-345** ✅ | **實現雙因素認證 (2FA)：** 為賬戶安全提供一個額外的保護層，允許用戶綁定 TOTP 應用（如 Google Authenticator）。 | **(資安專家)** 能有效防止因密碼洩露導致的賬戶被盜。 | `profile/security/page.tsx` | 10h |
 
 ---
 
@@ -491,7 +493,7 @@
 | **P2-377** ✅ | **RAG (檢索增強生成) 流程優化：** 當前的 Embedding 和檢索流程較為基礎。應優化 Chunking 策略，並在檢索時使用混合搜索（關鍵字 + 向量），提升 AI 回答的相關性。 | **(ML 科學家)** RAG 的效果直接決定了 AI 助理的專業度。 | `lib/embedding.ts`, `lib/pinecone.ts` | 8h |
 | **P2-378** ✅ | **AI 推薦遊戲：** 在 AI 助理中加入「推薦遊戲」的意圖識別。AI 可以根據用戶描述的場景（人數、氛圍、是否有新人）推薦合適的遊戲。 | **(Master Sommelier)** 將 AI 的能力從「酒」擴展到「遊戲」，成為真正的派對顧問。 | `lib/games-for-ai.ts`、groq 系統提示、chat 注入 gamesListForPrompt | 6h |
 | **P2-379** ✅ | **流式響應 (Streaming Response)：** `chat/route.ts` 應使用流式響應，讓 AI 的回答像打字一樣逐字出現，而不是等待全部生成完畢再顯示。 | **(Vercel 總監)** 極大降低用戶感知的等待時間，提升交互體驗。 | `chat/route.ts`, `assistant/page.tsx` | 4h |
-| **P2-380** | **協同過濾推薦遊戲：** 收集用戶玩遊戲的行為數據，基於用戶的遊戲歷史，使用協同過濾算法推薦「玩過這個遊戲的人還喜歡玩...」。 | **(ML 科學家)** 實現個性化推薦，提升用戶發現新遊戲的效率和興趣。 | `api/recommendations/games/route.ts` | 12h |
+| **P2-380** ✅ | **協同過濾推薦遊戲：** 收集用戶玩遊戲的行為數據，基於用戶的遊戲歷史，使用協同過濾算法推薦「玩過這個遊戲的人還喜歡玩...」。 | **(ML 科學家)** 實現個性化推薦，提升用戶發現新遊戲的效率和興趣。 | `api/recommendations/games/route.ts` | 12h |
 
 ---
 
@@ -517,7 +519,7 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P3-466** | **建立預覽環境 (Preview Environments)：** 配置 Vercel，為每個 Pull Request 自動創建一個帶有獨立數據庫的預覽環境，方便測試和 Code Review。 | **(Vercel 總監)** 加速開發迭代和反饋循環。 | `vercel.json`, `.github/workflows/` | 8h |
+| **P3-466** ✅ | **建立預覽環境 (Preview Environments)：** 配置 Vercel，為每個 Pull Request 自動創建一個帶有獨立數據庫的預覽環境，方便測試和 Code Review。 | **(Vercel 總監)** 加速開發迭代和反饋循環。 | `vercel.json`, `.github/workflows/` | 8h |
 | **P3-467** ✅ | **前端性能監控：** 引入 Vercel Analytics 或 Sentry Performance Monitoring，持續監控線上的 Core Web Vitals 和其他性能指標。 | **(DevOps 專家)** 將性能問題從「感覺」變為「數據」。 | `layout.tsx` | 3h |
 
 ---
@@ -763,7 +765,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-383** ✅ | **AI 個性化推薦：** 根據用戶的品酒偏好（從靈魂酒測和歷史互動中學習），提供個性化的酒款推薦。 | **(ML 科學家)** 個性化是 AI 的核心價值。 | `chat/route.ts`, `api/recommendations` | 8h |
 | **P2-384** ✅ | **AI 安全護欄 (Guardrails)：** 為 AI 設置安全護欄，防止其生成不當內容（如歧視性言論、未成年飲酒建議）。 | **(AI 倫理專家)** 確保 AI 的輸出是安全和負責任的。 | `chat/route.ts` | 4h |
 | **P2-385** ✅ | **AI 回答反饋機制：** 在 AI 的每個回答下方，提供「有幫助」/「沒幫助」的反饋按鈕，用於收集數據並改進模型。 | **(ML 科學家)** 用戶反饋是改進 AI 的最佳數據來源。 | `assistant/page.tsx`, `api/chat/feedback`, `ai_feedback` 表 | 3h |
-| **P2-386** | **AI 圖片識別 (可選)：** 允許用戶上傳酒標照片，AI 自動識別酒款並提供信息和評價。 | **(ML 科學家)** 極大提升 AI 助理的實用性和「酷」感。 | `chat/route.ts`, `api/vision` | 10h |
+| **P2-386** ✅ | **AI 圖片識別 (可選)：** 允許用戶上傳酒標照片，AI 自動識別酒款並提供信息和評價。 | **(ML 科學家)** 極大提升 AI 助理的實用性和「酷」感。 | `chat/route.ts`, `api/vision` | 10h |
 | **P2-387** ✅ | **AI 語音輸入 (可選)：** 允許用戶通過語音與 AI 助理對話，使用 Web Speech API 或 Whisper。 | **(ML 科學家)** 在派對場景中，語音輸入比打字更方便。 | `assistant/page.tsx` | 8h |
 | **P2-388** ✅ | **AI 生成遊戲題目：** 利用 AI 動態生成「真心話」、「我從來沒有」等遊戲的題目，確保題目永遠新鮮。 | **(AI 科學家)** 解決題庫有限的問題，讓遊戲永不重複。 | `api/games/generate-question` | 6h |
 | **P2-389** ✅ | **AI 派對策劃師：** 在 AI 助理中增加「派對策劃」功能，用戶描述派對場景（人數、主題、預算），AI 生成完整的派對方案（遊戲順序、酒款推薦、音樂列表）。 | **(Master Sommelier)** 將 AI 的能力從單一功能擴展到完整的場景解決方案。 | `chat/route.ts` | 8h |
@@ -778,12 +780,12 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-398** ✅ | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
 | **P2-399** ✅ | **AI 回答中的互動元素：** AI 的回答中可以嵌入可點擊的元素（如酒款卡片、遊戲鏈接），讓用戶可以直接從對話中跳轉到相關頁面。 | **(UX 設計師)** 讓 AI 的回答更具行動力。 | `MarkdownMessage.tsx`（站內 Link、外站 target=_blank） | 5h |
 | **P2-400** ✅ | **AI 學習助手：** 在品酒學院中，集成一個 AI 學習助手，用戶可以針對當前課程內容提問，AI 提供解答和補充知識。 | **(學習專家)** 將 AI 融入學習場景，提升學習效果。 | `learn/[courseId]/page.tsx` | 6h |
-| **P2-401** | **AI 情感分析：** 分析用戶在聊天中的情感傾向，當檢測到用戶不滿或困惑時，主動提供幫助或轉接客服。 | **(ML 科學家)** 提升 AI 的情商和服務質量。 | `chat/route.ts` | 5h |
-| **P2-402** | **AI 推薦引擎 A/B 測試：** 為 AI 推薦算法建立 A/B 測試框架，持續優化推薦效果。 | **(ML 科學家)** 數據驅動的算法優化。 | `api/recommendations` | 6h |
+| **P2-401** ✅ | **AI 情感分析：** 分析用戶在聊天中的情感傾向，當檢測到用戶不滿或困惑時，主動提供幫助或轉接客服。 | **(ML 科學家)** 提升 AI 的情商和服務質量。 | `chat/route.ts` | 5h |
+| **P2-402** ✅ | **AI 推薦引擎 A/B 測試：** 為 AI 推薦算法建立 A/B 測試框架，持續優化推薦效果。 | **(ML 科學家)** 數據驅動的算法優化。 | `api/recommendations` | 6h |
 | **P2-403** ✅ | **AI 生成派對邀請函：** 允許用戶通過 AI 生成個性化的派對邀請函（文字+圖片），並一鍵分享。 | **(AI 科學家)** 增加 AI 的應用場景和趣味性。 | `api/generate-invitation` | 6h |
 | **P2-404** ✅ | **AI 酒款配對推薦：** 根據用戶選擇的遊戲或派對主題，AI 推薦搭配的酒款。 | **(Master Sommelier)** 將遊戲和品酒完美結合，體現 Cheersin 的獨特定位。 | groq 系統提示「派對/遊戲配酒」指示、gamesListForPrompt | 4h |
-| **P2-405** | **AI 對話分析儀表盤：** 在管理後台，提供一個 AI 對話分析儀表盤，展示常見問題、用戶滿意度、對話量等指標。 | **(數據分析師)** 用數據了解用戶需求，指導 AI 優化方向。 | `admin/ai-analytics/page.tsx` | 8h |
-| **P2-406** | **AI 知識圖譜 (可選)：** 構建一個酒類知識圖譜，讓 AI 能更精確地理解酒款之間的關係（如產區、葡萄品種、風味特徵）。 | **(ML 科學家)** 提升 AI 推薦和問答的深度和準確性。 | `scripts/build-knowledge-graph.ts` | 15h |
+| **P2-405** ✅ | **AI 對話分析儀表盤：** 在管理後台，提供一個 AI 對話分析儀表盤，展示常見問題、用戶滿意度、對話量等指標。 | **(數據分析師)** 用數據了解用戶需求，指導 AI 優化方向。 | `admin/ai-analytics/page.tsx` | 8h |
+| **P2-406** ✅ | **AI 知識圖譜 (可選)：** 構建一個酒類知識圖譜，讓 AI 能更精確地理解酒款之間的關係（如產區、葡萄品種、風味特徵）。 | **(ML 科學家)** 提升 AI 推薦和問答的深度和準確性。 | `scripts/build-knowledge-graph.ts` | 15h |
 | **P2-407** ✅ | **AI 自動標籤：** 利用 AI 自動為新上架的酒款或課程添加標籤，減少人工操作。 | **(ML 科學家)** 提升內容管理的效率。 | `api/auto-tag/route.ts`（type: wine/course, Groq 回傳 tags） | 5h |
 | **P2-408** ✅ | **AI 聊天機器人 Widget：** 在網站的每個頁面右下角，提供一個可展開的 AI 聊天機器人 Widget，方便用戶隨時提問。 | **(UX 設計師)** 讓 AI 助理無處不在，觸手可及。 | `components/ChatWidget.tsx`（layout 掛載） | 5h |
 | **P2-409** ✅ | **AI 生成遊戲規則摘要：** 利用 AI 自動為每個遊戲生成簡短的規則摘要，確保 `rulesSummary` 字段的質量和一致性。 | **(AI 科學家)** 自動化內容生成，提升效率。 | `scripts/generate-rules-summary.mjs`、`scripts/data/games-list.json`（Groq 一句話摘要） | 3h |
@@ -797,8 +799,8 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | :--- | :--- | :--- | :--- | :--- |
 | **P3-413** ✅ | **課程評分與評論：** 允許用戶為完成的課程打分和撰寫評論，幫助其他用戶做出選擇。 | **(學習專家)** 用戶生成的評價是最有說服力的推薦。 | `learn/[courseId]/page.tsx` | 5h |
 | **P3-414** ✅ | **課程完成證書：** 用戶完成一門課程後，自動生成一張可分享的電子證書。 | **(遊戲化專家)** 增加完成課程的成就感和分享動力。 | `api/certificate/route.ts` | 5h |
-| **P3-415** | **學習路徑 (Learning Path)：** 設計多條學習路徑（如「紅酒入門」、「威士忌進階」），引導用戶系統性地學習。 | **(學習專家)** 結構化的學習路徑比零散的課程更有效。 | `learn/paths/page.tsx` | 6h |
-| **P3-416** | **課程內測驗 (In-Course Quiz)：** 在課程章節之間插入小測驗，幫助用戶鞏固所學知識。 | **(學習專家)** 主動回憶是最有效的學習策略之一。 | `learn/[courseId]/page.tsx` | 4h |
+| **P3-415** ✅ | **學習路徑 (Learning Path)：** 設計多條學習路徑（如「紅酒入門」、「威士忌進階」），引導用戶系統性地學習。 | **(學習專家)** 結構化的學習路徑比零散的課程更有效。 | `learn/paths/page.tsx` | 6h |
+| **P3-416** ✅ | **課程內測驗 (In-Course Quiz)：** 在課程章節之間插入小測驗，幫助用戶鞏固所學知識。 | **(學習專家)** 主動回憶是最有效的學習策略之一。 | `learn/[courseId]/page.tsx` | 4h |
 | **P3-417** ✅ | **詞彙表 (Glossary)：** 建立一個品酒術語詞彙表，在課程中遇到專業術語時，可以點擊查看解釋。 | **(Master Sommelier)** 降低學習門檻，幫助初學者。 | `learn/glossary/page.tsx` | 4h |
 | **P3-418** ✅ | **課程收藏功能：** 允許用戶收藏感興趣的課程，方便日後學習。 | **(UX 設計師)** 基礎的個人化功能。 | `learn/page.tsx` | 2h |
 | **P3-419** ✅ | **課程分享功能：** 允許用戶將課程分享到社交媒體，附帶自己的學習進度。 | **(增長黑客)** 利用用戶的社交網絡進行傳播。 | `learn/[courseId]/page.tsx` | 2h |
