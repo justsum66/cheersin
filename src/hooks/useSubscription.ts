@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import type { SubscriptionTier } from '@/lib/subscription'
-import { getStoredTier, setStoredTier, getStoredExpires } from '@/lib/subscription'
+import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
 /**
  * 134 訂閱狀態檢查 hook：返回當前方案與到期日
- * 目前以 localStorage 為主（訪客/未串接 profile 時）；之後可改為從 API /auth/me 或 profile 讀取
+ * R2-003：狀態來自 useSubscriptionStore，與 localStorage 同步
  */
 export function useSubscription(): {
   tier: SubscriptionTier
@@ -15,24 +15,15 @@ export function useSubscription(): {
   refetch: () => void
   setTier: (tier: SubscriptionTier, expiresAt?: string) => void
 } {
-  const [tier, setTierState] = useState<SubscriptionTier>('free')
-  const [expiresAt, setExpiresAtState] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refetch = useCallback(() => {
-    setTierState(getStoredTier())
-    setExpiresAtState(getStoredExpires())
-  }, [])
-
-  const setTier = useCallback((t: SubscriptionTier, exp?: string) => {
-    setStoredTier(t, exp)
-    setTierState(t)
-    setExpiresAtState(exp ?? getStoredExpires())
-  }, [])
+  const tier = useSubscriptionStore((s) => s.tier)
+  const expiresAt = useSubscriptionStore((s) => s.expiresAt)
+  const isLoading = useSubscriptionStore((s) => s.isLoading)
+  const refetch = useSubscriptionStore((s) => s.refetch)
+  const setTier = useSubscriptionStore((s) => s.setTier)
 
   useEffect(() => {
     refetch()
-    setIsLoading(false)
+    useSubscriptionStore.getState().setLoading(false)
   }, [refetch])
 
   return { tier, expiresAt, isLoading, refetch, setTier }

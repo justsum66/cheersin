@@ -1,27 +1,14 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useUserStore, type UserProfile } from '@/stores/userStore'
 
 /**
  * F180 UserContext - 用戶資訊全局共享
- * C1：接 Supabase Auth，AuthSync 同步 session → user
+ * R2-003：狀態已遷至 useUserStore；此處僅保留 Provider 與 useUser() API，AuthSync 寫入 store
  */
-export interface UserProfile {
-  id: string
-  email: string
-  name?: string
-  avatarUrl?: string
-}
-
-interface UserContextValue {
-  user: UserProfile | null
-  setUser: (u: UserProfile | null) => void
-  isLoading: boolean
-  setLoading: (v: boolean) => void
-}
-
-const UserContext = createContext<UserContextValue | null>(null)
+export type { UserProfile }
 
 function mapSupabaseUser(u: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): UserProfile {
   const meta = u.user_metadata ?? {}
@@ -33,10 +20,11 @@ function mapSupabaseUser(u: { id: string; email?: string | null; user_metadata?:
   }
 }
 
-/** C1：同步 Supabase Auth session 至 UserContext */
+/** C1：同步 Supabase Auth session 至 useUserStore */
 function AuthSync() {
   const supabase = useSupabase()
-  const { setUser, setLoading } = useUser()
+  const setUser = useUserStore((s) => s.setUser)
+  const setLoading = useUserStore((s) => s.setLoading)
 
   useEffect(() => {
     if (!supabase) {
@@ -58,30 +46,19 @@ function AuthSync() {
 }
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<UserProfile | null>(null)
-  const [isLoading, setLoading] = useState(true)
-
-  const setUser = useCallback((u: UserProfile | null) => {
-    setUserState(u)
-  }, [])
-
   return (
-    <UserContext.Provider value={{ user, setUser, isLoading, setLoading }}>
+    <>
       <AuthSync />
       {children}
-    </UserContext.Provider>
+    </>
   )
 }
 
-export function useUser(): UserContextValue {
-  const ctx = useContext(UserContext)
-  if (!ctx) {
-    return {
-      user: null,
-      setUser: () => {},
-      isLoading: false,
-      setLoading: () => {},
-    }
-  }
-  return ctx
+/** 相容既有 import；實際讀取 useUserStore */
+export function useUser() {
+  const user = useUserStore((s) => s.user)
+  const isLoading = useUserStore((s) => s.isLoading)
+  const setUser = useUserStore((s) => s.setUser)
+  const setLoading = useUserStore((s) => s.setLoading)
+  return { user, setUser, isLoading, setLoading }
 }
