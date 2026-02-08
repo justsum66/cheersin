@@ -30,6 +30,8 @@ export interface PunishmentState {
   failCounts: Record<number, number>
   /** Q3：全部｜只看非酒精 */
   filterMode: PunishmentFilterMode
+  /** P1-140：懲罰疊加模式 */
+  stackMode: boolean
 }
 
 export interface PunishmentActions {
@@ -55,6 +57,8 @@ export interface PunishmentActions {
   resetSession: () => void
   /** Q3：切換全部／只看非酒精 */
   setFilterMode: (mode: PunishmentFilterMode) => void
+  /** P1-140：懲罰疊加模式 — 為 true 時 resetSession 不清空歷史，懲罰累積 */
+  setStackMode: (v: boolean) => void
 }
 
 const PunishmentContext = createContext<(PunishmentState & PunishmentActions) | null>(null)
@@ -62,6 +66,7 @@ const PunishmentContext = createContext<(PunishmentState & PunishmentActions) | 
 export function PunishmentProvider({ players, children }: { players: string[]; children: ReactNode }) {
   const [items, setItems] = useState<PunishmentItem[]>(() => getAllPresets())
   const [filterMode, setFilterMode] = useState<PunishmentFilterMode>('all')
+  const [stackMode, setStackMode] = useState(false)
   const [history, setHistory] = useState<PunishmentHistoryEntry[]>([])
   const [exemptionTickets, setExemptionTickets] = useState<Record<number, number>>({})
   const [failCounts, setFailCounts] = useState<Record<number, number>>({})
@@ -151,13 +156,18 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
     setFailCounts((prev) => ({ ...prev, [playerIndex]: 0 }))
   }, [])
 
+  /** P1-140：疊加模式下不清空歷史，懲罰累積到下一輪 */
   const resetSession = useCallback(() => {
-    setHistory([])
+    if (!stackMode) setHistory([])
     setFailCounts({})
-  }, [])
+  }, [stackMode])
 
   const setFilterModeCb = useCallback((mode: PunishmentFilterMode) => {
     setFilterMode(mode)
+  }, [])
+
+  const setStackModeCb = useCallback((v: boolean) => {
+    setStackMode(v)
   }, [])
 
   const value = useMemo(
@@ -168,6 +178,8 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
       exemptionTickets,
       failCounts,
       filterMode,
+      stackMode,
+      setStackMode: setStackModeCb,
       recordPunishment,
       addFailCount,
       useExemption,
@@ -187,6 +199,8 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
       exemptionTickets,
       failCounts,
       filterMode,
+      stackMode,
+      setStackModeCb,
       recordPunishment,
       addFailCount,
       useExemption,

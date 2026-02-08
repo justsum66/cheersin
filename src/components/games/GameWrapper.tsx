@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { stripHtml } from '@/lib/games-sanitize'
 import { GameSessionProvider } from './GameSessionProvider'
 import { usePassPhone } from './PassPhoneContext'
+import { usePunishment } from './Punishments/PunishmentContext'
 import PassPhoneMode from './PassPhoneMode'
 import BrandWatermark from './BrandWatermark'
 
@@ -221,6 +222,7 @@ function GameWrapperHeader({
   trialRoundsLeft?: number
 }) {
   const passPhone = usePassPhone()
+  const punishment = usePunishment()
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const settingsRef = useRef<HTMLDivElement | null>(null)
@@ -490,6 +492,21 @@ function GameWrapperHeader({
                   <button type="button" onClick={() => { onOpenReport(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]">
                     <Flag className="w-4 h-4" /> 檢舉
                   </button>
+                )}
+                {/* P1-140：懲罰疊加 — 新一局時保留歷史，懲罰累積 */}
+                {punishment != null && (
+                  <div className="border-t border-white/10 pt-2 mt-2">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-white/80 hover:bg-white/5 rounded-lg px-3 py-2 min-h-[44px]">
+                      <input
+                        type="checkbox"
+                        checked={punishment.stackMode}
+                        onChange={() => punishment.setStackMode(!punishment.stackMode)}
+                        className="rounded"
+                        aria-label="懲罰疊加：新一局保留懲罰歷史"
+                      />
+                      懲罰疊加（新一局保留歷史）
+                    </label>
+                  </div>
                 )}
                 {players.length >= 2 && passPhone && (
                   <div className="border-t border-white/10 mt-2 pt-2">

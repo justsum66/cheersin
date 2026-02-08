@@ -789,28 +789,28 @@ function GamesPageContent() {
                     <UserPlus className="w-4 h-4 text-primary-400" />
                   </button>
                   <div className="flex flex-col gap-2 items-center p-4 rounded-xl border border-primary-500/20 bg-primary-500/5 min-w-[200px]" role="group" aria-label="建立房間">
-                    {/* C3.1 房間建立流程步驟指示 */}
-                    <div className="flex items-center gap-1 mb-2 text-xs" role="list" aria-label="建立房間流程">
-                      <span className="flex items-center gap-1 text-primary-400">
-                        <span className="w-5 h-5 rounded-full bg-primary-500 text-white text-[10px] font-bold flex items-center justify-center">1</span>
-                        <span>設密碼</span>
-                      </span>
-                      <span className="w-3 h-px bg-white/20" aria-hidden />
-                      <span className="flex items-center gap-1 text-white/40">
-                        <span className="w-5 h-5 rounded-full bg-white/10 text-white/60 text-[10px] font-bold flex items-center justify-center">2</span>
-                        <span>建立</span>
-                      </span>
-                      <span className="w-3 h-px bg-white/20" aria-hidden />
-                      <span className="flex items-center gap-1 text-white/40">
-                        <span className="w-5 h-5 rounded-full bg-white/10 text-white/60 text-[10px] font-bold flex items-center justify-center">3</span>
-                        <span>邀請</span>
-                      </span>
-                      <span className="w-3 h-px bg-white/20" aria-hidden />
-                      <span className="flex items-center gap-1 text-white/40">
-                        <span className="w-5 h-5 rounded-full bg-white/10 text-white/60 text-[10px] font-bold flex items-center justify-center">4</span>
-                        <span>開玩</span>
-                      </span>
-                    </div>
+                    {/* P1-110：創建房間三步引導 — 設置密碼 → 邀請好友 → 選擇遊戲；依狀態高亮當前步驟 */}
+                    {(() => {
+                      const step = !isInRoomMode ? 1 : (activeGame ? 3 : 2)
+                      return (
+                        <div className="flex items-center gap-1 mb-2 text-xs" role="list" aria-label="建立房間流程">
+                          <span className={`flex items-center gap-1 ${step >= 1 ? 'text-primary-400' : 'text-white/40'}`}>
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 1 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>1</span>
+                            <span>設密碼</span>
+                          </span>
+                          <span className="w-3 h-px bg-white/20" aria-hidden />
+                          <span className={`flex items-center gap-1 ${step >= 2 ? 'text-primary-400' : 'text-white/40'}`}>
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 2 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>2</span>
+                            <span>邀請好友</span>
+                          </span>
+                          <span className="w-3 h-px bg-white/20" aria-hidden />
+                          <span className={`flex items-center gap-1 ${step >= 3 ? 'text-primary-400' : 'text-white/40'}`}>
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 3 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>3</span>
+                            <span>選擇遊戲</span>
+                          </span>
+                        </div>
+                      )
+                    })()}
                     <span className="text-sm font-semibold text-primary-300">建立房間</span>
                     <div className="relative flex items-center w-full max-w-[200px]">
                       <input

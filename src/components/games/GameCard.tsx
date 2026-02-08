@@ -213,15 +213,26 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         </span>
       )}
       {/* 任務 4：收藏心形，左上角，點擊不觸發進入遊戲（不可用 button 包 button，故外層改為 div） */}
+      {/* P1-173：收藏心形點擊時跳動動畫 — whileTap 放大 + 心形 keyframe */}
       {game.onToggleFavorite != null && (
-        <button
+        <motion.button
           type="button"
           onClick={handleHeartClick}
-          className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 hover:bg-white/10 transition-colors transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 games-touch-target flex items-center justify-center games-focus-ring"
+          className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 hover:bg-white/10 transition-colors games-touch-target flex items-center justify-center games-focus-ring"
           aria-label={game.isFavorite ? '移除收藏' : '加入收藏'}
+          whileTap={reducedMotion ? undefined : { scale: 1.2 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
         >
-          <Heart className={`w-4 h-4 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
-        </button>
+          <motion.span
+            key={game.isFavorite ? 'on' : 'off'}
+            initial={reducedMotion ? false : { scale: 1 }}
+            animate={reducedMotion ? {} : game.isFavorite ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="inline-block"
+          >
+            <Heart className={`w-4 h-4 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
+          </motion.span>
+        </motion.button>
       )}
       {/* GAMES_500 #118 #129：icon 尺寸與 FeatureIcon 一致；間距 token */}
       {/* Phase 1 C5.2: 圖示 hover 放大 + 右上箭頭淡入 */}
