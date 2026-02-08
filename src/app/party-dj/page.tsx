@@ -2,21 +2,28 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Music2, Sparkles, Play, ChevronRight } from 'lucide-react'
+import { Music2, Sparkles, Play, ChevronRight, Share2 } from 'lucide-react'
 import { fireFullscreenConfetti } from '@/lib/celebration'
+import { useSubscription } from '@/hooks/useSubscription'
 
 type Phase = { phase: string; durationMin: number; gameIds: string[]; transitionText: string }
 
 /**
  * killer 23/27：AI 派對 DJ — 表單輸入 → 呼叫 plan API → 顯示編排與 transitionText
+ * killer 25/26：前端傳 subscriptionTier，免費用戶 30 分鐘、付費不限
+ * killer 30：編排結果分享（複製文字到剪貼簿）
  */
 export default function PartyDJPage() {
+  const { tier } = useSubscription()
+  const isFree = tier !== 'basic' && tier !== 'premium'
+  const maxDuration = isFree ? 30 : 240
   const [peopleCount, setPeopleCount] = useState(6)
-  const [durationMin, setDurationMin] = useState(120)
+  const [durationMin, setDurationMin] = useState(isFree ? 30 : 120)
   const [allow18, setAllow18] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [plan, setPlan] = useState<{ phases: Phase[]; totalMin: number } | null>(null)
+  const [shareCopied, setShareCopied] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +34,12 @@ export default function PartyDJPage() {
       const res = await fetch('/api/party-dj/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ peopleCount, durationMin, allow18 }),
+        body: JSON.stringify({
+          peopleCount,
+          durationMin,
+          allow18,
+          subscriptionTier: tier === 'basic' || tier === 'premium' ? tier : 'free',
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to get plan')
@@ -68,11 +80,14 @@ export default function PartyDJPage() {
           <input
             type="number"
             min={15}
-            max={240}
+            max={maxDuration}
             value={durationMin}
-            onChange={(e) => setDurationMin(Number(e.target.value) || 60)}
+            onChange={(e) => setDurationMin(Math.min(maxDuration, Number(e.target.value) || 15))}
             className="mt-1 w-full rounded-lg bg-white/10 px-3 py-2 text-white border border-white/20"
           />
+          {isFree && (
+            <p className="mt-1 text-amber-400/90 text-xs">免費用戶最多 30 分鐘；訂閱可解鎖更長編排</p>
+          )}
         </label>
         <label className="flex items-center gap-2 text-white/80">
           <input
@@ -112,14 +127,38 @@ export default function PartyDJPage() {
               )}
             </div>
           ))}
-          <Link
-            href="/games"
-            className="inline-flex items-center gap-2 min-h-[48px] px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium games-focus-ring"
-          >
-            <Play className="w-5 h-5" aria-hidden />
-            開始派對
-            <ChevronRight className="w-4 h-4" aria-hidden />
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (!plan) return
+                const text = [
+                  `🎉 Cheersin 派對流程（${plan.totalMin} 分鐘）`,
+                  plan.phases
+                    .map((p) => `${p.phase} ${p.durationMin}分鐘：${p.gameIds.join('、')}`)
+                    .join('\n'),
+                  '用 Cheersin 一起玩 → https://cheersin.app',
+                ].join('\n')
+                void navigator.clipboard?.writeText(text).then(() => {
+                  setShareCopied(true)
+                  setTimeout(() => setShareCopied(false), 2000)
+                })
+              }}
+              className="inline-flex items-center gap-2 min-h-[48px] px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium games-focus-ring border border-white/20"
+              aria-label="分享編排結果"
+            >
+              <Share2 className="w-5 h-5" aria-hidden />
+              {shareCopied ? '已複製' : '分享編排'}
+            </button>
+            <Link
+              href="/games"
+              className="inline-flex items-center gap-2 min-h-[48px] px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium games-focus-ring"
+            >
+              <Play className="w-5 h-5" aria-hidden />
+              開始派對
+              <ChevronRight className="w-4 h-4" aria-hidden />
+            </Link>
+          </div>
         </div>
       )}
 

@@ -6,7 +6,7 @@ import {
   ChevronLeft, Send, Bot, User, Sparkles, Wine,
   Mic, Image as ImageIcon, Camera, Settings, History, Zap, Crown,
   ThumbsUp, ThumbsDown, Copy, Volume2, Share2, Download,
-  Beer, Gift, Heart, Coins, Gamepad2, Users,
+  Beer, Gift, Heart, Coins, Gamepad2, Users, Music2,
   Search, BookOpen, Utensils, MessageSquare, Globe, ChevronDown, Square
 } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
@@ -126,10 +126,11 @@ const SUGGESTION_CATEGORIES = [
   },
 ]
 
-/** P0-006：AI 侍酒師派對屬性 — 預設問題讓 AI 成為派對組織者 */
-const QUICK_PROMPTS = [
+/** P0-006：AI 侍酒師派對屬性 — 預設問題讓 AI 成為派對組織者；killer 29 派對策劃引導 */
+const QUICK_PROMPTS: { icon: typeof Gamepad2; text: string; href?: string }[] = [
   { icon: Gamepad2, text: '幫我選遊戲' },
   { icon: Users, text: '我們 4 個人，推薦什麼派對遊戲？' },
+  { icon: Music2, text: '幫我規劃派對流程（派對策劃）', href: '/party-dj' },
   { icon: Gift, text: '送禮指南' },
   { icon: Heart, text: '約會選酒' },
   { icon: Coins, text: '高CP值推薦' },
@@ -1183,19 +1184,32 @@ export default function AssistantPage() {
                 transition={{ delay: 0.5 }}
                 className="flex overflow-x-auto gap-3 mb-12 pb-2 -mx-2 px-2 scrollbar-hide justify-start md:justify-center"
               >
-                {QUICK_PROMPTS.map((prompt) => (
-                  <motion.button
-                    key={prompt.text}
-                    type="button"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => { setInput(prompt.text); inputRef.current?.focus(); }}
-                    className="shrink-0 min-h-[48px] px-5 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-sm font-medium flex items-center gap-2 transition-colors games-focus-ring"
-                  >
-                    <prompt.icon className="w-4 h-4 text-primary-400 shrink-0" />
-                    <span>{prompt.text}</span>
-                  </motion.button>
-                ))}
+                {QUICK_PROMPTS.map((prompt) =>
+                  prompt.href ? (
+                    <Link key={prompt.text} href={prompt.href}>
+                      <motion.span
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="shrink-0 min-h-[48px] px-5 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-sm font-medium flex items-center gap-2 transition-colors games-focus-ring inline-flex"
+                      >
+                        <prompt.icon className="w-4 h-4 text-primary-400 shrink-0" />
+                        <span>{prompt.text}</span>
+                      </motion.span>
+                    </Link>
+                  ) : (
+                    <motion.button
+                      key={prompt.text}
+                      type="button"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => { setInput(prompt.text); inputRef.current?.focus(); }}
+                      className="shrink-0 min-h-[48px] px-5 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-sm font-medium flex items-center gap-2 transition-colors games-focus-ring"
+                    >
+                      <prompt.icon className="w-4 h-4 text-primary-400 shrink-0" />
+                      <span>{prompt.text}</span>
+                    </motion.button>
+                  )
+                )}
               </motion.div>
 
               {/* Category Tabs & Grid */}
