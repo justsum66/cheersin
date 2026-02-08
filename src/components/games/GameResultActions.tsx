@@ -2,8 +2,10 @@
 
 /**
  * DEDUP #13：遊戲結束「再來一局／返回大廳」共用區塊，統一 48px 觸控與焦點環
- * 各遊戲結果區可改用此組件，避免重複按鈕樣式與 aria
+ * P0-010：可選「分享故事卡」一鍵產圖分享 IG/FB
  */
+import { ShareStoryCardButton } from './ShareStoryCardButton'
+
 interface GameResultActionsProps {
   /** 再來一局 callback */
   onRestart: () => void
@@ -13,6 +15,8 @@ interface GameResultActionsProps {
   restartLabel?: string
   /** 次按鈕文案，預設「返回大廳」 */
   exitLabel?: string
+  /** P0-010：提供則顯示「分享故事卡」按鈕 */
+  shareStoryCard?: { resultText: string; gameName?: string; subtitle?: string }
   className?: string
 }
 
@@ -21,6 +25,7 @@ export function GameResultActions({
   onExit,
   restartLabel = '再來一局',
   exitLabel = '返回大廳',
+  shareStoryCard,
   className = '',
 }: GameResultActionsProps) {
   return (
@@ -33,6 +38,13 @@ export function GameResultActions({
       >
         {restartLabel}
       </button>
+      {shareStoryCard != null && (
+        <ShareStoryCardButton
+          resultText={shareStoryCard.resultText}
+          gameName={shareStoryCard.gameName}
+          subtitle={shareStoryCard.subtitle}
+        />
+      )}
       {onExit != null && (
         <button
           type="button"

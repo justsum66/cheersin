@@ -70,6 +70,20 @@ function levelToLabel(level: number): string {
     return '見習品鑑家'
 }
 
+/** P0-008：升級路徑 — 累積 XP 達此值即為該等級（與 profile nextLevel = (level+1)*1000 對齊） */
+const LEVEL_PATH: { level: number; xpRequired: number; label: string; reward: string }[] = [
+    { level: 1, xpRequired: 0, label: '見習品鑑家', reward: '基礎頭像框' },
+    { level: 2, xpRequired: 2000, label: '見習品鑑家 II', reward: '銀色頭像框' },
+    { level: 3, xpRequired: 3000, label: '品鑑家', reward: '品鑑家頭像框' },
+    { level: 4, xpRequired: 4000, label: '品鑑家 II', reward: '輪盤主題・經典' },
+    { level: 5, xpRequired: 5000, label: '高級侍酒師', reward: '高級頭像框' },
+    { level: 6, xpRequired: 6000, label: '高級侍酒師 II', reward: '輪盤主題・派對' },
+    { level: 7, xpRequired: 7000, label: '高級侍酒師 III', reward: '金色頭像框' },
+    { level: 8, xpRequired: 8000, label: '高級侍酒師 IV', reward: '輪盤主題・限定' },
+    { level: 9, xpRequired: 9000, label: '大師見習', reward: '大師預覽框' },
+    { level: 10, xpRequired: 10000, label: '大師侍酒師', reward: '大師頭像框 + 專屬輪盤' },
+]
+
 const DEFAULT_PROFILE: ProfileData = {
     xp: 0,
     level: 1,
@@ -520,6 +534,41 @@ export default function ProfilePage() {
                                 delay={0.4}
                             />
                         </div>
+
+                        {/* P0-008：升級路徑與獎勵 — 等級門檻與解鎖內容 */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.35 }}
+                            className="glass-card-spotlight p-6"
+                        >
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                                <Trophy className="w-5 h-5 text-primary-400" />
+                                升級路徑與獎勵
+                            </h2>
+                            <p className="text-white/60 text-sm mb-4">完成遊戲、靈魂酒測與學習可獲得 XP，升級解鎖頭像框與輪盤主題。</p>
+                            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                {LEVEL_PATH.map(({ level, xpRequired, label, reward }) => {
+                                    const isCurrent = profileData.level === level
+                                    const isUnlocked = profileData.level >= level
+                                    return (
+                                        <div
+                                            key={level}
+                                            className={`flex items-center gap-3 py-2 px-3 rounded-xl border transition-colors ${isCurrent ? 'bg-primary-500/20 border-primary-500/40' : isUnlocked ? 'bg-white/5 border-white/10' : 'bg-white/[0.02] border-white/5'}`}
+                                        >
+                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCurrent ? 'bg-primary-500 text-white' : isUnlocked ? 'bg-white/10 text-white/80' : 'bg-white/5 text-white/40'}`}>
+                                                {level}
+                                            </span>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`text-sm font-medium truncate ${isUnlocked ? 'text-white' : 'text-white/50'}`}>{label}</p>
+                                                <p className="text-xs text-white/40 truncate">{xpRequired.toLocaleString()} XP · {reward}</p>
+                                            </div>
+                                            {isCurrent && <span className="text-xs text-primary-400 font-medium shrink-0">當前</span>}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </motion.div>
 
                         {/* 211–215：靈魂酒測結果 + 感官檔案 */}
                         <motion.div

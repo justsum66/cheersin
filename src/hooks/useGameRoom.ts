@@ -23,6 +23,8 @@ export interface GameRoomState {
   slug: string | null
   players: RoomPlayer[]
   inviteUrl: string | null
+  /** P0-004：匿名模式開啟時，API 已回傳玩家A/B，此處僅供 UI 開關顯示 */
+  anonymousMode: boolean
   loading: boolean
   error: string | null
 }
@@ -32,6 +34,7 @@ export function useGameRoom(slug: string | null) {
   const [roomId, setRoomId] = useState<string | null>(null)
   const [players, setPlayers] = useState<RoomPlayer[]>([])
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [anonymousMode, setAnonymousModeState] = useState(false)
   const [loading, setLoading] = useState(!!slug)
   const [error, setError] = useState<string | null>(null)
   /** GAMES_500 #167：房間不存在時不重複請求 — 410/過期後 visibility 不 refetch */
@@ -69,7 +72,9 @@ export function useGameRoom(slug: string | null) {
         throw new Error(msg)
       }
       const data = await res.json()
+      const roomAnonymous = !!data.room?.anonymousMode
       setRoomId(data.room?.id ?? null)
+      setAnonymousModeState(roomAnonymous)
       setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }) => ({
         id: p.id,
         displayName: p.displayName,
@@ -100,6 +105,7 @@ export function useGameRoom(slug: string | null) {
       setRoomId(null)
       setPlayers([])
       setInviteUrl(null)
+      setAnonymousModeState(false)
       setError(null)
       return
     }
@@ -172,13 +178,19 @@ export function useGameRoom(slug: string | null) {
     [slug, roomId]
   )
 
-  /** 任務 12：建立房間可選傳 4 位數密碼（API 若支援則儲存） */
-  const createRoom = useCallback(async (password?: string): Promise<{ slug: string; inviteUrl: string } | { error: string }> => {
+  /** 任務 12：建立房間可選傳 4 位數密碼、P0-004 匿名模式；可傳 password 字串或 { password, anonymousMode } */
+  const createRoom = useCallback(async (passwordOrOptions?: string | { password?: string; anonymousMode?: boolean }): Promise<{ slug: string; inviteUrl: string } | { error: string }> => {
     try {
+      const options = typeof passwordOrOptions === 'string'
+        ? { password: passwordOrOptions }
+        : passwordOrOptions
+      const body: { password?: string; anonymousMode?: boolean } = {}
+      if (options?.password?.trim()) body.password = options.password!.trim().slice(0, 4)
+      if (options?.anonymousMode === true) body.anonymousMode = true
       const res = await fetch('/api/games/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(password?.trim() ? { password: password.trim().slice(0, 4) } : {}),
+        body: JSON.stringify(body),
       })
       const data = await res.json().catch(() => ({})) as { slug?: string; inviteUrl?: string; error?: string }
       if (!res.ok) return { error: getErrorMessage(data, `HTTP ${res.status}`) }
@@ -189,11 +201,32 @@ export function useGameRoom(slug: string | null) {
     }
   }, [])
 
+  /** P0-004：房主切換匿名模式；成功後 refetch 取得遮蔽後名單 */
+  const setAnonymousMode = useCallback(async (value: boolean): Promise<{ ok: boolean; error?: string }> => {
+    if (!slug) return { ok: false, error: 'No room' }
+    try {
+      const res = await fetch(`/api/games/rooms/${encodeURIComponent(slug)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonymousMode: value }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return { ok: false, error: getErrorMessage(data, `HTTP ${res.status}`) }
+      setAnonymousModeState(value)
+      await fetchRoom(slug)
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    }
+  }, [slug, fetchRoom])
+
   return {
     slug,
     roomId,
     players,
     inviteUrl,
+    anonymousMode,
+    setAnonymousMode,
     loading,
     error,
     fetchRoom,

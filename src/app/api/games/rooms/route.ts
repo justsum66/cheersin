@@ -51,12 +51,14 @@ export async function POST(request: Request) {
       { status: 429, headers: { 'Retry-After': '60' } }
     )
   }
-  /** BE-21：body 驗證 — 僅接受可選 4 位數字密碼；解析失敗不視為必填 */
+  /** BE-21：body 驗證 — 僅接受可選 4 位數字密碼、P0-004 匿名模式；解析失敗不視為必填 */
   let bodyPassword: string | undefined
+  let anonymousMode = false
   try {
     const body = (await request.json().catch(() => null)) as import('@/types/api-bodies').GamesRoomsPostBody | null
-    if (body && typeof body === 'object' && typeof body.password === 'string' && /^\d{4}$/.test(body.password)) {
-      bodyPassword = body.password
+    if (body && typeof body === 'object') {
+      if (typeof body.password === 'string' && /^\d{4}$/.test(body.password)) bodyPassword = body.password
+      if (body.anonymousMode === true) anonymousMode = true
     }
   } catch {
     return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
@@ -84,9 +86,10 @@ export async function POST(request: Request) {
     // P3-43：若已登入則寫入 host_id，供 RLS 房主可修改
     const user = await getCurrentUser()
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    const insertPayload: { slug: string; password_hash?: string; expires_at: string; host_id?: string } = { slug, expires_at: expiresAt }
+    const insertPayload: { slug: string; password_hash?: string; expires_at: string; host_id?: string; settings?: { anonymousMode?: boolean } } = { slug, expires_at: expiresAt }
     if (bodyPassword) insertPayload.password_hash = hashRoomPassword(bodyPassword)
     if (user?.id) insertPayload.host_id = user.id
+    if (anonymousMode) insertPayload.settings = { anonymousMode: true }
     const { data: room, error: roomError } = await supabase
       .from('game_rooms')
       .insert(insertPayload)

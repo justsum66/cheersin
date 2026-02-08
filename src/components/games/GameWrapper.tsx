@@ -143,6 +143,10 @@ interface GameWrapperProps {
   onSkipRound?: () => void
   /** P1-138：重新開始本局（子遊戲可選實作） */
   onRestart?: () => void
+  /** P0-004：房間匿名模式（玩家顯示為玩家A/B）；僅房主可切換 */
+  anonymousMode?: boolean
+  isHost?: boolean
+  onToggleAnonymous?: (value: boolean) => Promise<{ ok: boolean; error?: string }>
 }
 
 /** 81 統一頂部：返回 / 遊戲名 / 設定；84 返回前確認；83 全螢幕；85 換遊戲 */
@@ -180,6 +184,9 @@ function GameWrapperHeader({
   maxPlayers,
   onSkipRound,
   onRestart,
+  anonymousMode = false,
+  isHost = false,
+  onToggleAnonymous,
 }: {
   title: string
   description?: string
@@ -189,6 +196,10 @@ function GameWrapperHeader({
   maxPlayers?: number
   onSkipRound?: () => void
   onRestart?: () => void
+  /** P0-004：匿名模式；僅房主可切換 */
+  anonymousMode?: boolean
+  isHost?: boolean
+  onToggleAnonymous?: (value: boolean) => Promise<{ ok: boolean; error?: string }>
   isFullscreen: boolean
   onToggleFullscreen: () => void
   switchGameList?: SwitchGameItem[]
@@ -385,6 +396,24 @@ function GameWrapperHeader({
                 </button>
                 {fullscreenUnsupported && (
                   <p className="px-3 py-1 text-xs text-white/50">iOS 不支援全螢幕，可將此頁加入主畫面以獲得類似體驗</p>
+                )}
+                {/* P0-004：房主可開關匿名模式，玩家暱稱顯示為玩家A/B */}
+                {isHost && onToggleAnonymous != null && (
+                  <label className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] cursor-pointer games-focus-ring">
+                    <span className="flex-1">匿名模式</span>
+                    <input
+                      type="checkbox"
+                      checked={anonymousMode}
+                      onChange={async () => {
+                        const next = !anonymousMode
+                        const res = await onToggleAnonymous(next)
+                        if (!res.ok) return
+                        setShowSettingsMenu(false)
+                      }}
+                      className="rounded border-white/30 bg-white/10 text-primary-500 focus:ring-primary-500"
+                      aria-label={anonymousMode ? '關閉匿名模式' : '開啟匿名模式'}
+                    />
+                  </label>
                 )}
                 {onTogglePause != null && (
                   <button
@@ -699,6 +728,9 @@ export default function GameWrapper({
   maxPlayers,
   onSkipRound,
   onRestart,
+  anonymousMode = false,
+  isHost = false,
+  onToggleAnonymous,
 }: GameWrapperProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [rulesContent, setRulesContent] = useState<string | null>(null)
@@ -1074,6 +1106,9 @@ export default function GameWrapper({
               maxPlayers={maxPlayers}
               onSkipRound={onSkipRound}
               onRestart={onRestart}
+              anonymousMode={anonymousMode}
+              isHost={isHost}
+              onToggleAnonymous={onToggleAnonymous}
             />
 
           {/* T059 P1：檢舉 modal — 類型、說明、送出後顯示「已收到」 */}

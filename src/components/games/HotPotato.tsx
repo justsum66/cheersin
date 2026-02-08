@@ -7,6 +7,7 @@ import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { usePunishment } from './Punishments/PunishmentContext'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const MIN_SEC = 3
@@ -21,6 +22,7 @@ export default function HotPotato() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
+  const punishment = usePunishment()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [holderIndex, setHolderIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
@@ -209,7 +211,22 @@ export default function HotPotato() {
               💥 {loser} 喝！
             </motion.p>
           </motion.div>
-          <CopyResultButton text={`熱土豆：${loser} 喝`} label="複製結果" className="mt-2 games-focus-ring" />
+          <div className="flex flex-wrap gap-2 justify-center mt-2">
+            <CopyResultButton text={`熱土豆：${loser} 喝`} label="複製結果" className="games-focus-ring" />
+            {punishment && (
+              <button
+                type="button"
+                onClick={() => {
+                  const idx = players.indexOf(loser)
+                  if (idx >= 0) punishment.requestWheel(idx, loser)
+                }}
+                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-primary-500/30 hover:bg-primary-500/50 border border-primary-500/40 text-primary-200 text-sm font-medium games-focus-ring"
+                aria-label="轉懲罰輪盤"
+              >
+                轉懲罰輪盤
+              </button>
+            )}
+          </div>
         </motion.div>
       )}
     </div>

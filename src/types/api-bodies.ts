@@ -35,9 +35,11 @@ export interface ReportPostBody {
   context?: { roomSlug?: string; gameId?: string }
 }
 
-/** POST /api/games/rooms — 建立房間 */
+/** POST /api/games/rooms — 建立房間；P0-004 匿名模式 */
 export interface GamesRoomsPostBody {
   password?: string
+  /** 房主開啟後，所有玩家暱稱顯示為玩家A、玩家B… */
+  anonymousMode?: boolean
 }
 
 /** POST /api/games/rooms/[slug]/join */

@@ -127,12 +127,20 @@ function GamesPageContent() {
     roomId,
     players: roomPlayers,
     inviteUrl: roomInviteUrl,
+    anonymousMode: roomAnonymousMode,
+    setAnonymousMode: setRoomAnonymousMode,
     loading: roomLoading,
     error: roomError,
     join: joinRoom,
     createRoom,
     fetchRoom,
   } = useGameRoom(roomSlug)
+  /** P0-004：房主辨識 — 本 session 建立此房間者視為房主，可切換匿名模式 */
+  const ROOM_HOST_KEY = 'cheersin_room_host'
+  const isRoomHost = Boolean(roomSlug && typeof window !== 'undefined' && sessionStorage.getItem(ROOM_HOST_KEY) === roomSlug)
+  useEffect(() => {
+    if (!roomSlug && typeof window !== 'undefined') sessionStorage.removeItem(ROOM_HOST_KEY)
+  }, [roomSlug])
   /** GAMES_500 #175：房間 reconnection 與離線提示 — 需 backend/Service Worker 支援後於此或 useGameRoom 實作。GAMES_500 #209：觀戰者加入時廣播或提示可選 — 可於房間狀態訂閱時顯示 toast。 */
 
   const [activeGame, setActiveGame] = useState<GameId>(null)
@@ -182,8 +190,9 @@ function GamesPageContent() {
   /** P1-125：房間密碼可見性切換 */
   const [showJoinPassword, setShowJoinPassword] = useState(false)
   const [showCreatePassword, setShowCreatePassword] = useState(false)
-  /** 任務 12：建立房間可選 4 位數密碼 */
+  /** 任務 12：建立房間可選 4 位數密碼；P0-004 建立時可勾選匿名模式 */
   const [roomCreatePassword, setRoomCreatePassword] = useState('')
+  const [roomCreateAnonymous, setRoomCreateAnonymous] = useState(false)
   const [createInvite, setCreateInvite] = useState<{ slug: string; inviteUrl: string } | null>(null)
   /** AUDIT #7：複製邀請連結後按鈕顯示「已複製」回饋；GAMES_500 #138 時長可配置 */
   const [inviteCopyJustDone, setInviteCopyJustDone] = useState(false)
@@ -382,7 +391,8 @@ function GamesPageContent() {
   const handleCreateRoom = useCallback(async () => {
     setCreatingRoom(true)
     setCreateRoomError(null)
-    const result = await createRoom(roomCreatePassword || undefined)
+    const opts = (roomCreatePassword?.trim() || roomCreateAnonymous) ? { password: roomCreatePassword?.trim(), anonymousMode: roomCreateAnonymous } : undefined
+    const result = await createRoom(opts ?? (roomCreatePassword || undefined))
     setCreatingRoom(false)
     if ('error' in result) {
       setCreateRoomError(mapCreateRoomError(result.error))
@@ -390,11 +400,13 @@ function GamesPageContent() {
     }
     if (typeof document !== 'undefined') inviteSavedFocusRef.current = document.activeElement as HTMLElement | null
     setCreateInvite({ slug: result.slug, inviteUrl: result.inviteUrl })
-  }, [createRoom, roomCreatePassword, mapCreateRoomError])
+    if (typeof window !== 'undefined') sessionStorage.setItem(ROOM_HOST_KEY, result.slug)
+  }, [createRoom, roomCreatePassword, roomCreateAnonymous, mapCreateRoomError])
 
-  /** T057 P1-144：再玩一局（新房間）— 建立新房間、自動加入、複製邀請連結、導向；無需返回大廳 */
+  /** T057 P1-144：再玩一局（新房間）— 建立新房間、自動加入、複製邀請連結、導向；沿用當前匿名設定 */
   const handlePlayAgain = useCallback(async () => {
-    const result = await createRoom(roomCreatePassword || undefined)
+    const opts = (roomCreatePassword?.trim() || roomAnonymousMode) ? { password: roomCreatePassword?.trim(), anonymousMode: roomAnonymousMode } : undefined
+    const result = await createRoom(opts ?? (roomCreatePassword || undefined))
     if ('error' in result) return
     const newSlug = result.slug
     const inviteUrl = result.inviteUrl ?? (typeof window !== 'undefined' ? `${window.location.origin}/games?room=${newSlug}` : '')
@@ -423,8 +435,9 @@ function GamesPageContent() {
         /* ignore */
       }
     }
+    if (typeof window !== 'undefined') sessionStorage.setItem(ROOM_HOST_KEY, newSlug)
     router.replace(`/games?room=${newSlug}&game=${activeGame ?? ''}`)
-  }, [createRoom, roomCreatePassword, activeGame, router, joinedDisplayName, joinedAsSpectator])
+  }, [createRoom, roomCreatePassword, roomAnonymousMode, activeGame, router, joinedDisplayName, joinedAsSpectator])
 
   const selectedGame = activeGame ? getGameMeta(activeGame) : undefined
 
@@ -868,6 +881,16 @@ function GamesPageContent() {
                         {/^(\d)\1{3}$/.test(roomCreatePassword) ? '強度：弱（建議避免同一數字）' : /^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(roomCreatePassword) ? '強度：中（連續數字）' : '強度：佳'}
                       </p>
                     )}
+                    <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer min-h-[44px]">
+                      <input
+                        type="checkbox"
+                        checked={roomCreateAnonymous}
+                        onChange={(e) => setRoomCreateAnonymous(e.target.checked)}
+                        className="rounded border-white/30 bg-white/10 text-primary-500"
+                        aria-label="建立時開啟匿名模式（玩家顯示為玩家A/B）"
+                      />
+                      <span>匿名模式（玩家A/B）</span>
+                    </label>
                     <button
                       onClick={handleCreateRoom}
                       disabled={creatingRoom}
@@ -1041,6 +1064,9 @@ function GamesPageContent() {
                 shareInviteUrl={isInRoomMode ? (roomInviteUrl ?? (roomSlug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${roomSlug}` : null)) : undefined}
                 isSpectator={joinedAsSpectator}
                 onPlayAgain={isInRoomMode ? handlePlayAgain : undefined}
+                anonymousMode={isInRoomMode ? roomAnonymousMode : undefined}
+                isHost={isInRoomMode ? isRoomHost : undefined}
+                onToggleAnonymous={isInRoomMode && isRoomHost ? setRoomAnonymousMode : undefined}
                 reportContext={{ roomSlug: roomSlug ?? undefined, gameId: activeGame ?? undefined }}
                 isGuestTrial={!roomSlug && !!activeGame && GUEST_TRIAL_GAME_IDS.includes(activeGame)}
                 trialRoundsMax={3}

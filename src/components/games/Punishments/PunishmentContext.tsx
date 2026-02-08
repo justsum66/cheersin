@@ -11,6 +11,7 @@ import {
 import type { PunishmentItem, PunishmentHistoryEntry, PlayerPunishmentStats } from './types'
 import { getAllPresets } from './presets'
 import { showPunishmentOverlay } from '@/lib/celebration'
+import { PunishmentWheelModal } from './PunishmentWheelModal'
 
 const SUPER_PUNISHMENT_FAIL_THRESHOLD = 3
 
@@ -59,6 +60,9 @@ export interface PunishmentActions {
   setFilterMode: (mode: PunishmentFilterMode) => void
   /** P1-140：懲罰疊加模式 — 為 true 時 resetSession 不清空歷史，懲罰累積 */
   setStackMode: (v: boolean) => void
+  /** P0-005：從遊戲失敗流程開啟懲罰輪盤 Modal */
+  requestWheel: (playerIndex: number, playerName: string) => void
+  clearWheel: () => void
 }
 
 const PunishmentContext = createContext<(PunishmentState & PunishmentActions) | null>(null)
@@ -70,6 +74,8 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
   const [history, setHistory] = useState<PunishmentHistoryEntry[]>([])
   const [exemptionTickets, setExemptionTickets] = useState<Record<number, number>>({})
   const [failCounts, setFailCounts] = useState<Record<number, number>>({})
+  /** P0-005：遊戲失敗時可請求顯示懲罰輪盤 Modal */
+  const [wheelRequest, setWheelRequest] = useState<{ playerIndex: number; playerName: string } | null>(null)
 
   const leaderboard = useMemo(() => {
     const countByPlayer: Record<number, number> = {}
@@ -170,6 +176,11 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
     setStackMode(v)
   }, [])
 
+  const requestWheel = useCallback((playerIndex: number, playerName: string) => {
+    setWheelRequest({ playerIndex, playerName })
+  }, [])
+  const clearWheel = useCallback(() => setWheelRequest(null), [])
+
   const value = useMemo(
     () => ({
       items,
@@ -191,6 +202,8 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
       resetFailCount,
       resetSession,
       setFilterMode: setFilterModeCb,
+      requestWheel,
+      clearWheel,
     }),
     [
       items,
@@ -212,12 +225,21 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
       resetFailCount,
       resetSession,
       setFilterModeCb,
+      requestWheel,
+      clearWheel,
     ]
   )
 
   return (
     <PunishmentContext.Provider value={value}>
       {children}
+      {wheelRequest && (
+        <PunishmentWheelModal
+          playerIndex={wheelRequest.playerIndex}
+          playerName={wheelRequest.playerName}
+          onClose={clearWheel}
+        />
+      )}
     </PunishmentContext.Provider>
   )
 }

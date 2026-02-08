@@ -91,6 +91,8 @@ export interface GameMeta {
   twoPlayerFriendly?: boolean
   /** GAMES_500 #127：卡片 hover 時顯示的規則摘要（可選，一兩句） */
   rulesSummary?: string
+  /** P0-011：一句話簡介，用於列表/搜尋預覽；不填則用 description 前段 */
+  short_description?: string
   /** G0.5：付費遊戲所需訂閱等級（不設即免費） */
   requiredTier?: SubscriptionTier
   /** P1-123：最近上線的新遊戲，卡片顯示 New 標籤 */
@@ -118,18 +120,18 @@ export const GAME_DIFFICULTY_LABELS: Record<GameDifficulty, string> = {
   hard: '困難',
 }
 
-/** 遊戲列表（順序即 Lobby 顯示順序）；任務 8/9：難度、每局約分鐘 */
+/** 遊戲列表（依分類分組：party / guess / reaction / draw / facetoface / adult / other）；任務 8/9：難度、每局約分鐘；P0-011：short_description、rulesSummary */
 export const GAMES_META: GameMeta[] = [
-  { id: 'truth-or-dare', name: '真心話大冒險', description: '經典派對遊戲，揭開秘密或接受挑戰。', icon: MessageCircle, color: 'primary', players: '2-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zxhdmx zhenxinhuadamaoxian', twoPlayerFriendly: true, isNew: true },
-  { id: 'roulette', name: '命運轉盤', description: '命運指針決定誰來喝一口。可自訂玩家名稱！', icon: RotateCw, color: 'secondary', players: '2-12 人', popular: true, difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'myzp mingyunzhuanpan', twoPlayerFriendly: true, rulesSummary: '指針轉到誰，誰喝一口。可自訂玩家名單。' },
-  { id: 'trivia', name: '酒神隨堂考', description: '考驗酒類知識，答錯請喝！', icon: Target, color: 'accent', players: '1-6 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'jsstk jiushensuitangkao', twoPlayerFriendly: true },
-  { id: 'dice', name: '深空骰子', description: '3D 數位擲骰，簡單暴力的比大小。', icon: Dices, color: 'white', players: '無限', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sksz shenkongshaizi', twoPlayerFriendly: true },
-  { id: 'never-have-i-ever', name: '我從來沒有', description: '經典酒桌告白遊戲，做過就喝！', icon: Hand, color: 'primary', players: '3-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'wclmy woonglaimeiyou' },
-  { id: 'kings-cup', name: '國王遊戲', description: '抽牌決定命運，抽到國王喝一口（懲罰可自訂）。', icon: Crown, color: 'accent', players: '4-10 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'gwyx guowangyouxi' },
-  { id: 'baskin-robbins-31', name: '31 遊戲', description: '輪流數 1～31，一次 1～3 個數，喊到 31 喝。', icon: Layers, color: 'secondary', players: '2-6 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: '31 youxi', twoPlayerFriendly: true },
-  { id: 'up-down-stairs', name: '上下樓梯', description: '依樓層順序喊，喊錯或慢的人喝。', icon: MoveVertical, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: 'sxlt shangxialouti' },
-  { id: 'countdown-toast', name: '倒數乾杯', description: '隨機 3～10 秒倒數，最接近 0 秒按的人喝。', icon: Timer, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'dsgb daoshuganbei', twoPlayerFriendly: true },
-  { id: 'random-picker', name: '隨機選一位', description: '純數位抽籤，無實物。', icon: Sparkles, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sjxyw suijixuanywei', twoPlayerFriendly: true },
+  { id: 'truth-or-dare', name: '真心話大冒險', description: '經典派對遊戲，揭開秘密或接受挑戰。', short_description: '揭開秘密或接受挑戰', icon: MessageCircle, color: 'primary', players: '2-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zxhdmx zhenxinhuadamaoxian', twoPlayerFriendly: true, isNew: true, rulesSummary: '選真心話或大冒險，拒絕或失敗喝。' },
+  { id: 'roulette', name: '命運轉盤', description: '命運指針決定誰來喝一口。可自訂玩家名稱！', short_description: '指針指到誰誰喝', icon: RotateCw, color: 'secondary', players: '2-12 人', popular: true, difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'myzp mingyunzhuanpan', twoPlayerFriendly: true, rulesSummary: '指針轉到誰，誰喝一口。可自訂玩家名單。' },
+  { id: 'trivia', name: '酒神隨堂考', description: '考驗酒類知識，答錯請喝！', short_description: '酒類知識答錯喝', icon: Target, color: 'accent', players: '1-6 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'jsstk jiushensuitangkao', twoPlayerFriendly: true, rulesSummary: '答題考驗酒類知識，答錯喝。' },
+  { id: 'dice', name: '深空骰子', description: '3D 數位擲骰，簡單暴力的比大小。', short_description: '擲骰比大小', icon: Dices, color: 'white', players: '無限', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sksz shenkongshaizi', twoPlayerFriendly: true, rulesSummary: '擲骰比點數大小。' },
+  { id: 'never-have-i-ever', name: '我從來沒有', description: '經典酒桌告白遊戲，做過就喝！', short_description: '做過就喝', icon: Hand, color: 'primary', players: '3-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'wclmy woonglaimeiyou', rulesSummary: '說「我從來沒有…」，做過的人喝。' },
+  { id: 'kings-cup', name: '國王遊戲', description: '抽牌決定命運，抽到國王喝一口（懲罰可自訂）。', short_description: '抽到國王喝', icon: Crown, color: 'accent', players: '4-10 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'gwyx guowangyouxi', rulesSummary: '抽牌依牌面執行，抽到國王喝。' },
+  { id: 'baskin-robbins-31', name: '31 遊戲', description: '輪流數 1～31，一次 1～3 個數，喊到 31 喝。', short_description: '喊到 31 的人喝', icon: Layers, color: 'secondary', players: '2-6 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: '31 youxi', twoPlayerFriendly: true, rulesSummary: '輪流報 1～3 個數，喊到 31 喝。' },
+  { id: 'up-down-stairs', name: '上下樓梯', description: '依樓層順序喊，喊錯或慢的人喝。', short_description: '依序喊樓層，錯或慢喝', icon: MoveVertical, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: 'sxlt shangxialouti', rulesSummary: '依樓層順序喊，喊錯或慢喝。' },
+  { id: 'countdown-toast', name: '倒數乾杯', description: '隨機 3～10 秒倒數，最接近 0 秒按的人喝。', short_description: '最接近 0 秒按的人喝', icon: Timer, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'dsgb daoshuganbei', twoPlayerFriendly: true, rulesSummary: '隨機倒數，最接近 0 秒按的人喝。' },
+  { id: 'random-picker', name: '隨機選一位', description: '純數位抽籤，無實物。', short_description: '隨機抽一位', icon: Sparkles, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sjxyw suijixuanywei', twoPlayerFriendly: true, rulesSummary: '隨機抽籤選出一位。' },
   { id: 'drink-or-safe', name: '喝或安全', description: '抽一位＋喝或安全。', icon: CircleCheck, color: 'secondary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'haq hehuoanquan', twoPlayerFriendly: true },
   { id: 'high-low', name: '比大小', description: '猜下一張比現在大還是小，猜錯喝。', icon: ArrowUpDown, color: 'secondary', players: '2-6 人', difficulty: 'easy', estimatedMinutes: 8, twoPlayerFriendly: true },
   { id: 'titanic', name: '浮杯', description: '輪流加一點，讓杯子沉的人喝。', icon: Ship, color: 'secondary', players: '2-6 人', difficulty: 'medium', estimatedMinutes: 10, twoPlayerFriendly: true },
@@ -362,6 +364,13 @@ export type GameId = (typeof GAMES_META)[number]['id'] | null
 /** 依 id 取得單一遊戲 metadata */
 export function getGameMeta(id: string): GameMeta | undefined {
   return GAMES_META.find((g) => g.id === id)
+}
+
+/** P0-011：一句話簡介；無 short_description 時用 description 前 50 字 */
+export function getShortDescription(meta: GameMeta): string {
+  if (meta.short_description) return meta.short_description
+  const d = meta.description
+  return d.length > 50 ? `${d.slice(0, 47)}…` : d
 }
 
 /** P0-009：訪客試玩 — 3–5 款非 18+ 熱門遊戲，試玩 3 次後強制登入 */
