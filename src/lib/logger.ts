@@ -16,12 +16,13 @@ function formatStructured(level: string, message: string, context?: LogContext):
   return JSON.stringify({ level, message, ...safe, ts: new Date().toISOString() })
 }
 
+/** P0-020：關鍵路徑（創建房間、支付等）在生產環境也輸出 info，供日誌聚合與追蹤 */
 export const logger = {
   debug: (message: string, context?: LogContext) => {
     if (isDev) console.debug(formatStructured('debug', message, context))
   },
   info: (message: string, context?: LogContext) => {
-    if (isDev) console.info(formatStructured('info', message, context))
+    console.info(formatStructured('info', message, context))
   },
   warn: (message: string, context?: LogContext) => {
     console.warn(formatStructured('warn', message, context))

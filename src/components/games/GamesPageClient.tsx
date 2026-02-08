@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -11,7 +11,9 @@ import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown, 
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
-import Lobby, { type DisplayCategory } from '@/components/games/Lobby'
+import type { DisplayCategory } from '@/components/games/Lobby'
+/** P0-018：非首屏遊戲列表懶加載，降低大廳首屏 bundle */
+const Lobby = lazy(() => import('@/components/games/Lobby').then((m) => ({ default: m.default })))
 import GameErrorBoundary from '@/components/games/GameErrorBoundary'
 import SettingsModal from '@/components/games/SettingsModal'
 import AgeGate, { getAgeGatePassed } from '@/components/games/AgeGate'
@@ -963,37 +965,39 @@ function GamesPageContent() {
                 </div>
               )}
 
-              {/* Game Grid — hide when room slug but not joined yet */}
+              {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
               {(!roomSlug || joinedDisplayName) && (
-                <Lobby
-                  games={gamesWithCategory}
-                  recentGameIds={recentGameIds}
-                  weeklyPlayCounts={weeklyPlayCounts}
-                  displayFilter={lobbyDisplayFilter}
-                  onDisplayFilterChange={handleLobbyTabChange}
-                  onSelect={(id) => {
-                    /** P0-009：訪客試玩 3 次後強制登入 */
-                    if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
-                      setShowGuestTrialLimitModal(true)
-                      return
-                    }
-                    savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
-                    setActiveGame(id)
-                    saveLastSession(id)
-                    incrementWeeklyPlay(id)
-                    setWeeklyPlayCounts(getWeeklyPlayCounts())
-                    setShowRestoreBanner(false)
-                    try {
-                      const raw = localStorage.getItem(RECENT_GAMES_KEY)
-                      const arr = raw ? (JSON.parse(raw) as string[]) : []
-                      const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
-                      localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
-                      setRecentGameIds(next)
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                />
+                <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
+                  <Lobby
+                    games={gamesWithCategory}
+                    recentGameIds={recentGameIds}
+                    weeklyPlayCounts={weeklyPlayCounts}
+                    displayFilter={lobbyDisplayFilter}
+                    onDisplayFilterChange={handleLobbyTabChange}
+                    onSelect={(id) => {
+                      /** P0-009：訪客試玩 3 次後強制登入 */
+                      if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
+                        setShowGuestTrialLimitModal(true)
+                        return
+                      }
+                      savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
+                      setActiveGame(id)
+                      saveLastSession(id)
+                      incrementWeeklyPlay(id)
+                      setWeeklyPlayCounts(getWeeklyPlayCounts())
+                      setShowRestoreBanner(false)
+                      try {
+                        const raw = localStorage.getItem(RECENT_GAMES_KEY)
+                        const arr = raw ? (JSON.parse(raw) as string[]) : []
+                        const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
+                        localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
+                        setRecentGameIds(next)
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                  />
+                </Suspense>
               )}
             </motion.div>
           ) : activeGame && selectedGame ? (

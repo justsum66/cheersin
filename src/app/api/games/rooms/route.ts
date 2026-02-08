@@ -104,6 +104,7 @@ export async function POST(request: Request) {
       }
       return serverErrorResponse(roomError)
     }
+    logger.info('Game room created', { slug: room.slug, roomId: room.id })
     return NextResponse.json({
       roomId: room.id,
       slug: room.slug,
