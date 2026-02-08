@@ -15,7 +15,9 @@ function createMockSupabase(insertError: { code: string } | null = null) {
     select: vi.fn().mockReturnThis(),
   }
   const from = vi.fn(() => chain)
-  return { from, ...chain }
+  /** P2-287：ACTIVATED 改呼叫 activate_subscription RPC */
+  const rpc = vi.fn().mockResolvedValue({ error: null })
+  return { from, rpc, ...chain }
 }
 
 vi.mock('@/lib/supabase-server', () => ({
@@ -64,13 +66,13 @@ describe('PayPal webhook POST', () => {
     expect(res.status).toBe(200)
     expect(mock.from).toHaveBeenCalledWith('webhook_events')
     expect(mock.insert).toHaveBeenCalled()
+    expect(mock.rpc).toHaveBeenCalledWith('activate_subscription', expect.any(Object))
   })
 
   it('冪等：重複 event_id 時回 200 且 duplicate: true', async () => {
     const mock = createMockSupabase(null)
-    // req1: webhook_events insert -> null, subscription_audit insert -> null；req2: webhook_events insert -> 23505
+    // req1: webhook_events insert -> null；req2: webhook_events insert -> 23505
     mock.insert
-      .mockResolvedValueOnce({ error: null })
       .mockResolvedValueOnce({ error: null })
       .mockResolvedValueOnce({ error: { code: '23505', message: 'duplicate key' } })
     vi.mocked(createServerClientOptional).mockReturnValue(mock as never)

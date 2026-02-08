@@ -100,7 +100,7 @@ export default function PricingPage() {
   }
 
   return (
-    <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb" role="main" aria-label="方案定價">
+    <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile max-w-7xl mx-auto" role="main" aria-label="方案定價">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       {/* E81：限時優惠倒數與實際活動結束時間一致；無 PROMO_END 時不顯示 */}
       {promoEndMs > 0 && promoRemaining != null && promoRemaining > 0 && (

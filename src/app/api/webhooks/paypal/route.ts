@@ -168,38 +168,25 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
   logApiWarn('webhooks/paypal', `Processing event: ${eventType}`, { action: eventType, requestId })
 
   switch (eventType) {
-    // Subscription activated (new subscription)
+    // Subscription activated (new subscription) — P2-287：單一事務 RPC
     case 'BILLING.SUBSCRIPTION.ACTIVATED': {
       const subscriptionId = resource.id
       const customId = resource.custom_id // User ID we passed during creation
       const planType = getTierFromPayPalPlanId(resource.plan_id)
+      const nextBilling = resource.billing_info?.next_billing_time ?? null
 
-      // Update user subscription in database（與 DB 欄位一致：started_at, current_period_end）
-      const { error } = await supabase
-        .from('subscriptions')
-        .upsert({
-          user_id: customId,
-          paypal_subscription_id: subscriptionId,
-          plan_type: planType,
-          status: 'active',
-          started_at: new Date().toISOString(),
-          current_period_end: resource.billing_info?.next_billing_time ?? null,
-        })
+      const { error } = await supabase.rpc('activate_subscription', {
+        p_user_id: customId,
+        p_paypal_subscription_id: subscriptionId,
+        p_plan_type: planType,
+        p_next_billing_time: nextBilling,
+        p_event_type: eventType,
+      })
 
       if (error) {
         logApiError('webhooks/paypal', error, { action: 'BILLING.SUBSCRIPTION.ACTIVATED', requestId })
         throw error
       }
-
-      // Update user profile
-      await supabase
-        .from('profiles')
-        .update({ subscription_tier: planType })
-        .eq('id', customId)
-
-      // P3-60：審計紀錄
-      await insertSubscriptionAudit(supabase, { user_id: customId, paypal_subscription_id: subscriptionId, new_status: 'active', new_tier: planType, event_type: eventType })
-      /** SEC-17：不記錄 user id，僅記錄 planType */
       logApiWarn('webhooks/paypal', 'Subscription activated', { action: planType, requestId })
       break
     }

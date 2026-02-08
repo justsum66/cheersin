@@ -30,12 +30,37 @@ function logApiRequest(requestId: string, method: string, path: string): void {
   }
 }
 
+/** P2-375：管理後台 IP 白名單；設 ALLOWED_ADMIN_IPS 時僅允許列內 IP 存取 /admin */
+function isAdminPath(pathname: string): boolean {
+  return pathname.startsWith('/admin')
+}
+
+function getClientIpFromRequest(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    ''
+  )
+}
+
 export function middleware(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? generateRequestId()
-  const isApi = request.nextUrl.pathname.startsWith('/api')
+  const pathname = request.nextUrl.pathname
+  const isApi = pathname.startsWith('/api')
+
+  /** P2-375：/admin 路徑檢查 IP 白名單 */
+  if (isAdminPath(pathname)) {
+    const allowedIps = process.env.ALLOWED_ADMIN_IPS?.split(',').map((s) => s.trim()).filter(Boolean) ?? []
+    if (allowedIps.length > 0) {
+      const ip = getClientIpFromRequest(request)
+      if (!ip || !allowedIps.includes(ip)) {
+        return new NextResponse('Forbidden', { status: 403 })
+      }
+    }
+  }
 
   if (isApi) {
-    logApiRequest(requestId, request.method, request.nextUrl.pathname)
+    logApiRequest(requestId, request.method, pathname)
   }
 
   let res: NextResponse
@@ -60,4 +85,4 @@ export function middleware(request: NextRequest) {
   return res
 }
 
-export const config = { matcher: '/api/:path*' }
+export const config = { matcher: ['/api/:path*', '/admin/:path*'] }

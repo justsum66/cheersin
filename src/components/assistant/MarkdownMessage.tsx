@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
 // P006: Dynamic import for react-markdown to reduce initial bundle by ~40KB
@@ -59,8 +60,17 @@ const markdownComponents = {
   ol: ({ children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
     <ol className="my-2 list-decimal list-inside space-y-1" {...props}>{children}</ol>
   ),
+  /** P2-399：站內連結用 Next Link 同頁導航，外站新分頁；酒款/遊戲連結可從對話直接點擊 */
   a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
     const safeHref = href?.startsWith('javascript:') ? undefined : href
+    const isInternal = safeHref?.startsWith('/') === true && safeHref.length > 1
+    if (isInternal && safeHref) {
+      return (
+        <Link href={safeHref} className="text-primary-400 hover:underline break-all" {...props}>
+          {children}
+        </Link>
+      )
+    }
     return (
       <a href={safeHref} target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline break-all" {...props}>
         {children}

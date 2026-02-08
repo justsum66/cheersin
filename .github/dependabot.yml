@@ -1,0 +1,9 @@
+# P2-366：定期更新依賴 — Dependabot 每週檢查
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies]

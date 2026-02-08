@@ -1,0 +1,25 @@
+# P2-259：Lighthouse CI 占位 — 可選啟用
+# 需安裝 @lhci/cli 並設定 lighthouserc.js；或改用 Vercel Speed Insights
+name: Lighthouse
+
+on:
+  workflow_dispatch: # 手動觸發，避免每次 PR 都跑
+  # push:
+  #   branches: [main, master]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      # 需先 build 並 serve 或對預覽 URL 執行 lhci
+      # - run: npx @lhci/cli@0.13.x autorun --config=lighthouserc.js
+      - name: Placeholder
+        run: echo "Lighthouse CI optional - see docs/lighthouse-ci.md"

@@ -6,10 +6,11 @@ import { generateShortSlug, hashRoomPassword } from '@/lib/games-room'
 import { getMockStore, mockCreateRoom } from '@/lib/games-room-mock'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
 
 const MAX_SLUG_ATTEMPTS = 5
 
-/** P3-62：GET ?host=me — 需登入，回傳當前用戶為 host 的房間列表 */
+/** P3-62 / P2-310：GET ?host=me&limit=&offset= — 需登入，回傳當前用戶為 host 的房間列表（分頁） */
 export async function GET(request: Request) {
   const url = new URL(request.url)
   if (url.searchParams.get('host') !== 'me') {
@@ -19,6 +20,10 @@ export async function GET(request: Request) {
   if (!user?.id) {
     return errorResponse(401, 'Unauthorized', { message: '請先登入' })
   }
+  const { limit, offset } = normalizePagination({
+    limit: url.searchParams.get('limit') ?? undefined,
+    offset: url.searchParams.get('offset') ?? undefined,
+  })
   try {
     const supabase = createServerClient()
     const { data: rooms, error } = await supabase
@@ -26,8 +31,11 @@ export async function GET(request: Request) {
       .select('id, slug, created_at, expires_at')
       .eq('host_id', user.id)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
     if (error) return serverErrorResponse(error)
-    return NextResponse.json({ rooms: rooms ?? [] })
+    const list = rooms ?? []
+    const meta = buildPaginatedMeta(limit, offset, list.length, undefined, list.length >= limit ? String(offset + limit) : null)
+    return NextResponse.json({ rooms: list, meta })
   } catch (e) {
     logger.error('Games rooms GET failed', { error: e instanceof Error ? e.message : 'Unknown' })
     return serverErrorResponse(e)

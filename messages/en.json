@@ -3,6 +3,8 @@
     "appName": "Cheersin",
     "tagline": "Discover your soul wine",
     "cta": "Start quiz",
+    "heroTitle1": "Discover your",
+    "heroTitle2": "soul wine",
     "loading": "Loading…",
     "error": "Something went wrong",
     "save": "Save",
@@ -28,8 +30,13 @@
     "sectionLanguage": "Language"
   },
   "ageGate": {
-    "title": "Please confirm you are 18 or older",
-    "enter": "Enter",
-    "leave": "Leave"
+    "title": "Age verification",
+    "desc": "This site contains alcohol-related content. You must be 18 or older to continue.",
+    "confirm": "I am 18 or older",
+    "under18": "I am under 18",
+    "under18Title": "Under 18 not allowed",
+    "under18Desc": "This site contains alcohol-related content. Please leave this page.",
+    "leave": "Leave",
+    "disclaimer": "Drink responsibly. Must be 18+ to enter."
   }
 }

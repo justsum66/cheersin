@@ -3,6 +3,8 @@
     "appName": "Cheersin",
     "tagline": "发现你的灵魂之酒",
     "cta": "开始检测",
+    "heroTitle1": "发现你的",
+    "heroTitle2": "灵魂之酒",
     "loading": "加载中…",
     "error": "出错了",
     "save": "保存",
@@ -28,8 +30,13 @@
     "sectionLanguage": "语言"
   },
   "ageGate": {
-    "title": "请确认您已满 18 岁",
-    "enter": "进入",
-    "leave": "离开"
+    "title": "年龄确认",
+    "desc": "本网站涉及酒类内容，未满 18 岁不得使用。请确认您已满 18 岁。",
+    "confirm": "我满 18 岁",
+    "under18": "未满 18 岁",
+    "under18Title": "未满 18 岁请勿使用",
+    "under18Desc": "本网站涉及酒类内容，未满 18 岁不得使用。请离开本页面。",
+    "leave": "离开",
+    "disclaimer": "饮酒过量有害健康。未满 18 岁请勿进入。"
   }
 }

@@ -744,7 +744,7 @@ export default function QuizPage() {
   const isIntroOrResult = step === 'intro' || (step === 'result' && !!result)
 
   return (
-    <div ref={mainRef} className={`min-h-screen pt-0 px-4 md:px-6 md:py-8 safe-area-pb-quiz-main ${isIntroOrResult ? 'quiz-hero-echo' : ''}`} id="quiz-main" tabIndex={-1} role="main" aria-label="靈魂酒測">
+    <div ref={mainRef} className={`min-h-screen pt-0 page-container-mobile px-4 md:px-6 md:py-8 safe-area-pb-quiz-main ${isIntroOrResult ? 'quiz-hero-echo' : ''}`} id="quiz-main" tabIndex={-1} role="main" aria-label="靈魂酒測">
       <div className="max-w-5xl xl:max-w-[1440px] mx-auto">
         <AnimatePresence mode="wait">
 

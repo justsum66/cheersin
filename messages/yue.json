@@ -3,6 +3,8 @@
     "appName": "Cheersin",
     "tagline": "探索你嘅靈魂之酒",
     "cta": "開始測驗",
+    "heroTitle1": "探索你嘅",
+    "heroTitle2": "靈魂之酒",
     "loading": "載入中…",
     "error": "出錯",
     "save": "儲存",
@@ -28,8 +30,13 @@
     "sectionLanguage": "語言"
   },
   "ageGate": {
-    "title": "請確認你已滿 18 歲",
-    "enter": "進入",
-    "leave": "離開"
+    "title": "年齡確認",
+    "desc": "本網站涉及酒類內容，未滿 18 歲不得使用。請確認你已滿 18 歲。",
+    "confirm": "我滿 18 歲",
+    "under18": "未滿 18 歲",
+    "under18Title": "未滿 18 歲請勿使用",
+    "under18Desc": "本網站涉及酒類內容，未滿 18 歲不得使用。請離開本頁面。",
+    "leave": "離開",
+    "disclaimer": "飲酒過量有害健康。未滿 18 歲請勿進入。"
   }
 }

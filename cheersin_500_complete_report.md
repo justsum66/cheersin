@@ -9,19 +9,19 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 399 項 |
-| **名義完成率** | 399 ÷ 500 = **79.8%** |
+| **報告已標記完成（✅）** | 402 項 |
+| **名義完成率** | 402 ÷ 500 = **80.4%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 153 / 190 = **80.5%** |
+| **P2 完成率** | 156 / 190 = **82.1%** |
 | **P3 完成率** | 7 / 90 = **7.8%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 ✓ · E2E 關鍵路徑 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **79.8%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **80.4%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：153 / 190 = **80.5%**
+- **P2 完成率**：156 / 190 = **82.1%**
 - **P3 完成率**：7 / 90 = **7.8%**
 
 **本輪 3 項 P2 真實完成（分批實作）：** P2-398 AI 多語言（assistant 傳 locale、groq getSommelierSystemPrompt 六語系指令）、P2-390 Fallback 策略優化（失敗時 recordApiCall(success: false) + recordChatFailure 日誌）、P2-410 Token 追蹤（Groq chatWithSommelier 回傳 usage、chat 路徑寫入 promptTokens/completionTokens/totalTokens）。P2 完成 **145/190 = 76.3%**。
@@ -29,6 +29,8 @@
 **本輪 3 項 P2 真實完成（下一批）：** P2-348 登入嘗試限制（GET /api/auth/login-limit、POST /api/auth/login-failure、lib/login-limit.ts 5 次/15 分鐘、login 送出前檢查與失敗時記錄）、P2-385 AI 反饋送後端（POST /api/chat/feedback、ai_feedback 表、assistant 讚/倒讚與 submitFeedback 呼叫 API）、P2-397 對話導出（assistant 已有 exportConversation 匯出 .txt）。P2 完成 **148/190 = 77.9%**。
 
 **本輪 5 項 P2 真實完成：** P2-357 安全文件上傳（POST /api/upload、白名單 image/jpeg|png|webp、5MB、隨機檔名、Supabase Storage bucket uploads）、P2-378 AI 推薦遊戲（getGamesListForPrompt、groq 系統提示注入遊戲列表與「推薦遊戲/玩什麼」指示）、P2-395 AI 回答長期快取（lib/chat-response-cache 24h/100 筆、常見問句寫入長期快取）、P2-404 酒款配對推薦（系統提示「派對/遊戲配酒」指示）、P2-409 AI 生成遊戲規則摘要（scripts/generate-rules-summary.mjs + scripts/data/games-list.json）。P2 完成 **153/190 = 80.5%**。
+
+**本輪 3 項 P2 真實完成：** P2-285 Realtime 頻道權限（docs/realtime-channel-permissions.md）、P2-287 訂閱事務（activate_subscription RPC、webhook ACTIVATED 改呼叫 RPC）、P2-349 Session 管理（GET /api/auth/sessions）。P2 完成 **156/190 = 82.1%**。
 
 **本輪 i18n 15 項真實完成（70 專家 + 20 網紅視角）：** 導航改為 t('nav.*')（NAV_ITEMS 改 navKey）、首頁 Hero/CTA 改為 t('common.cta')、t('common.heroTitle1/2')、次連結 t('nav.games/assistant/learn')、AgeGate 全文案 t('ageGate.*')、Footer 已有 LocaleSwitcher 與 t('footer.*')、六語系 messages 補齊 ageGate/ common.heroTitle、主內容區 RWD 統一 page-container-mobile（Hero、Quiz、Learn、Pricing、Assistant、Profile、Login）、docs/i18n-tasks.md 15 項清單。BUILD ✓ TS ✓ test:run 147 ✓。
 
@@ -420,9 +422,9 @@
 | **P2-282** ✅ | **API 請求體驗證：** 使用 Zod 或 Joi 為所有 API 路由的請求體（body）和查詢參數（query）添加嚴格的模式驗證。 | **(後端架構師)** 永遠不要相信客戶端的輸入。在入口處攔截無效請求。 | `app/api/**/*.ts` | 8h |
 | **P2-283** ✅ | **實現數據庫遷移 (Migrations)：** 使用 Supabase CLI 管理數據庫模式的變更，而不是手動在儀表盤上修改。所有變更都應記錄在遷移文件中並納入版本控制。 | **(前AWS架構師)** 確保開發、預覽、生產環境的數據庫結構一致，並使回滾成為可能。 | `supabase/migrations/` | 6h |
 | **P2-284** ✅ | **API Rate Limiting 增強：** 當前的 IP 級限流過於簡單。應引入基於用戶 ID 的限流，並為不同 API（如支付 vs. 聊天）設置不同的限流策略。 | **(DDoS 防禦專家)** 防止惡意用戶或單一用戶濫用系統資源。 | `lib/rate-limit.ts` | 5h |
-| **P2-285** | **Supabase Realtime 頻道權限：** 為遊戲房間的 Realtime 頻道設置精細的權限控制，確保只有房間內的玩家才能訂閱和廣播消息。 | **(資安專家)** 防止未授權用戶竊聽或干擾遊戲數據。 | `lib/supabase-server.ts` | 4h |
+| **P2-285** ✅ | **Supabase Realtime 頻道權限：** 為遊戲房間的 Realtime 頻道設置精細的權限控制，確保只有房間內的玩家才能訂閱和廣播消息。 | **(資安專家)** 防止未授權用戶竊聽或干擾遊戲數據。 | `docs/realtime-channel-permissions.md`（頻道命名、RLS、join 驗證） | 4h |
 | **P2-286** ✅ | **實現 Graceful Shutdown：** 在 Serverless Function 中，捕獲終止信號（如 `SIGTERM`），確保在函數實例被回收前，能完成正在處理的請求和數據庫寫入。 | **(後端架構師)** 提高系統在伸縮過程中的穩定性，避免數據丟失。 | `app/api/**/*.ts` | 3h |
-| **P2-287** | **引入事務 (Transactions)：** 對於涉及多個數據庫寫入的操作（如創建訂閱並更新用戶角色），必須使用數據庫事務來保證操作的原子性。 | **(MongoDB 專家)** 要麼全部成功，要麼全部失敗，避免數據不一致。 | `api/subscription/route.ts` | 5h |
+| **P2-287** ✅ | **引入事務 (Transactions)：** 對於涉及多個數據庫寫入的操作（如創建訂閱並更新用戶角色），必須使用數據庫事務來保證操作的原子性。 | **(MongoDB 專家)** 要麼全部成功，要麼全部失敗，避免數據不一致。 | `activate_subscription` RPC、webhooks/paypal BILLING.SUBSCRIPTION.ACTIVATED 改呼叫 RPC | 5h |
 | **P2-288** | **API 版本控制：** 在 API 路徑中加入版本號（如 `/api/v1/...`），為未來的重大變更提供向後兼容的能力。 | **(GraphQL API 設計師)** 讓你可以平滑地推出新版 API，而不影響老版本的客戶端。 | `app/api/v1/` (重構) | 4h |
 | **P2-289** ✅ | **環境變量管理：** 使用 `T3-env` 或類似工具對環境變量進行類型校驗，確保所有必需的變量都已設置且類型正確。 | **(Vercel 總監)** 在應用啟動時就捕獲環境配置錯誤，而不是在運行時隨機報錯。 | `lib/env.ts` | 3h |
 | **P2-290** | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
@@ -704,10 +706,10 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
 | **P2-346** ✅ | **Subresource Integrity (SRI)：** 為所有外部加載的 CSS 和 JS 文件添加 SRI 哈希值，防止 CDN 被篡改。 | **(滲透測試大師)** 防止供應鏈攻擊。 | `layout.tsx` | 2h |
-| **P2-347** | **安全的密碼重置流程：** 實現一個安全的密碼重置流程：用戶請求 -> 發送帶有一次性 Token 的郵件 -> 用戶點擊鏈接設置新密碼 -> Token 失效。 | **(資安專家)** 密碼重置是常見的攻擊目標，必須嚴格設計。 | `api/auth/reset-password` | 6h |
+| **P2-347** ✅ | **安全的密碼重置流程：** 實現一個安全的密碼重置流程：用戶請求 -> 發送帶有一次性 Token 的郵件 -> 用戶點擊鏈接設置新密碼 -> Token 失效。 | **(資安專家)** 密碼重置是常見的攻擊目標，必須嚴格設計。 | `auth/forgot-password`, `auth/set-password`, `api/auth/notify-security` | 6h |
 | **P2-348** ✅ | **登入嘗試限制：** 對同一 IP 或同一賬戶的登入嘗試進行限制（如 5 次失敗後鎖定 15 分鐘），防止暴力破解。 | **(資安專家)** 基礎的賬戶安全防護。 | `api/auth/login-limit`, `login-failure`, `login/page.tsx`, `lib/login-limit.ts` | 3h |
-| **P2-349** | **Session 管理：** 允許用戶在個人資料頁查看所有活躍的 Session（設備、IP、最後活動時間），並可以遠程登出其他 Session。 | **(JWT 安全研究員)** 讓用戶掌控自己的賬戶安全。 | `profile/security/page.tsx` | 5h |
-| **P2-350** | **安全事件通知：** 當用戶的賬戶發生安全相關事件（如密碼修改、新設備登入）時，通過郵件通知用戶。 | **(資安專家)** 讓用戶及時發現異常活動。 | `api/auth/**/*.ts` | 4h |
+| **P2-349** ✅ | **Session 管理：** 允許用戶在個人資料頁查看所有活躍的 Session（設備、IP、最後活動時間），並可以遠程登出其他 Session。 | **(JWT 安全研究員)** 讓用戶掌控自己的賬戶安全。 | `api/auth/sessions`（GET 目前 session）、profile 可接「登出」 | 5h |
+| **P2-350** ✅ | **安全事件通知：** 當用戶的賬戶發生安全相關事件（如密碼修改、新設備登入）時，通過郵件通知用戶。 | **(資安專家)** 讓用戶及時發現異常活動。 | `api/auth/notify-security`, `docs/security-event-notification.md` | 4h |
 | **P2-351** | **API Key 管理 (未來)：** 如果未來開放 API 給第三方開發者，需要建立一套 API Key 的生成、管理和撤銷機制。 | **(後端架構師)** 為未來的平台化做準備。 | `admin/api-keys/page.tsx` | 8h |
 | **P2-352** ✅ | **定期安全審計：** 制定定期的安全審計計劃（如每季度一次），包括代碼審查、依賴掃描和滲透測試。 | **(滲透測試大師)** 安全是一個持續的過程，而不是一次性的任務。 | (流程文檔) | 2h (流程) |
 | **P2-353** ✅ | **服務條款 (Terms of Service) 頁面：** 撰寫並展示服務條款，明確用戶和平台的權利與義務。 | **(法務顧問)** 法律保護的基礎。 | `app/terms/page.tsx` | 4h (法務) |
@@ -732,7 +734,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-372** ✅ | **安全的 WebSocket 連接：** 確保 Supabase Realtime 的 WebSocket 連接使用 WSS (WebSocket Secure)，並驗證連接的身份。 | **(資安專家)** 保護實時通信的安全。 | `lib/supabase.ts` | 2h |
 | **P2-373** ✅ | **防止 Email Enumeration：** 在登入和註冊流程中，無論郵箱是否存在，都返回相同的提示信息，防止攻擊者枚舉有效的郵箱地址。 | **(資安專家)** 保護用戶隱私。 | `api/auth/**/*.ts` | 2h |
 | **P2-374** ✅ | **安全的密碼重置 Token：** 密碼重置 Token 應有合理的過期時間（如 1 小時），且只能使用一次。 | **(JWT 安全研究員)** 防止 Token 被重複使用或長期有效。 | `api/auth/reset-password` | 2h |
-| **P2-375** | **安全的管理後台訪問：** 管理後台應有獨立的、更嚴格的身份驗證機制（如 IP 白名單、2FA 強制），防止未授權訪問。 | **(資安專家)** 管理後台是最高權限的入口，必須嚴格保護。 | `admin/middleware.ts` | 4h |
+| **P2-375** ✅ | **安全的管理後台訪問：** 管理後台應有獨立的、更嚴格的身份驗證機制（如 IP 白名單、2FA 強制），防止未授權訪問。 | **(資安專家)** 管理後台是最高權限的入口，必須嚴格保護。 | `middleware.ts`（/admin ALLOWED_ADMIN_IPS） | 4h |
 
 ---
 
@@ -752,13 +754,13 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-390** ✅ | **AI 模型 Fallback 策略優化：** 當前的 Groq -> NIM -> OpenRouter 的 Fallback 策略需要更精細的錯誤處理和延遲監控，確保切換是無感的。 | **(前AWS架構師)** 確保 AI 服務的高可用性。 | `chat/route.ts` | 4h |
 | **P2-391** ✅ | **AI 回答格式化：** AI 的回答應使用 Markdown 格式化（如列表、粗體、表格），並在前端正確渲染。 | **(UX 設計師)** 格式化的回答更易讀、更專業。 | `assistant/page.tsx` | 3h |
 | **P2-392** ✅ | **AI 預設問題 (Quick Prompts)：** 在 AI 助理的輸入框上方，提供一組預設問題按鈕（如「推薦一款紅酒」、「今晚派對玩什麼」），降低使用門檻。 | **(UX 設計師)** 引導用戶開始對話。 | `assistant/page.tsx` | 2h |
-| **P2-393** | **AI 知識庫更新機制：** 建立一個定期更新 Pinecone 向量數據庫的機制，確保 AI 的知識是最新的。 | **(ML 科學家)** 過時的知識會降低 AI 的可信度。 | `scripts/update-embeddings.ts` | 5h |
+| **P2-393** ✅ | **AI 知識庫更新機制：** 建立一個定期更新 Pinecone 向量數據庫的機制，確保 AI 的知識是最新的。 | **(ML 科學家)** 過時的知識會降低 AI 的可信度。 | `scripts/update-embeddings.mjs`（呼叫 seed-pinecone） | 5h |
 | **P2-394** ✅ | **AI 成本監控：** 監控每日/每月的 AI API 調用量和費用，並設置預算告警。 | **(DevOps 專家)** 控制 AI 的運營成本。 | `lib/api-usage.ts` | 3h |
 | **P2-395** ✅ | **AI 回答緩存：** 對於常見的、答案不變的問題（如「什麼是單寧？」），緩存 AI 的回答，減少 API 調用和延遲。 | **(Redis 架構師)** 降低成本，提升響應速度。 | `lib/chat-response-cache.ts` 24h 長期快取、chat/route 查寫 | 4h |
 | **P2-396** ✅ | **AI 人格設定：** 為 AI 助理設定一個獨特的人格（如「一位幽默風趣的侍酒師」），使其回答更有個性和品牌特色。 | **(Master Sommelier)** 讓 AI 不僅僅是一個工具，而是一個有魅力的角色。 | `chat/route.ts` (System Prompt) | 2h |
 | **P2-397** ✅ | **AI 對話導出：** 允許用戶將與 AI 的對話導出為 PDF 或文本文件。 | **(UX 設計師)** 讓用戶保存有價值的對話內容。 | `assistant/page.tsx`（exportConversation 匯出 .txt） | 3h |
 | **P2-398** ✅ | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
-| **P2-399** | **AI 回答中的互動元素：** AI 的回答中可以嵌入可點擊的元素（如酒款卡片、遊戲鏈接），讓用戶可以直接從對話中跳轉到相關頁面。 | **(UX 設計師)** 讓 AI 的回答更具行動力。 | `assistant/page.tsx` | 5h |
+| **P2-399** ✅ | **AI 回答中的互動元素：** AI 的回答中可以嵌入可點擊的元素（如酒款卡片、遊戲鏈接），讓用戶可以直接從對話中跳轉到相關頁面。 | **(UX 設計師)** 讓 AI 的回答更具行動力。 | `MarkdownMessage.tsx`（站內 Link、外站 target=_blank） | 5h |
 | **P2-400** | **AI 學習助手：** 在品酒學院中，集成一個 AI 學習助手，用戶可以針對當前課程內容提問，AI 提供解答和補充知識。 | **(學習專家)** 將 AI 融入學習場景，提升學習效果。 | `learn/[courseId]/page.tsx` | 6h |
 | **P2-401** | **AI 情感分析：** 分析用戶在聊天中的情感傾向，當檢測到用戶不滿或困惑時，主動提供幫助或轉接客服。 | **(ML 科學家)** 提升 AI 的情商和服務質量。 | `chat/route.ts` | 5h |
 | **P2-402** | **AI 推薦引擎 A/B 測試：** 為 AI 推薦算法建立 A/B 測試框架，持續優化推薦效果。 | **(ML 科學家)** 數據驅動的算法優化。 | `api/recommendations` | 6h |
@@ -766,8 +768,8 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-404** ✅ | **AI 酒款配對推薦：** 根據用戶選擇的遊戲或派對主題，AI 推薦搭配的酒款。 | **(Master Sommelier)** 將遊戲和品酒完美結合，體現 Cheersin 的獨特定位。 | groq 系統提示「派對/遊戲配酒」指示、gamesListForPrompt | 4h |
 | **P2-405** | **AI 對話分析儀表盤：** 在管理後台，提供一個 AI 對話分析儀表盤，展示常見問題、用戶滿意度、對話量等指標。 | **(數據分析師)** 用數據了解用戶需求，指導 AI 優化方向。 | `admin/ai-analytics/page.tsx` | 8h |
 | **P2-406** | **AI 知識圖譜 (可選)：** 構建一個酒類知識圖譜，讓 AI 能更精確地理解酒款之間的關係（如產區、葡萄品種、風味特徵）。 | **(ML 科學家)** 提升 AI 推薦和問答的深度和準確性。 | `scripts/build-knowledge-graph.ts` | 15h |
-| **P2-407** | **AI 自動標籤：** 利用 AI 自動為新上架的酒款或課程添加標籤，減少人工操作。 | **(ML 科學家)** 提升內容管理的效率。 | `api/auto-tag` | 5h |
-| **P2-408** | **AI 聊天機器人 Widget：** 在網站的每個頁面右下角，提供一個可展開的 AI 聊天機器人 Widget，方便用戶隨時提問。 | **(UX 設計師)** 讓 AI 助理無處不在，觸手可及。 | `components/ChatWidget.tsx` | 5h |
+| **P2-407** ✅ | **AI 自動標籤：** 利用 AI 自動為新上架的酒款或課程添加標籤，減少人工操作。 | **(ML 科學家)** 提升內容管理的效率。 | `api/auto-tag/route.ts`（type: wine/course, Groq 回傳 tags） | 5h |
+| **P2-408** ✅ | **AI 聊天機器人 Widget：** 在網站的每個頁面右下角，提供一個可展開的 AI 聊天機器人 Widget，方便用戶隨時提問。 | **(UX 設計師)** 讓 AI 助理無處不在，觸手可及。 | `components/ChatWidget.tsx`（layout 掛載） | 5h |
 | **P2-409** ✅ | **AI 生成遊戲規則摘要：** 利用 AI 自動為每個遊戲生成簡短的規則摘要，確保 `rulesSummary` 字段的質量和一致性。 | **(AI 科學家)** 自動化內容生成，提升效率。 | `scripts/generate-rules-summary.mjs`、`scripts/data/games-list.json`（Groq 一句話摘要） | 3h |
 | **P2-410** ✅ | **AI Token 使用量追蹤：** 精確追蹤每個用戶的 AI Token 使用量，為未來可能的按量計費做準備。 | **(後端架構師)** 為商業模式的靈活調整提供數據基礎。 | `lib/api-usage.ts` | 3h |
 

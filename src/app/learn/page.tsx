@@ -818,7 +818,7 @@ export default function LearnPage() {
   })()
 
   return (
-    <main id="learn-main" className="relative min-h-screen px-3 sm:px-6 md:px-8 pt-0 pb-10 md:pb-12 safe-area-px safe-area-pb" tabIndex={-1} role="main" aria-label="品酒學院課程列表">
+    <main id="learn-main" className="relative min-h-screen px-3 sm:px-6 md:px-8 pt-0 pb-10 md:pb-12 safe-area-px safe-area-pb page-container-mobile" tabIndex={-1} role="main" aria-label="品酒學院課程列表">
         {/* 172 skip link；66-70 RWD：鍵盤 Tab 可見 */}
         <a
           href="#learn-main"

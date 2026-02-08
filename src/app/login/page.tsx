@@ -28,6 +28,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [emailTouched, setEmailTouched] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotSent, setForgotSent] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -322,6 +325,9 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+          <p className="text-center text-white/60 text-sm mt-2">
+            <Link href="/auth/forgot-password" className="text-primary-400 hover:underline">忘記密碼？重設密碼</Link>
+          </p>
 
           {/* P2 任務 32：魔法連結說明區塊層次 — 標題與表單區分、間距 token */}
           <div className="mt-6 pt-6 border-t border-white/10" style={{ marginTop: 'var(--space-section, 1.5rem)' }}>

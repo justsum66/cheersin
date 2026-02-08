@@ -16,6 +16,7 @@ import DeferredAnalytics from '@/components/DeferredAnalytics'
 import NavHiddenEffect from '@/components/navigation/NavHiddenEffect'
 import AgeGate from '@/components/AgeGate'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
+import { ChatWidget } from '@/components/ChatWidget'
 import MaintenanceBanner from '@/components/MaintenanceBanner'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import ExpiryBanner from '@/components/ExpiryBanner'
@@ -155,6 +156,7 @@ export default function RootLayout({
               </ErrorBoundaryBlock>
             </main>
             <BackToTop />
+            <ChatWidget />
           </AgeGate>
           <CookieConsentBanner />
         </ClientProviders>
