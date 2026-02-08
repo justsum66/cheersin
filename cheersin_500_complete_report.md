@@ -41,9 +41,9 @@
 
 ## 1. [P0] 根本性重塑 (Fundamental Reshaping) - 25 項
 
-**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020、P0-013、P0-023、**P0-025（profile 第一階段）** ✅ 已完成（…、**profile 頁移除 Mock、Supabase + loading/empty**）。  
-**本輪驗證（非任務項）：** 已修復 6 個 ESLint 警告（StoryChain、Telephone、EmojiPuzzle、MusicChair、NameTrain、PhotoGuess）；Build + Lint + 147 tests 通過。  
-**驗證備註：** P0 已完成 15 項（001,002,003,006,007,009,013,014,015,017,018,019,020,021,023）；下表 ✅ 與備註一致。
+**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020、P0-013、P0-023、**P0-025** ✅ 共 **16 項** 已完成（…、**P0-025 徹底完成**：profile 與 assistant 均無 Mock；profile 改 Supabase + loading/empty，assistant 使用 localStorage 歷史 + /api/chat、已有 loading/empty）。  
+**本輪驗證（非任務項）：** 已修復 6 個 ESLint 警告；design-tokens lineHeight 型別修正（Tailwind theme 僅接受 string）。  
+**驗證備註：** P0 已完成 **16/25** 項；下表 ✅ 與備註一致；**無進行中任務**。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 
@@ -73,7 +73,7 @@
 | **P0-022** | **整合支付 Webhook：** `paypal/route.ts` 中的 Webhook 處理邏輯不完整且不安全。必須嚴格驗證 Webhook 簽名，並處理 `SUBSCRIPTION.CANCELLED`, `PAYMENT.SALE.COMPLETED` 等核心事件。 | **(支付安全專家)** 這是資金安全的命脈。Webhook 處理失敗或被偽造，會導致用戶付了錢但沒開通服務，或服務被惡意取消。 | `api/webhooks/paypal/route.ts` | 8h |
 | **P0-023** ✅ | **建立管理後台基礎：** `admin/` 目錄下的頁面是孤立的。需要建立一個統一的後台佈局，並首先實現一個「用戶查找」和「訂閱狀態管理」的功能。 | **(後端架構師)** 必須有一個客服和運營的入口，處理用戶問題和查看系統狀態。 | `admin/layout.tsx`, `admin/users/page.tsx` | 6h |
 | **P0-024** | **設計「無障礙」規範：** 專案缺乏無障礙設計。必須為所有可互動元素（按鈕、鏈接、輸入框）添加明確的 `aria-label`，並確保顏色對比度符合 WCAG AA 標準。 | **(Apple HIG 設計師)** 無障礙不是一個選項，而是一種責任。這也擴大了你的潛在用戶群。 | `globals.css`, 所有 `tsx` 文件 | 5h |
-| **P0-025** ✅ | **移除所有 Mock數據和硬編碼：** `profile/page.tsx` 等處存在大量 Mock 數據。必須全部移除，改為從 API 或 Supabase 獲取真實數據，並處理好 loading 和 empty 狀態。**第一階段（profile 頁）已完成：** 未登入顯示 empty 狀態、已登入從 Supabase profiles 取得 xp/level/display_name、loading 與空狀態已處理；assistant 頁 Mock 待下一輪。 | **(Netflix 架構師)** Mock 數據是開發階段的產物，留在生產代碼中是不可接受的。 | `profile/page.tsx`, `assistant/page.tsx` | 4h |
+| **P0-025** ✅ | **移除所有 Mock數據和硬編碼：** `profile/page.tsx` 等處存在大量 Mock 數據。必須全部移除，改為從 API 或 Supabase 獲取真實數據，並處理好 loading 和 empty 狀態。**已徹底完成：** profile 未登入 empty、已登入 Supabase profiles + loading；assistant 無 Mock、對話來自 localStorage 與 /api/chat，已有 loading/empty。 | **(Netflix 架構師)** Mock 數據是開發階段的產物，留在生產代碼中是不可接受的。 | `profile/page.tsx`, `assistant/page.tsx` | 4h |
 
 ---
 

@@ -125,8 +125,8 @@ export const fontSize = {
   h6: '1rem',
 } as const
 
-/** 行高：Tailwind 與 globals.css 使用字串 */
-export const lineHeight = {
+/** 行高：Tailwind theme 僅接受 string，不可用 number */
+export const lineHeight: Record<string, string> = {
   body: '1.65',
   tight: '1.25',
 }
