@@ -114,19 +114,14 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'riddle-guess': () => import(/* webpackChunkName: "games-party" */ './RiddleGuess'),
   'story-chain': () => import(/* webpackChunkName: "games-party" */ './StoryChain'),
   // Phase 8 新遊戲
-  'sound-imitate': () => import(/* webpackChunkName: "games-party" */ './SoundImitate'),
   'emoji-puzzle': () => import(/* webpackChunkName: "games-party" */ './EmojiPuzzle'),
   'memory-match': () => import(/* webpackChunkName: "games-party" */ './MemoryMatch'),
-  'dance-battle': () => import(/* webpackChunkName: "games-party" */ './DanceBattle'),
-  'beer-pong-vr': () => import(/* webpackChunkName: "games-party" */ './BeerPongVR'),
-  'poker-face': () => import(/* webpackChunkName: "games-party" */ './PokerFace'),
-  'lip-sync-battle': () => import(/* webpackChunkName: "games-party" */ './LipSyncBattle'),
-  'voice-mod': () => import(/* webpackChunkName: "games-party" */ './VoiceMod'),
-  'gesture-guess': () => import(/* webpackChunkName: "games-party" */ './GestureGuess'),
   'rhythm-master': () => import(/* webpackChunkName: "games-party" */ './RhythmMaster'),
-  'sound-sleuth': () => import(/* webpackChunkName: "games-party" */ './SoundSleuth'),
-  'pitch-perfect': () => import(/* webpackChunkName: "games-party" */ './PitchPerfect'),
-  'vocal-war': () => import(/* webpackChunkName: "games-party" */ './VocalWar'),
+  'drinking-fist': () => import(/* webpackChunkName: "games-other" */ './FingerGuessing'),
+  'captain-hook': () => import(/* webpackChunkName: "games-party" */ './NameTrain'),
+  'count-seven': () => import(/* webpackChunkName: "games-reaction" */ './BuzzGame'),
+  'ultimate-code': () => import(/* webpackChunkName: "games-guess" */ './NumberBomb'),
+  'support-front': () => import(/* webpackChunkName: "games-draw" */ './RandomPicker'),
 }
 
 /** React.lazy 遊戲組件對照表：選中時才載入，減少首屏 bundle */

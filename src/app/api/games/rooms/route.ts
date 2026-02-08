@@ -3,7 +3,6 @@ import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { generateShortSlug, hashRoomPassword } from '@/lib/games-room'
-import { getMockStore, mockCreateRoom } from '@/lib/games-room-mock'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
@@ -103,18 +102,7 @@ export async function POST(request: Request) {
       .insert(insertPayload)
       .select('id, slug, created_at')
       .single()
-    if (roomError || !room) {
-      if (getMockStore()) {
-        const mockRoom = mockCreateRoom(slug, bodyPassword)
-        return NextResponse.json({
-          roomId: mockRoom.id,
-          slug: mockRoom.slug,
-          inviteUrl: `${getBaseUrl()}/games?room=${mockRoom.slug}`,
-          createdAt: mockRoom.created_at,
-        })
-      }
-      return serverErrorResponse(roomError)
-    }
+    if (roomError || !room) return serverErrorResponse(roomError)
     logger.info('Game room created', { slug: room.slug, roomId: room.id })
     return NextResponse.json({
       roomId: room.id,
@@ -123,16 +111,6 @@ export async function POST(request: Request) {
       createdAt: room.created_at,
     })
   } catch (e: unknown) {
-    if (getMockStore()) {
-      const slug = generateShortSlug()
-      const room = mockCreateRoom(slug, bodyPassword)
-      return NextResponse.json({
-        roomId: room.id,
-        slug: room.slug,
-        inviteUrl: `${getBaseUrl()}/games?room=${room.slug}`,
-        createdAt: room.created_at,
-      })
-    }
     return serverErrorResponse(e)
   }
 }

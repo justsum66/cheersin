@@ -38,5 +38,20 @@
     "under18Desc": "本網站涉及酒類內容，未滿 18 歲不得使用。請離開本頁面。",
     "leave": "離開",
     "disclaimer": "飲酒過量有害健康。未滿 18 歲請勿進入。"
-  }
+  },
+  "pricing": { "title": "揀方案", "cta": "立即訂閱", "perMonth": "月", "popular": "熱門" },
+  "login": { "title": "登入", "email": "Email", "password": "密碼", "submit": "登入", "error": "登入失敗", "forgotPassword": "忘記密碼？" },
+  "quiz": { "resultTitle": "測驗結果", "resultDescription": "你嘅靈魂之酒" },
+  "assistant": { "placeholder": "輸入你嘅問題…", "send": "送出" },
+  "cookie": { "title": "我哋使用 Cookie 以提供最佳體驗", "accept": "接受", "decline": "拒絕" },
+  "notFound": { "title": "搵唔到頁面", "back": "返回首頁" },
+  "error": { "title": "發生錯誤", "retry": "重試" },
+  "subscription": { "success": "訂閱成功", "cancel": "取消訂閱" },
+  "profile": { "stats": "數據", "history": "紀錄" },
+  "games": { "filterAll": "全部", "empty": "尚無遊戲" },
+  "learn": { "sectionContinue": "繼續學習", "sectionAll": "全部課程" },
+  "validation": { "required": "必填", "email": "請輸入有效嘅 Email" },
+  "actions": { "submit": "送出", "loading": "處理中…" },
+  "auth": { "forgotPassword": "忘記密碼", "setPassword": "設定新密碼" },
+  "gamesRoom": { "create": "建立房間", "join": "加入房間" }
 }

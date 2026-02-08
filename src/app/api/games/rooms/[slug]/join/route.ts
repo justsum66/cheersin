@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
-import { getMockStore, mockGetRoomBySlug, mockJoinRoom } from '@/lib/games-room-mock'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const MAX_PLAYERS = 12
@@ -78,17 +77,6 @@ export async function POST(
         players: (players || []).map((p) => ({ id: p.id, displayName: p.display_name, orderIndex: p.order_index })),
       })
     } catch (supabaseErr) {
-      if (getMockStore()) {
-        const room = mockGetRoomBySlug(slug)
-        if (!room) return errorResponse(404, 'Room not found', { message: '找不到該房間' })
-        const result = mockJoinRoom(room.id, displayName, MAX_PLAYERS, body.password?.trim(), isSpectator)
-        if ('error' in result) return errorResponse(400, result.error, { message: result.error })
-        return NextResponse.json({
-          ok: true,
-          player: { id: result.player.id, displayName: result.player.display_name, orderIndex: result.player.order_index },
-          players: result.players.map((p) => ({ id: p.id, displayName: p.display_name, orderIndex: p.order_index })),
-        })
-      }
       throw supabaseErr
     }
   } catch (e: unknown) {

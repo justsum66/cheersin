@@ -38,5 +38,20 @@
     "under18Desc": "This site contains alcohol-related content. Please leave this page.",
     "leave": "Leave",
     "disclaimer": "Drink responsibly. Must be 18+ to enter."
-  }
+  },
+  "pricing": { "title": "Choose a plan", "cta": "Subscribe", "perMonth": "mo", "popular": "Popular" },
+  "login": { "title": "Log in", "email": "Email", "password": "Password", "submit": "Log in", "error": "Login failed", "forgotPassword": "Forgot password?" },
+  "quiz": { "resultTitle": "Quiz result", "resultDescription": "Your soul wine" },
+  "assistant": { "placeholder": "Ask a question…", "send": "Send" },
+  "cookie": { "title": "We use cookies for the best experience", "accept": "Accept", "decline": "Decline" },
+  "notFound": { "title": "Page not found", "back": "Back to home" },
+  "error": { "title": "Something went wrong", "retry": "Retry" },
+  "subscription": { "success": "Subscribed", "cancel": "Cancel subscription" },
+  "profile": { "stats": "Stats", "history": "History" },
+  "games": { "filterAll": "All", "empty": "No games yet" },
+  "learn": { "sectionContinue": "Continue learning", "sectionAll": "All courses" },
+  "validation": { "required": "Required", "email": "Enter a valid email" },
+  "actions": { "submit": "Submit", "loading": "Loading…" },
+  "auth": { "forgotPassword": "Forgot password", "setPassword": "Set new password" },
+  "gamesRoom": { "create": "Create room", "join": "Join room" }
 }

@@ -24,6 +24,8 @@
 - **P2 完成率**：156 / 190 = **82.1%**
 - **P3 完成率**：7 / 90 = **7.8%**
 
+**本輪實作完成（70 專家 + 20 網紅視角）：** ① 移除所有產品 MOCK：遊戲房 API 強制 Supabase、排行榜/learn 改真實或空；② i18n 25 項：Phase 2 鍵值已加入六語系 messages，docs/i18n-tasks-phase2.md；③ RWD 15 項：docs/rwd-tasks.md 定義並對齊；④ 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，五個新遊戲（酒拳/虎克船長/數七/終極密碼/支援前線）已加入 GameLazyMap loader；⑤ 六地審查遊戲：刪 10、增 5（docs/games-courses-region-review.md）；⑥ 課程審查為文件建議（刪 5 增 2），實際課程資料來源可後續對接；⑦ BUILD ✓ LINT ✓ test:run 147 ✓ tsc ✓。單元測試內 vi.mock 保留（測試用）。
+
 **本輪 3 項 P2 真實完成（分批實作）：** P2-398 AI 多語言（assistant 傳 locale、groq getSommelierSystemPrompt 六語系指令）、P2-390 Fallback 策略優化（失敗時 recordApiCall(success: false) + recordChatFailure 日誌）、P2-410 Token 追蹤（Groq chatWithSommelier 回傳 usage、chat 路徑寫入 promptTokens/completionTokens/totalTokens）。P2 完成 **145/190 = 76.3%**。
 
 **本輪 3 項 P2 真實完成（下一批）：** P2-348 登入嘗試限制（GET /api/auth/login-limit、POST /api/auth/login-failure、lib/login-limit.ts 5 次/15 分鐘、login 送出前檢查與失敗時記錄）、P2-385 AI 反饋送後端（POST /api/chat/feedback、ai_feedback 表、assistant 讚/倒讚與 submitFeedback 呼叫 API）、P2-397 對話導出（assistant 已有 exportConversation 匯出 .txt）。P2 完成 **148/190 = 77.9%**。

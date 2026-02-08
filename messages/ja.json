@@ -38,5 +38,20 @@
     "under18Desc": "本サイトは酒類に関するコンテンツを含みます。このページを離れてください。",
     "leave": "退出",
     "disclaimer": "飲酒は適量に。18歳未満の方は入場できません。"
-  }
+  },
+  "pricing": { "title": "プランを選ぶ", "cta": "申し込む", "perMonth": "月", "popular": "人気" },
+  "login": { "title": "ログイン", "email": "Email", "password": "パスワード", "submit": "ログイン", "error": "ログインに失敗しました", "forgotPassword": "パスワードをお忘れですか？" },
+  "quiz": { "resultTitle": "診断結果", "resultDescription": "あなたのソウルワイン" },
+  "assistant": { "placeholder": "質問を入力…", "send": "送信" },
+  "cookie": { "title": "Cookieを使用しています", "accept": "同意", "decline": "拒否" },
+  "notFound": { "title": "ページが見つかりません", "back": "ホームに戻る" },
+  "error": { "title": "エラーが発生しました", "retry": "再試行" },
+  "subscription": { "success": "登録完了", "cancel": "解約" },
+  "profile": { "stats": "データ", "history": "履歴" },
+  "games": { "filterAll": "すべて", "empty": "ゲームはありません" },
+  "learn": { "sectionContinue": "学習を続ける", "sectionAll": "全コース" },
+  "validation": { "required": "必須", "email": "有効なEmailを入力" },
+  "actions": { "submit": "送信", "loading": "処理中…" },
+  "auth": { "forgotPassword": "パスワードを忘れた", "setPassword": "新しいパスワードを設定" },
+  "gamesRoom": { "create": "ルームを作成", "join": "参加" }
 }

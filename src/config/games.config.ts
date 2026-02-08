@@ -227,19 +227,14 @@ export const GAMES_META: GameMeta[] = [
   { id: 'riddle-guess', name: '猜謎語', description: '考驗你的智慧和想像力！', icon: HelpCircle, color: 'primary', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 12, searchKeys: 'caimi yu riddle guess', twoPlayerFriendly: true, rulesSummary: '傳統謎語猜測。' },
   { id: 'story-chain', name: '故事接龍', description: '發揮創意，共同編織精彩故事！', icon: BookOpen, color: 'accent', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 15, searchKeys: 'gushi jielong story chain', rulesSummary: '創意故事接龍。' },
   // Phase 8 新遊戲
-  { id: 'sound-imitate', name: '聲音模仿', description: '模仿各種聲音，讓大家猜猜是誰！', icon: Mic, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'shengyin mofang sound imitate', rulesSummary: '模仿聲音讓大家猜。' },
   { id: 'emoji-puzzle', name: '表情拼圖', description: '看Emoji猜答案，考驗你的想像力！', icon: Smile, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 12, searchKeys: 'biaoqing pin tu emoji puzzle', twoPlayerFriendly: true, rulesSummary: '看Emoji組合猜答案。' },
   { id: 'memory-match', name: '記憶配對', description: '翻牌配對遊戲，考驗你的記憶力！', icon: Brain, color: 'primary', players: '2-4 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'jiyi peidui memory match', twoPlayerFriendly: true, rulesSummary: '翻牌配對考驗記憶。' },
-  { id: 'dance-battle', name: '舞蹈對決', description: '展現你的舞技，爭奪舞蹈之王！', icon: Music, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'wudao duijue dance battle', rulesSummary: '舞蹈動作評分對決。' },
-  { id: 'beer-pong-vr', name: '虛擬啤酒乒乓球', description: '虛擬版啤酒乒乓球，精準投球擊倒對手杯子！', icon: Target, color: 'primary', players: '4-8 人', difficulty: 'medium', estimatedMinutes: 20, searchKeys: 'pijiu pingpang qiu beer pong vr', rulesSummary: '虛擬啤酒乒乓球對戰。' },
-  { id: 'poker-face', name: '撲克臉', description: '考驗你的表情控制能力，找出說謊者！', icon: Smile, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'pukelian biaoqing kongzhi poker face', rulesSummary: '表情控制找出說謊者。' },
-  { id: 'lip-sync-battle', name: '對嘴大賽', description: '展現你的對嘴功力，爭奪麥克風之王！', icon: Mic, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'duizui dasai lip sync battle', rulesSummary: '對嘴表演投票比賽。' },
-  { id: 'voice-mod', name: '變聲器', description: '錄製你的聲音，讓變聲器來改造！', icon: Mic, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'bianshengqi voice mod', rulesSummary: '錄音變聲猜測遊戲。' },
-  { id: 'gesture-guess', name: '手勢猜謎', description: '用你的手勢表達，讓大家來猜！', icon: Hand, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'shoushi caimi gesture guess', rulesSummary: '手勢表演猜測遊戲。' },
   { id: 'rhythm-master', name: '節奏大師', description: '測試你的節奏感，重現聽到的節奏！', icon: Music, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'jiezou dashi rhythm master', rulesSummary: '節奏記憶重現遊戲。' },
-  { id: 'sound-sleuth', name: '聲音偵探', description: '考驗你的聽力，辨識各種聲音！', icon: Ear, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'shengyin zhentan sound sleuth', rulesSummary: '聲音辨識猜測遊戲。' },
-  { id: 'pitch-perfect', name: '完美音準', description: '測試你的音感，聽音辨符！', icon: Music, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'wanmei yunzhun pitch perfect', rulesSummary: '音感辨識遊戲。' },
-  { id: 'vocal-war', name: '歌喉戰', description: '展現你的歌喉，爭奪歌王寶座！', icon: Mic, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 20, searchKeys: 'gehou zhan vocal war', rulesSummary: '歌唱比賽投票遊戲。' },
+  { id: 'drinking-fist', name: '酒拳', description: '亞洲常見猜拳喝酒，二人即可！', icon: HandMetal, color: 'primary', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'jiuquan drinking fist', twoPlayerFriendly: true, rulesSummary: '猜拳輸的人喝。' },
+  { id: 'captain-hook', name: '虎克船長', description: '名字接龍類，港台大陸熟悉的派對遊戲。', icon: List, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: 'hukechuanzhang captain hook', rulesSummary: '輪流喊下一位名字，錯或慢喝。' },
+  { id: 'count-seven', name: '數七', description: '遇 7 或倍數拍手，日韓新加坡常見！', icon: Ban, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 5, searchKeys: 'shuqi count seven', twoPlayerFriendly: true, rulesSummary: '遇 7 倍數拍手，說錯喝。' },
+  { id: 'ultimate-code', name: '終極密碼', description: '數字範圍猜謎，泛亞派對熱門。', icon: AlertTriangle, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'zhongjimima ultimate code', twoPlayerFriendly: true, rulesSummary: '猜數字縮小範圍，踩到炸彈喝。' },
+  { id: 'support-front', name: '支援前線', description: '隨機抽人／抽籤，派對熱門。', icon: Sparkles, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'zhiyuan qianxian support front', twoPlayerFriendly: true, rulesSummary: '隨機抽籤選出一位。' },
 ]
 
 /** P2-271：遊戲 ID → 分類對照，使用 Map 以獲得更穩定的查找性能（大數據量下優於 Object） */
@@ -272,10 +267,8 @@ const GAME_CATEGORY_MAP = new Map<string, GameCategory>([
   ['stare-contest', 'facetoface'], ['bluffing', 'party'], ['telephone', 'party'], ['finish-lyric', 'party'],
   ['tic-tac-shot', 'facetoface'], ['compliment-battle', 'party'], ['cocktail-mix', 'party'],
   ['reverse-say', 'reaction'], ['riddle-guess', 'party'], ['story-chain', 'party'],
-  ['sound-imitate', 'party'], ['emoji-puzzle', 'party'], ['memory-match', 'party'], ['dance-battle', 'party'],
-  ['beer-pong-vr', 'party'], ['poker-face', 'party'], ['lip-sync-battle', 'party'], ['voice-mod', 'party'],
-  ['gesture-guess', 'party'], ['rhythm-master', 'party'], ['sound-sleuth', 'party'], ['pitch-perfect', 'party'],
-  ['vocal-war', 'party'],
+  ['emoji-puzzle', 'party'], ['memory-match', 'party'], ['rhythm-master', 'party'],
+  ['drinking-fist', 'other'], ['captain-hook', 'party'], ['count-seven', 'reaction'], ['ultimate-code', 'guess'], ['support-front', 'draw'],
 ])
 
 /** 依遊戲 ID 取得分類；相容舊的 Record 用法，對外保留 getter */

@@ -2039,7 +2039,7 @@ export default function LearnPage() {
           </div>
         </motion.div>
 
-        {/* 161–165 排行榜（單機 mock + 自己） */}
+        {/* 161–165 排行榜（僅自己，可後端擴充） */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

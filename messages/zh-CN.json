@@ -38,5 +38,20 @@
     "under18Desc": "本网站涉及酒类内容，未满 18 岁不得使用。请离开本页面。",
     "leave": "离开",
     "disclaimer": "饮酒过量有害健康。未满 18 岁请勿进入。"
-  }
+  },
+  "pricing": { "title": "选择方案", "cta": "立即订阅", "perMonth": "月", "popular": "热门" },
+  "login": { "title": "登录", "email": "Email", "password": "密码", "submit": "登录", "error": "登录失败", "forgotPassword": "忘记密码？" },
+  "quiz": { "resultTitle": "测验结果", "resultDescription": "你的灵魂之酒" },
+  "assistant": { "placeholder": "输入你的问题…", "send": "发送" },
+  "cookie": { "title": "我们使用 Cookie 以提供最佳体验", "accept": "接受", "decline": "拒绝" },
+  "notFound": { "title": "找不到页面", "back": "返回首页" },
+  "error": { "title": "发生错误", "retry": "重试" },
+  "subscription": { "success": "订阅成功", "cancel": "取消订阅" },
+  "profile": { "stats": "数据", "history": "记录" },
+  "games": { "filterAll": "全部", "empty": "暂无游戏" },
+  "learn": { "sectionContinue": "继续学习", "sectionAll": "全部课程" },
+  "validation": { "required": "必填", "email": "请输入有效的 Email" },
+  "actions": { "submit": "发送", "loading": "处理中…" },
+  "auth": { "forgotPassword": "忘记密码", "setPassword": "设置新密码" },
+  "gamesRoom": { "create": "创建房间", "join": "加入房间" }
 }

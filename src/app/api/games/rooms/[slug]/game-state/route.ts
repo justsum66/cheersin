@@ -4,7 +4,6 @@
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { getMockStore, mockGetRoomBySlug, mockGetGameState, mockUpsertGameState } from '@/lib/games-room-mock'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
@@ -48,13 +47,6 @@ export async function GET(
       }
       return NextResponse.json({ state: row.payload, updatedAt: row.updated_at })
     } catch (supabaseErr) {
-      if (getMockStore()) {
-        const room = mockGetRoomBySlug(slug)
-        if (!room) return errorResponse(404, 'Room not found', { message: '找不到該房間' })
-        const gs = mockGetGameState(room.id, gameId)
-        if (!gs) return NextResponse.json({ state: null, updatedAt: null })
-        return NextResponse.json({ state: gs.payload, updatedAt: gs.updated_at })
-      }
       throw supabaseErr
     }
   } catch (e: unknown) {
@@ -124,12 +116,6 @@ export async function POST(
 
       return NextResponse.json({ state: row?.payload ?? payload, updatedAt: row?.updated_at })
     } catch (supabaseErr) {
-      if (getMockStore()) {
-        const room = mockGetRoomBySlug(slug)
-        if (!room) return errorResponse(404, 'Room not found', { message: '找不到該房間' })
-        const gs = mockUpsertGameState(room.id, gameId, payload)
-        return NextResponse.json({ state: gs.payload, updatedAt: gs.updated_at })
-      }
       throw supabaseErr
     }
   } catch (e: unknown) {

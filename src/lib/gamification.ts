@@ -319,7 +319,7 @@ export function setFriendCompare(entry: FriendCompareEntry | null): void {
   }
 }
 
-/** 排行榜：單機為自己與 mock 資料；可後端擴充 */
+/** 排行榜：僅顯示當前用戶（無 mock）；可後端擴充取得全站排行 */
 export interface LeaderboardEntry {
   rank: number
   name: string
@@ -329,11 +329,5 @@ export interface LeaderboardEntry {
 
 export function getLeaderboard(): LeaderboardEntry[] {
   const points = getPoints()
-  const mock: LeaderboardEntry[] = [
-    { rank: 1, name: '品酒大師', points: 5000 },
-    { rank: 2, name: '侍酒師', points: 3200 },
-    { rank: 3, name: '你', points, isCurrentUser: true },
-    { rank: 4, name: '新手', points: 800 },
-  ]
-  return mock.sort((a, b) => b.points - a.points).map((e, i) => ({ ...e, rank: i + 1 }))
+  return [{ rank: 1, name: '你', points, isCurrentUser: true }]
 }

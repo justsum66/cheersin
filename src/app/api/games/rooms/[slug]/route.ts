@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
-import { getMockStore, mockGetRoomBySlug, mockGetPlayers } from '@/lib/games-room-mock'
 import { SLUG_PATTERN } from '@/lib/games-room'
 
 /** GET: 依 slug 取得房間與玩家名單；Supabase 失敗時 dev 用 in-memory fallback；P3-59：slug 格式驗證 */
@@ -58,29 +57,6 @@ export async function GET(
         })),
       })
     } catch (supabaseErr) {
-      if (getMockStore()) {
-        const room = mockGetRoomBySlug(slug)
-        if (!room) return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-        const players = mockGetPlayers(room.id)
-        const mockAnonymous = !!(room as { settings?: { anonymousMode?: boolean } }).settings?.anonymousMode
-        const sorted = [...players].sort((a, b) => a.order_index - b.order_index)
-        return NextResponse.json({
-          room: {
-            id: room.id,
-            slug: room.slug,
-            createdAt: room.created_at,
-            expiresAt: null,
-            hasPassword: !!room.password,
-            anonymousMode: mockAnonymous,
-          },
-          players: sorted.map((p) => ({
-            id: p.id,
-            displayName: mockAnonymous ? `玩家${String.fromCharCode(65 + p.order_index)}` : p.display_name,
-            orderIndex: p.order_index,
-            isSpectator: p.is_spectator ?? false,
-          })),
-        })
-      }
       throw supabaseErr
     }
   } catch (e: unknown) {
