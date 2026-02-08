@@ -1956,4 +1956,43 @@
   .games-content .rounded-3xl.glass-card-spotlight,
   .games-content [role="tablist"],
   .games-content [role="list"] { display: none !important; }
+  /* P1-154：課程頁、AI 助理回答列印樣式 — 乾淨可印 */
+  .learn-content article,
+  [data-print-content] {
+    max-width: 65ch !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  pre[data-code-block], .markdown-body pre { background: #f5f5f5 !important; color: #111 !important; padding: 1rem !important; overflow: auto !important; }
+}
+
+/* P1-164：Pro 用戶漸變邊框 — 頭像框/卡片尊貴感 */
+.pro-gradient-border {
+  position: relative;
+  border: 0;
+  background: linear-gradient(var(--background), var(--background)) padding-box,
+    linear-gradient(135deg, rgb(var(--primary)), rgb(var(--secondary)), rgb(var(--accent)), rgb(var(--primary))) border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+}
+.dark .pro-gradient-border {
+  background: linear-gradient(rgb(10 10 10), rgb(10 10 10)) padding-box,
+    linear-gradient(135deg, rgb(var(--primary)), rgb(var(--secondary)), rgb(var(--accent))) border-box;
+}
+
+/* P1-177：響應式字體 — clamp 流體排版，避免斷點突兀跳變 */
+.text-fluid-base { font-size: clamp(0.9375rem, 0.875rem + 0.3vw, 1rem); }
+.text-fluid-lg { font-size: clamp(1rem, 0.95rem + 0.4vw, 1.125rem); }
+.text-fluid-xl { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.25rem); }
+.text-fluid-2xl { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.5rem); }
+
+/* P1-178：暗色模式圖片適配 — 過亮圖自動降亮度，避免刺眼 */
+.dark img.picture-dim,
+[data-theme="dark"] img.picture-dim,
+html.dark img:not([data-bright]) {
+  filter: brightness(0.9) contrast(1.05);
+}
+.dark img[data-bright="true"],
+[data-theme="dark"] img[data-bright="true"] {
+  filter: none;
 }

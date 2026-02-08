@@ -98,6 +98,10 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
               </span>
             )}
 
+            {/* P1-261：付費牆社交證明 — 已有 XXX 人解鎖，促進轉化 */}
+            <p className="text-white/60 text-sm mb-2">
+              已有超過 1,200 位玩家解鎖辣味通行證
+            </p>
             {/* 說明：解鎖後能獲得什麼 */}
             <p className="text-white/80 mb-6">
               升級 <span className="text-primary-400 font-semibold">{tierLabel}</span> 立即解鎖這款遊戲，與朋友玩到嗨。

@@ -177,10 +177,11 @@ export default function AdminUsersPage() {
       {profile && subscriptions.length > 0 && (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-3">
           <h2 className="text-lg font-medium text-white">訂閱紀錄</h2>
-          <div className="overflow-x-auto">
+          {/* P1-175：長表格固定表頭，滾動時仍可見列名 */}
+          <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
             <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="text-white/60 border-b border-white/10">
+              <thead className="sticky top-0 z-10 bg-[#0a0a1a] border-b border-white/10">
+                <tr className="text-white/60">
                   <th className="py-2 pr-4">方案</th>
                   <th className="py-2 pr-4">狀態</th>
                   <th className="py-2 pr-4">PayPal ID</th>

@@ -38,6 +38,9 @@ export default function RiddleGuess() {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [scores, setScores] = useState<Record<string, number>>({})
   const [round, setRound] = useState(1)
+  /** P1-215：提示系統 — 每次點擊揭示一個線索，增加懲罰（本回合使用提示則猜對只得 0.5 分） */
+  const [hintClue, setHintClue] = useState<string | null>(null)
+  const [hintUsed, setHintUsed] = useState(false)
 
   const players = contextPlayers.length >= 2 ? contextPlayers : ['玩家1', '玩家2', '玩家3']
 
@@ -47,14 +50,25 @@ export default function RiddleGuess() {
     setPlayerGuesses({})
     setCurrentPlayerIndex(0)
     setGameState('playing')
+    setHintClue(null)
+    setHintUsed(false)
     play('click')
   }, [play])
+
+  /** P1-215：揭示線索（答案字數或首字），使用後本回合猜對得分減半 */
+  const revealHint = useCallback(() => {
+    if (!currentRiddle || hintClue) return
+    setHintClue(`答案共 ${currentRiddle.answer.length} 個字，第一個字：「${currentRiddle.answer[0]}」`)
+    setHintUsed(true)
+    play('click')
+  }, [currentRiddle, hintClue, play])
 
   const submitGuess = useCallback((player: string, guess: string) => {
     setPlayerGuesses(prev => ({ ...prev, [player]: guess }))
     
     if (currentRiddle && guess.trim() === currentRiddle.answer) {
-      setScores(prev => ({ ...prev, [player]: (prev[player] || 0) + 1 }))
+      const points = hintUsed ? 0.5 : 1
+      setScores(prev => ({ ...prev, [player]: (prev[player] || 0) + points }))
       play('correct')
     } else {
       play('wrong')
@@ -66,7 +80,7 @@ export default function RiddleGuess() {
       setGameState('results')
       play('win')
     }
-  }, [currentRiddle, currentPlayerIndex, players.length, play])
+  }, [currentRiddle, currentPlayerIndex, players.length, play, hintUsed])
 
   const nextRound = useCallback(() => {
     setRound(prev => prev + 1)
@@ -153,6 +167,13 @@ export default function RiddleGuess() {
                 </div>
               </div>
 
+              {/* P1-215：提示按鈕 — 揭示線索會增加懲罰（本回合猜對得分減半） */}
+              {hintClue && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-500/20 border border-amber-400/40 text-sm text-amber-100">
+                  💡 提示：{hintClue}
+                  {hintUsed && <span className="block mt-1 text-amber-300/80">（使用提示後本回合猜對只得 0.5 分）</span>}
+                </div>
+              )}
               <div className="mb-6">
                 <input
                   type="text"
@@ -160,11 +181,23 @@ export default function RiddleGuess() {
                   className="w-full px-4 py-3 rounded-xl bg-white/10 text-white text-center text-lg border border-white/20 focus:border-amber-400 outline-none"
                   autoFocus
                 />
-                <button
-                  className="games-touch-target w-full mt-4 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-white hover:scale-105 transition-transform"
-                >
-                  提交答案
-                </button>
+                <div className="flex gap-2 mt-4">
+                  {!hintClue && (
+                    <button
+                      type="button"
+                      onClick={revealHint}
+                      className="games-touch-target flex-1 py-3 px-4 rounded-xl bg-amber-500/40 border border-amber-400/50 font-medium text-amber-100 hover:bg-amber-500/50 transition-colors"
+                      aria-label="顯示提示（會增加懲罰）"
+                    >
+                      💡 提示
+                    </button>
+                  )}
+                  <button
+                    className="games-touch-target flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-white hover:scale-105 transition-transform"
+                  >
+                    提交答案
+                  </button>
+                </div>
               </div>
 
               <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg p-4">

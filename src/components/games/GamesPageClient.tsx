@@ -988,6 +988,19 @@ function GamesPageContent() {
                 </div>
               )}
 
+              {/* P1-258：免費用戶瀏覽到付費遊戲時，醒目「一鍵解鎖全部 Pro 遊戲」按鈕 */}
+              {(!roomSlug || joinedDisplayName) && tier === 'free' && (
+                <div className="mb-4 flex justify-center">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring"
+                    aria-label="一鍵解鎖全部 Pro 遊戲"
+                  >
+                    <Crown className="w-4 h-4" aria-hidden />
+                    一鍵解鎖全部 Pro 遊戲
+                  </Link>
+                </div>
+              )}
               {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
               {(!roomSlug || joinedDisplayName) && (
                 <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
