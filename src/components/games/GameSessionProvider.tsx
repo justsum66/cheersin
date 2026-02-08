@@ -3,11 +3,11 @@
 import type { ReactNode } from 'react'
 import { GamesProvider } from './GamesContext'
 import { PassPhoneProvider } from './PassPhoneContext'
-import { PunishmentProvider } from './Punishments/PunishmentContext'
+import { GamePunishmentProvider } from './GamePunishmentProvider'
 
 /**
  * 遊戲階段統一 Provider：合併 Games（玩家名單 + 搖晃）、傳手機、懲罰轉盤狀態。
- * 單一入口，避免多層巢狀；hooks 仍從各自 Context 讀取（useGamesPlayers、usePassPhone、usePunishment）。
+ * R2-001：懲罰改用 GamePunishmentProvider 命名。
  */
 export function GameSessionProvider({
   players,
@@ -19,9 +19,9 @@ export function GameSessionProvider({
   return (
     <GamesProvider players={players}>
       <PassPhoneProvider players={players}>
-        <PunishmentProvider players={players}>
+        <GamePunishmentProvider players={players}>
           {children}
-        </PunishmentProvider>
+        </GamePunishmentProvider>
       </PassPhoneProvider>
     </GamesProvider>
   )

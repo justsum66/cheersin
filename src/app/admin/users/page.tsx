@@ -8,6 +8,8 @@ import { useState, useCallback, useEffect } from 'react'
 import { getErrorMessage } from '@/lib/api-response'
 import { Users, Search, Loader2, RefreshCw } from 'lucide-react'
 import { SUBSCRIPTION_TIERS, type SubscriptionTier } from '@/lib/subscription'
+import { AdminSkeleton } from '../AdminSkeleton'
+import { AdminForbidden } from '../AdminForbidden'
 
 const API_USERS = '/api/admin/users'
 
@@ -54,6 +56,7 @@ export default function AdminUsersPage() {
   /** P1-151：表格排序 — 點擊表頭升序/降序 */
   const [sortKey, setSortKey] = useState<keyof SubRow | ''>('')
   const [sortAsc, setSortAsc] = useState(true)
+  const [forbidden, setForbidden] = useState(false)
 
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
@@ -74,9 +77,17 @@ export default function AdminUsersPage() {
     try {
       const res = await fetch(`${API_USERS}?q=${encodeURIComponent(q)}`, { headers: headers() })
       const data = await res.json()
+      if (res.status === 401 || res.status === 403) {
+        setForbidden(true)
+        setProfile(null)
+        setSubscriptions([])
+        setLoading(false)
+        return
+      }
       if (!res.ok) {
         throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       }
+      setForbidden(false)
       setProfile(data.profile ?? null)
       setSubscriptions(data.subscriptions ?? [])
     } catch (e) {
@@ -109,6 +120,18 @@ export default function AdminUsersPage() {
       setSavingTier(false)
     }
   }, [headers, profile?.id])
+
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Users className="w-6 h-6 text-primary-400" aria-hidden />
+          <h1 className="text-xl font-semibold text-white">用戶與訂閱管理</h1>
+        </div>
+        <AdminForbidden message="請提供正確的 Admin Secret 或於開發環境使用。" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -157,7 +180,9 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {profile && (
+      {loading && !profile && !error ? (
+        <AdminSkeleton />
+      ) : profile ? (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-4">
           <h2 className="text-lg font-medium text-white">用戶資料</h2>
           <dl className="grid gap-2 text-sm">
@@ -186,7 +211,7 @@ export default function AdminUsersPage() {
             <div><dt className="text-white/60">建立時間</dt><dd className="text-white/80">{profile.created_at ? new Date(profile.created_at).toLocaleString() : '—'}</dd></div>
           </dl>
         </div>
-      )}
+      ) : null}
 
       {profile && subscriptions.length > 0 && (() => {
         const sorted = [...subscriptions].sort((a, b) => {

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, BarChart3, Activity } from 'lucide-react'
+import { ChevronLeft, BarChart3, Activity, Download } from 'lucide-react'
+import { AdminSkeleton } from '../AdminSkeleton'
+import { AdminForbidden } from '../AdminForbidden'
 
 interface DayStat {
   calls: number
@@ -31,16 +33,27 @@ export default function AdminUsagePage() {
   const [adminSecret, setAdminSecret] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [forbidden, setForbidden] = useState(false)
 
   useEffect(() => {
     const headers: HeadersInit = { 'Content-Type': 'application/json' }
     if (adminSecret) (headers as Record<string, string>)['x-admin-secret'] = adminSecret
     fetch('/api/admin/usage', { headers })
       .then((r) => {
-        if (!r.ok) throw new Error(r.status === 401 ? 'Unauthorized' : `HTTP ${r.status}`)
+        if (r.status === 401 || r.status === 403) {
+          setForbidden(true)
+          setByDay({})
+          setByModel({})
+          setRecent([])
+          setError(null)
+          return null
+        }
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
-      .then((data: { byDay: Record<string, DayStat>; byModel: Record<string, ModelStat>; recent: ApiCallRecord[] }) => {
+      .then((data: { byDay: Record<string, DayStat>; byModel: Record<string, ModelStat>; recent: ApiCallRecord[] } | null) => {
+        if (data == null) return
+        setForbidden(false)
         setByDay(data.byDay ?? {})
         setByModel(data.byModel ?? {})
         setRecent(data.recent ?? [])
@@ -54,6 +67,31 @@ export default function AdminUsagePage() {
       })
       .finally(() => setLoading(false))
   }, [adminSecret])
+
+  const exportCsv = useCallback(() => {
+    const rows: string[] = []
+    rows.push('類型,日期/時間,呼叫數,成功數,成功率%,平均延遲ms,Token總計')
+    const dayEntries = Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a))
+    for (const [day, s] of dayEntries) {
+      const pct = s.calls ? ((s.success / s.calls) * 100).toFixed(1) : '0'
+      const avg = s.calls ? (s.totalLatencyMs / s.calls).toFixed(0) : '0'
+      rows.push(`每日,${day},${s.calls},${s.success},${pct},${avg},${s.totalTokens ?? 0}`)
+    }
+    rows.push('')
+    rows.push('類型,時間,端點,模型,成功,延遲ms,Token')
+    for (const r of recent) {
+      const ts = new Date(r.timestamp).toISOString()
+      rows.push(`單筆,${ts},${r.endpoint},${r.model},${r.success},${r.latencyMs},${r.totalTokens ?? ''}`)
+    }
+    const csv = '\uFEFF' + rows.join('\r\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `api-usage-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [byDay, recent])
 
   const days = Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a)).slice(0, 14)
   const models = Object.entries(byModel)
@@ -90,9 +128,21 @@ export default function AdminUsagePage() {
         )}
 
         {loading ? (
-          <p className="text-white/50">載入中…</p>
+          <AdminSkeleton />
+        ) : forbidden ? (
+          <AdminForbidden />
         ) : (
           <>
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={exportCsv}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white"
+              >
+                <Download className="w-4 h-4" />
+                匯出 CSV
+              </button>
+            </div>
             <section className="mb-8">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary-500" />

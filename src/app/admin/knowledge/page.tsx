@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getErrorMessage } from '@/lib/api-response'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Pencil, Trash2, BookOpen } from 'lucide-react'
+import { ChevronLeft, Plus, Pencil, Trash2, BookOpen, Search } from 'lucide-react'
+import { AdminSkeleton } from '../AdminSkeleton'
+import { AdminForbidden } from '../AdminForbidden'
 
 interface KnowledgeDoc {
   id: string
@@ -27,6 +29,8 @@ export default function AdminKnowledgePage() {
   const [form, setForm] = useState({ title: '', course_id: '', chapter: '', content: '' })
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [forbidden, setForbidden] = useState(false)
 
   const headers = () => ({
     'Content-Type': 'application/json',
@@ -38,10 +42,17 @@ export default function AdminKnowledgePage() {
     setError(null)
     try {
       const res = await fetch(API_BASE, { headers: headers() })
+      if (res.status === 401 || res.status === 403) {
+        setForbidden(true)
+        setDocs([])
+        setLoading(false)
+        return
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       }
+      setForbidden(false)
       const data = await res.json()
       setDocs(data.docs ?? [])
     } catch (e) {
@@ -56,6 +67,17 @@ export default function AdminKnowledgePage() {
   useEffect(() => {
     fetchDocs()
   }, [fetchDocs])
+
+  const filteredDocs = useMemo(() => {
+    if (!searchQuery.trim()) return docs
+    const q = searchQuery.trim().toLowerCase()
+    return docs.filter(
+      (d) =>
+        d.title.toLowerCase().includes(q) ||
+        d.course_id.toLowerCase().includes(q) ||
+        (d.chapter && String(d.chapter).toLowerCase().includes(q))
+    )
+  }, [docs, searchQuery])
 
   const handleCreate = async () => {
     if (!form.title.trim() || !form.course_id.trim() || !form.chapter.trim() || !form.content.trim()) {
@@ -160,7 +182,25 @@ export default function AdminKnowledgePage() {
           </div>
         )}
 
-        <div className="flex justify-end mb-4">
+        {loading ? (
+          <AdminSkeleton />
+        ) : forbidden ? (
+          <AdminForbidden />
+        ) : (
+          <>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" aria-hidden />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜尋標題、course_id、章節"
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30"
+              aria-label="關鍵字搜尋"
+            />
+          </div>
+          <div className="flex justify-end">
           <button
             onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500"
@@ -168,6 +208,7 @@ export default function AdminKnowledgePage() {
             <Plus className="w-4 h-4" />
             新增文檔
           </button>
+          </div>
         </div>
 
         {(showForm || editing) && (
@@ -216,13 +257,13 @@ export default function AdminKnowledgePage() {
           </div>
         )}
 
-        {loading ? (
-          <p className="text-white/50">載入中…</p>
-        ) : docs.length === 0 ? (
+        {docs.length === 0 ? (
           <p className="text-white/50">尚無文檔。請先執行 npm run seed:pinecone 或在此新增。</p>
+        ) : filteredDocs.length === 0 ? (
+          <p className="text-white/50">沒有符合「{searchQuery}」的結果。</p>
         ) : (
           <ul className="space-y-3">
-            {docs.map((doc) => (
+            {filteredDocs.map((doc) => (
               <li
                 key={doc.id}
                 className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10"
@@ -250,6 +291,8 @@ export default function AdminKnowledgePage() {
               </li>
             ))}
           </ul>
+        )}
+          </>
         )}
       </div>
     </main>

@@ -1,0 +1,579 @@
+'use client'
+
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Trophy,
+  Users,
+  Smartphone,
+  Share2,
+  ChevronLeft,
+  Settings,
+  Maximize2,
+  Minimize2,
+  HelpCircle,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  RotateCcw,
+  Flag,
+  SkipForward,
+  RotateCw,
+} from 'lucide-react'
+import {
+  getPassPhoneEnabled,
+  setPassPhoneEnabled as persistPassPhone,
+  getPassPhoneAntiPeek,
+  setPassPhoneAntiPeek as persistAntiPeek,
+  getPassPhoneRandomOrder,
+  setPassPhoneRandomOrder as persistRandomOrder,
+  getPassPhoneTts,
+  setPassPhoneTts as persistTts,
+} from '@/lib/games-settings'
+import { usePassPhone } from './PassPhoneContext'
+import { usePunishment } from './Punishments/PunishmentContext'
+import {
+  useGameProgress,
+  useGameStats,
+  useGameReplay,
+  useGameTrial,
+  REPLAY_UI_DISPLAY_COUNT,
+} from './GameStateProvider'
+import { useGamePause } from './GameTimerProvider'
+import type { SwitchGameItem } from './GameWrapperTypes'
+
+export interface GameWrapperHeaderProps {
+  title: string
+  description?: string
+  onExit: () => void
+  players: string[]
+  maxPlayers?: number
+  onSkipRound?: () => void
+  onRestart?: () => void
+  anonymousMode?: boolean
+  isHost?: boolean
+  onToggleAnonymous?: (value: boolean) => Promise<{ ok: boolean; error?: string }>
+  isFullscreen: boolean
+  onToggleFullscreen: () => void
+  switchGameList?: SwitchGameItem[]
+  onSwitchGame?: (id: string) => void
+  onSwitchGameClick?: (id: string) => void
+  currentGameId?: string | null
+  shareInviteUrl?: string | null
+  onShowRules?: () => void
+  onPlayAgain?: () => void
+  onOpenReport?: () => void
+  showRulesButton?: boolean
+  isRulesOpen?: boolean
+  rulesButtonRef?: React.RefObject<HTMLButtonElement | null>
+  showSwitchConfirm?: boolean
+  setShowSwitchConfirm?: (v: boolean) => void
+  pendingSwitchGameId?: string | null
+  setPendingSwitchGameId?: (v: string | null) => void
+  onConfirmSwitchGame?: (id: string) => void
+  fullscreenUnsupported?: boolean
+  isSpectator?: boolean
+}
+
+/** 81 統一頂部：返回 / 遊戲名 / 設定；84 返回前確認；83 全螢幕；85 換遊戲 */
+export default function GameWrapperHeader({
+  title,
+  description,
+  onExit,
+  players,
+  isFullscreen,
+  onToggleFullscreen,
+  switchGameList,
+  onSwitchGame,
+  onSwitchGameClick,
+  currentGameId,
+  shareInviteUrl,
+  onShowRules,
+  showRulesButton,
+  fullscreenUnsupported,
+  isSpectator = false,
+  onPlayAgain,
+  onOpenReport,
+  isRulesOpen = false,
+  rulesButtonRef,
+  showSwitchConfirm = false,
+  setShowSwitchConfirm,
+  pendingSwitchGameId = null,
+  setPendingSwitchGameId,
+  onConfirmSwitchGame,
+  maxPlayers,
+  onSkipRound,
+  onRestart,
+  anonymousMode = false,
+  isHost = false,
+  onToggleAnonymous,
+}: GameWrapperHeaderProps) {
+  const passPhone = usePassPhone()
+  const punishment = usePunishment()
+  const progress = useGameProgress()
+  const stats = useGameStats()
+  const replay = useGameReplay()
+  const pause = useGamePause()
+  const trial = useGameTrial()
+  const gameHasStarted = progress?.hasStarted ?? false
+  const gameStats = stats?.stats
+  const replayEvents = replay?.events ?? []
+  const isPaused = pause?.isPaused ?? false
+  const onTogglePause = pause ? () => pause.setPaused(!pause.isPaused) : undefined
+  const trialRoundsLeft = trial?.roundsLeft
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const settingsRef = useRef<HTMLDivElement | null>(null)
+  const hasStarted = gameHasStarted
+
+  useEffect(() => {
+    if (!showSettingsMenu) return
+    const close = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettingsMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [showSettingsMenu])
+
+  useEffect(() => {
+    if (!passPhone) return
+    passPhone.setEnabled(getPassPhoneEnabled())
+    passPhone.setAntiPeek(getPassPhoneAntiPeek())
+    passPhone.setRandomOrder(getPassPhoneRandomOrder())
+    passPhone.setTtsEnabled(getPassPhoneTts())
+  }, [passPhone])
+
+  const togglePassPhone = useCallback(() => {
+    const next = !getPassPhoneEnabled()
+    persistPassPhone(next)
+    passPhone?.setEnabled(next)
+  }, [passPhone])
+
+  const toggleAntiPeek = useCallback(() => {
+    const next = !getPassPhoneAntiPeek()
+    persistAntiPeek(next)
+    passPhone?.setAntiPeek(next)
+  }, [passPhone])
+
+  const toggleRandomOrder = useCallback(() => {
+    const next = !getPassPhoneRandomOrder()
+    persistRandomOrder(next)
+    passPhone?.setRandomOrder(next)
+  }, [passPhone])
+
+  const toggleTts = useCallback(() => {
+    const next = !getPassPhoneTts()
+    persistTts(next)
+    passPhone?.setTtsEnabled(next)
+  }, [passPhone])
+
+  const passEnabled = passPhone?.enabled ?? false
+
+  const handleShare = useCallback(() => {
+    setShowSettingsMenu(false)
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = shareInviteUrl ?? `${base}/games`
+    const text = shareInviteUrl ? `一起玩「${title}」！加入房間：` : `一起玩「${title}」！`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: 'Cheersin 派對遊樂場', text, url }).catch(() => {
+        navigator.clipboard?.writeText(`${text} ${url}`)
+      })
+    } else {
+      navigator.clipboard?.writeText(`${text} ${url}`)
+    }
+  }, [title, shareInviteUrl])
+
+  const handleCopyLink = useCallback(() => {
+    setShowSettingsMenu(false)
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = shareInviteUrl ?? `${base}/games`
+    const text = shareInviteUrl ? `一起玩「${title}」！加入房間：${url}` : `一起玩「${title}」！${url}`
+    navigator.clipboard?.writeText(text).catch(() => {})
+  }, [title, shareInviteUrl])
+
+  return (
+    <>
+      <div className={`flex items-center justify-between p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex-wrap gap-2 ${isFullscreen ? 'safe-area-pt' : ''}`}>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => (hasStarted ? setShowExitConfirm(true) : onExit())}
+            className="games-focus-ring inline-flex items-center justify-center gap-2 games-touch-target p-3 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white touch-manipulation"
+            aria-label="返回大廳（遊戲列表）"
+          >
+            <ChevronLeft className="w-5 h-5 shrink-0" aria-hidden />
+            <span className="text-sm font-medium hidden sm:inline">返回大廳</span>
+          </button>
+          {onPlayAgain && (
+            <button
+              type="button"
+              onClick={onPlayAgain}
+              className="inline-flex items-center justify-center gap-2 games-touch-target px-3 py-2 rounded-full bg-primary-500/20 hover:bg-primary-500/30 border border-primary-500/40 text-primary-300 text-sm font-medium transition-colors"
+              aria-label="再玩一局（建立新房間）"
+            >
+              <RotateCcw className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">再玩一局</span>
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0 justify-center">
+          <div className="p-2 rounded-lg bg-primary-500/10 border border-primary-500/20 shrink-0">
+            <Trophy className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="min-w-0 text-center">
+            <h2 className="text-xl md:text-2xl font-bold text-white font-display truncate" title={title}>{title}</h2>
+            {description && <p className="text-xs text-white/40 line-clamp-1">{description}</p>}
+            {trialRoundsLeft != null && trialRoundsLeft > 0 && (
+              <p className="text-xs text-accent-400 mt-0.5" aria-live="polite">試玩剩餘 {trialRoundsLeft} 局</p>
+            )}
+          </div>
+          {showRulesButton && onShowRules && (
+            <button
+              ref={rulesButtonRef}
+              type="button"
+              onClick={onShowRules}
+              className="shrink-0 games-touch-target flex items-center justify-center p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors games-focus-ring"
+              aria-label="顯示遊戲規則"
+              aria-expanded={isRulesOpen}
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {players.length > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60" aria-label={maxPlayers != null ? `房間人數 ${players.length}／${maxPlayers} 人` : `${players.length} 位玩家`}>
+              <Users className="w-3.5 h-3.5" />
+              <span>{maxPlayers != null ? `${players.length}/${maxPlayers} 人` : `${players.length} 位`}</span>
+            </div>
+          )}
+          <div className="relative" ref={settingsRef}>
+            <button
+              type="button"
+              onClick={() => setShowSettingsMenu((s) => !s)}
+              className="games-touch-target flex items-center justify-center p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white games-focus-ring"
+              aria-label="設定"
+              aria-expanded={showSettingsMenu}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            {showSettingsMenu && (
+              <div
+                className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[#0a0a1a] border border-white/10 p-2 shadow-xl z-20"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <button
+                  type="button"
+                  onClick={() => { onToggleFullscreen(); setShowSettingsMenu(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] min-w-[48px] items-center games-focus-ring"
+                  aria-label={isFullscreen ? '結束全螢幕' : '全螢幕'}
+                >
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  {isFullscreen ? '結束全螢幕' : '全螢幕'}
+                </button>
+                {fullscreenUnsupported && (
+                  <p className="px-3 py-1 text-xs text-white/50">iOS 不支援全螢幕，可將此頁加入主畫面以獲得類似體驗</p>
+                )}
+                {isHost && onToggleAnonymous != null && (
+                  <label className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] cursor-pointer games-focus-ring">
+                    <span className="flex-1">匿名模式</span>
+                    <input
+                      type="checkbox"
+                      checked={anonymousMode}
+                      onChange={async () => {
+                        const next = !anonymousMode
+                        const res = await onToggleAnonymous(next)
+                        if (!res.ok) return
+                        setShowSettingsMenu(false)
+                      }}
+                      className="rounded border-white/30 bg-white/10 text-primary-500 focus:ring-primary-500"
+                      aria-label={anonymousMode ? '關閉匿名模式' : '開啟匿名模式'}
+                    />
+                  </label>
+                )}
+                {onTogglePause != null && (
+                  <button
+                    type="button"
+                    onClick={() => { onTogglePause(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
+                  >
+                    {isPaused ? '繼續遊戲' : '暫停遊戲'}
+                  </button>
+                )}
+                {onSkipRound != null && (
+                  <button
+                    type="button"
+                    onClick={() => { onSkipRound(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
+                    aria-label="跳過當前回合"
+                  >
+                    <SkipForward className="w-4 h-4" /> 跳過本回合
+                  </button>
+                )}
+                {onRestart != null && (
+                  <button
+                    type="button"
+                    onClick={() => { onRestart(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]"
+                    aria-label="重新開始本局"
+                  >
+                    <RotateCw className="w-4 h-4" /> 重新開始
+                  </button>
+                )}
+                {gameStats && (gameStats.durationSec != null || gameStats.correctCount != null || gameStats.punishmentCount != null || (gameStats.funFacts?.length ?? 0) > 0) && (
+                  <div className="border-t border-white/10 mt-2 pt-2 px-2">
+                    <p className="text-white/50 text-xs mb-1">本局統計</p>
+                    <div className="flex flex-wrap gap-2 text-xs text-white/70">
+                      {gameStats.durationSec != null && (
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" /> {Math.floor(gameStats.durationSec / 60)} 分 {gameStats.durationSec % 60} 秒
+                        </span>
+                      )}
+                      {gameStats.correctCount != null && (
+                        <span className="inline-flex items-center gap-1">
+                          <CheckCircle className="w-3.5 h-3.5" /> 答對 {gameStats.correctCount}
+                        </span>
+                      )}
+                      {gameStats.punishmentCount != null && (
+                        <span className="inline-flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5" /> 懲罰 {gameStats.punishmentCount}
+                        </span>
+                      )}
+                    </div>
+                    {gameStats.funFacts && gameStats.funFacts.length > 0 && (
+                      <div className="mt-1.5 pt-1.5 border-t border-white/5 space-y-0.5">
+                        {gameStats.funFacts.map((f, i) => (
+                          <p key={i} className="text-primary-300/90 text-xs font-medium">
+                            {f.label}：{f.value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {replayEvents.length > 0 && (
+                  <div className="border-t border-white/10 mt-2 pt-2 px-2">
+                    <p className="text-white/50 text-xs mb-1">本局回放</p>
+                    <div className="max-h-28 overflow-y-auto space-y-0.5 text-xs text-white/70">
+                      {[...replayEvents].reverse().slice(0, REPLAY_UI_DISPLAY_COUNT).map((ev, i) => (
+                        <div key={`${ev.ts}-${i}`} className="truncate" title={ev.label}>
+                          <span className="text-white/40 tabular-nums mr-1">{new Date(ev.ts).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          {ev.label}
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const text = [...replayEvents].reverse().slice(0, REPLAY_UI_DISPLAY_COUNT).map((ev) => `${new Date(ev.ts).toLocaleTimeString('zh-TW')} ${ev.label}`).join('\n')
+                        navigator.clipboard?.writeText(text).then(() => {}).catch(() => {})
+                      }}
+                      className="mt-1 w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-white/70 hover:bg-white/10 min-h-[44px]"
+                      aria-label="複製本局回放"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> 複製回放
+                    </button>
+                  </div>
+                )}
+                {shareInviteUrl ? (
+                  <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
+                    <p className="px-3 py-1 text-xs text-white/50">分享房間</p>
+                    <button
+                      type="button"
+                      onClick={() => { const u = `https://line.me/R/msg/text/?${encodeURIComponent(`${shareInviteUrl}\n\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
+                      aria-label="分享到 Line"
+                    >
+                      <span className="text-[#00B900] font-bold">LINE</span> 分享
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { const u = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareInviteUrl}\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
+                      aria-label="分享到 WhatsApp"
+                    >
+                      <span className="text-[#25D366] font-bold">WhatsApp</span> 分享
+                    </button>
+                    <button type="button" onClick={handleCopyLink} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]">
+                      <Share2 className="w-4 h-4" /> 複製連結
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => { handleShare(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10">
+                    <Share2 className="w-4 h-4" /> 分享
+                  </button>
+                )}
+                {onOpenReport && (
+                  <button type="button" onClick={() => { onOpenReport(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]">
+                    <Flag className="w-4 h-4" /> 檢舉
+                  </button>
+                )}
+                {punishment != null && (
+                  <div className="border-t border-white/10 pt-2 mt-2">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-white/80 hover:bg-white/5 rounded-lg px-3 py-2 min-h-[44px]">
+                      <input
+                        type="checkbox"
+                        checked={punishment.stackMode}
+                        onChange={() => punishment.setStackMode(!punishment.stackMode)}
+                        className="rounded"
+                        aria-label="懲罰疊加：新一局保留懲罰歷史"
+                      />
+                      懲罰疊加（新一局保留歷史）
+                    </label>
+                  </div>
+                )}
+                {players.length >= 2 && passPhone && (
+                  <div className="border-t border-white/10 mt-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => { togglePassPhone(); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10"
+                    >
+                      <Smartphone className="w-4 h-4" />
+                      {passEnabled ? '關閉傳手機' : '傳手機'}
+                    </button>
+                    {passEnabled && (
+                      <div className="mt-1 pl-1 space-y-1">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
+                          <input type="checkbox" checked={passPhone.antiPeek} onChange={toggleAntiPeek} className="rounded" />
+                          防偷看
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
+                          <input type="checkbox" checked={passPhone.randomOrder} onChange={toggleRandomOrder} className="rounded" />
+                          亂序傳遞
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
+                          <input type="checkbox" checked={passPhone.ttsEnabled} onChange={toggleTts} className="rounded" />
+                          TTS 語音
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {switchGameList && switchGameList.length > 0 && (onSwitchGameClick ?? onSwitchGame) && (
+                  <div className="border-t border-white/10 mt-2 pt-2">
+                    <p className="text-white/50 text-xs px-2 mb-1">換遊戲</p>
+                    <div className="max-h-40 overflow-y-auto space-y-0.5">
+                      {switchGameList
+                        .filter((g) => g.id !== currentGameId)
+                        .slice(0, 6)
+                        .map((g) => (
+                          <button
+                            key={g.id}
+                            type="button"
+                            onClick={() => { (onSwitchGameClick ?? onSwitchGame)?.(g.id); setShowSettingsMenu(false); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] min-w-[48px]"
+                          >
+                            {g.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => { setShowSettingsMenu(false); setShowExitConfirm(true); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 mt-1 border-t border-white/10 min-h-[48px]"
+                >
+                  <ChevronLeft className="w-4 h-4" /> 返回大廳
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showExitConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
+            onClick={() => setShowExitConfirm(false)}
+          >
+            <motion.div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="exit-confirm-title"
+              aria-describedby="exit-confirm-desc"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-[#0a0a1a] border border-white/10 rounded-2xl p-4 md:p-6 max-w-sm w-full shadow-xl safe-area-px"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="exit-confirm-title" className="sr-only">離開遊戲確認</h3>
+              <p className="text-white/90 font-medium mb-4" id="exit-confirm-desc">遊戲進行中，確定要離開嗎？</p>
+              <div className="flex flex-wrap gap-3 md:gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowExitConfirm(false)}
+                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowExitConfirm(false); onExit(); }}
+                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
+                >
+                  離開
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSwitchConfirm && pendingSwitchGameId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
+            onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
+          >
+            <motion.div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="switch-confirm-title"
+              aria-describedby="switch-confirm-desc"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-[#0a0a1a] border border-white/10 rounded-2xl p-4 md:p-6 max-w-sm w-full shadow-xl safe-area-px"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="switch-confirm-title" className="sr-only">換遊戲確認</h3>
+              <p className="text-white/90 font-medium mb-4" id="switch-confirm-desc">遊戲進行中，換遊戲將重新開始，確定嗎？</p>
+              <div className="flex flex-wrap gap-3 md:gap-4">
+                <button
+                  type="button"
+                  onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
+                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pendingSwitchGameId) onConfirmSwitchGame?.(pendingSwitchGameId)
+                    setShowSwitchConfirm?.(false)
+                    setPendingSwitchGameId?.(null)
+                  }}
+                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
+                >
+                  確定
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
