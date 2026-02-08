@@ -285,6 +285,15 @@ function GameWrapperHeader({
     }
   }, [title, shareInviteUrl])
 
+  /** P1-150：純複製連結（不觸發 Web Share） */
+  const handleCopyLink = useCallback(() => {
+    setShowSettingsMenu(false)
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = shareInviteUrl ?? `${base}/games`
+    const text = shareInviteUrl ? `一起玩「${title}」！加入房間：${url}` : `一起玩「${title}」！${url}`
+    navigator.clipboard?.writeText(text).catch(() => {})
+  }, [title, shareInviteUrl])
+
   return (
     <>
       {/* RWD-12：全螢幕時頂部 safe-area-pt 避開 notch */}
@@ -448,9 +457,35 @@ function GameWrapperHeader({
                     </button>
                   </div>
                 )}
-                <button type="button" onClick={handleShare} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10">
-                  <Share2 className="w-4 h-4" /> 分享
-                </button>
+                {/* P1-150：一鍵分享房間到 Line、WhatsApp、複製連結 */}
+                {shareInviteUrl ? (
+                  <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
+                    <p className="px-3 py-1 text-xs text-white/50">分享房間</p>
+                    <button
+                      type="button"
+                      onClick={() => { const u = `https://line.me/R/msg/text/?${encodeURIComponent(`${shareInviteUrl}\n\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
+                      aria-label="分享到 Line"
+                    >
+                      <span className="text-[#00B900] font-bold">LINE</span> 分享
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { const u = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareInviteUrl}\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
+                      aria-label="分享到 WhatsApp"
+                    >
+                      <span className="text-[#25D366] font-bold">WhatsApp</span> 分享
+                    </button>
+                    <button type="button" onClick={handleCopyLink} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]">
+                      <Share2 className="w-4 h-4" /> 複製連結
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => { handleShare(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10">
+                    <Share2 className="w-4 h-4" /> 分享
+                  </button>
+                )}
                 {onOpenReport && (
                   <button type="button" onClick={() => { onOpenReport(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px]">
                     <Flag className="w-4 h-4" /> 檢舉

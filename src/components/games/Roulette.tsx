@@ -86,7 +86,8 @@ export default function Roulette() {
     setIsSpinning(true)
     const sec = reducedMotion ? 1 : spinDuration
     const deg = Math.floor(5000 + Math.random() * 5000)
-    wheelRef.current.style.transition = `all ${sec}s cubic-bezier(0.25, 1, 0.5, 1)`
+    /** P1-128：輪盤物理效果 — 加速後減速，更符合物理規律 */
+    wheelRef.current.style.transition = `all ${sec}s cubic-bezier(0.17, 0.67, 0.12, 1)`
     wheelRef.current.style.transform = `rotate(${deg}deg)`
     currentRotationRef.current = deg
     if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current)
@@ -100,6 +101,8 @@ export default function Roulette() {
       gameStats?.setStats({ durationSec: reducedMotion ? 1 : sec })
       replay?.addEvent({ type: 'roulette_spin', label: `轉盤：${name} 中獎` })
       playSound('win')
+      /** P1-128：轉盤停止時「咔嗒」音效 — 使用 click 作為輔助反饋 */
+      playSound('click')
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100])
       fireFullscreenConfetti()
       trial?.isTrialMode && trial.onRoundEnd()

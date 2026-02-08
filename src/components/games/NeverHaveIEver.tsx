@@ -256,19 +256,20 @@ export default function NeverHaveIEver() {
                       {handRaise && (
                         <>
                           {/* 舉手手勢 */}
+                          {/* P1-148：手指彎曲動畫 — 舉手後微彎曲，模擬真實遊戲場景 */}
                           <motion.div
                             key="hand"
                             initial={reducedMotion ? false : { y: 20, scale: 0.3, opacity: 0, rotate: -30 }}
                             animate={{ 
-                              y: [-20, -40, -35],
-                              scale: [0.3, 1.4, 1.2],
+                              y: [-20, -40, -35, -38],
+                              scale: [0.3, 1.4, 1.2, 1.15],
                               opacity: 1,
-                              rotate: [-30, 0, -5]
+                              rotate: [-30, 0, -5, 8]
                             }}
                             exit={reducedMotion ? undefined : { y: -60, opacity: 0, scale: 0.8 }}
                             transition={reducedMotion ? { duration: 0 } : { 
-                              duration: 0.5,
-                              times: [0, 0.6, 1],
+                              duration: 0.6,
+                              times: [0, 0.5, 0.75, 1],
                               ease: [0.68, -0.55, 0.265, 1.55]
                             }}
                             className="absolute -top-4 left-1/2 -translate-x-1/2 pointer-events-none z-10"
