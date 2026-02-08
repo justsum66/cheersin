@@ -1,6 +1,6 @@
 /* 291 Service Worker：離線快取靜態資源與 fallback（PWA 離線支援） */
 /* Phase 1 E2.1: Service Worker 優化 - 智能快取策略 */
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 const CACHE_NAME = `cheersin-${CACHE_VERSION}`
 const RUNTIME_CACHE = `cheersin-runtime-${CACHE_VERSION}`
 
@@ -15,11 +15,12 @@ const STATIC_URLS = [
   '/icons/icon-512.png'
 ]
 
-/* 動態資源快取模式（stale-while-revalidate） */
+/* 動態資源快取模式（stale-while-revalidate）；P3-431 納入 /learn 頁面 */
 const SWR_PATTERNS = [
   /\/_next\/static\//,
   /\.(?:js|css|woff2?)$/,
-  /\/images\//
+  /\/images\//,
+  /^\/learn\/?/,
 ]
 
 /* 不快取的路徑 */

@@ -21,6 +21,7 @@ import {
   GAMES_LOBBY_CATEGORY_RANDOM_I18N_KEY,
   GAMES_LOBBY_CATEGORY_TWO_I18N_KEY,
 } from '@/lib/games-ui-constants'
+import { NowPlayingCount } from './NowPlayingCount'
 import type { GameDifficulty, GameCategory } from '@/config/games.config'
 import { GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
 
@@ -398,6 +399,9 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
 
   return (
     <div role="region" aria-label="遊戲大廳" className="lobby-region space-y-6" dir={GAMES_RTL ? 'rtl' : undefined}>
+      <div className="flex justify-end">
+        <NowPlayingCount />
+      </div>
       {/* GAMES_500 #56 #74 #72：最近玩過僅有資料時顯示；區塊順序依 LOBBY_BLOCK_ORDER */}
       {blockOrder.map((block) => {
         if (block === 'recent' && recentGames.length > 0)

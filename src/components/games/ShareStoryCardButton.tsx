@@ -7,7 +7,7 @@
 import { useRef, useCallback, useState } from 'react'
 import { Share2, Loader2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
-import { APP_NAME } from '@/lib/constants'
+import { APP_NAME, OFFICIAL_HASHTAG } from '@/lib/constants'
 
 const CARD_WIDTH = 405
 const CARD_HEIGHT = 720
@@ -120,6 +120,7 @@ export function ShareStoryCardButton({
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
           <p style={{ fontSize: 20, fontWeight: 700, color: '#c4b5fd', margin: '0 0 8px 0' }}>{APP_NAME}</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{shareUrl}</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '4px 0 0 0' }}>#{OFFICIAL_HASHTAG}</p>
         </div>
       </div>
 

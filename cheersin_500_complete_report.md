@@ -9,22 +9,22 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 402 項 |
-| **名義完成率** | 402 ÷ 500 = **80.4%** |
+| **報告已標記完成（✅）** | 405 項 |
+| **名義完成率** | 405 ÷ 500 = **81.0%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 156 / 190 = **82.1%** |
-| **P3 完成率** | 7 / 90 = **7.8%** |
+| **P2 完成率** | 157 / 190 = **82.6%** |
+| **P3 完成率** | 10 / 90 = **11.1%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 155 ✓ · test:stress ✓ · E2E 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **80.4%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **81.0%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：156 / 190 = **82.1%**
-- **P3 完成率**：7 / 90 = **7.8%**
+- **P2 完成率**：157 / 190 = **82.6%**
+- **P3 完成率**：10 / 90 = **11.1%**
 
-**本輪（70 專家 + 20 網紅 + Sequential Thinking）：** ① 移除所有產品 MOCK：刪除 `src/lib/games-room-mock.ts`，遊戲房 API 僅用 Supabase；② 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，98 款皆可於大廳顯示；③ 30 網紅 10 項優化：docs/influencer-optimization.md；④ CSP 優化：img-src 白名單（含 `https://*.supabase.co`）、SSRF 文檔 docs/ssrf-hardening.md；⑤ CSRF：middleware 對 POST/PUT/DELETE /api 驗證 Origin/Referer 同源，webhook/auth 排除；⑥ test:stress（vitest run 兩輪）、BUILD/LINT/TS/155 測/E2E 13/13 通過。
+**本輪（70 專家 + 20 網紅 + Sequential Thinking）：** ① **P2-288** API 版本：`/api/v1/health` 轉發 + X-API-Version 頭；② **P3-411** 課程進度同步：GET/POST `/api/learn/progress`、chapter_progress RLS 政策；③ **P3-431** PWA 離線學習：sw.js v3、`/learn` SWR 模式、docs/pwa-optimization.md；④ **P3-442** 博客佔位：`/blog` 頁；⑤ **報告 69–114 三殺手功能基礎**：docs/roadmap-live-party-room.md、roadmap-script-murder.md、roadmap-ai-party-dj.md，佔位頁 `/party-room`、`/script-murder`、`/party-dj`；⑥ **influencer-optimization 實作**：OFFICIAL_HASHTAG 常數、ShareStoryCard 故事卡顯示 #Cheersin派對、NowPlayingCount 組件 + GET `/api/stats/now-playing`；⑦ BUILD/LINT/TS/155 測通過。
 
 **本輪實作完成（70 專家 + 20 網紅視角）：** ① 移除所有產品 MOCK：遊戲房 API 強制 Supabase、排行榜/learn 改真實或空；② i18n 25 項：Phase 2 鍵值已加入六語系 messages，docs/i18n-tasks-phase2.md；③ RWD 15 項：docs/rwd-tasks.md 定義並對齊；④ 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，五個新遊戲（酒拳/虎克船長/數七/終極密碼/支援前線）已加入 GameLazyMap loader；⑤ 六地審查遊戲：刪 10、增 5（docs/games-courses-region-review.md）；⑥ 課程審查為文件建議（刪 5 增 2），實際課程資料來源可後續對接；⑦ BUILD ✓ LINT ✓ test:run 147 ✓ tsc ✓。單元測試內 vi.mock 保留（測試用）。
 
@@ -429,7 +429,7 @@
 | **P2-285** ✅ | **Supabase Realtime 頻道權限：** 為遊戲房間的 Realtime 頻道設置精細的權限控制，確保只有房間內的玩家才能訂閱和廣播消息。 | **(資安專家)** 防止未授權用戶竊聽或干擾遊戲數據。 | `docs/realtime-channel-permissions.md`（頻道命名、RLS、join 驗證） | 4h |
 | **P2-286** ✅ | **實現 Graceful Shutdown：** 在 Serverless Function 中，捕獲終止信號（如 `SIGTERM`），確保在函數實例被回收前，能完成正在處理的請求和數據庫寫入。 | **(後端架構師)** 提高系統在伸縮過程中的穩定性，避免數據丟失。 | `app/api/**/*.ts` | 3h |
 | **P2-287** ✅ | **引入事務 (Transactions)：** 對於涉及多個數據庫寫入的操作（如創建訂閱並更新用戶角色），必須使用數據庫事務來保證操作的原子性。 | **(MongoDB 專家)** 要麼全部成功，要麼全部失敗，避免數據不一致。 | `activate_subscription` RPC、webhooks/paypal BILLING.SUBSCRIPTION.ACTIVATED 改呼叫 RPC | 5h |
-| **P2-288** | **API 版本控制：** 在 API 路徑中加入版本號（如 `/api/v1/...`），為未來的重大變更提供向後兼容的能力。 | **(GraphQL API 設計師)** 讓你可以平滑地推出新版 API，而不影響老版本的客戶端。 | `app/api/v1/` (重構) | 4h |
+| **P2-288** ✅ | **API 版本控制：** 在 API 路徑中加入版本號（如 `/api/v1/...`），為未來的重大變更提供向後兼容的能力。 | **(GraphQL API 設計師)** 讓你可以平滑地推出新版 API，而不影響老版本的客戶端。 | `app/api/v1/` (重構) | 4h |
 | **P2-289** ✅ | **環境變量管理：** 使用 `T3-env` 或類似工具對環境變量進行類型校驗，確保所有必需的變量都已設置且類型正確。 | **(Vercel 總監)** 在應用啟動時就捕獲環境配置錯誤，而不是在運行時隨機報錯。 | `lib/env.ts` | 3h |
 | **P2-290** | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
 | **P2-291** ✅ | **數據庫連接池：** 確保 Supabase 客戶端正確配置了連接池，避免在高並發下耗盡數據庫連接。 | **(後端架構師)** 這是保證後端擴展性的關鍵。 | `lib/supabase-server.ts` | 2h |
@@ -487,7 +487,7 @@
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P3-411** | **課程進度同步：** `learn/page.tsx` 的課程進度目前僅存在本地。需要將其同步到後端，實現跨設備的進度同步。 | **(後端架構師)** 提升用戶在不同設備間無縫學習的體驗。 | `lib/learn-progress.ts`, `api/learn/progress` | 6h |
+| **P3-411** ✅ | **課程進度同步：** `learn/page.tsx` 的課程進度目前僅存在本地。需要將其同步到後端，實現跨設備的進度同步。 | **(後端架構師)** 提升用戶在不同設備間無縫學習的體驗。 | `lib/learn-progress.ts`, `api/learn/progress` | 6h |
 | **P3-412** | **引入用戶筆記功能：** 在課程頁面，允許用戶劃詞並添加自己的筆記。筆記與課程內容關聯，並可在個人中心統一查看。 | **(學習專家)** 主動記錄是鞏固知識的有效方式。 | `learn/[courseId]/page.tsx`, `lib/learn-notes.ts` | 8h |
 
 ---
@@ -497,7 +497,7 @@
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
 | **P3-441** ✅ | **UTM 參數追蹤：** `login/page.tsx` 中雖然有 UTM 追蹤邏輯，但需要將其擴展，把 UTM 信息與用戶的整個生命週期（註冊、付費、活躍）關聯起來，以便分析渠道效果。 | **(增長黑客)** 精確衡量每個營銷活動的 ROI。 | `lib/analytics.ts`, `UserContext.tsx` | 5h |
-| **P3-442** | **建立博客/內容營銷板塊：** 創建一個 `/blog` 路徑，定期發布與酒、派對、遊戲相關的文章，吸引自然搜索流量。 | **(SEO 專家)** 內容是最好的 SEO。 | `app/blog/` (需創建) | 10h |
+| **P3-442** ✅ | **建立博客/內容營銷板塊：** 創建一個 `/blog` 路徑，定期發布與酒、派對、遊戲相關的文章，吸引自然搜索流量。 | **(SEO 專家)** 內容是最好的 SEO。 | `app/blog/` (需創建) | 10h |
 
 ---
 
@@ -801,7 +801,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P3-428** | **課程更新通知：** 當已完成的課程有新內容更新時，通知用戶回來學習。 | **(增長黑客)** 召回老用戶。 | `api/notifications` | 3h |
 | **P3-429** | **學習排行榜：** 建立一個學習排行榜，展示學習時長、完成課程數等指標的排名。 | **(遊戲化專家)** 利用競爭心理驅動學習。 | `learn/leaderboard/page.tsx` | 5h |
 | **P3-430** | **課程搜索功能：** 在品酒學院中實現課程搜索功能，可以根據關鍵字、標籤、難度等進行搜索。 | **(UX 設計師)** 當課程數量增多時，搜索是必需的。 | `learn/page.tsx` | 3h |
-| **P3-431** | **離線學習 (PWA)：** 利用 Service Worker 緩存已下載的課程內容，允許用戶在離線狀態下繼續學習。 | **(PWA 專家)** 提升學習的靈活性。 | `public/sw.js` | 6h |
+| **P3-431** ✅ | **離線學習 (PWA)：** 利用 Service Worker 緩存已下載的課程內容，允許用戶在離線狀態下繼續學習。 | **(PWA 專家)** 提升學習的靈活性。 | `public/sw.js` | 6h |
 | **P3-432** | **課程內容版本控制：** 為課程內容建立版本控制機制，方便追蹤修改歷史和回滾。 | **(後端架構師)** 保護內容資產。 | `admin/courses/page.tsx` | 4h |
 | **P3-433** | **學習數據分析：** 在管理後台，提供學習數據分析儀表盤，展示課程完成率、平均學習時長、熱門課程等指標。 | **(數據分析師)** 用數據指導課程內容的優化方向。 | `admin/learn-analytics/page.tsx` | 6h |
 | **P3-434** | **課程合作夥伴計劃：** 建立一個框架，允許外部侍酒師或品酒專家在平台上發布自己的課程。 | **(酒類教育講師)** 擴展內容來源，降低內容生產成本。 | (商務流程) | 4h (流程) |

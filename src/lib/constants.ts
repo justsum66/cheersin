@@ -56,3 +56,6 @@ export const DEBOUNCE_DELAY_MS = 300
 
 /** 節流預設間隔（ms） */
 export const THROTTLE_INTERVAL_MS = 200
+
+/** 網紅優化 #2：官方 Hashtag，供分享與 UGC 引導 */
+export const OFFICIAL_HASHTAG = 'Cheersin派對'
