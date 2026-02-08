@@ -51,27 +51,36 @@ const LEARN_PROGRESS_KEY = 'cheersin_learn_progress'
 /** 211–215：遊戲統計 key（可擴充） */
 const GAMES_STATS_KEY = 'cheersin_games_played'
 
-const MOCK_USER = {
-    name: 'Paul',
-    email: 'paul@example.com',
-    level: '高級侍酒師 II',
-    xp: 2450,
-    nextLevel: 3000,
-    joinDate: '2026年 1月',
-    stats: {
-        winesTasted: 42,
-        reviewsGiven: 28,
-        perfectMatches: 15,
-        streakDays: 7
-    },
-    recentWines: [
-        { id: 1, name: 'Château Margaux 2015', rating: 4.8, type: '紅酒', date: '2 天前' },
-        { id: 2, name: 'Cloudy Bay Sauvignon Blanc', rating: 4.5, type: '白酒', date: '5 天前' },
-        { id: 3, name: 'Yamazaki 12 Year', rating: 5.0, type: '威士忌', date: '1 週前' },
-    ]
+/** P0-025：從 Supabase profiles 取得的資料或預設值（單一來源，無 Mock） */
+interface ProfileData {
+    xp: number
+    level: number
+    nextLevel: number
+    levelLabel: string
+    displayName: string | null
+    reviewsGiven: number
+    winesTasted: number
 }
 
-/** 211–215：成就徽章（mock，可後端擴充） */
+function levelToLabel(level: number): string {
+    if (level >= 10) return '大師侍酒師'
+    if (level >= 7) return '高級侍酒師 II'
+    if (level >= 5) return '高級侍酒師'
+    if (level >= 3) return '品鑑家'
+    return '見習品鑑家'
+}
+
+const DEFAULT_PROFILE: ProfileData = {
+    xp: 0,
+    level: 1,
+    nextLevel: 1000,
+    levelLabel: levelToLabel(1),
+    displayName: null,
+    reviewsGiven: 0,
+    winesTasted: 0,
+}
+
+/** 211–215：成就徽章（可後端擴充） */
 const ACHIEVEMENTS = [
     { id: 'first-quiz', label: '靈魂酒測初體驗', icon: Wine, unlocked: true },
     { id: 'streak-7', label: '連續 7 天登入', icon: Flame, unlocked: true },
@@ -82,14 +91,16 @@ const ACHIEVEMENTS = [
 export default function ProfilePage() {
     const router = useRouter()
     const { tier, expiresAt } = useSubscription()
-    const { user, setUser } = useUser()
+    const { user, setUser, isLoading: authLoading } = useUser()
     const supabase = useSupabase()
     const showBadge = hasProBadge(tier)
     const tierLabel = SUBSCRIPTION_TIERS[tier]?.label ?? '免費'
-    /** C1：已登入時顯示 Supabase 用戶，否則顯示 mock */
-    const displayName = user?.name ?? user?.email ?? MOCK_USER.name
-    const displayEmail = user?.email || MOCK_USER.email
-    const avatarSeed = user?.id ?? 'Paul'
+    /** P0-025：從 Supabase profiles 取得；無 Mock */
+    const [profileLoading, setProfileLoading] = useState(true)
+    const [profileData, setProfileData] = useState<ProfileData>(DEFAULT_PROFILE)
+    const displayName = (profileData.displayName || user?.name || user?.email) ?? '—'
+    const displayEmail = user?.email ?? '—'
+    const avatarSeed = user?.id ?? 'guest'
     const avatarUrl = user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}`
 
     /** 211–215：靈魂酒測結果（localStorage quiz-last-result，與 quiz 頁面儲存格式一致：name, type） */
@@ -104,6 +115,40 @@ export default function ProfilePage() {
     const [editMode, setEditMode] = useState(false)
     /** 任務 90：登出前確認 Dialog，避免誤觸 */
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+    /** P0-025：已登入時從 Supabase profiles 取得 xp、level、display_name */
+    useEffect(() => {
+        if (!user?.id || !supabase) {
+            setProfileLoading(false)
+            setProfileData(DEFAULT_PROFILE)
+            return
+        }
+        setProfileLoading(true)
+        void supabase
+            .from('profiles')
+            .select('xp, level, display_name')
+            .eq('id', user.id)
+            .maybeSingle()
+            .then(({ data, error }) => {
+                if (error) {
+                    setProfileData(DEFAULT_PROFILE)
+                    return
+                }
+                const level = typeof data?.level === 'number' ? data.level : 1
+                const xp = typeof data?.xp === 'number' ? data.xp : 0
+                const nextLevel = (level + 1) * 1000
+                setProfileData({
+                    xp,
+                    level,
+                    nextLevel,
+                    levelLabel: levelToLabel(level),
+                    displayName: data?.display_name ?? null,
+                    reviewsGiven: 0,
+                    winesTasted: 0,
+                })
+            })
+            .then(() => setProfileLoading(false), () => setProfileLoading(false))
+    }, [user?.id, supabase])
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -201,6 +246,37 @@ export default function ProfilePage() {
         }
     }
 
+    /** P0-025：未登入時顯示 empty 狀態，不顯示 Mock */
+    if (!authLoading && !user) {
+        return (
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
+                <div className="relative z-10 text-center max-w-md px-4">
+                    <User className="w-16 h-16 text-white/30 mx-auto mb-4" aria-hidden />
+                    <h1 className="text-xl font-bold text-white mb-2">登入以查看個人資料</h1>
+                    <p className="text-white/60 text-sm mb-6">登入後可查看等級、成就、願望酒單與學習進度。</p>
+                    <Link href="/login" className="btn-primary inline-flex items-center gap-2 min-h-[48px] px-6 py-3 games-focus-ring rounded-xl">
+                        前往登入
+                        <ChevronRight className="w-4 h-4" />
+                    </Link>
+                </div>
+            </main>
+        )
+    }
+
+    /** P0-025：載入 profile 時顯示 loading */
+    if (profileLoading && user) {
+        return (
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
+                <div className="relative z-10 text-center">
+                    <div className="w-12 h-12 border-2 border-primary-500/50 border-t-primary-400 rounded-full animate-spin mx-auto mb-4" aria-hidden />
+                    <p className="text-white/70 text-sm">載入個人資料中…</p>
+                </div>
+            </main>
+        )
+    }
+
     return (
         <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb" role="main" aria-label="個人頁面">
             {/* Background Elements */}
@@ -262,17 +338,20 @@ export default function ProfilePage() {
                             <p className="text-white/40 text-sm mb-6 truncate max-w-full" title={displayEmail}>{displayEmail}</p>
 
                             <div className="w-full bg-white/5 rounded-full h-2 mb-2 overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 w-[80%]" />
+                                <div
+                                    className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500"
+                                    style={{ width: `${profileData.nextLevel > 0 ? Math.min(100, (profileData.xp / profileData.nextLevel) * 100) : 0}%` }}
+                                />
                             </div>
                             <div className="flex justify-between w-full text-xs text-white/40 mb-8">
-                                <span>{MOCK_USER.level}</span>
-                                <span>{MOCK_USER.xp} / {MOCK_USER.nextLevel} XP</span>
+                                <span>{profileData.levelLabel}</span>
+                                <span>{profileData.xp} / {profileData.nextLevel} XP</span>
                             </div>
 
-                            {/* E59：連續天數與總數據 — 從 gamification getStreak、gamesPlayed、learn 完課數 */}
+                            {/* E59：連續天數與總數據 — 從 gamification getStreak、profileData */}
                             {(() => {
                                 const streak = getStreak()
-                                const streakDays = streak.days > 0 ? streak.days : MOCK_USER.stats.streakDays
+                                const streakDays = streak.days > 0 ? streak.days : 0
                                 return (
                                   <div className="grid grid-cols-2 gap-4 w-full">
                                     <div className="p-4 rounded-2xl bg-white/5 flex flex-col items-center">
@@ -282,7 +361,7 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/5 flex flex-col items-center">
                                         <Star className="w-6 h-6 text-yellow-500 mb-2" />
-                                        <span className="text-2xl font-bold text-white tabular-nums">{MOCK_USER.stats.reviewsGiven}</span>
+                                        <span className="text-2xl font-bold text-white tabular-nums">{profileData.reviewsGiven}</span>
                                         <span className="text-xs text-white/40 uppercase tracking-wider">總評論數</span>
                                     </div>
                                   </div>
@@ -413,30 +492,30 @@ export default function ProfilePage() {
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* Stats Row */}
+                        {/* Stats Row — P0-025：來自 profileData，無 Mock */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <StatCard
                                 icon={Wine}
                                 label="品酒數量"
-                                value={MOCK_USER.stats.winesTasted}
-                                trend="+12% 本月"
+                                value={profileData.winesTasted}
+                                trend={profileData.winesTasted > 0 ? '—' : '尚無資料'}
                                 color="primary"
                                 delay={0.2}
                             />
                             <StatCard
                                 icon={Zap}
                                 label="等級進度"
-                                value="Lv. 2"
+                                value={`Lv. ${profileData.level}`}
                                 valueSize="sm"
-                                trend="前 5% 的品鑑家"
+                                trend={profileData.xp > 0 ? `${Math.round((profileData.xp / profileData.nextLevel) * 100)}% 至下一級` : '—'}
                                 color="secondary"
                                 delay={0.3}
                             />
                             <StatCard
                                 icon={Target}
                                 label="味覺準確度"
-                                value="94%"
-                                trend="基於 15 次配對"
+                                value="—"
+                                trend="完成靈魂酒測後顯示"
                                 color="accent"
                                 delay={0.4}
                             />
@@ -631,7 +710,7 @@ export default function ProfilePage() {
                             </Link>
                         </motion.div>
 
-                        {/* Recent History */}
+                        {/* Recent History — P0-025：無 Mock，空狀態（可接 wine_favorites 或活動 API） */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -642,30 +721,8 @@ export default function ProfilePage() {
                                 <Clock className="w-5 h-5 text-white/50" />
                                 近期活動
                             </h2>
-
                             <div className="space-y-4">
-                                {MOCK_USER.recentWines.map((wine, i) => (
-                                    <div key={wine.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group">
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${wine.type === '紅酒' ? 'bg-red-900/30 text-red-500' :
-                                            wine.type === '白酒' ? 'bg-yellow-900/30 text-yellow-500' :
-                                                'bg-orange-900/30 text-orange-500'
-                                            }`}>
-                                            <Wine className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-white group-hover:text-primary-400 transition-colors">{wine.name}</h4>
-                                            <div className="flex items-center gap-2 text-xs text-white/40">
-                                                <span>{wine.type}</span>
-                                                <span>•</span>
-                                                <span>{wine.date}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
-                                            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                            <span className="font-bold text-sm">{wine.rating}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                <p className="text-white/50 text-sm">尚無近期品飲紀錄，完成靈魂酒測或記錄酒款後會顯示於此。</p>
                             </div>
                         </motion.div>
 
