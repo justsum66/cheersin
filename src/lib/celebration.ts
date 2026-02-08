@@ -54,3 +54,22 @@ export function showFailureEffect(): void {
     scalar: 0.8,
   })
 }
+
+/** P1-131：懲罰／惋惜全螢幕疊加 — 螢幕短暫變灰，強化情緒反饋 */
+export function showPunishmentOverlay(durationMs = 800): void {
+  if (typeof document === 'undefined') return
+  const el = document.createElement('div')
+  el.setAttribute('aria-hidden', 'true')
+  el.style.cssText =
+    'position:fixed;inset:0;z-index:9999;background:rgba(60,60,80,0.5);pointer-events:none;opacity:0;transition:opacity 0.25s ease;'
+  document.body.appendChild(el)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.style.opacity = '1'
+    })
+  })
+  setTimeout(() => {
+    el.style.opacity = '0'
+    setTimeout(() => el.remove(), 280)
+  }, durationMs)
+}

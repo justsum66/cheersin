@@ -3,6 +3,9 @@
 import { getErrorMessage } from '@/lib/api-response'
 import { useState, useEffect, useCallback, useRef } from 'react'
 
+/** P1-124：系統為每個玩家分配的辨識色，用於頭像、聊天等處 */
+const PLAYER_COLORS = ['#EC4899', '#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#A855F7'] as const
+
 export interface RoomPlayer {
   id: string
   displayName: string
@@ -11,6 +14,8 @@ export interface RoomPlayer {
   isSpectator?: boolean
   /** P1-117：房主標識 — orderIndex 0 為創建者/房主 */
   isHost?: boolean
+  /** P1-124：玩家辨識色（系統依 orderIndex 分配） */
+  playerColor?: string
 }
 
 export interface GameRoomState {
@@ -65,12 +70,13 @@ export function useGameRoom(slug: string | null) {
       }
       const data = await res.json()
       setRoomId(data.room?.id ?? null)
-      setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }, i: number) => ({
+      setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }) => ({
         id: p.id,
         displayName: p.displayName,
         orderIndex: p.orderIndex,
         isSpectator: p.isSpectator ?? false,
         isHost: p.orderIndex === 0,
+        playerColor: PLAYER_COLORS[p.orderIndex % PLAYER_COLORS.length],
       })))
       setInviteUrl((prev) => prev || (data.room?.slug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${data.room.slug}` : null))
     } catch (e) {
@@ -148,7 +154,13 @@ export function useGameRoom(slug: string | null) {
         clearTimeout(timeoutId)
         const data = await res.json().catch(() => ({}))
         if (!res.ok) return { ok: false, error: getErrorMessage(data, `HTTP ${res.status}`) }
-        setPlayers((data as { players?: RoomPlayer[] }).players ?? [])
+        const raw = (data as { players?: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }[] }).players ?? []
+        setPlayers(raw.map((p) => ({
+          ...p,
+          isSpectator: p.isSpectator ?? false,
+          isHost: p.orderIndex === 0,
+          playerColor: PLAYER_COLORS[p.orderIndex % PLAYER_COLORS.length],
+        })))
         return { ok: true }
       } catch (e) {
         clearTimeout(timeoutId)

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { PunishmentItem, PunishmentHistoryEntry, PlayerPunishmentStats } from './types'
 import { getAllPresets } from './presets'
+import { showPunishmentOverlay } from '@/lib/celebration'
 
 const SUPER_PUNISHMENT_FAIL_THRESHOLD = 3
 
@@ -107,6 +108,8 @@ export function PunishmentProvider({ players, children }: { players: string[]; c
           isGroup,
         },
       ])
+      /** P1-131：觸發懲罰時顯示惋惜疊加（螢幕變灰） */
+      showPunishmentOverlay(800)
       return true
     },
     [exemptionTickets]

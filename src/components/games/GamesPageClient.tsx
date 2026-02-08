@@ -1132,7 +1132,15 @@ function GamesPageContent() {
                         <div key={p.id ?? i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
                           <span className="flex items-center gap-2 text-white font-medium truncate min-w-0">
                             {p.isHost && <Crown className="w-4 h-4 shrink-0 text-secondary-400" aria-label="房主" />}
-                            <span title={p.displayName}>{p.displayName}</span>
+                            {/* P1-124：玩家辨識色 — 圓點頭像 */}
+                            {p.playerColor && (
+                              <span
+                                className="w-3 h-3 shrink-0 rounded-full"
+                                style={{ backgroundColor: p.playerColor }}
+                                aria-hidden
+                              />
+                            )}
+                            <span title={p.displayName} style={p.playerColor ? { color: p.playerColor } : undefined}>{p.displayName}</span>
                           </span>
                         </div>
                       ))

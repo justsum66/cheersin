@@ -397,10 +397,10 @@ export default function TruthOrDare() {
                 ) : (
                     <motion.div
                         key="card"
-                        initial={reducedMotion ? false : { rotateY: 90, opacity: 0, scale: 0.8 }}
-                        animate={{ rotateY: 0, opacity: 1, scale: 1 }}
-                        exit={reducedMotion ? undefined : { rotateY: -90, opacity: 0, scale: 0.8 }}
-                        transition={reducedMotion ? { duration: 0 } : { duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                        initial={reducedMotion ? false : { y: 80, scale: 0.5, rotateY: 90, opacity: 0 }}
+                        animate={{ y: 0, scale: 1, rotateY: 0, opacity: 1 }}
+                        exit={reducedMotion ? undefined : { y: 40, scale: 0.9, rotateY: -15, opacity: 0 }}
+                        transition={reducedMotion ? { duration: 0 } : { duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
                         style={{ perspective: 1000, transformStyle: 'preserve-3d' }}
                         className="text-center max-w-2xl relative touch-none"
                         data-testid="truth-or-dare-result"

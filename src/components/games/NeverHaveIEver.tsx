@@ -199,11 +199,12 @@ export default function NeverHaveIEver() {
             <div className="relative min-h-[16rem] h-64 sm:h-72 md:h-80 w-full max-w-md mb-6 md:mb-8">
                 <AnimatePresence mode="wait">
                     {/* G3D-NeverHaveIEver-01/03：題目卡 3D 浮起/邊框、題目區精緻排版 */}
+                    {/* P1-127：卡片從牌堆飛出 — 滑入 + 微縮放 */}
                     <motion.div
                         key={current.text + currentIndex}
-                        initial={reducedMotion ? false : { x: direction * 200, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={reducedMotion ? undefined : { x: -direction * 200, opacity: 0 }}
+                        initial={reducedMotion ? false : { x: direction * 200, y: 40, scale: 0.85, opacity: 0 }}
+                        animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                        exit={reducedMotion ? undefined : { x: -direction * 200, scale: 0.95, opacity: 0 }}
                         transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
                         className="absolute inset-0 bg-gradient-to-br from-primary-900/40 to-secondary-900/40 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-8 flex items-center justify-center border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl"
                         data-testid="never-have-i-ever-card"
