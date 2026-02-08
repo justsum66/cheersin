@@ -9,7 +9,7 @@
     "error": "發生錯誤",
     "save": "儲存",
     "cancel": "取消",
-    "close": "關閉", "back": "返回", "share": "分享", "copied": "已複製"
+    "close": "關閉", "back": "返回", "share": "分享", "copied": "已複製", "errorNetwork": "網路異常，請檢查連線後再試", "sessionExpired": "登入已過期，請重新登入"
   },
   "nav": {
     "home": "首頁",
@@ -55,7 +55,7 @@
   "auth": { "forgotPassword": "忘記密碼", "setPassword": "設定新密碼" },
   "gamesRoom": { "create": "建立房間", "join": "加入房間" },
   "partyRoom": { "title": "派對直播房", "subtitle": "4–12 人即時同房、同步遊戲；下方乾杯按鈕可預覽效果。", "roomStatus": "房內狀態", "peopleCount": "目前", "peopleCountValue": "人", "hostSelectGame": "房主選遊戲", "inviteLink": "邀請連結", "cheers": "乾杯！", "cheersCount": "已乾杯", "continueGames": "先去派對遊樂場", "backHome": "返回首頁", "copyInviteAria": "複製邀請連結" },
-  "partyDj": { "title": "AI 派對 DJ", "subtitle": "輸入人數與時長，AI 幫你編排：暖場 → 升溫 → 高潮 → 收尾。", "people": "人數", "durationMin": "時長（分鐘）", "allow18": "含 18+ 遊戲", "freeLimitHint": "免費用戶最多 30 分鐘；訂閱可解鎖更長編排", "submit": "生成派對流程", "submitLoading": "編排中…", "planTitle": "派對流程", "minutes": "分鐘", "gamesLabel": "遊戲", "sharePlan": "分享編排", "startParty": "開始派對", "backHome": "返回首頁", "askAssistant": "先問 AI 侍酒師", "errorFetch": "無法取得編排", "errorGeneric": "發生錯誤，請稍後再試", "sharePlanAria": "分享編排結果" },
+  "partyDj": { "title": "AI 派對 DJ", "subtitle": "輸入人數與時長，AI 幫你編排：暖場 → 升溫 → 高潮 → 收尾。", "people": "人數", "durationMin": "時長（分鐘）", "allow18": "含 18+ 遊戲", "useAiTransition": "AI 生成過渡語", "freeLimitHint": "免費用戶最多 30 分鐘；訂閱可解鎖更長編排", "submit": "生成派對流程", "submitLoading": "編排中…", "planTitle": "派對流程", "minutes": "分鐘", "gamesLabel": "遊戲", "sharePlan": "分享編排", "startParty": "開始派對", "backHome": "返回首頁", "askAssistant": "先問 AI 侍酒師", "errorFetch": "無法取得編排", "errorGeneric": "發生錯誤，請稍後再試", "sharePlanAria": "分享編排結果", "retry": "重試" },
   "status": { "title": "服務連線狀態（即時）", "checking": "正在檢查服務連線…", "errorFetch": "無法取得狀態", "errorHint": "無法取得服務狀態。請確認 .env.local 已設定並重啟 dev server。", "connected": "已連接", "notConfigured": "未設定", "error": "異常", "pageTitle": "系統狀態", "pageDescription": "若首頁顯示維護公告，表示我們正在進行維護，部分功能可能暫時無法使用。下方為即時服務連線狀態：未設定表示 .env.local 未填該服務變數；異常表示連線或金鑰錯誤，可依提示修正。", "backHome": "返回首頁", "contactUs": "聯絡我們", "reportIntro": "如有異常請透過", "reportSuffix": "回報。" },
   "gamesError": { "title": "遊戲頁載入失敗", "desc": "派對遊樂場暫時無法載入，請重新整理或返回遊戲大廳再試。", "retry": "再試一次", "backLobby": "返回遊戲大廳" },
   "upgrade": { "title": "升級以解鎖更多", "description": "此功能需要更高方案，升級後享更多 AI 對話、遊戲人數與進階課程。", "cta": "查看方案與升級", "infinite": "無限", "perDay": "次/天" }

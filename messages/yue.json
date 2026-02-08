@@ -192,6 +192,7 @@
     "people": "人數",
     "durationMin": "時長（分鐘）",
     "allow18": "含 18+ 遊戲",
+    "useAiTransition": "AI 生成過渡語",
     "freeLimitHint": "免費用戶最多 30 分鐘；訂閱可解鎖更長編排",
     "submit": "生成派對流程",
     "submitLoading": "編排中…",
@@ -204,7 +205,8 @@
     "askAssistant": "先問 AI 侍酒師",
     "errorFetch": "無法取得編排",
     "errorGeneric": "發生錯誤，請稍後再試",
-    "sharePlanAria": "分享編排結果"
+    "sharePlanAria": "分享編排結果",
+    "retry": "重試"
   },
   "status": {
     "title": "服務連線狀態（即時）",

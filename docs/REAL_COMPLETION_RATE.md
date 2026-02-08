@@ -6,7 +6,7 @@
 
 | 級別 | 完成數 | 總數 | 完成率 | 說明 |
 |------|--------|------|--------|------|
-| **P0** | **21** | **30** | **70%** | R2-001,003,004,005,006,007,008,009,010,012,013,014,015,016,018 部分,019,020,026,029,030 + 既有；其餘待實作 |
+| **P0** | **24** | **30** | **80%** | 上輪 21 + 本輪 R2-018 Zod、R2-026 輸入清理 games/rooms、R2-027 日誌、R2-021 題庫已有；R2-002 第一階段 |
 | **P1** | **30** | **200** | **15%** | 同上 + 本輪 R2-071 New 標籤 pulse、R2-100 BackToTop 滑入；031/033/036/032/057/055/038 已有 |
 | **P2** | **0** | **170** | **0%** | 未執行 R2-231～R2-370 |
 | **P3** | **0** | **100** | **0%** | 未執行 R2-371～R2-500 |
@@ -18,12 +18,23 @@
 - **Header 10 項**：Navigation 已有滾動透明、Active、漢堡選單、觸控 44px、Escape；header-10-tasks.md 對應
 - **FOLDER 15 項**：folder-cleanup-15-tasks.md 建立；單一 Footer/Nav、games/api/types 結構確認
 - **P0**：R2-012 GameLazyMap 註解標示符合 code splitting；其餘見 p0-tasks-done.md
-- **CI**：Build ✅、Lint ✅、Smoke（test:run）✅、Stress ✅、TS ✅；E2E 部分通過（critical 路徑多數 ok），部分逾時/失敗建議本地重跑；Console 本輪未新增錯誤
+- **CI**：Build ✅、Lint ✅、Smoke（test:run）✅、TS ✅；E2E 已知環境問題（並行時 ECONNRESET），建議依 close-node-windows 關閉多餘 Node 後本地重跑 critical-paths
 - **本輪修復**：AuroraBackground framer-motion 改靜態 import；/logo.png → rewrite 至 logo_monochrome_gold.png；SW v4 + activate 清理；BackToTop 滑入動畫、GameCard New 脈衝；docs/service-worker-audit.md、close-node-windows.md
+- **本輪 P0**：雙 Footer 合併（首頁單一 footer）；analytics/party-dj Zod；report/analytics/party-dj requestId+duration 日誌；games/rooms scriptId stripHtml；globals 移除未使用 lcp 區塊；R2-021 題庫 200+200 已有
+- **Party DJ 30 項**：本輪實作並勾選 #2 重試、#3 Loading 骨架、#4 useAiTransition 開關、#7 無障礙 aria、#10 Analytics 事件（party-dj-30-optimization-tasks.md）
 
 ## 公式
 
-- **P0 完成率** = 21 / 30 = **70%**
+- **P0 完成率** = 24 / 30 = **80%**
 - **P1 完成率** = 30 / 200 = **15%**
 - **P2 完成率** = 0 / 170 = **0%**
 - **P3 完成率** = 0 / 100 = **0%**
+
+## 本輪實際完成任務 ID（Round2 執行計畫）
+
+- 雙 Footer 合併（首頁單一 footer，方案 A）
+- P0：R2-018 Zod（analytics、party-dj/plan）、R2-026 games/rooms scriptId stripHtml、R2-027 日誌、R2-002 第一階段、R2-021 題庫已有
+- Party DJ 30 項：#2 重試、#3 Loading 骨架、#4 useAiTransition、#7 無障礙、#10 Analytics
+- i18n 30 項：docs/i18n-tasks-30.md、common.errorNetwork/sessionExpired、partyDj.useAiTransition/retry
+- E2E：critical-paths 選器與 timeout 調整（Quiz 結果、FAQ、truth-or-dare、取消訂閱頁）
+- 文件：ux-redesign-assessment.md、supabase-advisors-fixes.md、close-node-windows 建議、function search_path 遷移

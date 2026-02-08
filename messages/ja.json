@@ -192,6 +192,7 @@
     "people": "People",
     "durationMin": "Duration (min)",
     "allow18": "Include 18+ games",
+    "useAiTransition": "AI-generated transition lines",
     "freeLimitHint": "Free users: max 30 min. Subscribe for longer plans.",
     "submit": "Generate party flow",
     "submitLoading": "Planning…",
@@ -204,7 +205,8 @@
     "askAssistant": "Ask AI Sommelier first",
     "errorFetch": "Failed to get plan",
     "errorGeneric": "Something went wrong. Please try again.",
-    "sharePlanAria": "Share plan result"
+    "sharePlanAria": "Share plan result",
+    "retry": "Retry"
   },
   "status": {
     "title": "Service status (live)",

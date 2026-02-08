@@ -40,3 +40,8 @@ cd C:\Users\paul0\.minimax-agent\projects\3\cheersin
 ```
 
 若只輸入 `C:\Users\paul0\.minimax-agent\projects\3\cheersin` 會被當成指令而報錯。
+
+## 5. 執行 E2E / Build 前建議
+
+- 執行 `npm run test:e2e:critical` 或 `npm run build` 前，建議先關閉多餘的 node（避免埠 3000/3099 衝突或記憶體不足）。
+- 一鍵關閉所有 node：`npm run stop:dev`（專案內已定義 script）。

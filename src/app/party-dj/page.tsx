@@ -22,6 +22,7 @@ export default function PartyDJPage() {
   const [peopleCount, setPeopleCount] = useState(6)
   const [durationMin, setDurationMin] = useState(isFree ? 30 : 120)
   const [allow18, setAllow18] = useState(false)
+  const [useAiTransition, setUseAiTransition] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [plan, setPlan] = useState<{ phases: Phase[]; totalMin: number } | null>(null)
@@ -40,6 +41,7 @@ export default function PartyDJPage() {
           peopleCount,
           durationMin,
           allow18,
+          useAiTransition,
           subscriptionTier: tier === 'basic' || tier === 'premium' ? tier : 'free',
         }),
       })
@@ -50,11 +52,19 @@ export default function PartyDJPage() {
       }
       setPlan({ phases: data.phases, totalMin: data.totalMin })
       fireFullscreenConfetti()
+      try {
+        fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_plan_success', value: 1 }) }).catch(() => {})
+      } catch { /* noop */ }
     } catch (err) {
       setError(t('partyDj.errorGeneric'))
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRetry = () => {
+    setError(null)
+    void handleSubmit({ preventDefault: () => {} } as React.FormEvent)
   }
 
   return (
@@ -68,7 +78,7 @@ export default function PartyDJPage() {
         {t('partyDj.subtitle')}
       </p>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4" aria-label={t('partyDj.title')}>
         <label className="text-white/80 text-sm">
           {t('partyDj.people')}
           <input
@@ -77,7 +87,8 @@ export default function PartyDJPage() {
             max={12}
             value={peopleCount}
             onChange={(e) => setPeopleCount(Number(e.target.value) || 6)}
-            className="mt-1 w-full rounded-lg bg-white/10 px-3 py-2 text-white border border-white/20"
+            className="mt-1 w-full rounded-lg bg-white/10 px-3 py-2 text-white border border-white/20 min-h-[44px]"
+            aria-label={t('partyDj.people')}
           />
         </label>
         <label className="text-white/80 text-sm">
@@ -88,34 +99,46 @@ export default function PartyDJPage() {
             max={maxDuration}
             value={durationMin}
             onChange={(e) => setDurationMin(Math.min(maxDuration, Number(e.target.value) || 15))}
-            className="mt-1 w-full rounded-lg bg-white/10 px-3 py-2 text-white border border-white/20"
+            className="mt-1 w-full rounded-lg bg-white/10 px-3 py-2 text-white border border-white/20 min-h-[44px]"
+            aria-label={t('partyDj.durationMin')}
           />
           {isFree && (
             <p className="mt-1 text-amber-400/90 text-xs">{t('partyDj.freeLimitHint')}</p>
           )}
         </label>
-        <label className="flex items-center gap-2 text-white/80">
-          <input
-            type="checkbox"
-            checked={allow18}
-            onChange={(e) => setAllow18(e.target.checked)}
-            className="rounded"
-          />
+        <label className="flex items-center gap-2 text-white/80 min-h-[44px] items-center">
+          <input type="checkbox" checked={allow18} onChange={(e) => setAllow18(e.target.checked)} className="rounded" aria-label={t('partyDj.allow18')} />
           {t('partyDj.allow18')}
         </label>
-        <button
-          type="submit"
-          disabled={loading}
-          className="min-h-[48px] px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-medium games-focus-ring"
-        >
+        <label className="flex items-center gap-2 text-white/80 min-h-[44px] items-center">
+          <input type="checkbox" checked={useAiTransition} onChange={(e) => setUseAiTransition(e.target.checked)} className="rounded" aria-label={t('partyDj.useAiTransition')} />
+          {t('partyDj.useAiTransition')}
+        </label>
+        <button type="submit" disabled={loading} className="min-h-[48px] px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-medium games-focus-ring" aria-busy={loading}>
           {loading ? t('partyDj.submitLoading') : t('partyDj.submit')}
         </button>
       </form>
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {loading && (
+        <div className="w-full max-w-lg space-y-4 animate-pulse" role="status" aria-live="polite">
+          <div className="h-6 bg-white/10 rounded w-1/2 mx-auto" />
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl bg-white/10 border border-white/20 p-4 h-24" />
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-red-400 text-sm" role="alert">{error}</p>
+          <button type="button" onClick={handleRetry} className="min-h-[44px] px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm games-focus-ring">
+            {t('partyDj.retry')}
+          </button>
+        </div>
+      )}
 
       {plan && (
-        <div className="w-full max-w-lg space-y-4">
+        <div className="w-full max-w-lg space-y-4" role="region" aria-label={t('partyDj.planTitle')}>
           <h2 className="text-lg font-semibold text-white">{t('partyDj.planTitle')}（{plan.totalMin} {t('partyDj.minutes')}）</h2>
           {plan.phases.map((p, i) => (
             <div
@@ -137,6 +160,9 @@ export default function PartyDJPage() {
               type="button"
               onClick={() => {
                 if (!plan) return
+                try {
+                  fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_share', value: 1 }) }).catch(() => {})
+                } catch { /* noop */ }
                 const text = [
                   `🎉 Cheersin ${t('partyDj.planTitle')}（${plan.totalMin} ${t('partyDj.minutes')}）`,
                   plan.phases
