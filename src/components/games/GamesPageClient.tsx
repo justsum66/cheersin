@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { getFontSize, getReduceMotion } from '@/lib/games-settings'
-import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff } from 'lucide-react'
+import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
@@ -1122,25 +1122,32 @@ function GamesPageContent() {
                   </button>
                 </div>
               )}
-              {/* Player List */}
+              {/* Player List；P1-117：房主標識（皇冠） */}
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {players.length === 0 ? (
                   <p className="text-white/30 text-center py-8">尚未新增任何玩家</p>
                 ) : (
-                  players.map((player, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
-                      <span className="text-white font-medium truncate min-w-0" title={player}>{player}</span>
-                      {!isInRoomMode && (
-                        <button
-                          onClick={() => removePlayer(i)}
-                          className="p-1 hover:bg-red-500/20 rounded text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                          aria-label={`移除 ${player}`}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))
+                  isInRoomMode
+                    ? roomPlayers.map((p, i) => (
+                        <div key={p.id ?? i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
+                          <span className="flex items-center gap-2 text-white font-medium truncate min-w-0">
+                            {p.isHost && <Crown className="w-4 h-4 shrink-0 text-secondary-400" aria-label="房主" />}
+                            <span title={p.displayName}>{p.displayName}</span>
+                          </span>
+                        </div>
+                      ))
+                    : players.map((player, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
+                          <span className="text-white font-medium truncate min-w-0" title={player}>{player}</span>
+                          <button
+                            onClick={() => removePlayer(i)}
+                            className="p-1 hover:bg-red-500/20 rounded text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                            aria-label={`移除 ${player}`}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
                 )}
               </div>
 

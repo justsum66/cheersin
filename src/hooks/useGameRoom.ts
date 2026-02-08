@@ -9,6 +9,8 @@ export interface RoomPlayer {
   orderIndex: number
   /** A1-13：是否為觀戰者（不參與遊戲） */
   isSpectator?: boolean
+  /** P1-117：房主標識 — orderIndex 0 為創建者/房主 */
+  isHost?: boolean
 }
 
 export interface GameRoomState {
@@ -63,11 +65,12 @@ export function useGameRoom(slug: string | null) {
       }
       const data = await res.json()
       setRoomId(data.room?.id ?? null)
-      setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }) => ({
+      setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }, i: number) => ({
         id: p.id,
         displayName: p.displayName,
         orderIndex: p.orderIndex,
         isSpectator: p.isSpectator ?? false,
+        isHost: p.orderIndex === 0,
       })))
       setInviteUrl((prev) => prev || (data.room?.slug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${data.room.slug}` : null))
     } catch (e) {
