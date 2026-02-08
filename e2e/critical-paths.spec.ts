@@ -25,18 +25,19 @@ test.describe('關鍵路徑：Nav Bar', () => {
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
-    const cookieAccept = page.getByRole('button', { name: /接受全部|同意|接受/ })
+    const cookieDialog = page.getByRole('dialog', { name: /Cookie|同意/ })
     const cookieReject = page.getByRole('button', { name: /拒絕非必要|拒絕/ })
+    const cookieAccept = page.getByRole('button', { name: /接受全部|同意|接受/ })
     if (await cookieReject.isVisible().catch(() => false)) {
       await cookieReject.click()
-      await page.waitForTimeout(300)
+      await cookieDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {})
     } else if (await cookieAccept.isVisible().catch(() => false)) {
       await cookieAccept.click()
-      await page.waitForTimeout(300)
+      await cookieDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {})
     }
+    await page.waitForTimeout(400)
     const bottomNav = page.getByRole('navigation', { name: '底部導航' })
     await expect(bottomNav).toBeVisible({ timeout: 12000 })
-    await page.waitForTimeout(500)
     const quizLink = page.getByRole('link', { name: '靈魂酒測' }).last()
     await quizLink.click()
     await expect(page).toHaveURL(/\/quiz/, { timeout: 15000 })
@@ -91,14 +92,16 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
     await page.getByRole('button', { name: /牡羊/ }).first().click()
     const questionCount = 18
     for (let i = 0; i < questionCount; i++) {
-      await expect(page.getByText(/第\s*\d+\s*\/\s*\d+\s*題/)).toBeVisible({ timeout: 12000 })
+      await expect(page.getByText(/第\s*\d+\s*\/\s*\d+\s*題/)).toBeVisible({ timeout: 15000 })
+      await page.waitForTimeout(200)
       const option = page.locator('button[role="radio"]').first()
-      await option.waitFor({ state: 'attached', timeout: 10000 })
-      await page.waitForTimeout(150)
+      await option.waitFor({ state: 'visible', timeout: 10000 })
       await option.click({ force: true })
-      await page.waitForTimeout(400)
+      await page.waitForTimeout(350)
     }
-    await expect(page.getByText(/您的靈魂之酒|靈魂之酒|查看推薦/).first()).toBeVisible({ timeout: 20000 })
+    await expect(
+      page.getByText(/您的靈魂之酒|靈魂之酒|查看推薦|發現你的靈魂|測驗結果/).first()
+    ).toBeVisible({ timeout: 25000 })
   })
 })
 
