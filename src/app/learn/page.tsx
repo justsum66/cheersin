@@ -1327,15 +1327,28 @@ export default function LearnPage() {
           </div>
         </motion.div>
 
-        {/* 酒類知識入口；49 樣式優化 */}
+        {/* 酒類知識入口；49 樣式優化；L11 詞彙表入口與知識區並列 */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 md:mb-8"
+          className="mb-6 md:mb-8 space-y-3"
         >
           <Link
+            href="/learn/glossary"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
+          >
+            <div className="p-2 rounded-xl bg-amber-500/20">
+              <BookOpen className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">詞彙表</h2>
+              <p className="text-white/50 text-sm">品酒術語查詢，搜尋與類別篩選</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link
             href="/learn/knowledge"
-            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
           >
             <div className="p-2 rounded-xl bg-primary-500/20">
               <BookOpen className="w-5 h-5 text-primary-400" />
@@ -1344,7 +1357,7 @@ export default function LearnPage() {
               <h2 className="font-semibold text-white">酒類知識</h2>
               <p className="text-white/50 text-sm">WSET · CMS · MW 等級 FAQ、酒杯指南、醒酒與品酒技巧</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
           </Link>
           <Link
             href="/learn/plan"

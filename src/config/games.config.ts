@@ -66,7 +66,6 @@ import {
   Clock,
   Star,
   HelpCircle,
-  Ear,
 } from 'lucide-react'
 
 /** 任務 8：遊戲難度標籤 */
