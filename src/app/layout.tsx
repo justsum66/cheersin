@@ -55,13 +55,15 @@ const notoSansTC = Noto_Sans_TC({
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
-/** T021 P2：meta 說明目標客群（成人/酒類），搜尋即知、不誤導為兒童產品 */
+/** T021 P2：meta 說明目標客群（成人/酒類），搜尋即知、不誤導為兒童產品。SEO：robots 可索引、canonical 與 OG 一致。 */
 export const metadata: Metadata = {
-  title: 'Cheersin | 探索你的靈魂之酒',
+  title: { default: 'Cheersin | 探索你的靈魂之酒', template: '%s | Cheersin' },
   description: 'Cheersin — 你的 AI 派對靈魂伴侶。靈魂酒測發現命定酒款、AI 幫你選遊戲與問酒、派對桌遊同樂、品酒學院從零學起。測驗免費，一站滿足。未滿18歲請勿飲酒。',
   keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '台灣'],
-  authors: [{ name: 'Cheersin Team' }],
+  authors: [{ name: 'Cheersin Team', url: BASE }],
   metadataBase: new URL(BASE),
+  alternates: { canonical: BASE },
+  robots: { index: true, follow: true },
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },

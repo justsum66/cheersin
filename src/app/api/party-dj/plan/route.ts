@@ -39,11 +39,18 @@ function allocateDurations(totalMin: number): number[] {
   return [warm, ramp, peak, Math.max(5, cool)]
 }
 
+/** 殺手 30 #25：免費用戶僅能編排 30 分鐘；付費 basic/premium 不限 */
+const FREE_MAX_DURATION_MIN = 30
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}))
     const peopleCount = typeof body.peopleCount === 'number' ? Math.max(2, Math.min(12, body.peopleCount)) : 6
-    const durationMin = typeof body.durationMin === 'number' ? Math.max(15, Math.min(240, body.durationMin)) : 120
+    let durationMin = typeof body.durationMin === 'number' ? Math.max(15, Math.min(240, body.durationMin)) : 120
+    const tier = body.subscriptionTier === 'basic' || body.subscriptionTier === 'premium' ? body.subscriptionTier : 'free'
+    if (tier === 'free') {
+      durationMin = Math.min(durationMin, FREE_MAX_DURATION_MIN)
+    }
     const allow18 = Boolean(body.allow18)
 
     const [warmMin, rampMin, peakMin, coolMin] = allocateDurations(durationMin)

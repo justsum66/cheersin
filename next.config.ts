@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 import path from 'path'
 import bundleAnalyzer from '@next/bundle-analyzer'
+import { withSentryConfig } from '@sentry/nextjs'
 
 // 297 Bundle 分析：ANALYZE=true npm run build 產出 report
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })
@@ -132,7 +133,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       `img-src ${imgSrcHosts}`,
-      "connect-src 'self' https://*.supabase.co https://api.groq.com https://openrouter.ai https://api.pinecone.io https://api-m.paypal.com https://api-m.sandbox.paypal.com https://www.google-analytics.com wss:",
+      "connect-src 'self' https://*.supabase.co https://api.groq.com https://openrouter.ai https://api.pinecone.io https://api-m.paypal.com https://api-m.sandbox.paypal.com https://www.google-analytics.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io wss:",
       "frame-src 'self' https://www.paypal.com",
       "frame-ancestors 'self'",
       "object-src 'none'",
@@ -175,4 +176,10 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withBundleAnalyzer(nextConfig)
+const configWithAnalyzer = withBundleAnalyzer(nextConfig)
+
+export default withSentryConfig(configWithAnalyzer, {
+  org: process.env.SENTRY_ORG ?? 'prowine',
+  project: process.env.SENTRY_PROJECT ?? 'javascript-nextjs',
+  silent: !process.env.CI,
+})

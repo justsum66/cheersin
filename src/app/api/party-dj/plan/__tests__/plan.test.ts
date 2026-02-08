@@ -16,9 +16,9 @@ describe('POST /api/party-dj/plan', () => {
     vi.resetModules()
   })
 
-  it('returns phases with valid body', async () => {
+  it('returns phases with valid body (paid tier allows 120 min)', async () => {
     const { POST } = await import('../route')
-    const body = { peopleCount: 6, durationMin: 120, allow18: false }
+    const body = { peopleCount: 6, durationMin: 120, allow18: false, subscriptionTier: 'premium' }
     const req = new Request('http://localhost/api/party-dj/plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,7 +38,7 @@ describe('POST /api/party-dj/plan', () => {
     })
   })
 
-  it('defaults peopleCount and durationMin when missing', async () => {
+  it('defaults peopleCount and durationMin when missing (free tier caps at 30 min)', async () => {
     const { POST } = await import('../route')
     const req = new Request('http://localhost/api/party-dj/plan', {
       method: 'POST',
@@ -49,6 +49,19 @@ describe('POST /api/party-dj/plan', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.peopleCount).toBe(6)
-    expect(data.totalMin).toBe(120)
+    expect(data.totalMin).toBe(30)
+  })
+
+  it('free tier caps duration at 30 min', async () => {
+    const { POST } = await import('../route')
+    const req = new Request('http://localhost/api/party-dj/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ peopleCount: 4, durationMin: 90, subscriptionTier: 'free' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.totalMin).toBe(30)
   })
 })
