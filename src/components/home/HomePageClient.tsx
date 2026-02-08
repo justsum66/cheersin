@@ -45,6 +45,7 @@ import ParticleBubbles from '@/components/ParticleBubbles'
 import { LOGO_SRC, BRAND_NAME } from '@/components/BrandLogo'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { MagneticButton } from '@/components/ui/MagneticButton'
+import { useTranslation } from '@/contexts/I18nContext'
 import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import { HERO_SUBTITLE_VARIANTS, HERO_ANIMATION_DELAYS, HOME_TRUST_COPY, HOME_AVATAR_LETTERS, HOME_FEATURES_LABEL, FOOTER_DRINK_NOTE, FOOTER_DRINK_NOTE_BOTTOM, BENTO_CARDS } from '@/config/home.config'
 import { COPY_CTA_IMMEDIATE_QUIZ } from '@/config/copy.config'
@@ -60,6 +61,7 @@ interface HomePageClientProps {
 
 export default function HomePageClient({ testimonials, faq }: HomePageClientProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
   const reducedMotion = useReducedMotion()
   /** EXPERT_60 P0：A/B 副標 variant（0=現有、1=30秒命定酒款），用於 analytics */
   const [heroVariant, setHeroVariant] = useState<0 | 1>(0)
@@ -129,7 +131,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
       {/* E21/E08：Hero 區 role=banner、100svh、E09 safe-area 底部 */}
       <section
         role="banner"
-        className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pt-0 overflow-hidden home-hero-gradient safe-area-pb-hero"
+        className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pt-0 overflow-hidden home-hero-gradient safe-area-pb-hero page-container-mobile"
         aria-label="你的 AI 派對靈魂伴侶：靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。"
       >
         {/* 氣泡動畫延伸至 Hero：absolute 填滿 Hero 區，z-[2] 在漸層之上、內容之下 */}
@@ -150,7 +152,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] mix-blend-screen" style={{ backgroundColor: 'var(--hero-glow-secondary)' }} />
         </motion.div>
 
-        <div className="relative z-10 max-w-5xl mx-auto text-center w-full">
+        <div className="relative z-10 max-w-5xl mx-auto text-center w-full page-container-mobile px-4 sm:px-6 lg:px-8">
           {/* E13/E15/E34：Logo LCP 優先、sizes 提示、入場 delay 可配置 */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -188,7 +190,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.title1 }}
               className="block text-white"
             >
-              {HOME_COPY.heroTitle1}
+              {t('common.heroTitle1')}
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 40 }}
@@ -200,7 +202,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                 backgroundSize: '200% 100%',
               }}
             >
-              {HOME_COPY.heroTitle2}
+              {t('common.heroTitle2')}
             </motion.span>
           </motion.h1>
 
@@ -228,7 +230,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             {/* Phase 1 A2.3 + B2.1: 套用 text-balance 與 btn-press-scale */}
             <Link
               href="/quiz"
-              aria-label="開始檢測"
+              aria-label={t('common.cta')}
               aria-describedby="hero-cta-hint"
               className="w-full sm:w-auto order-2 sm:order-1 rounded-2xl outline-none games-focus-ring transition-[box-shadow,transform] duration-200 hover:shadow-hero-glow"
               onClick={() => {
@@ -243,7 +245,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             >
               <div className="btn-primary btn-press-scale hero-cta-primary flex items-center justify-center gap-3 text-base md:text-lg group cursor-pointer games-touch-target">
                 <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" />
-                <span>{HOME_COPY.ctaQuiz}</span>
+                <span>{t('common.cta')}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
               </div>
             </Link>
@@ -252,26 +254,26 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               <Link
                 href="/games"
                 className="text-white/60 hover:text-white/80 text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
-                aria-label="派對遊樂場"
+                aria-label={t('nav.games')}
               >
                 <Gamepad2 className="w-4 h-4 shrink-0" aria-hidden />
-                {HOME_COPY.ctaGames}
+                {t('nav.games')}
               </Link>
               <Link
                 href="/assistant"
                 className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
-                aria-label="AI 侍酒師諮詢"
+                aria-label={t('nav.assistant')}
               >
                 <MessageCircle className="w-4 h-4 shrink-0" aria-hidden />
-                {HOME_COPY.ctaAssistant}
+                {t('nav.assistant')}
               </Link>
               <Link
                 href="/learn"
                 className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
-                aria-label="品酒學院"
+                aria-label={t('nav.learn')}
               >
                 <GraduationCap className="w-4 h-4 shrink-0" aria-hidden />
-                品酒學院
+                {t('nav.learn')}
               </Link>
             </div>
             {/* H13：限時 badge 不遮擋 CTA — relative z-0 */}

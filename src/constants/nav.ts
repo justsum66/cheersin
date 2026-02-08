@@ -10,20 +10,23 @@ import {
   GraduationCap,
 } from 'lucide-react'
 
-/** N13/N27：導出型別供元件與測試使用 */
+/** i18n key 對應 messages.nav.* */
+export type NavKey = 'home' | 'quiz' | 'games' | 'assistant' | 'learn'
+
+/** N13/N27：導出型別供元件與測試使用；label 由 i18n t(`nav.${navKey}`) 取得 */
 export interface NavItem {
   href: string
-  label: string
+  navKey: NavKey
   icon: LucideIcon
 }
 
-/** N10：導航項目（順序與桌面/行動一致，N19） */
+/** N10：導航項目（順序與桌面/行動一致，N19）；文案由 useTranslation t('nav.*') 提供 */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: '首頁', icon: Wine },
-  { href: '/quiz', label: '靈魂酒測', icon: Sparkles },
-  { href: '/games', label: '派對遊樂場', icon: Gamepad2 },
-  { href: '/assistant', label: 'AI 侍酒師', icon: MessageCircle },
-  { href: '/learn', label: '品酒學院', icon: GraduationCap },
+  { href: '/', navKey: 'home', icon: Wine },
+  { href: '/quiz', navKey: 'quiz', icon: Sparkles },
+  { href: '/games', navKey: 'games', icon: Gamepad2 },
+  { href: '/assistant', navKey: 'assistant', icon: MessageCircle },
+  { href: '/learn', navKey: 'learn', icon: GraduationCap },
 ]
 
 /** N28：滾動閾值（px）— 超過則 nav 縮小、背景不透明 */

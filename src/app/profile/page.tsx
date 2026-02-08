@@ -263,7 +263,7 @@ export default function ProfilePage() {
     /** P0-025：未登入時顯示 empty 狀態，不顯示 Mock */
     if (!authLoading && !user) {
         return (
-            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
                 <div className="relative z-10 text-center max-w-md px-4">
                     <User className="w-16 h-16 text-white/30 mx-auto mb-4" aria-hidden />
@@ -281,7 +281,7 @@ export default function ProfilePage() {
     /** P0-025：載入 profile 時顯示 loading */
     if (profileLoading && user) {
         return (
-            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
                 <div className="relative z-10 text-center">
                     <div className="w-12 h-12 border-2 border-primary-500/50 border-t-primary-400 rounded-full animate-spin mx-auto mb-4" aria-hidden />
@@ -292,7 +292,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb" role="main" aria-label="個人頁面">
+        <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile" role="main" aria-label="個人頁面">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
 

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowRight, Wine, Mail, Lock, Send, Eye, EyeOff } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getSafeNextPath } from '@/lib/redirect-safe'
 import { scrollToFirstError } from '@/lib/scroll-to-first-error'
 import toast from 'react-hot-toast'
 import { ERROR_FORM_HEADING } from '@/config/errors.config'
@@ -75,13 +76,10 @@ export default function LoginPage() {
     }
   }, [])
 
-  /** E08 / EXPERT_60 P0：成功後 redirect 至來源頁或 /quiz；?next= 安全解析（僅站內路徑） */
+  /** E08 / P2-358：成功後 redirect 至來源頁；?next= 僅允許站內白名單路徑，防 Open Redirect */
   const nextPath = useMemo(() => {
     const n = searchParams.get('next')
-    if (!n || typeof n !== 'string') return '/profile'
-    const path = n.startsWith('/') ? n : `/${n}`
-    if (!/^\/(profile|quiz|assistant|games|learn|pricing|subscription)(\?|$)/.test(path)) return '/profile'
-    return path
+    return getSafeNextPath(n)
   }, [searchParams])
 
   /** E08：登入後將回到的頁面標籤（友善顯示用） */
@@ -180,7 +178,7 @@ export default function LoginPage() {
   }, [supabase, nextPath, authCallbackUrl, router])
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden safe-area-px" role="main" aria-label="登入">
+    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden safe-area-px page-container-mobile" role="main" aria-label="登入">
       <div className="absolute inset-0 pointer-events-none">
         <div className="aurora-bg" />
       </div>

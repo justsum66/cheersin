@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useNavVisibility } from '@/contexts/NavVisibilityContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useThrottle } from '@/hooks/useThrottle'
@@ -36,6 +37,7 @@ import {
 
 export default function Navigation() {
   const pathname = usePathname()
+  const { t } = useTranslation()
   const navVisibility = useNavVisibility()
   const hideForGame = pathname === '/games' && navVisibility?.hideForGame
   const { resolved, setTheme, theme, highContrast, setHighContrast, fontScale, setFontScale } = useTheme()
@@ -162,15 +164,16 @@ export default function Navigation() {
               </div>
             </div>
 
-            {/* N21/N22：桌面導航區 role="navigation"、N01 aria-current="page" */}
+            {/* N21/N22：桌面導航區 role="navigation"、N01 aria-current="page"；i18n t('nav.*') */}
             <div className="hidden md:flex items-center nav-item-gap" role="navigation" aria-label="主導航連結">
               {NAV_ITEMS.map((item) => {
+                const label = t(`nav.${item.navKey}`)
                 const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    aria-label={item.label}
+                    aria-label={label}
                     aria-current={isActive ? 'page' : undefined}
                     className="games-focus-ring rounded-full"
                   >
@@ -186,7 +189,7 @@ export default function Navigation() {
                           transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', bounce: 0.2, duration: 0.6 }}
                         />
                       )}
-                      <span className="relative z-10">{item.label}</span>
+                      <span className="relative z-10">{label}</span>
                     </motion.div>
                   </Link>
                 )
@@ -265,17 +268,18 @@ export default function Navigation() {
       >
         <div className="flex items-stretch justify-around">
           {NAV_ITEMS.map((item) => {
+            const label = t(`nav.${item.navKey}`)
             const isActive = pathname === item.href
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center flex-1 games-touch-target py-2 px-1 transition-colors games-focus-ring ${isActive ? 'text-primary-400' : 'text-white/60'}`}
-                aria-label={item.label}
+                aria-label={label}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <item.icon className={`w-6 h-6 shrink-0 ${isActive ? 'fill-primary-400/30' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] mt-0.5 truncate max-w-[4rem]">{item.label}</span>
+                <span className="text-[10px] mt-0.5 truncate max-w-[4rem]">{label}</span>
               </Link>
             )
           })}
@@ -320,7 +324,7 @@ export default function Navigation() {
                     className="flex items-center gap-4 text-2xl font-display font-bold text-white games-focus-ring rounded-lg py-2 min-h-[48px]"
                   >
                     <item.icon className="w-8 h-8 text-white/50" />
-                    {item.label}
+                    {t(`nav.${item.navKey}`)}
                   </Link>
                 </motion.div>
               ))}
