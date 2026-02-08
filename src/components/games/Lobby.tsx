@@ -22,6 +22,7 @@ import {
   GAMES_LOBBY_CATEGORY_TWO_I18N_KEY,
 } from '@/lib/games-ui-constants'
 import { NowPlayingCount } from './NowPlayingCount'
+import RandomBrewery from './RandomBrewery'
 import type { GameDifficulty, GameCategory } from '@/config/games.config'
 import { GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
 
@@ -649,6 +650,11 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           />
         </PrefetchOnVisible>
       ))}
+      </div>
+
+      {/* Open Brewery DB 整合：隨機酒廠卡片 */}
+      <div className="mt-6 max-w-sm">
+        <RandomBrewery />
       </div>
 
       {/* P1-118：遊戲規則快速預覽 Modal */}

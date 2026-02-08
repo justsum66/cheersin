@@ -70,10 +70,30 @@ const FILTER_OPTIONS: { value: DifficultyFilter; label: string }[] = [
 
 const TIMER_OPTIONS = [10, 15, 20] as const
 
+/** P2-388 / Trivia API：可選從 API 取得題目（需 TRIVIA_API_KEY），否則用本地題庫 */
+function useTriviaQuestions(count: number, difficultyFilter: DifficultyFilter, refetchKey: number) {
+  const [questions, setQuestions] = useState<TriviaQ[]>(() => shuffleQuestions(count, difficultyFilter))
+  useEffect(() => {
+    fetch(`/api/trivia/questions?limit=${count}&difficulty=${difficultyFilter === 'all' ? '' : difficultyFilter}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const list = data?.questions
+        if (Array.isArray(list) && list.length >= 3) {
+          setQuestions(list.slice(0, count))
+        } else {
+          setQuestions(shuffleQuestions(count, difficultyFilter))
+        }
+      })
+      .catch(() => setQuestions(shuffleQuestions(count, difficultyFilter)))
+  }, [count, difficultyFilter, refetchKey])
+  return questions
+}
+
 export default function Trivia() {
   const { play } = useGameSound()
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all')
-  const [QUESTIONS, setQUESTIONS] = useState<TriviaQ[]>(() => shuffleQuestions(8, 'all'))
+  const [refetchKey, setRefetchKey] = useState(0)
+  const QUESTIONS = useTriviaQuestions(8, difficultyFilter, refetchKey)
   const [current, setCurrent] = useState(0)
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
@@ -233,7 +253,7 @@ export default function Trivia() {
 
   const restart = () => {
     clearTimer()
-    setQUESTIONS(shuffleQuestions(8, difficultyFilter))
+    setRefetchKey((k) => k + 1)
     setCurrent(0)
     setScore(0)
     setAnswerHistory([])

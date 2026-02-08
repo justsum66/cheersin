@@ -8,7 +8,7 @@
 2. [x] 派對直播房專屬入口 `/party-room` 佔位頁
 3. [ ] 前端：派對房專屬 UI（房主選遊戲、邀請連結、人數顯示）
 4. [ ] Realtime：房主選遊戲後廣播 game_id，全房同步進入同一遊戲
-5. [ ] 乾杯按鈕 UI：全員同時按下觸發（navigator.vibrate + 音效）
+5. [x] 乾杯按鈕 UI：全員同時按下觸發（navigator.vibrate + 音效 + confetti）
 6. [ ] 乾杯後端/Realtime：同步「乾杯」事件與計數
 7. [ ] 免費房限制：4 人、30 分鐘（middleware 或房間建立時檢查）
 8. [ ] 付費解鎖：12 人、無限時、18+ 遊戲（與 subscription_tier 整合）
@@ -18,7 +18,7 @@
 ## 酒局劇本殺 (Drunk Script Murder) — 10 項
 
 11. [x] 劇本殺專屬入口 `/script-murder` 佔位頁
-12. [ ] 劇本資料結構：scripts、script_chapters、script_roles 表設計與 migration
+12. [x] 劇本資料結構：scripts、script_chapters、script_roles 表設計與 migration
 13. [ ] 劇本內容：章節、角色卡、線索、投票節點、懲罰規則
 14. [ ] 房間模式：建立「劇本殺房」，綁定 script_id，4–8 人加入
 15. [ ] 角色分配：加入後隨機/指定角色，每人手機顯示角色卡
@@ -32,15 +32,15 @@
 
 21. [x] 派對 DJ 專屬入口 `/party-dj` 佔位頁
 22. [x] 編排引擎 API：`POST /api/party-dj/plan`（人數、時長、allow18 → phases + gameIds）
-23. [ ] 前端：表單輸入人數/時長/氣氛 → 呼叫 plan API 顯示編排結果
-24. [ ] 「開始派對」按鈕：跳轉 /games 並預填推薦遊戲或開房
+23. [x] 前端：表單輸入人數/時長/氣氛 → 呼叫 plan API 顯示編排結果
+24. [x] 「開始派對」按鈕：跳轉 /games 並預填推薦遊戲或開房
 25. [ ] 免費用戶限制：僅能編排 30 分鐘（API 或前端依訂閱檢查）
 26. [ ] 付費用戶：無限時長編排
-27. [ ] 階段過渡：transitionText 顯示（如「接下來更刺激！」）
+27. [x] 階段過渡：transitionText 顯示（如「接下來更刺激！」）
 28. [ ] 可選：AI 生成 transitionText（LLM）取代固定文案
 29. [ ] 與 AI 助理整合：助理內「派對策劃」引導至 /party-dj
 30. [ ] 編排結果分享：生成連結或圖片供社交分享
 
 ---
 
-**當前完成：** 6/30（入口頁 x3、遊戲房基礎、plan API、資料結構規劃）。
+**當前完成：** 10/30（入口頁 x3、遊戲房基礎、plan API、乾杯按鈕、party-dj 表單+編排+transitionText+開始派對、劇本表 migration）。

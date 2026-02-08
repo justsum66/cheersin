@@ -62,6 +62,18 @@ export async function showFailureEffect(): Promise<void> {
   })
 }
 
+/** 供其他模組使用的 confetti 觸發（動態載入 canvas-confetti） */
+export async function fireConfetti(options?: { particleCount?: number; origin?: { x?: number; y?: number }; colors?: string[] }): Promise<void> {
+  if (typeof window === 'undefined') return
+  const confetti = await getConfetti()
+  confetti({
+    particleCount: options?.particleCount ?? 80,
+    spread: 80,
+    origin: options?.origin ?? { y: 0.6 },
+    colors: options?.colors ?? COLORS,
+  })
+}
+
 /** P1-131：懲罰／惋惜全螢幕疊加 — 螢幕短暫變灰，強化情緒反饋 */
 export function showPunishmentOverlay(durationMs = 800): void {
   if (typeof document === 'undefined') return

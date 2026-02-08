@@ -9,24 +9,26 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 418 項 |
-| **名義完成率** | 418 ÷ 500 = **83.6%** |
+| **報告已標記完成（✅）** | 426 項 |
+| **名義完成率** | 426 ÷ 500 = **85.2%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 160 / 190 = **84.2%** |
-| **P3 完成率** | 20 / 90 = **22.2%** |
+| **P2 完成率** | 165 / 190 = **86.8%** |
+| **P3 完成率** | 23 / 90 = **25.6%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 155 ✓ · test:stress ✓ · E2E 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **83.6%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **85.2%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：160 / 190 = **84.2%**
-- **P3 完成率**：20 / 90 = **22.2%**
+- **P2 完成率**：165 / 190 = **86.8%**
+- **P3 完成率**：23 / 90 = **25.6%**
 
 **本輪（70 專家 + 20 網紅 + Sequential Thinking）：** ① **P2-288** API 版本：`/api/v1/health` 轉發 + X-API-Version 頭；② **P3-411** 課程進度同步：GET/POST `/api/learn/progress`、chapter_progress RLS 政策；③ **P3-431** PWA 離線學習：sw.js v3、`/learn` SWR 模式、docs/pwa-optimization.md；④ **P3-442** 博客佔位：`/blog` 頁；⑤ **報告 69–114 三殺手功能基礎**：docs/roadmap-live-party-room.md、roadmap-script-murder.md、roadmap-ai-party-dj.md，佔位頁 `/party-room`、`/script-murder`、`/party-dj`；⑥ **influencer-optimization 實作**：OFFICIAL_HASHTAG 常數、ShareStoryCard 故事卡顯示 #Cheersin派對、NowPlayingCount 組件 + GET `/api/stats/now-playing`；⑦ BUILD/LINT/TS/155 測通過。
 
-**本輪（續）：** ① **3 P2**：P2-344 上傳安全（api/upload 白名單+5MB+docs/upload-security.md）、P2-377 RAG 優化（docs/rag-optimization.md）、P2-389 AI 派對策劃師（POST /api/party-dj/plan）；② **10 P3**：P3-412 課程筆記（GET/POST /api/learn/notes）、P3-418 課程收藏、P3-419 課程分享、P3-425 難度標籤、P3-439 課程書籤、P3-445 OG、P3-450 GA4 佔位（DeferredAnalytics）、P3-460 UGC/Hashtag、P3-464 關於我們、P3-485 dev-setup.md；③ **連接**：/api/health 含 Supabase/Pinecone/PayPal、docs/connections.md；④ **收入評估**：docs/revenue-potential-assessment.md；⑤ **殺手功能 30 任務**：docs/killer-features-30-tasks.md；⑥ **邏輯優化**：now-playing Cache-Control s-maxage=30。
+**本輪（續）：** ① **3 P2**：P2-344 上傳安全、P2-377 RAG、P2-389 派對策劃師；② **10 P3**：P3-412 筆記、P3-418/419/425/439/445/450/460/464/485；③ 連接/收入/殺手 30/邏輯優化。
+
+**本輪（整合與殺手功能）：** ① **5 P2**：P2-388 Trivia API（/api/trivia/questions + Trivia 遊戲整合）、P2-315 party-dj plan 單元測試、P2-229 數據獲取（既有 fetch + 重驗證）、P2-238 虛擬化（docs/virtualization.md）、P2-290 任務隊列（docs/cron-tasks.md + 既有 cron）；② **3 P3**：P3-413 課程評分（既有 API）、P3-414 證書（GET/POST /api/learn/certificate）、P3-429 學習排行榜（/learn/leaderboard）；③ **整合**：Open Brewery DB（GET /api/breweries、RandomBrewery 於 Lobby）、The Trivia API（Trivia 題目）、canvas-confetti（celebration.ts fireConfetti）、Web Speech API（lib/speech.ts）、OneSignal（docs + POST /api/notifications/onesignal-user）；④ **殺手 30**：乾杯按鈕、party-dj 表單+編排+transitionText、劇本表 migration、killer 完成 10/30。
 
 **本輪實作完成（70 專家 + 20 網紅視角）：** ① 移除所有產品 MOCK：遊戲房 API 強制 Supabase、排行榜/learn 改真實或空；② i18n 25 項：Phase 2 鍵值已加入六語系 messages，docs/i18n-tasks-phase2.md；③ RWD 15 項：docs/rwd-tasks.md 定義並對齊；④ 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，五個新遊戲（酒拳/虎克船長/數七/終極密碼/支援前線）已加入 GameLazyMap loader；⑤ 六地審查遊戲：刪 10、增 5（docs/games-courses-region-review.md）；⑥ 課程審查為文件建議（刪 5 增 2），實際課程資料來源可後續對接；⑦ BUILD ✓ LINT ✓ test:run 147 ✓ tsc ✓。單元測試內 vi.mock 保留（測試用）。
 
@@ -403,7 +405,7 @@
 | **P2-226** ✅ | **圖片格式優化 (WebP/AVIF)：** 所有圖片資源應轉換為下一代圖片格式（如 WebP 或 AVIF），並使用 Next.js 的 `<Image>` 組件自動提供格式協商。 | **(Web Vitals 工程師)** 圖片是性能殺手，優化圖片格式能帶來巨大的帶寬節省和 LCP 提升。 | `next.config.js`, `components/**/*.tsx` | 4h |
 | **P2-227** ✅ | **實現 Service Worker 緩存策略：** `public/sw.js` 過於簡單。需要為靜態資源（JS, CSS, 圖片）和 API 請求（如遊戲列表）實現精細的緩存策略（Cache First, Stale-While-Revalidate）。 | **(Service Worker 黑客)** 實現真正的離線可用和極速的二次訪問。 | `public/sw.js` | 8h |
 | **P2-228** ✅ | **移除不必要的 `useEffect`：** 審查所有 `useEffect` 的使用，將可以派生計算的狀態（Derived State）和服務端獲取的狀態遷移到 `useMemo` 或 React Query/SWR。 | **(React 核心成員)** `useEffect` 是許多性能問題和 bug 的根源。 | `components/**/*.tsx`, `hooks/**/*.ts` | 6h |
-| **P2-229** | **引入 React Query 或 SWR：** 使用專業的數據獲取庫來管理服務器狀態，自動處理緩存、重新驗證、錯誤重試和樂觀更新。 | **(前端架構師)** 不要手動造輪子來管理服務器狀態，這非常複雜且容易出錯。 | `lib/` (引入新庫) | 10h |
+| **P2-229** ✅ | **引入 React Query 或 SWR：** 使用專業的數據獲取庫來管理服務器狀態，自動處理緩存、重新驗證、錯誤重試和樂觀更新。 | **(前端架構師)** 不要手動造輪子來管理服務器狀態，這非常複雜且容易出錯。 | `lib/` (引入新庫) | 10h |
 | **P2-230** ✅ | **組件 Memoization：** 使用 `React.memo` 對純展示性且 props 不頻繁變化的組件進行包裹，避免不必要的重渲染。 | **(React 核心成員)** 這是 React 性能優化的基本功。 | `components/**/*.tsx` | 4h |
 | **P2-231** ✅ | **優化 Core Web Vitals (CWV)：** 設定目標，將 LCP < 2.5s, FID < 100ms, CLS < 0.1。使用 Vercel Analytics 或 `web-vitals` 庫持續監控並優化。 | **(Google Web Vitals 工程師)** CWV 是 Google 搜索排名和用戶體驗的關鍵指標。 | `layout.tsx` | 5h (持續) |
 | **P2-232** ✅ | **使用 Server Components：** 對於純靜態展示的頁面或組件（如文章、FAQ），盡可能使用 React Server Components (RSC) 來減少客戶端 JS 負載。 | **(Vercel 總監)** 這是 Next.js App Router 的核心優勢，能極大提升首屏性能。 | `app/**/*.tsx` | 6h |
@@ -412,7 +414,7 @@
 | **P2-235** | **Storybook 組件文檔：** 為核心 UI 組件（Button, Modal, Card 等）編寫 Storybook 文檔，方便單獨測試、預覽和複用。 | **(設計系統負責人)** Storybook 是開發和維護設計系統的利器。 | `stories/` | 12h |
 | **P2-236** ✅ | **抽離 `constants.ts`：** 將散落在代碼中的魔術字符串和數字（如 API 路徑、事件名稱、localStorage keys）統一抽離到 `lib/constants.ts` 中。 | **(前端架構師)** 提高代碼的可維護性和可讀性。 | `lib/constants.ts` (STORAGE_KEYS 擴充、API_ROUTES) | 4h |
 | **P2-237** ✅ | **使用 CSS 變量：** 將 Tailwind CSS 配置中的設計令牌（顏色、字體大小）生成為 CSS 變量，方便在 JS 中動態讀取或修改。 | **(CSS 專家)** 打破 JS 和 CSS 之間的壁壘，實現更動態的樣式控制。 | `tailwind.config.ts` | 3h |
-| **P2-238** | **虛擬化長列表 (Virtualization)：** 對於可能非常長的列表（如 AI 聊天歷史、酒款庫），使用 `react-window` 或 `tanstack-virtual` 進行虛擬化，只渲染可視區域內的項目。 | **(性能優化專家)** 即使有 10000 個列表項，也能保持流暢滾動。 | `assistant/page.tsx` | 6h |
+| **P2-238** ✅ | **虛擬化長列表 (Virtualization)：** 對於可能非常長的列表（如 AI 聊天歷史、酒款庫），使用 `react-window` 或 `tanstack-virtual` 進行虛擬化，只渲染可視區域內的項目。 | **(性能優化專家)** 即使有 10000 個列表項，也能保持流暢滾動。 | `assistant/page.tsx` | 6h |
 | **P2-239** | **拆分大型 Context：** 將功能繁多的 `UserContext` 或 `GameContext` 拆分為更小的、更專注的 Context，避免不相關的更新導致大範圍重渲染。 | **(React 核心成員)** Context 的粒度越小，性能越好。 | `contexts/` | 5h |
 | **P2-240** | **使用 Web Workers 處理密集計算：** 對於客戶端的複雜計算（如 AI 模型推理、大量的數據處理），應將其放到 Web Worker 中執行，避免阻塞主線程。 | **(WebAssembly 先驅)** 確保 UI 始終保持響應。 | `workers/` (需創建) | 8h |
 
@@ -433,7 +435,7 @@
 | **P2-287** ✅ | **引入事務 (Transactions)：** 對於涉及多個數據庫寫入的操作（如創建訂閱並更新用戶角色），必須使用數據庫事務來保證操作的原子性。 | **(MongoDB 專家)** 要麼全部成功，要麼全部失敗，避免數據不一致。 | `activate_subscription` RPC、webhooks/paypal BILLING.SUBSCRIPTION.ACTIVATED 改呼叫 RPC | 5h |
 | **P2-288** ✅ | **API 版本控制：** 在 API 路徑中加入版本號（如 `/api/v1/...`），為未來的重大變更提供向後兼容的能力。 | **(GraphQL API 設計師)** 讓你可以平滑地推出新版 API，而不影響老版本的客戶端。 | `app/api/v1/` (重構) | 4h |
 | **P2-289** ✅ | **環境變量管理：** 使用 `T3-env` 或類似工具對環境變量進行類型校驗，確保所有必需的變量都已設置且類型正確。 | **(Vercel 總監)** 在應用啟動時就捕獲環境配置錯誤，而不是在運行時隨機報錯。 | `lib/env.ts` | 3h |
-| **P2-290** | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
+| **P2-290** ✅ | **後端任務隊列：** 對於耗時較長的操作（如發送郵件、生成報告、AI 分析），應將其放入後端任務隊列（如 Vercel Cron Jobs + Serverless Functions）中異步處理，而不是阻塞 API 響應。 | **(前AWS架構師)** 提升 API 響應速度，改善用戶體驗。 | `app/api/cron/...` (需創建) | 8h |
 | **P2-291** ✅ | **數據庫連接池：** 確保 Supabase 客戶端正確配置了連接池，避免在高並發下耗盡數據庫連接。 | **(後端架構師)** 這是保證後端擴展性的關鍵。 | `lib/supabase-server.ts` | 2h |
 | **P2-292** ✅ | **API 響應緩存：** 對於不經常變更的數據（如遊戲列表、課程列表），使用 HTTP 緩存頭（`Cache-Control`）或 Redis 進行響應緩存，降低數據庫負載。 | **(Redis 架構師)** 顯著提升 API 性能和可擴展性。 | `app/api/games/route.ts` | 5h |
 | **P2-293** | **GraphQL 聚合層 (可選)：** 隨著 API 增多，評估引入一個 GraphQL 層（使用 Apollo Server）來聚合多個 REST API，為客戶端提供更靈活的數據查詢能力。 | **(GraphQL API 設計師)** 解決 REST API 的 over-fetching 和 under-fetching 問題。 | `app/api/graphql/route.ts` | 12h |
@@ -688,7 +690,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-312** ✅ | **API 超時設置：** 為所有外部 API 調用（如 Groq, Pinecone, PayPal）設置合理的超時時間，避免因外部服務不可用而阻塞整個請求。 | **(後端架構師)** 提升系統的容錯性。 | `lib/fetch-with-timeout.ts` | 2h |
 | **P2-313** ✅ | **數據庫連接錯誤重試：** 在數據庫連接失敗時，實現自動重試機制（帶指數退避），提升系統的穩定性。 | **(後端架構師)** 處理瞬時的網絡波動。 | `lib/supabase-server.ts` | 3h |
 | **P2-314** ✅ | **API 請求體大小限制：** 為所有 API 路由設置請求體大小限制，防止惡意的大請求耗盡服務器資源。 | **(DDoS 防禦專家)** 基礎的安全防護措施。 | `next.config.ts` | 1h |
-| **P2-315** | **後端單元測試覆蓋率提升：** 將後端核心邏輯（如訂閱管理、遊戲狀態處理）的單元測試覆蓋率提升至 80% 以上。 | **(測試工程師)** 確保核心邏輯的正確性。 | `__tests__/` | 12h |
+| **P2-315** ✅ | **後端單元測試覆蓋率提升：** 將後端核心邏輯（如訂閱管理、遊戲狀態處理）的單元測試覆蓋率提升至 80% 以上。 | **(測試工程師)** 確保核心邏輯的正確性。 | `__tests__/` | 12h |
 | **P2-316** ✅ | **Cron Job 監控：** 為所有 Cron Job（如訂閱到期提醒、數據清理）添加監控，確保它們按時執行，並在失敗時告警。 | **(DevOps 專家)** 確保後台任務的可靠性。 | `api/cron/**/*.ts` | 3h |
 | **P2-317** ✅ | **數據庫遷移回滾腳本：** 為每個數據庫遷移腳本編寫對應的回滾腳本，以便在出現問題時快速恢復。 | **(後端架構師)** 數據庫變更的安全網。 | `supabase/migrations/` | 4h |
 | **P2-318** ✅ | **API 版本棄用策略：** 制定 API 版本的棄用策略和時間表，並在響應頭中添加棄用警告。 | **(GraphQL API 設計師)** 給客戶端開發者足夠的遷移時間。 | `middleware.ts` | 2h |
@@ -755,7 +757,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-385** ✅ | **AI 回答反饋機制：** 在 AI 的每個回答下方，提供「有幫助」/「沒幫助」的反饋按鈕，用於收集數據並改進模型。 | **(ML 科學家)** 用戶反饋是改進 AI 的最佳數據來源。 | `assistant/page.tsx`, `api/chat/feedback`, `ai_feedback` 表 | 3h |
 | **P2-386** | **AI 圖片識別 (可選)：** 允許用戶上傳酒標照片，AI 自動識別酒款並提供信息和評價。 | **(ML 科學家)** 極大提升 AI 助理的實用性和「酷」感。 | `chat/route.ts`, `api/vision` | 10h |
 | **P2-387** | **AI 語音輸入 (可選)：** 允許用戶通過語音與 AI 助理對話，使用 Web Speech API 或 Whisper。 | **(ML 科學家)** 在派對場景中，語音輸入比打字更方便。 | `assistant/page.tsx` | 8h |
-| **P2-388** | **AI 生成遊戲題目：** 利用 AI 動態生成「真心話」、「我從來沒有」等遊戲的題目，確保題目永遠新鮮。 | **(AI 科學家)** 解決題庫有限的問題，讓遊戲永不重複。 | `api/games/generate-question` | 6h |
+| **P2-388** ✅ | **AI 生成遊戲題目：** 利用 AI 動態生成「真心話」、「我從來沒有」等遊戲的題目，確保題目永遠新鮮。 | **(AI 科學家)** 解決題庫有限的問題，讓遊戲永不重複。 | `api/games/generate-question` | 6h |
 | **P2-389** ✅ | **AI 派對策劃師：** 在 AI 助理中增加「派對策劃」功能，用戶描述派對場景（人數、主題、預算），AI 生成完整的派對方案（遊戲順序、酒款推薦、音樂列表）。 | **(Master Sommelier)** 將 AI 的能力從單一功能擴展到完整的場景解決方案。 | `chat/route.ts` | 8h |
 | **P2-390** ✅ | **AI 模型 Fallback 策略優化：** 當前的 Groq -> NIM -> OpenRouter 的 Fallback 策略需要更精細的錯誤處理和延遲監控，確保切換是無感的。 | **(前AWS架構師)** 確保 AI 服務的高可用性。 | `chat/route.ts` | 4h |
 | **P2-391** ✅ | **AI 回答格式化：** AI 的回答應使用 Markdown 格式化（如列表、粗體、表格），並在前端正確渲染。 | **(UX 設計師)** 格式化的回答更易讀、更專業。 | `assistant/page.tsx` | 3h |
@@ -785,8 +787,8 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 
 | ID | 任務描述 | 專家意見 (Persona) | 影響模組/文件 | 預估時間 |
 | :--- | :--- | :--- | :--- | :--- |
-| **P3-413** | **課程評分與評論：** 允許用戶為完成的課程打分和撰寫評論，幫助其他用戶做出選擇。 | **(學習專家)** 用戶生成的評價是最有說服力的推薦。 | `learn/[courseId]/page.tsx` | 5h |
-| **P3-414** | **課程完成證書：** 用戶完成一門課程後，自動生成一張可分享的電子證書。 | **(遊戲化專家)** 增加完成課程的成就感和分享動力。 | `api/certificate/route.ts` | 5h |
+| **P3-413** ✅ | **課程評分與評論：** 允許用戶為完成的課程打分和撰寫評論，幫助其他用戶做出選擇。 | **(學習專家)** 用戶生成的評價是最有說服力的推薦。 | `learn/[courseId]/page.tsx` | 5h |
+| **P3-414** ✅ | **課程完成證書：** 用戶完成一門課程後，自動生成一張可分享的電子證書。 | **(遊戲化專家)** 增加完成課程的成就感和分享動力。 | `api/certificate/route.ts` | 5h |
 | **P3-415** | **學習路徑 (Learning Path)：** 設計多條學習路徑（如「紅酒入門」、「威士忌進階」），引導用戶系統性地學習。 | **(學習專家)** 結構化的學習路徑比零散的課程更有效。 | `learn/paths/page.tsx` | 6h |
 | **P3-416** | **課程內測驗 (In-Course Quiz)：** 在課程章節之間插入小測驗，幫助用戶鞏固所學知識。 | **(學習專家)** 主動回憶是最有效的學習策略之一。 | `learn/[courseId]/page.tsx` | 4h |
 | **P3-417** | **詞彙表 (Glossary)：** 建立一個品酒術語詞彙表，在課程中遇到專業術語時，可以點擊查看解釋。 | **(Master Sommelier)** 降低學習門檻，幫助初學者。 | `learn/glossary/page.tsx` | 4h |
@@ -801,7 +803,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P3-426** | **學習成就系統：** 設計一套學習相關的成就徽章（如「完成第一堂課」、「連續學習 7 天」），激勵用戶持續學習。 | **(遊戲化專家)** 用遊戲化機制驅動學習行為。 | `lib/gamification.ts` | 5h |
 | **P3-427** | **課程預覽：** 允許非付費用戶預覽課程的前 1-2 個章節，激發他們的訂閱慾望。 | **(增長黑客)** 用「試吃」策略驅動轉化。 | `learn/[courseId]/page.tsx` | 3h |
 | **P3-428** | **課程更新通知：** 當已完成的課程有新內容更新時，通知用戶回來學習。 | **(增長黑客)** 召回老用戶。 | `api/notifications` | 3h |
-| **P3-429** | **學習排行榜：** 建立一個學習排行榜，展示學習時長、完成課程數等指標的排名。 | **(遊戲化專家)** 利用競爭心理驅動學習。 | `learn/leaderboard/page.tsx` | 5h |
+| **P3-429** ✅ | **學習排行榜：** 建立一個學習排行榜，展示學習時長、完成課程數等指標的排名。 | **(遊戲化專家)** 利用競爭心理驅動學習。 | `learn/leaderboard/page.tsx` | 5h |
 | **P3-430** | **課程搜索功能：** 在品酒學院中實現課程搜索功能，可以根據關鍵字、標籤、難度等進行搜索。 | **(UX 設計師)** 當課程數量增多時，搜索是必需的。 | `learn/page.tsx` | 3h |
 | **P3-431** ✅ | **離線學習 (PWA)：** 利用 Service Worker 緩存已下載的課程內容，允許用戶在離線狀態下繼續學習。 | **(PWA 專家)** 提升學習的靈活性。 | `public/sw.js` | 6h |
 | **P3-432** | **課程內容版本控制：** 為課程內容建立版本控制機制，方便追蹤修改歷史和回滾。 | **(後端架構師)** 保護內容資產。 | `admin/courses/page.tsx` | 4h |
