@@ -2,13 +2,30 @@
  * P3-47：CORS 明確化 — 僅當 CORS_ALLOWED_ORIGINS 設定時對 /api 加上 Allow-Origin
  * P3-57：API 請求 ID — 為每個請求產生 x-request-id，傳給 route 並回傳 X-Request-Id 供追蹤日誌
  * P2-303 / P2-327：API 請求結構化日誌（timestamp, requestId, method, path）；響應時間由各 route 或 instrumentation 記錄
- * P2-318：若需標記棄用 API，可對特定 path 設 res.headers.set('X-Deprecation', 'true') 或 'Sun, 01 Jan 2026 00:00:00 GMT'
+ * P2-335：CSRF — 狀態變更的 /api 要求 Origin/Referer 為同源或白名單；webhook/auth 路徑排除
  */
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const CORS_ORIGINS = process.env.CORS_ALLOWED_ORIGINS?.trim()
 const ALLOW_ORIGIN = CORS_ORIGINS ? CORS_ORIGINS.split(',')[0]?.trim() : ''
+
+/** 允許的來源前綴（同源或可信）；用於 CSRF 檢查 */
+function getAllowedOriginPrefixes(): string[] {
+  const app = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const vercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''
+  const local = 'http://localhost'
+  return [app, vercel, local].filter(Boolean)
+}
+
+function isAllowedOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get('origin')
+  const referer = request.headers.get('referer')
+  const ref = origin ?? referer ?? ''
+  if (!ref) return process.env.NODE_ENV !== 'production'
+  const allowed = getAllowedOriginPrefixes()
+  return allowed.some((base) => ref === base || ref.startsWith(base + '/'))
+}
 
 /** P3-57：產生請求 ID（UUID），供日誌貫穿追蹤 */
 function generateRequestId(): string {
@@ -61,6 +78,16 @@ export function middleware(request: NextRequest) {
 
   if (isApi) {
     logApiRequest(requestId, request.method, pathname)
+  }
+
+  /** P2-335：狀態變更的 API 需同源 Origin/Referer；webhook/auth 回調不驗證 */
+  const isStateChange = isApi && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
+  const skipCsrf = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/auth/')
+  if (isStateChange && !skipCsrf && !isAllowedOrigin(request)) {
+    return new NextResponse(JSON.stringify({ error: 'Invalid origin' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json', 'X-Request-Id': requestId },
+    })
   }
 
   let res: NextResponse

@@ -118,12 +118,20 @@ const nextConfig: NextConfig = {
     /** P0-019 / SEC-18：CSP 防 XSS。預設 report-only；正式上線設 CSP_REPORT_ONLY=false 強制執行。 */
     const cspReportOnly = process.env.CSP_REPORT_ONLY !== 'false'
     const cspHeaderName = cspReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+    /* SEC-18 優化：img-src 白名單化防 SSRF；*.supabase.co 涵蓋各專案 Storage */
+    const imgSrcHosts = [
+      "'self'", "data:", "blob:",
+      "https://*.supabase.co",
+      "https://api.dicebear.com",
+      "https://api.qrserver.com",
+      "https://lh3.googleusercontent.com",
+    ].join(' ')
     const cspValue = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https:",
+      `img-src ${imgSrcHosts}`,
       "connect-src 'self' https://*.supabase.co https://api.groq.com https://openrouter.ai https://api.pinecone.io https://api-m.paypal.com https://api-m.sandbox.paypal.com https://www.google-analytics.com wss:",
       "frame-src 'self' https://www.paypal.com",
       "frame-ancestors 'self'",

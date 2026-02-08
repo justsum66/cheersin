@@ -15,7 +15,7 @@
 | **P1 完成率** | 215 / 215 = **100%** |
 | **P2 完成率** | 156 / 190 = **82.1%** |
 | **P3 完成率** | 7 / 90 = **7.8%** |
-| **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 ✓ · E2E 關鍵路徑 13/13 (chromium) ✓ |
+| **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 155 ✓ · test:stress ✓ · E2E 13/13 (chromium) ✓ |
 
 *真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **80.4%**。*
 
@@ -23,6 +23,8 @@
 - **P1 完成率**：215 / 215 = **100%**
 - **P2 完成率**：156 / 190 = **82.1%**
 - **P3 完成率**：7 / 90 = **7.8%**
+
+**本輪（70 專家 + 20 網紅 + Sequential Thinking）：** ① 移除所有產品 MOCK：刪除 `src/lib/games-room-mock.ts`，遊戲房 API 僅用 Supabase；② 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，98 款皆可於大廳顯示；③ 30 網紅 10 項優化：docs/influencer-optimization.md；④ CSP 優化：img-src 白名單（含 `https://*.supabase.co`）、SSRF 文檔 docs/ssrf-hardening.md；⑤ CSRF：middleware 對 POST/PUT/DELETE /api 驗證 Origin/Referer 同源，webhook/auth 排除；⑥ test:stress（vitest run 兩輪）、BUILD/LINT/TS/155 測/E2E 13/13 通過。
 
 **本輪實作完成（70 專家 + 20 網紅視角）：** ① 移除所有產品 MOCK：遊戲房 API 強制 Supabase、排行榜/learn 改真實或空；② i18n 25 項：Phase 2 鍵值已加入六語系 messages，docs/i18n-tasks-phase2.md；③ RWD 15 項：docs/rwd-tasks.md 定義並對齊；④ 所有遊戲顯示前端：GAMES_META 與 GameLazyMap 對齊，五個新遊戲（酒拳/虎克船長/數七/終極密碼/支援前線）已加入 GameLazyMap loader；⑤ 六地審查遊戲：刪 10、增 5（docs/games-courses-region-review.md）；⑥ 課程審查為文件建議（刪 5 增 2），實際課程資料來源可後續對接；⑦ BUILD ✓ LINT ✓ test:run 147 ✓ tsc ✓。單元測試內 vi.mock 保留（測試用）。
 

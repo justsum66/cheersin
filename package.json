@@ -27,6 +27,7 @@
     "learn:500-status": "node scripts/learn-500-status.js",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:stress": "vitest run && vitest run",
     "test:validate": "node scripts/validate-course-lessons.js && node scripts/validate-course-content.js",
     "test:games-room": "node scripts/test-games-room.mjs http://localhost:3000",
     "test:e2e": "playwright test",
