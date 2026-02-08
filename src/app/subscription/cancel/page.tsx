@@ -39,7 +39,7 @@ export default function SubscriptionCancelPage() {
           <HelpCircle className="w-10 h-10 text-yellow-400" aria-hidden />
         </div>
 
-        <h1 className="home-heading-2 font-display font-bold text-white mb-2">訂閱已取消</h1>
+        <h1 className="home-heading-2 font-display font-bold text-white mb-2" data-testid="cancel-page-heading">訂閱已取消</h1>
         {/* E49 / P3-55：已取消，可使用至 current_period_end；無則以當期結束日說明 */}
         <p className="text-white/90 text-sm mb-2" role="status">
           {periodEnd

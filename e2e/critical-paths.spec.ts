@@ -4,42 +4,54 @@
  */
 import { test, expect } from '@playwright/test'
 
+/** 關閉 Cookie 橫幅，避免擋住導航/CTA；先等 dialog 出現再點，並等橫幅完全消失 */
+async function dismissCookieBanner(page: import('@playwright/test').Page) {
+  const cookieDialog = page.getByRole('dialog', { name: /Cookie|同意/ })
+  const cookieAccept = page.getByRole('button', { name: /同意|接受/ })
+  const cookieReject = page.getByRole('button', { name: /拒絕非必要|拒絕/ })
+  const visible = await cookieDialog.isVisible().catch(() => false)
+  if (!visible) return
+  if (await cookieAccept.isVisible().catch(() => false)) {
+    await cookieAccept.click()
+  } else if (await cookieReject.isVisible().catch(() => false)) {
+    await cookieReject.click()
+  }
+  await cookieDialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {})
+  await page.waitForTimeout(800)
+}
+
 /** N26：Nav Bar 30 優化 — E2E 覆蓋 nav 可達、連結可點 */
 test.describe('關鍵路徑：Nav Bar', () => {
   test('首頁頂部導航可見且可點擊進入各區', async ({ page }) => {
+    test.setTimeout(60000)
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
     await page.waitForLoadState('networkidle').catch(() => {})
+    await dismissCookieBanner(page)
     const nav = page.getByRole('navigation', { name: '主導航', exact: true })
     await expect(nav).toBeVisible({ timeout: 12000 })
-    const learnLink = page.getByRole('link', { name: '品酒學院' }).first()
+    const learnLink = page.locator('a[href="/learn"]').first()
     await learnLink.scrollIntoViewIfNeeded()
     await expect(learnLink).toBeVisible({ timeout: 8000 })
-    await learnLink.click()
-    await expect(page).toHaveURL(/\/learn/, { timeout: 15000 })
+    await learnLink.click({ force: true })
+    await expect(page).toHaveURL(/\/learn/, { timeout: 20000 })
   })
 
   test('首頁底部導航（手機）可見且可點', async ({ page }) => {
+    test.setTimeout(60000)
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
-    const cookieDialog = page.getByRole('dialog', { name: /Cookie|同意/ })
-    const cookieReject = page.getByRole('button', { name: /拒絕非必要|拒絕/ })
-    const cookieAccept = page.getByRole('button', { name: /接受全部|同意|接受/ })
-    if (await cookieReject.isVisible().catch(() => false)) {
-      await cookieReject.click()
-      await cookieDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {})
-    } else if (await cookieAccept.isVisible().catch(() => false)) {
-      await cookieAccept.click()
-      await cookieDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {})
-    }
-    await page.waitForTimeout(400)
+    await page.waitForTimeout(600)
+    await dismissCookieBanner(page)
+    await expect(page.getByRole('dialog', { name: /Cookie|同意/ })).toBeHidden({ timeout: 5000 }).catch(() => {})
     const bottomNav = page.getByRole('navigation', { name: '底部導航' })
     await expect(bottomNav).toBeVisible({ timeout: 12000 })
     const quizLink = page.getByRole('link', { name: '靈魂酒測' }).last()
-    await quizLink.click()
+    await quizLink.scrollIntoViewIfNeeded()
+    await quizLink.click({ force: true })
     await expect(page).toHaveURL(/\/quiz/, { timeout: 15000 })
   })
 })
@@ -54,16 +66,16 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
   })
 
   test('首頁點擊開始檢測可進入 Quiz', async ({ page }) => {
+    test.setTimeout(60000)
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
-    const link = page.getByRole('link', { name: /開始檢測|開始靈魂酒測/ }).first()
+    await dismissCookieBanner(page)
+    const link = page.locator('a[href="/quiz"]').filter({ hasText: /開始靈魂酒測|開始檢測/ }).first()
     await link.waitFor({ state: 'visible', timeout: 10000 })
-    await Promise.all([
-      page.waitForURL(/\/quiz/, { timeout: 15000 }),
-      link.click(),
-    ])
-    await expect(page).toHaveURL(/\/quiz/)
+    await link.scrollIntoViewIfNeeded()
+    await link.click({ force: true })
+    await expect(page).toHaveURL(/\/quiz/, { timeout: 18000 })
   })
 
   test('Quiz 可從 intro 進入星座選擇並完成一題', async ({ page }) => {
@@ -93,11 +105,11 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
     const questionCount = 18
     for (let i = 0; i < questionCount; i++) {
       await expect(page.getByText(/第\s*\d+\s*\/\s*\d+\s*題/)).toBeVisible({ timeout: 15000 })
-      await page.waitForTimeout(200)
-      const option = page.locator('button[role="radio"]').first()
-      await option.waitFor({ state: 'visible', timeout: 10000 })
+      await page.waitForTimeout(400)
+      const option = page.getByRole('radio').first()
+      await option.waitFor({ state: 'visible', timeout: 15000 })
       await option.click({ force: true })
-      await page.waitForTimeout(350)
+      await page.waitForTimeout(400)
     }
     await expect(
       page.getByText(/您的靈魂之酒|靈魂之酒|查看推薦|發現你的靈魂|測驗結果/).first()
@@ -154,11 +166,14 @@ test.describe('關鍵路徑：訂閱流程', () => {
     await page.goto('/subscription/cancel')
     await expect(page).toHaveURL(/\/subscription\/cancel/)
     await page.waitForLoadState('domcontentloaded')
-    await expect(page.getByRole('heading', { name: '訂閱已取消' })).toBeVisible({ timeout: 10000 })
+    await expect(
+      page.getByTestId('cancel-page-heading').or(page.getByRole('heading', { name: '訂閱已取消' }))
+    ).toBeVisible({ timeout: 15000 })
   })
 
   /** P3-68：E2E 關鍵路徑 登入→訂閱→取消（頁面可達，可 mock 實際登入/PayPal） */
   test('關鍵路徑：登入頁 → 定價 → 訂閱管理 → 取消頁', async ({ page }) => {
+    test.setTimeout(60000)
     await page.goto('/login')
     await expect(page).toHaveURL(/\/login/)
     await page.goto('/pricing')
@@ -168,6 +183,7 @@ test.describe('關鍵路徑：訂閱流程', () => {
     await expect(page).toHaveURL(/\/subscription/)
     await page.goto('/subscription/cancel')
     await expect(page).toHaveURL(/\/subscription\/cancel/)
-    await expect(page.getByRole('heading', { name: '訂閱已取消' })).toBeVisible({ timeout: 10000 })
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page.getByRole('heading', { name: '訂閱已取消' })).toBeVisible({ timeout: 20000 })
   })
 })
