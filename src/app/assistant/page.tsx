@@ -486,11 +486,23 @@ export default function AssistantPage() {
   const [feedbackMessageId, setFeedbackMessageId] = useState<string | null>(null)
   const [feedbackText, setFeedbackText] = useState('')
   const FEEDBACK_STORAGE_KEY = 'cheersin_assistant_feedback'
-  const submitFeedback = (messageId: string) => {
+  /** P2-385：送出反饋到後端並保留本地；倒讚時 helpful: false + 選填 comment */
+  const submitFeedback = async (messageId: string) => {
+    const comment = feedbackText.trim() || undefined
+    try {
+      const res = await fetch('/api/chat/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, helpful: false, comment }),
+      })
+      if (!res.ok) throw new Error('API error')
+    } catch {
+      /* 仍寫入本地 */
+    }
     try {
       const raw = localStorage.getItem(FEEDBACK_STORAGE_KEY)
       const list = raw ? (JSON.parse(raw) as { messageId: string; text?: string }[]) : []
-      list.push({ messageId, text: feedbackText.trim() || undefined })
+      list.push({ messageId, text: comment })
       localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(list.slice(-100)))
       toast.success('感謝回饋')
     } catch {
@@ -500,10 +512,18 @@ export default function AssistantPage() {
     setFeedbackText('')
   }
 
+  /** P2-385：讚/倒讚時更新 UI；讚送後端，倒讚顯示文字框由 submitFeedback 送 */
   const handleLike = (messageId: string, liked: boolean) => {
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, liked } : m)))
-    if (liked === false) setFeedbackMessageId(messageId)
-    else setFeedbackMessageId(null)
+    if (liked === true) {
+      void fetch('/api/chat/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, helpful: true }),
+      })
+    } else {
+      setFeedbackMessageId(messageId)
+    }
   }
 
   const copyMessage = (content: string) => {

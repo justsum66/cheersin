@@ -9,22 +9,24 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 391 項 |
-| **名義完成率** | 391 ÷ 500 = **78.2%** |
+| **報告已標記完成（✅）** | 394 項 |
+| **名義完成率** | 394 ÷ 500 = **78.8%** |
 | **P0 完成** | 25 / 25 = **100%** |
 | **P1 完成率** | 215 / 215 = **100%** |
-| **P2 完成率** | 145 / 190 = **76.3%** |
+| **P2 完成率** | 148 / 190 = **77.9%** |
 | **P3 完成率** | 7 / 90 = **7.8%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 ✓ · E2E 關鍵路徑 13/13 (chromium) ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **78.2%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **78.8%**。*
 
 **真實完成率一覽：**
 - **P1 完成率**：215 / 215 = **100%**
-- **P2 完成率**：142 / 190 = **74.7%**
+- **P2 完成率**：148 / 190 = **77.9%**
 - **P3 完成率**：7 / 90 = **7.8%**
 
 **本輪 3 項 P2 真實完成（分批實作）：** P2-398 AI 多語言（assistant 傳 locale、groq getSommelierSystemPrompt 六語系指令）、P2-390 Fallback 策略優化（失敗時 recordApiCall(success: false) + recordChatFailure 日誌）、P2-410 Token 追蹤（Groq chatWithSommelier 回傳 usage、chat 路徑寫入 promptTokens/completionTokens/totalTokens）。P2 完成 **145/190 = 76.3%**。
+
+**本輪 3 項 P2 真實完成（下一批）：** P2-348 登入嘗試限制（GET /api/auth/login-limit、POST /api/auth/login-failure、lib/login-limit.ts 5 次/15 分鐘、login 送出前檢查與失敗時記錄）、P2-385 AI 反饋送後端（POST /api/chat/feedback、ai_feedback 表、assistant 讚/倒讚與 submitFeedback 呼叫 API）、P2-397 對話導出（assistant 已有 exportConversation 匯出 .txt）。P2 完成 **148/190 = 77.9%**。
 
 **本輪 i18n 15 項真實完成（70 專家 + 20 網紅視角）：** 導航改為 t('nav.*')（NAV_ITEMS 改 navKey）、首頁 Hero/CTA 改為 t('common.cta')、t('common.heroTitle1/2')、次連結 t('nav.games/assistant/learn')、AgeGate 全文案 t('ageGate.*')、Footer 已有 LocaleSwitcher 與 t('footer.*')、六語系 messages 補齊 ageGate/ common.heroTitle、主內容區 RWD 統一 page-container-mobile（Hero、Quiz、Learn、Pricing、Assistant、Profile、Login）、docs/i18n-tasks.md 15 項清單。BUILD ✓ TS ✓ test:run 147 ✓。
 
@@ -701,7 +703,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | :--- | :--- | :--- | :--- | :--- |
 | **P2-346** ✅ | **Subresource Integrity (SRI)：** 為所有外部加載的 CSS 和 JS 文件添加 SRI 哈希值，防止 CDN 被篡改。 | **(滲透測試大師)** 防止供應鏈攻擊。 | `layout.tsx` | 2h |
 | **P2-347** | **安全的密碼重置流程：** 實現一個安全的密碼重置流程：用戶請求 -> 發送帶有一次性 Token 的郵件 -> 用戶點擊鏈接設置新密碼 -> Token 失效。 | **(資安專家)** 密碼重置是常見的攻擊目標，必須嚴格設計。 | `api/auth/reset-password` | 6h |
-| **P2-348** | **登入嘗試限制：** 對同一 IP 或同一賬戶的登入嘗試進行限制（如 5 次失敗後鎖定 15 分鐘），防止暴力破解。 | **(資安專家)** 基礎的賬戶安全防護。 | `api/auth/login` | 3h |
+| **P2-348** ✅ | **登入嘗試限制：** 對同一 IP 或同一賬戶的登入嘗試進行限制（如 5 次失敗後鎖定 15 分鐘），防止暴力破解。 | **(資安專家)** 基礎的賬戶安全防護。 | `api/auth/login-limit`, `login-failure`, `login/page.tsx`, `lib/login-limit.ts` | 3h |
 | **P2-349** | **Session 管理：** 允許用戶在個人資料頁查看所有活躍的 Session（設備、IP、最後活動時間），並可以遠程登出其他 Session。 | **(JWT 安全研究員)** 讓用戶掌控自己的賬戶安全。 | `profile/security/page.tsx` | 5h |
 | **P2-350** | **安全事件通知：** 當用戶的賬戶發生安全相關事件（如密碼修改、新設備登入）時，通過郵件通知用戶。 | **(資安專家)** 讓用戶及時發現異常活動。 | `api/auth/**/*.ts` | 4h |
 | **P2-351** | **API Key 管理 (未來)：** 如果未來開放 API 給第三方開發者，需要建立一套 API Key 的生成、管理和撤銷機制。 | **(後端架構師)** 為未來的平台化做準備。 | `admin/api-keys/page.tsx` | 8h |
@@ -740,7 +742,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-382** ✅ | **AI 多輪對話上下文管理：** 優化多輪對話的上下文窗口管理，使用摘要或滑動窗口策略，避免超出 Token 限制。 | **(ML 科學家)** 確保長對話的連貫性和準確性。 | `chat/route.ts` | 5h |
 | **P2-383** | **AI 個性化推薦：** 根據用戶的品酒偏好（從靈魂酒測和歷史互動中學習），提供個性化的酒款推薦。 | **(ML 科學家)** 個性化是 AI 的核心價值。 | `chat/route.ts`, `api/recommendations` | 8h |
 | **P2-384** ✅ | **AI 安全護欄 (Guardrails)：** 為 AI 設置安全護欄，防止其生成不當內容（如歧視性言論、未成年飲酒建議）。 | **(AI 倫理專家)** 確保 AI 的輸出是安全和負責任的。 | `chat/route.ts` | 4h |
-| **P2-385** | **AI 回答反饋機制：** 在 AI 的每個回答下方，提供「有幫助」/「沒幫助」的反饋按鈕，用於收集數據並改進模型。 | **(ML 科學家)** 用戶反饋是改進 AI 的最佳數據來源。 | `assistant/page.tsx` | 3h |
+| **P2-385** ✅ | **AI 回答反饋機制：** 在 AI 的每個回答下方，提供「有幫助」/「沒幫助」的反饋按鈕，用於收集數據並改進模型。 | **(ML 科學家)** 用戶反饋是改進 AI 的最佳數據來源。 | `assistant/page.tsx`, `api/chat/feedback`, `ai_feedback` 表 | 3h |
 | **P2-386** | **AI 圖片識別 (可選)：** 允許用戶上傳酒標照片，AI 自動識別酒款並提供信息和評價。 | **(ML 科學家)** 極大提升 AI 助理的實用性和「酷」感。 | `chat/route.ts`, `api/vision` | 10h |
 | **P2-387** | **AI 語音輸入 (可選)：** 允許用戶通過語音與 AI 助理對話，使用 Web Speech API 或 Whisper。 | **(ML 科學家)** 在派對場景中，語音輸入比打字更方便。 | `assistant/page.tsx` | 8h |
 | **P2-388** | **AI 生成遊戲題目：** 利用 AI 動態生成「真心話」、「我從來沒有」等遊戲的題目，確保題目永遠新鮮。 | **(AI 科學家)** 解決題庫有限的問題，讓遊戲永不重複。 | `api/games/generate-question` | 6h |
@@ -752,7 +754,7 @@ Paul，這 500 項任務是一個龐大的工程，但也是將 Cheersin 推向�
 | **P2-394** ✅ | **AI 成本監控：** 監控每日/每月的 AI API 調用量和費用，並設置預算告警。 | **(DevOps 專家)** 控制 AI 的運營成本。 | `lib/api-usage.ts` | 3h |
 | **P2-395** | **AI 回答緩存：** 對於常見的、答案不變的問題（如「什麼是單寧？」），緩存 AI 的回答，減少 API 調用和延遲。 | **(Redis 架構師)** 降低成本，提升響應速度。 | `chat/route.ts` | 4h |
 | **P2-396** ✅ | **AI 人格設定：** 為 AI 助理設定一個獨特的人格（如「一位幽默風趣的侍酒師」），使其回答更有個性和品牌特色。 | **(Master Sommelier)** 讓 AI 不僅僅是一個工具，而是一個有魅力的角色。 | `chat/route.ts` (System Prompt) | 2h |
-| **P2-397** | **AI 對話導出：** 允許用戶將與 AI 的對話導出為 PDF 或文本文件。 | **(UX 設計師)** 讓用戶保存有價值的對話內容。 | `assistant/page.tsx` | 3h |
+| **P2-397** ✅ | **AI 對話導出：** 允許用戶將與 AI 的對話導出為 PDF 或文本文件。 | **(UX 設計師)** 讓用戶保存有價值的對話內容。 | `assistant/page.tsx`（exportConversation 匯出 .txt） | 3h |
 | **P2-398** ✅ | **AI 多語言支持：** AI 助理應能根據用戶的語言偏好，用對應的語言回答問題。 | **(ML 科學家)** 擴大 AI 的服務範圍。 | `chat/route.ts` | 3h |
 | **P2-399** | **AI 回答中的互動元素：** AI 的回答中可以嵌入可點擊的元素（如酒款卡片、遊戲鏈接），讓用戶可以直接從對話中跳轉到相關頁面。 | **(UX 設計師)** 讓 AI 的回答更具行動力。 | `assistant/page.tsx` | 5h |
 | **P2-400** | **AI 學習助手：** 在品酒學院中，集成一個 AI 學習助手，用戶可以針對當前課程內容提問，AI 提供解答和補充知識。 | **(學習專家)** 將 AI 融入學習場景，提升學習效果。 | `learn/[courseId]/page.tsx` | 6h |

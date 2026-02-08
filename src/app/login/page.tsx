@@ -101,7 +101,8 @@ export default function LoginPage() {
   }, [emailValue])
   const showEmailFormatError = emailTouched && emailValue.trim() !== '' && !emailFormatValid
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  /** P2-348：送出前檢查登入嘗試限制；失敗時記錄並可選顯示解鎖時間 */
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!emailFormatValid) {
       setEmailTouched(true)
@@ -109,14 +110,32 @@ export default function LoginPage() {
       return
     }
     setLoginError(null)
-    setLoading(true)
+    const form = e.currentTarget
+    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value ?? ''
     if (supabase) {
-      const form = e.currentTarget
-      const email = (form.elements.namedItem('email') as HTMLInputElement)?.value
-      const password = (form.elements.namedItem('password') as HTMLInputElement)?.value
-      supabase.auth.signInWithPassword({ email: email ?? '', password: password ?? '' }).then(({ error }) => {
-        setLoading(false)
+      try {
+        const limitRes = await fetch(`/api/auth/login-limit?email=${encodeURIComponent(email)}`)
+        const limit = (await limitRes.json()) as { allowed?: boolean; resetAt?: number | null }
+        if (limit.allowed === false && limit.resetAt) {
+          const minutes = Math.ceil((limit.resetAt - Date.now()) / 60000)
+          setLoginError(`嘗試次數過多，請 ${minutes} 分鐘後再試。`)
+          return
+        }
+      } catch {
+        /* 忽略限流 API 失敗，仍允許嘗試登入 */
+      }
+      setLoading(true)
+      supabase.auth.signInWithPassword({ email, password: (form.elements.namedItem('password') as HTMLInputElement)?.value ?? '' }).then(async ({ error }) => {
         if (error) {
+          /** P2-348：帳密錯誤時記錄失敗次數 */
+          if (error.message === 'Invalid login credentials') {
+            try {
+              await fetch('/api/auth/login-failure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+            } catch {
+              /* ignore */
+            }
+          }
+          setLoading(false)
           /** E08：錯誤訊息友善化 — 帳密錯誤不分開（避免 email 枚舉），引導使用魔法連結 */
           const msg = error.message === 'Invalid login credentials'
             ? '電子郵件或密碼錯誤，請再試一次。若忘記密碼請使用下方「寄送登入連結」。'
@@ -125,6 +144,7 @@ export default function LoginPage() {
           setTimeout(() => scrollToFirstError(formRef.current), 50)
           return
         }
+        setLoading(false)
         /** 任務 60：登入成功後 Toast 再導向，避免白屏感 */
         toast.success(COPY_TOAST_LOGIN_REDIRECT, { duration: 2000 })
         setTimeout(() => router.push(nextPath), 400)
@@ -133,6 +153,7 @@ export default function LoginPage() {
         setLoginError(err instanceof Error ? err.message : '登入失敗，請稍後再試。')
       })
     } else {
+      setLoading(true)
       setTimeout(() => {
         setLoading(false)
         router.push(nextPath)
