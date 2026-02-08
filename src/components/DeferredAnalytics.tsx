@@ -1,6 +1,10 @@
 'use client'
 
+import Script from 'next/script'
 import { useEffect } from 'react'
+
+/** P3-450：GA4 佔位 — 當 NEXT_PUBLIC_GA_ID 設定時載入 gtag，追蹤頁面與事件 */
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? ''
 
 /**
  * FID < 100ms：分離長任務，使用 requestIdleCallback 延遲加載分析腳本
@@ -12,8 +16,7 @@ export default function DeferredAnalytics() {
       if ('requestIdleCallback' in window) {
         ;(window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
           () => {
-            // 可在此動態載入 Google Analytics、Plausible 等
-            // window.gtag?.('config', 'G-XXX')
+            // 可在此呼叫 gtag('event', ...) 等
           },
           { timeout: 2000 }
         )
@@ -23,5 +26,13 @@ export default function DeferredAnalytics() {
     }
     loadWhenIdle()
   }, [])
-  return null
+  if (!GA_ID.trim()) return null
+  return (
+    <>
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
+      <Script id="ga4-config" strategy="lazyOnload">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
+      </Script>
+    </>
+  )
 }

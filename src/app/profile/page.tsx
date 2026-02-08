@@ -123,7 +123,7 @@ export default function ProfilePage() {
     const [learnProgress, setLearnProgress] = useState<Record<string, { completed: number; total: number }>>({})
     /** 211–215：遊戲統計（玩過場次） */
     const [gamesPlayed, setGamesPlayed] = useState(0)
-    /** 211–215：願望酒單（localStorage 或 mock） */
+    /** 211–215：願望酒單（localStorage 單一來源，無 Mock） */
     const [wishlist, setWishlist] = useState<{ id: string; name: string; type: string }[]>([])
     /** E70 編輯模式：頂部「編輯」切換 */
     const [editMode, setEditMode] = useState(false)

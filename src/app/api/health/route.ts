@@ -38,6 +38,10 @@ function hintFor(name: string, message: string): string {
             return 'Key valid but 403 Forbidden: API key may lack ReadWrite for this index, or key/index from different project. Create key in same project as index.'
         }
     }
+    if (name === 'PayPal') {
+        if (m.includes('401') || m.includes('invalid') || m.includes('unauthorized')) return 'Check PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (developer.paypal.com).'
+        if (m.includes('env') || m.includes('not set')) return 'Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in .env.local for subscription.'
+    }
     return ''
 }
 
@@ -214,6 +218,60 @@ export async function GET() {
         })
     }
 
+    // 5. Test PayPal Connection（訂閱用；未配置時標為 not_configured）
+    const PAYPAL_CHECK_TIMEOUT_MS = 4_000
+    try {
+        const clientId = normalizeEnv(process.env.PAYPAL_CLIENT_ID)
+        const clientSecret = normalizeEnv(process.env.PAYPAL_CLIENT_SECRET)
+        if (!clientId || !clientSecret) {
+            results.push({
+                name: 'PayPal',
+                status: 'not_configured',
+                message: 'PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET not set'
+            })
+        } else {
+            const paypalBase = process.env.NODE_ENV === 'production' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'
+            const paypalStart = Date.now()
+            const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+            const tokenRes = await withTimeout(
+                fetch(`${paypalBase}/v1/oauth2/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${auth}` },
+                    body: 'grant_type=client_credentials',
+                }),
+                PAYPAL_CHECK_TIMEOUT_MS,
+                'PayPal'
+            )
+            const latency = Date.now() - paypalStart
+            if (!tokenRes.ok) {
+                const errText = await tokenRes.text()
+                results.push({
+                    name: 'PayPal',
+                    status: 'error',
+                    latency,
+                    message: `HTTP ${tokenRes.status}: ${errText.slice(0, 100)}`,
+                    hint: hintFor('PayPal', errText),
+                })
+            } else {
+                results.push({
+                    name: 'PayPal',
+                    status: 'connected',
+                    latency,
+                    message: 'OAuth2 token OK',
+                    details: { subscription_ready: true },
+                })
+            }
+        }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Unknown error'
+        results.push({
+            name: 'PayPal',
+            status: 'error',
+            message: msg,
+            hint: hintFor('PayPal', msg),
+        })
+    }
+
     // Summary
     const connectedCount = results.filter(r => r.status === 'connected').length
     const configuredCount = results.filter(r => r.status !== 'not_configured').length
@@ -223,7 +281,7 @@ export async function GET() {
             timestamp: new Date().toISOString(),
             totalLatency: totalTime,
             summary: `${connectedCount}/${results.length} services connected`,
-            healthy: connectedCount >= 3, // At least 3 services should be connected
+            healthy: connectedCount >= 3, // At least 3 of Supabase/Groq/OpenRouter/Pinecone/PayPal
             services: results
         })
     }

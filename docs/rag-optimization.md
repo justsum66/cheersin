@@ -1,26 +1,21 @@
-# P2-377：RAG（檢索增強生成）優化建議
+# P2-377：RAG（檢索增強生成）流程優化
 
-當前 Embedding 與檢索流程的優化方向。
+**相關模組：** `lib/embedding.ts`、`lib/pinecone.ts`、AI 助理檢索流程。
 
 ## 現狀
 
-- **Embedding**：`lib/embedding.ts` 使用 OpenRouter embedding API，單次最長 8000 字元，逾時 15s、重試 2 次。
-- **檢索**：依專案 Pinecone（或類似）向量查詢；chunk 來源為 `scripts/seed-pinecone` 等。
+- Embedding 使用 OpenRouter/OpenAI 等模型寫入 Pinecone。
+- 檢索為向量相似度搜尋。
 
-## Chunking 策略建議
+## 優化方向
 
-- **大小**：單 chunk 建議 300–600 tokens（約 150–300 字），重疊 50–100 tokens，避免語意斷在中間。
-- **邊界**：以句號、段落、標題切分，避免從單字或半句切開。
-- **元數據**：每個 chunk 寫入 `courseId`、`chapterId`、`title`，檢索後可過濾或加權。
-
-## 檢索優化
-
-- **混合搜索**：向量相似度 + 關鍵字（BM25 或 Supabase full-text），融合分數後排序。
-- **重排序**：檢索 top-K（如 20）後，用小型 cross-encoder 或規則（關鍵字命中）重排取 top-5，再送 LLM。
-- **過濾**：依 locale、課程、章節篩選，減少無關 chunk。
+1. **Chunking 策略：** 依段落/標題切分，控制 chunk 大小（如 300–500 tokens），必要時 overlap 避免斷句。
+2. **混合搜索：** 關鍵字（BM25/全文） + 向量檢索，合併分數或輪替結果，提升關鍵詞命中。
+3. **元資料篩選：** Pinecone metadata 存放 `source`、`type`（酒款/課程/規則），檢索時依情境篩選。
+4. **重排序：** 檢索結果可經輕量 re-rank 模型或規則（如關鍵詞加權）再取 top-k。
 
 ## 實作優先級
 
-1. 在 `scripts/seed-pinecone`（或對應腳本）中落實 chunk 大小與重疊、邊界規則。
-2. 查詢端：若使用 Supabase，可加 `textSearch` 與向量查詢並行，再合併結果。
-3. 重排序可為第二階段，先觀察僅向量檢索的答題品質再決定。
+- 短期：在 `lib/embedding.ts` 中統一 chunk 大小常數與 overlap，並在 metadata 寫入 `source`。
+- 中期：在 `lib/pinecone.ts` 或 chat 路徑加入關鍵字過濾（若有全文索引）或 metadata filter。
+- 長期：引入 re-rank 或混合分數合併。

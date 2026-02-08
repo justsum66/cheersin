@@ -1779,6 +1779,8 @@ export default function LearnPage() {
                   {course.tags?.includes('new') && !course.tags?.includes('essential') && !course.tags?.includes('quick') && (
                     <span className="absolute top-3 left-3 learn-badge learn-badge-green z-20">新上架</span>
                   )}
+                  {/* P3-425：課程難度標籤 — 入門/進階/專家 */}
+                  <span className="absolute bottom-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-white/15 text-white/90 z-20">{LEVEL_LABELS[course.level]}</span>
                   {CERT_MAP[course.id] && (
                     <div className={`absolute top-3 text-[10px] px-2 py-0.5 rounded bg-slate-600/80 text-white/90 z-20 ${!course.free ? 'right-14' : 'right-3'}`}>{CERT_MAP[course.id]}</div>
                   )}

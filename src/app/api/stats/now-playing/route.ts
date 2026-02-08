@@ -16,10 +16,13 @@ export async function GET() {
       .select('*', { count: 'exact', head: true })
       .gt('expires_at', new Date().toISOString())
     if (error) {
-      return NextResponse.json({ count: 0 })
+      return NextResponse.json({ count: 0 }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } })
     }
-    return NextResponse.json({ count: Math.min(count ?? 0, 999) })
+    return NextResponse.json(
+      { count: Math.min(count ?? 0, 999) },
+      { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } }
+    )
   } catch {
-    return NextResponse.json({ count: 0 })
+    return NextResponse.json({ count: 0 }, { headers: { 'Cache-Control': 'public, s-maxage=10' } })
   }
 }
