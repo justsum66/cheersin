@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "Cheersin",
+    "tagline": "Discover your soul wine",
+    "cta": "Start quiz",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "quiz": "Soul Wine Quiz",
+    "games": "Party Games",
+    "learn": "Wine Academy",
+    "assistant": "AI Sommelier",
+    "pricing": "Pricing",
+    "login": "Log in",
+    "profile": "Profile"
+  },
+  "footer": {
+    "copyright": "© Cheersin. Must be 18+ to drink.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "sectionProduct": "Product",
+    "sectionCompany": "Company",
+    "sectionLanguage": "Language"
+  },
+  "ageGate": {
+    "title": "Please confirm you are 18 or older",
+    "enter": "Enter",
+    "leave": "Leave"
+  }
+}

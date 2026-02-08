@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "Cheersin",
+    "tagline": "发现你的灵魂之酒",
+    "cta": "开始检测",
+    "loading": "加载中…",
+    "error": "出错了",
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭"
+  },
+  "nav": {
+    "home": "首页",
+    "quiz": "灵魂酒测",
+    "games": "派对游戏",
+    "learn": "品酒学院",
+    "assistant": "AI 侍酒师",
+    "pricing": "方案",
+    "login": "登录",
+    "profile": "个人页"
+  },
+  "footer": {
+    "copyright": "© Cheersin. 请勿向未成年人售酒。",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "sectionProduct": "产品",
+    "sectionCompany": "公司",
+    "sectionLanguage": "语言"
+  },
+  "ageGate": {
+    "title": "请确认您已满 18 岁",
+    "enter": "进入",
+    "leave": "离开"
+  }
+}

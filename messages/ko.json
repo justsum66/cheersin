@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "Cheersin",
+    "tagline": "당신의 소울 와인을 찾아보세요",
+    "cta": "테스트 시작",
+    "loading": "로딩 중…",
+    "error": "오류가 발생했습니다",
+    "save": "저장",
+    "cancel": "취소",
+    "close": "닫기"
+  },
+  "nav": {
+    "home": "홈",
+    "quiz": "소울 와인 테스트",
+    "games": "파티 게임",
+    "learn": "와인 아카데미",
+    "assistant": "AI 소믈리에",
+    "pricing": "요금제",
+    "login": "로그인",
+    "profile": "프로필"
+  },
+  "footer": {
+    "copyright": "© Cheersin. 만 19세 미만 청소년은 음주할 수 없습니다.",
+    "privacy": "개인정보처리방침",
+    "terms": "이용약관",
+    "sectionProduct": "제품",
+    "sectionCompany": "회사",
+    "sectionLanguage": "언어"
+  },
+  "ageGate": {
+    "title": "만 19세 이상인지 확인해 주세요",
+    "enter": "입장",
+    "leave": "나가기"
+  }
+}

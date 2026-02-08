@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "Cheersin",
+    "tagline": "探索你的靈魂之酒",
+    "cta": "開始檢測",
+    "loading": "載入中…",
+    "error": "發生錯誤",
+    "save": "儲存",
+    "cancel": "取消",
+    "close": "關閉"
+  },
+  "nav": {
+    "home": "首頁",
+    "quiz": "靈魂酒測",
+    "games": "派對遊戲",
+    "learn": "品酒學院",
+    "assistant": "AI 侍酒師",
+    "pricing": "方案",
+    "login": "登入",
+    "profile": "個人頁"
+  },
+  "footer": {
+    "copyright": "© Cheersin. 未滿18歲請勿飲酒。",
+    "privacy": "隱私權政策",
+    "terms": "服務條款",
+    "sectionProduct": "產品",
+    "sectionCompany": "公司",
+    "sectionLanguage": "語言"
+  },
+  "ageGate": {
+    "title": "請確認您已滿 18 歲",
+    "enter": "進入",
+    "leave": "離開"
+  }
+}

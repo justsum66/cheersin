@@ -1,6 +1,7 @@
 'use client'
 
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { I18nProvider } from '@/contexts/I18nContext'
 import { NavVisibilityProvider } from '@/contexts/NavVisibilityContext'
 import { ApiLoadingProvider } from '@/contexts/ApiLoadingContext'
 import { ErrorAnnouncerProvider } from '@/contexts/ErrorAnnouncerContext'
@@ -19,6 +20,7 @@ function ApiLoadingOverlay() {
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
+      <I18nProvider>
       <ToastProvider>
         <UserProvider>
           <NavVisibilityProvider>
@@ -32,6 +34,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
           </NavVisibilityProvider>
         </UserProvider>
       </ToastProvider>
+      </I18nProvider>
     </ThemeProvider>
   )
 }
