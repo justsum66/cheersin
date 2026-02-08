@@ -1996,3 +1996,9 @@ html.dark img:not([data-bright]) {
 [data-theme="dark"] img[data-bright="true"] {
   filter: none;
 }
+
+/* P1-153：RTL 支持準備 — 使用邏輯屬性，為阿拉伯語等 RTL 語言做準備 */
+[dir="rtl"] .ms-2 { margin-inline-start: 0.5rem; }
+[dir="rtl"] .me-2 { margin-inline-end: 0.5rem; }
+[dir="rtl"] .text-left { text-align: start; }
+[dir="rtl"] .text-right { text-align: end; }

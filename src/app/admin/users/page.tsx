@@ -40,6 +40,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null)
   const [savingTier, setSavingTier] = useState(false)
   const [tierMessage, setTierMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
+  /** P1-151：表格排序 — 點擊表頭升序/降序 */
+  const [sortKey, setSortKey] = useState<keyof SubRow | ''>('')
+  const [sortAsc, setSortAsc] = useState(true)
 
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
@@ -174,7 +177,15 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {profile && subscriptions.length > 0 && (
+      {profile && subscriptions.length > 0 && (() => {
+        const sorted = [...subscriptions].sort((a, b) => {
+          if (!sortKey) return 0
+          const va = a[sortKey] ?? ''
+          const vb = b[sortKey] ?? ''
+          const cmp = typeof va === 'string' && typeof vb === 'string' ? va.localeCompare(vb) : String(va).localeCompare(String(vb))
+          return sortAsc ? cmp : -cmp
+        })
+        return (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-3">
           <h2 className="text-lg font-medium text-white">訂閱紀錄</h2>
           {/* P1-175：長表格固定表頭，滾動時仍可見列名 */}
@@ -182,16 +193,21 @@ export default function AdminUsersPage() {
             <table className="w-full text-sm text-left">
               <thead className="sticky top-0 z-10 bg-[#0a0a1a] border-b border-white/10">
                 <tr className="text-white/60">
-                  <th className="py-2 pr-4">方案</th>
-                  <th className="py-2 pr-4">狀態</th>
-                  <th className="py-2 pr-4">PayPal ID</th>
-                  <th className="py-2 pr-4">開始</th>
-                  <th className="py-2 pr-4">結束</th>
-                  <th className="py-2">自動續訂</th>
+                  {(['plan_type', 'status', 'paypal_subscription_id', 'start_date', 'end_date', 'auto_renew'] as const).map((key) => (
+                    <th
+                      key={key}
+                      className="py-2 pr-4 cursor-pointer hover:text-white select-none"
+                      onClick={() => { setSortKey(key); setSortAsc((prev) => sortKey === key ? !prev : true) }}
+                      role="columnheader"
+                      aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : undefined}
+                    >
+                      {key === 'plan_type' ? '方案' : key === 'status' ? '狀態' : key === 'paypal_subscription_id' ? 'PayPal ID' : key === 'start_date' ? '開始' : key === 'end_date' ? '結束' : '自動續訂'}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {subscriptions.map((s) => (
+                {sorted.map((s) => (
                   <tr key={s.id} className="border-b border-white/5 text-white/90">
                     <td className="py-2 pr-4">{s.plan_type}</td>
                     <td className="py-2 pr-4">{s.status}</td>
@@ -205,7 +221,8 @@ export default function AdminUsersPage() {
             </table>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {profile && subscriptions.length === 0 && (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4">
