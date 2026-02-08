@@ -287,6 +287,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
+              aria-label="登入帳號"
               className={`btn-primary w-full min-h-[48px] min-w-[12rem] py-4 flex items-center justify-center gap-2 btn-icon-text-gap transition-opacity duration-200 games-focus-ring ${loading ? 'is-loading' : ''}`}
             >
               {loading ? (

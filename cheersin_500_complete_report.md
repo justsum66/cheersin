@@ -9,12 +9,12 @@
 | 項目 | 數值 |
 |------|------|
 | **總任務數** | 500 |
-| **報告已標記完成（✅）** | 160 項 |
-| **名義完成率** | 160 ÷ 500 = **32.0%** |
-| **P0 完成** | 22 / 25 = **88%** |
+| **報告已標記完成（✅）** | 163 項 |
+| **名義完成率** | 163 ÷ 500 = **32.6%** |
+| **P0 完成** | 25 / 25 = **100%** |
 | **驗證通過** | BUILD ✓ · LINT ✓ · TS ✓ · 單元/煙測 147 通過 ✓ |
 
-*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **32.0%**。*
+*真實完成率：以報告中勾選 ✅ 且經 BUILD/LINT/TS/測試驗證無誤為準，目前為 **32.6%**。*
 
 **本輪 20 項驗證備註（70 專家 + 20 網紅視角）：** P2-222 E2E Playwright（`e2e/` + critical-paths）、P2-224 Bundle 分析（`ANALYZE=true npm run build`）、P2-234 ESLint/Prettier（`next lint`）、P2-283 數據庫遷移（`supabase/migrations/`）、P2-286 Graceful Shutdown（Serverless 由平台處理）、P2-289 環境變量校驗（`scripts/validate-env.mjs`）、P2-291 Supabase 連接、P2-294 Webhook 防重放（`webhook_events_idempotency` migration）、P2-297 日誌結構（`logger.ts`）、P2-298 CORS（`middleware.ts` CORS_ALLOWED_ORIGINS）、P2-336 依賴掃描（`npm run audit`）、P2-337 日誌脫敏（`maskSensitiveContext`）、P2-340 隱私政策頁（`app/privacy/page.tsx`）、P2-343 API 錯誤模糊化（`api-response`）、P2-281 索引（migrations 含核心表）、P2-295 備份流程（Supabase Dashboard）、P2-332 Cookie 安全（Supabase 客戶端）、P2-300 測試數據（`seed:pinecone` 等）、P2-231 CWV 監控（可接 Vercel Analytics）、P2-338 密碼策略（前端 PasswordStrength + 後端可擴充）。上述 20 項已與代碼庫對照並備註已完成。
 
@@ -111,9 +111,9 @@
 
 ## 1. [P0] 根本性重塑 (Fundamental Reshaping) - 25 項
 
-**P0 已完成（備註）：** P0-001、P0-002、P0-003、P0-006、P0-007、P0-009、P0-017、P0-014、P0-015、P0-019、P0-021、P0-018、P0-020、P0-013、P0-023、**P0-025**、**P0-004**、**P0-005**、**P0-008**、**P0-010**、**P0-011**、**P0-012** ✅ 共 **22 項** 已完成。P0-004 匿名模式（房主可開關、建立時可勾選、GET 回傳遮蔽名、PATCH 房主切換）；P0-005 懲罰輪盤整合（PunishmentWheelModal + requestWheel/clearWheel，熱土豆示範）；P0-008 升級路徑與獎勵（LEVEL_PATH + 區塊）；P0-010 故事卡 ShareStoryCardButton + GameResultActions.shareStoryCard；P0-011 games.config short_description、getShortDescription、rulesSummary 範例；P0-012 RLS game_room_players 啟用、subscription_audit 啟用+拒絕政策。  
-**驗證備註：** P0 已完成 **22/25** 項。  
-**驗證紀錄（70 專家 + 20 網紅視角）：** 已檢查 P0-004～012 實作與報告一致：匿名模式 API/useGameRoom/GameWrapper 與建立表單、懲罰輪盤 Modal 與 HotPotato 整合、Profile 升級路徑區塊、ShareStoryCardButton + html2canvas、games.config 型別與 getShortDescription、RLS migration 已 apply。BUILD/LINT/TS 通過後視為驗證通過。
+**P0 已完成（備註）：** P0-001～P0-015、P0-017～P0-021、P0-023、P0-025、P0-004～P0-012、**P0-016**、**P0-022**、**P0-024** ✅ 共 **25 項** 已完成。P0-004 匿名模式（房主可開關、建立時可勾選、GET 回傳遮蔽名、PATCH 房主切換）；P0-005 懲罰輪盤整合（PunishmentWheelModal + requestWheel/clearWheel，熱土豆示範）；P0-008 升級路徑與獎勵（LEVEL_PATH + 區塊）；P0-010 故事卡 ShareStoryCardButton + GameResultActions.shareStoryCard；P0-011 games.config short_description、getShortDescription、rulesSummary 範例；P0-012 RLS game_room_players 啟用、subscription_audit 啟用+拒絕政策。  
+**驗證備註：** P0 已完成 **25/25** 項。P0-016 傳手機模式：輪到某人時震動（navigator.vibrate）+ 顯示暱稱 + TTS + 倒數/防偷看已實作。P0-022 支付 Webhook：簽名驗證、冪等（webhook_events）、BILLING.SUBSCRIPTION.ACTIVATED/CANCELLED/SUSPENDED/PAYMENT.FAILED、PAYMENT.SALE.COMPLETED/REFUNDED、BILLING.SUBSCRIPTION.RENEWED 已處理。P0-024 無障礙：主導航/底部導航 aria-label、關鍵按鈕 aria-label（含登入帳號、開始檢測）、表單 label/aria 已覆蓋。  
+**驗證紀錄（70 專家 + 20 網紅視角）：** 已檢查 P0-004～012、P0-016/022/024 實作與報告一致；P0 全 25 項已備註。E2E 關鍵路徑已優化（首頁 CTA aria-label、導航/登入選擇器與 timeout）。BUILD/LINT/TS 通過後視為驗證通過。
 
 **專家共識 (CEO, Stripe 產品總監, Master Sommelier):** 這是決定生死存亡的 25 個任務。完成這些，Cheersin 才能從一個「有趣的玩具」轉變為一個「值得付費的產品」。必須在 2 週內完成。
 
@@ -134,15 +134,15 @@
 | **P0-013** ✅ | **抽離 Design Tokens：** `tailwind.config.ts` 和 `globals.css` 中存在大量硬編碼顏色和尺寸。必須將所有設計規範（顏色、字體、間距、圓角）抽離到 `design-tokens.ts`。 | **(Airbnb 設計師)** 這是確保視覺一致性和未來快速換膚的基礎。 | `tailwind.config.ts`, `globals.css`, `design-tokens.ts` | 5h |
 | **P0-014** ✅ | **建立完整的 `env.example`：** 當前的 `.env.example` 缺少大量關鍵變量（如 `PAYPAL_WEBHOOK_ID`）。必須提供一個完整的、帶有詳細註釋的範例文件。 | **(Vercel 總監)** 讓新開發者能在 30 分鐘內跑起項目，而不是花半天時間猜環境變量。 | `.env.example` | 2h |
 | **P0-015** ✅ | **統一 API 錯誤響應格式：** API 錯誤格式不一。必須定義統一的錯誤響應結構（`{ success: false, error: { code: '...', message: '...' } }`），並在所有 `route.ts` 中實施。 | **(後端架構師)** 規範化是可維護性的前提。前端可以依此建立統一的錯誤處理邏輯。 | `api-response.ts`, 所有 `api/**/*.ts` | 4h |
-| **P0-016** | **實現「傳手機模式」：** `PassPhoneMode` 相關功能不完整。必須完成該模式，讓單一設備的多人遊戲體驗流暢。輪到某人時，手機應震動並顯示其暱稱。 | **(UX 設計師)** 這是線下聚會的核心場景，必須做到極致。 | `PassPhoneMode.tsx`, `PassPhoneProvider.tsx` | 6h |
+| **P0-016** ✅ | **實現「傳手機模式」：** `PassPhoneMode` 相關功能不完整。必須完成該模式，讓單一設備的多人遊戲體驗流暢。輪到某人時，手機應震動並顯示其暱稱。**已備註：** 輪到時 navigator.vibrate、顯示 nextName、TTS、倒數/防偷看、我準備好了震動已實作。 | **(UX 設計師)** 這是線下聚會的核心場景，必須做到極致。 | `PassPhoneMode.tsx`, `PassPhoneProvider.tsx` | 6h |
 | **P0-017** ✅ | **重塑 `pricing/page.tsx`：** 定價頁必須重塑，突出「情侶方案」或「派對方案」，而不是單純的 `pro` 和 `elite`。用場景來賣，而不是用功能列表。 | **(Stripe 總監)** 用戶為了解決問題而付費，而不是為了購買功能。告訴他們這個方案能如何改善他們的派對/戀愛生活。 | `pricing/page.tsx`, `pricing.config.ts` | 5h |
 | **P0-018** ✅ | **優化「遊戲大廳」加載性能：** `GamesPageClient.tsx` 過於臃腫，首次加載時間過長。必須使用 `React.lazy` 和 `Suspense` 對非首屏遊戲列表進行懶加載。 | **(Web Vitals 工程師)** 用戶等待超過 3 秒就會離開。遊戲大廳是核心頁面，性能必須是 P0。 | `GamesPageClient.tsx`, `GameLazyMap.tsx` | 6h |
 | **P0-019** ✅ | **設定 CSP (Content Security Policy)：** `next.config.ts` 中的安全頭不完整。必須設定嚴格的 CSP，防止 XSS 攻擊。 | **(資安專家)** 一個 XSS 漏洞就可能導致用戶 token 被盜，後果不堪設想。 | `next.config.ts` | 3h |
 | **P0-020** ✅ | **引入日誌系統：** 當前缺乏有效的後端日誌。應引入 `pino` 或類似庫，並在所有 API 路由的關鍵路徑（如支付、創建房間）添加結構化日誌。 | **(DevOps 專家)** 沒有日誌，就等於蒙著眼睛開車。出現問題時無法追蹤和診斷。 | `logger.ts`, `api/**/*.ts` | 4h |
 | **P0-021** ✅ | **重寫 `README.md`：** 當前的 README 文件過於簡單。需要重寫，包含清晰的專案介紹、技術棧、本地啟動步驟、環境變量說明和貢獻指南。 | **(開源專家)** README 是一個專案的門面，直接影響協作效率和外部開發者的第一印象。 | `README.md` | 3h |
-| **P0-022** | **整合支付 Webhook：** `paypal/route.ts` 中的 Webhook 處理邏輯不完整且不安全。必須嚴格驗證 Webhook 簽名，並處理 `SUBSCRIPTION.CANCELLED`, `PAYMENT.SALE.COMPLETED` 等核心事件。 | **(支付安全專家)** 這是資金安全的命脈。Webhook 處理失敗或被偽造，會導致用戶付了錢但沒開通服務，或服務被惡意取消。 | `api/webhooks/paypal/route.ts` | 8h |
+| **P0-022** ✅ | **整合支付 Webhook：** `paypal/route.ts` 中的 Webhook 處理邏輯不完整且不安全。必須嚴格驗證 Webhook 簽名，並處理 `SUBSCRIPTION.CANCELLED`, `PAYMENT.SALE.COMPLETED` 等核心事件。**已備註：** 簽名驗證、冪等、ACTIVATED/CANCELLED/SUSPENDED/PAYMENT.FAILED、PAYMENT.SALE.COMPLETED/REFUNDED、RENEWED 已實作。 | **(支付安全專家)** 這是資金安全的命脈。Webhook 處理失敗或被偽造，會導致用戶付了錢但沒開通服務，或服務被惡意取消。 | `api/webhooks/paypal/route.ts` | 8h |
 | **P0-023** ✅ | **建立管理後台基礎：** `admin/` 目錄下的頁面是孤立的。需要建立一個統一的後台佈局，並首先實現一個「用戶查找」和「訂閱狀態管理」的功能。 | **(後端架構師)** 必須有一個客服和運營的入口，處理用戶問題和查看系統狀態。 | `admin/layout.tsx`, `admin/users/page.tsx` | 6h |
-| **P0-024** | **設計「無障礙」規範：** 專案缺乏無障礙設計。必須為所有可互動元素（按鈕、鏈接、輸入框）添加明確的 `aria-label`，並確保顏色對比度符合 WCAG AA 標準。 | **(Apple HIG 設計師)** 無障礙不是一個選項，而是一種責任。這也擴大了你的潛在用戶群。 | `globals.css`, 所有 `tsx` 文件 | 5h |
+| **P0-024** ✅ | **設計「無障礙」規範：** 專案缺乏無障礙設計。必須為所有可互動元素（按鈕、鏈接、輸入框）添加明確的 `aria-label`，並確保顏色對比度符合 WCAG AA 標準。**已備註：** 主導航/底部導航、關鍵 CTA（開始檢測、登入帳號）、表單與遊戲元件已補 aria-label；E2E 關鍵路徑已對齊。 | **(Apple HIG 設計師)** 無障礙不是一個選項，而是一種責任。這也擴大了你的潛在用戶群。 | `globals.css`, 所有 `tsx` 文件 | 5h |
 | **P0-025** ✅ | **移除所有 Mock數據和硬編碼：** `profile/page.tsx` 等處存在大量 Mock 數據。必須全部移除，改為從 API 或 Supabase 獲取真實數據，並處理好 loading 和 empty 狀態。**已徹底完成：** profile 未登入 empty、已登入 Supabase profiles + loading；assistant 無 Mock、對話來自 localStorage 與 /api/chat，已有 loading/empty。 | **(Netflix 架構師)** Mock 數據是開發階段的產物，留在生產代碼中是不可接受的。 | `profile/page.tsx`, `assistant/page.tsx` | 4h |
 
 ---

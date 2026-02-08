@@ -226,6 +226,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             {/* Phase 1 A2.3 + B2.1: 套用 text-balance 與 btn-press-scale */}
             <Link
               href="/quiz"
+              aria-label="開始檢測"
               aria-describedby="hero-cta-hint"
               className="w-full sm:w-auto order-2 sm:order-1 rounded-2xl outline-none games-focus-ring transition-[box-shadow,transform] duration-200 hover:shadow-hero-glow"
               onClick={() => {

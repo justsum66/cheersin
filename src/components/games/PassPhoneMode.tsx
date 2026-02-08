@@ -39,9 +39,12 @@ export default function PassPhoneMode() {
   const antiPeek = ctx?.antiPeek ?? true
   const ttsEnabled = ctx?.ttsEnabled ?? true
 
-  /** 開始倒數或 TTS，防偷看時不自動倒數 */
+  /** P0-016：輪到某人時手機震動並顯示暱稱；開始倒數或 TTS，防偷看時不自動倒數 */
   useEffect(() => {
     if (!showPassTo || !ctx) return
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([30, 50, 30])
+    }
     speakTurn(showPassTo.nextName, ttsEnabled)
     if (antiPeek) {
       setCountdown(null)

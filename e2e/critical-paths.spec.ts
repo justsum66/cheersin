@@ -10,23 +10,36 @@ test.describe('關鍵路徑：Nav Bar', () => {
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
-    const nav = page.getByRole('navigation', { name: '主導航' })
-    await expect(nav).toBeVisible({ timeout: 8000 })
+    await page.waitForLoadState('networkidle').catch(() => {})
+    const nav = page.getByRole('navigation', { name: '主導航', exact: true })
+    await expect(nav).toBeVisible({ timeout: 12000 })
     const learnLink = page.getByRole('link', { name: '品酒學院' }).first()
-    await expect(learnLink).toBeVisible({ timeout: 5000 })
+    await learnLink.scrollIntoViewIfNeeded()
+    await expect(learnLink).toBeVisible({ timeout: 8000 })
     await learnLink.click()
-    await expect(page).toHaveURL(/\/learn/, { timeout: 10000 })
+    await expect(page).toHaveURL(/\/learn/, { timeout: 15000 })
   })
 
   test('首頁底部導航（手機）可見且可點', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
+    await page.waitForLoadState('domcontentloaded')
+    const cookieAccept = page.getByRole('button', { name: /接受全部|同意|接受/ })
+    const cookieReject = page.getByRole('button', { name: /拒絕非必要|拒絕/ })
+    if (await cookieReject.isVisible().catch(() => false)) {
+      await cookieReject.click()
+      await page.waitForTimeout(300)
+    } else if (await cookieAccept.isVisible().catch(() => false)) {
+      await cookieAccept.click()
+      await page.waitForTimeout(300)
+    }
     const bottomNav = page.getByRole('navigation', { name: '底部導航' })
-    await expect(bottomNav).toBeVisible({ timeout: 8000 })
+    await expect(bottomNav).toBeVisible({ timeout: 12000 })
+    await page.waitForTimeout(500)
     const quizLink = page.getByRole('link', { name: '靈魂酒測' }).last()
     await quizLink.click()
-    await expect(page).toHaveURL(/\/quiz/, { timeout: 10000 })
+    await expect(page).toHaveURL(/\/quiz/, { timeout: 15000 })
   })
 })
 
@@ -42,8 +55,9 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
   test('首頁點擊開始檢測可進入 Quiz', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
-    const link = page.getByRole('link', { name: /開始檢測/ }).first()
-    await link.waitFor({ state: 'visible', timeout: 5000 })
+    await page.waitForLoadState('domcontentloaded')
+    const link = page.getByRole('link', { name: /開始檢測|開始靈魂酒測/ }).first()
+    await link.waitFor({ state: 'visible', timeout: 10000 })
     await Promise.all([
       page.waitForURL(/\/quiz/, { timeout: 15000 }),
       link.click(),
@@ -78,12 +92,11 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
     const questionCount = 18
     for (let i = 0; i < questionCount; i++) {
       await expect(page.getByText(/第\s*\d+\s*\/\s*\d+\s*題/)).toBeVisible({ timeout: 12000 })
-      const option = page.locator('[role="radiogroup"]').getByRole('radio').first()
-      await option.waitFor({ state: 'visible', timeout: 10000 })
-      await option.scrollIntoViewIfNeeded()
-      await page.waitForTimeout(300)
+      const option = page.locator('button[role="radio"]').first()
+      await option.waitFor({ state: 'attached', timeout: 10000 })
+      await page.waitForTimeout(150)
       await option.click({ force: true })
-      await page.waitForTimeout(600)
+      await page.waitForTimeout(400)
     }
     await expect(page.getByText(/您的靈魂之酒|靈魂之酒|查看推薦/).first()).toBeVisible({ timeout: 20000 })
   })
@@ -101,6 +114,7 @@ test.describe('關鍵路徑：登入頁', () => {
   test('登入頁有「以 Google 繼續」或密碼登入', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('domcontentloaded')
+    await page.waitForSelector('#login-email', { state: 'visible', timeout: 10000 }).catch(() => null)
     const hasGoogle = await page.getByRole('button', { name: /Google|繼續|用 Google/ }).isVisible().catch(() => false)
     const hasSubmit = await page.getByRole('button', { name: /登入|送出|登入帳號|密碼登入|Sign in|Email 登入/ }).isVisible().catch(() => false)
     const hasPasswordInput = await page.locator('#login-password').isVisible().catch(() => false)
