@@ -111,6 +111,9 @@ export default function GameWrapper(props: GameWrapperProps) {
                       handleTouchStartThree={logic.handleTouchStartThree}
                       handleTouchMoveThree={logic.handleTouchMoveThree}
                       handleTouchEndThree={logic.handleTouchEndThree}
+                      showCountdown={logic.showCountdown}
+                      onCountdownComplete={logic.onCountdownComplete}
+                      reducedMotion={logic.reducedMotion}
                     >
                       {logic.children}
                     </GameWrapperBody>

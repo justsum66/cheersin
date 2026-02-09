@@ -56,6 +56,8 @@ export interface SommelierUserContext {
   preferredLanguage?: string
   /** P2-378 / P2-404：遊戲列表摘要，供推薦遊戲與派對/遊戲配酒時使用 */
   gamesListForPrompt?: string
+  /** R2-022：調酒題材（TheCocktailDB 搜尋結果），用戶問調酒時由 chat 注入 */
+  cocktailContext?: string
 }
 
 const PERSONALITY_PRO = `請以「嚴謹專業」侍酒師風格回答：用詞精準、少用口語與表情符號、著重產區與品種、適時引用專業術語。`
@@ -89,6 +91,10 @@ export function getSommelierSystemPrompt(userContext?: SommelierUserContext): st
   }
   if (userContext.ragContext) {
     systemPrompt += `\n\n參考以下內容回答，並在引用處標注來源編號 [1]、[2] 等：\n${userContext.ragContext}`
+  }
+  /** R2-022：調酒題材 — 用戶問調酒/雞尾酒時請依此資料回答配方與作法 */
+  if (userContext.cocktailContext) {
+    systemPrompt += `\n\n以下為調酒資料（TheCocktailDB），請依用戶問題從中引用並說明配方與作法：\n${userContext.cocktailContext}`
   }
   /** P2-378 推薦遊戲 / P2-404 派對・遊戲配酒：注入遊戲列表與行為指示 */
   if (userContext.gamesListForPrompt) {

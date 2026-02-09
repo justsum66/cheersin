@@ -29,7 +29,7 @@ export default function QuizOpenGraphImage() {
           30 秒測出你的命定酒款 · 結合星座與感官偏好
         </div>
         <div style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', marginTop: 32 }}>
-          Cheersin · 發現你的靈魂之酒
+          沁飲 Cheersin · 發現你的靈魂之酒
         </div>
       </div>
     ),

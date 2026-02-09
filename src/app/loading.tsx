@@ -1,9 +1,15 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import { SkeletonCard, SkeletonText } from '@/components/ui/Skeleton'
 
-/** 48 骨架屏優化首屏體驗；311 H-Loading-01：skeleton 固定尺寸不閃爍、safe-area、ARIA */
+/** R2-039：頁面切換過渡 — 淡入；48 骨架屏優化首屏體驗 */
 export default function Loading() {
   return (
-    <main
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       role="progressbar"
       aria-label="載入中"
       className="min-h-[60vh] min-h-screen pt-12 px-4 pb-16 relative overflow-hidden safe-area-px"
@@ -24,7 +30,7 @@ export default function Loading() {
         </div>
         <SkeletonText lines={5} className="max-w-2xl min-h-[120px]" />
       </div>
-    </main>
+    </motion.main>
   )
 }
 

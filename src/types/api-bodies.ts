@@ -35,11 +35,15 @@ export interface ReportPostBody {
   context?: { roomSlug?: string; gameId?: string }
 }
 
-/** POST /api/games/rooms — 建立房間；P0-004 匿名模式 */
+/** POST /api/games/rooms — 建立房間；P0-004 匿名模式；Killer 派對房：房限與邀請；#14 劇本殺房 */
 export interface GamesRoomsPostBody {
   password?: string
   /** 房主開啟後，所有玩家暱稱顯示為玩家A、玩家B… */
   anonymousMode?: boolean
+  /** 派對房模式：免費 4 人/30 分鐘，付費 12 人/24 小時 */
+  partyRoom?: boolean
+  /** 劇本殺房：綁定 script_id，人數與邀請路徑依劇本 */
+  scriptId?: string
 }
 
 /** POST /api/games/rooms/[slug]/join */

@@ -66,6 +66,7 @@ const SUBSCRIPTION_ACTIONS = ['create-subscription', 'capture-subscription', 'ca
 const MAX_SUBSCRIPTION_ID_LENGTH = 256
 
 export async function POST(request: NextRequest) {
+  const startMs = Date.now();
   const requestId = request.headers.get('x-request-id') ?? undefined;
   try {
     ensurePayPalConfig()
@@ -262,7 +263,8 @@ export async function POST(request: NextRequest) {
         return errorResponse(503, 'PayPal auth failed', { message: '訂閱服務暫時無法連線，請稍後再試或聯繫客服。' });
       }
     }
-    logApiError('subscription', error, { isP0: true, requestId });
+    const durationMs = Date.now() - startMs;
+    logApiError('subscription', error, { isP0: true, requestId, durationMs });
     return serverErrorResponse(error);
   }
 }

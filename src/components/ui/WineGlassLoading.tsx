@@ -2,12 +2,12 @@
 
 import { motion } from 'framer-motion'
 
-/** 119 API 載入動畫：酒杯填充（用於全站 API 請求時） */
-export function WineGlassLoading({ show }: { show: boolean }) {
+/** 119 API 載入動畫：酒杯填充（用於全站 API 請求時）。inline=true 時用於區塊內（如訂閱成功頁） */
+export function WineGlassLoading({ show, inline }: { show: boolean; inline?: boolean }) {
   if (!show) return null
   return (
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center p-4 safe-area-px bg-dark-950/70 backdrop-blur-sm pointer-events-auto"
+      className={inline ? 'flex items-center justify-center p-2' : 'fixed inset-0 z-[9998] flex items-center justify-center p-4 safe-area-px bg-dark-950/70 backdrop-blur-sm pointer-events-auto'}
       role="status"
       aria-live="polite"
       aria-label="載入中"

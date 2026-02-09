@@ -676,6 +676,11 @@ function GamesPageContent() {
                   你的 AI 派對靈魂伴侶，點燃聚會氣氛。
                 </p>
                 <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
+                <p className="mb-4">
+                  <Link href="/script-murder" className="text-primary-400 hover:text-primary-300 text-sm underline underline-offset-2">
+                    酒局劇本殺 — 4–8 人秘密角色、投票懲罰
+                  </Link>
+                </p>
 
                 {/* P1-116：房間人數顯示 — 在房間內頂部顯示目前人數/上限 */}
                 {roomSlug && joinedDisplayName && (

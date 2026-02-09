@@ -190,6 +190,14 @@ export default function Navigation() {
                         />
                       )}
                       <span className="relative z-10">{label}</span>
+                      {/* R2-046：當前頁滑動底線指示器 */}
+                      {isActive && (
+                        <motion.span
+                          layoutId={prefersReducedMotion ? undefined : 'nav-active-underline'}
+                          className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary-400 rounded-full"
+                          transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
                     </motion.div>
                   </Link>
                 )
@@ -218,6 +226,7 @@ export default function Navigation() {
                 notificationsOpen={notificationsOpen}
                 setNotificationsOpen={setNotificationsOpen}
                 prefersReducedMotion={!!prefersReducedMotion}
+                hasUnread={false}
               />
 
               {/* P1-057：用戶頭像與下拉選單（登入後：個人資料/設定/登出） */}
@@ -294,10 +303,10 @@ export default function Navigation() {
             id={MOBILE_MENU_ID}
             className="fixed inset-0 md:hidden bg-[#1a0a2e]/90 backdrop-blur-xl"
             style={{ zIndex: Z_MOBILE_MENU }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut' }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: [0.32, 0.72, 0, 1] }}
             onClick={() => setIsMobileMenuOpen(false)}
             onKeyDown={(e) => {
               if (e.key === 'Escape') {

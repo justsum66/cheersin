@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "dev:webpack": "next dev",
     "dev:turbo": "next dev --turbopack",
     "dev:safe": "node scripts/clean-next.js && next build && next dev",
@@ -59,7 +59,10 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@tanstack/react-query": "^5.90.20",
     "@types/react-window": "^1.8.8",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
     "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -73,9 +76,11 @@
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.4.1",
     "react-markdown": "^10.1.0",
+    "react-turnstile": "^1.1.5",
     "react-window": "^2.2.6",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.6.0",
+    "zod": "^4.3.6",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

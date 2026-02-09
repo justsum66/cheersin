@@ -2,17 +2,21 @@
 
 /**
  * P2-347：忘記密碼 — 輸入信箱後發送重設連結，用戶從郵件點連結後至 set-password 設新密碼
+ * R2-017：Turnstile 真人驗證，防機器人濫發重設信
  */
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Wine, Mail } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,6 +24,29 @@ export default function ForgotPasswordPage() {
     if (!trimmed) {
       toast.error('請輸入電子郵件')
       return
+    }
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error('請完成真人驗證')
+      return
+    }
+    if (turnstileToken) {
+      try {
+        const verifyRes = await fetch('/api/auth/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: turnstileToken }),
+        })
+        const verifyData = (await verifyRes.json()) as { success?: boolean }
+        if (!verifyData.success) {
+          setTurnstileToken(null)
+          setTurnstileResetKey((k) => k + 1)
+          toast.error('驗證失敗，請重新完成驗證')
+          return
+        }
+      } catch {
+        toast.error('驗證服務暫時無法使用')
+        return
+      }
     }
     setLoading(true)
     try {
@@ -68,6 +95,11 @@ export default function ForgotPasswordPage() {
                 aria-label="電子郵件"
               />
             </div>
+            <TurnstileWidget
+              onVerify={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              resetKey={turnstileResetKey}
+            />
             <button
               type="submit"
               disabled={loading}

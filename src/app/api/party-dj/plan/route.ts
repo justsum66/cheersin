@@ -1,14 +1,25 @@
 /**
  * P2-389：AI 派對策劃師 — 編排引擎 API
  * POST /api/party-dj/plan：輸入人數、時長、是否含 18+，回傳階段與遊戲列表
- * 殺手 #28：可選 useAiTransition，以 LLM 為每個 phase 生成一句過渡語
- * R2-019：使用 handleApiError + validationError 統一錯誤處理與 400 校驗
+ * R2-018：Zod 校驗 body；R2-027：結構化日誌 requestId、duration
  */
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import Groq from 'groq-sdk'
 import { gamesWithCategory } from '@/config/games.config'
 import { GROQ_API_KEY } from '@/lib/env-config'
 import { handleApiError, validationError } from '@/lib/api-error'
+import { logger } from '@/lib/logger'
+
+const PlanBodySchema = z.object({
+  peopleCount: z.number().min(2).max(12).optional(),
+  durationMin: z.number().min(15).max(240).optional(),
+  subscriptionTier: z.enum(['free', 'basic', 'premium']).optional(),
+  allow18: z.boolean().optional(),
+  useAiTransition: z.boolean().optional(),
+  /** #14：氣氛偏好 — relaxed 偏輕鬆/party，intense 偏刺激/reaction+adult，mixed 混合 */
+  mood: z.enum(['relaxed', 'intense', 'mixed']).optional(),
+})
 
 const PHASE_NAMES = ['暖場', '升溫', '高潮', '收尾'] as const
 const TRANSITIONS: Record<string, string> = {
@@ -81,54 +92,62 @@ function allocateDurations(totalMin: number): number[] {
 const FREE_MAX_DURATION_MIN = 30
 
 export async function POST(request: Request) {
+  const requestId = request.headers.get('x-request-id') ?? request.headers.get('x-vercel-id') ?? undefined
+  const start = Date.now()
   return handleApiError(async () => {
-    let body: Record<string, unknown>
+    let raw: unknown
     try {
-      body = await request.json()
+      raw = await request.json()
     } catch {
       throw validationError('Invalid JSON body')
     }
-    if (!body || typeof body !== 'object') throw validationError('Body must be an object')
+    const parsed = PlanBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      logger.info('api_party_dj_plan_validation_failed', { requestId, errors: parsed.error.flatten() })
+      throw validationError('Body must match schema: peopleCount 2-12, durationMin 15-240, subscriptionTier optional')
+    }
+    const body = parsed.data
 
-    const peopleCount = typeof body.peopleCount === 'number' ? Math.max(2, Math.min(12, body.peopleCount)) : 6
-    let durationMin = typeof body.durationMin === 'number' ? Math.max(15, Math.min(240, body.durationMin)) : 120
+    const peopleCount = body.peopleCount ?? 6
+    let durationMin = body.durationMin ?? 120
     const tier = body.subscriptionTier === 'basic' || body.subscriptionTier === 'premium' ? body.subscriptionTier : 'free'
     if (tier === 'free') {
       durationMin = Math.min(durationMin, FREE_MAX_DURATION_MIN)
     }
-    const allow18 = Boolean(body.allow18)
-    const useAiTransition = Boolean(body.useAiTransition)
+    const allow18 = body.allow18 ?? false
+    const useAiTransition = body.useAiTransition ?? false
+    const mood = body.mood === 'relaxed' || body.mood === 'intense' ? body.mood : 'mixed'
 
     const [warmMin, rampMin, peakMin, coolMin] = allocateDurations(durationMin)
     const transitionTexts = useAiTransition ? await generateTransitionTexts() : TRANSITIONS
 
-    const phases = [
-      {
-        phase: PHASE_NAMES[0],
-        durationMin: warmMin,
-        gameIds: pickGameIds(peopleCount, false, 'party', 3),
-        transitionText: transitionTexts['暖場'],
-      },
-      {
-        phase: PHASE_NAMES[1],
-        durationMin: rampMin,
-        gameIds: pickGameIds(peopleCount, false, 'reaction', 3),
-        transitionText: transitionTexts['升溫'],
-      },
-      {
-        phase: PHASE_NAMES[2],
-        durationMin: peakMin,
-        gameIds: pickGameIds(peopleCount, allow18, allow18 ? 'adult' : 'party', 4),
-        transitionText: transitionTexts['高潮'],
-      },
-      {
-        phase: PHASE_NAMES[3],
-        durationMin: coolMin,
-        gameIds: pickGameIds(peopleCount, false, 'party', 2),
-        transitionText: transitionTexts['收尾'],
-      },
-    ]
+    /** #14：依 mood 決定各階段遊戲分類 — relaxed 全 party；intense 偏 reaction/adult；mixed 維持原邏輯 */
+    const phases = (() => {
+      if (mood === 'relaxed') {
+        return [
+          { phase: PHASE_NAMES[0], durationMin: warmMin, gameIds: pickGameIds(peopleCount, false, 'party', 3), transitionText: transitionTexts['暖場'] },
+          { phase: PHASE_NAMES[1], durationMin: rampMin, gameIds: pickGameIds(peopleCount, false, 'party', 3), transitionText: transitionTexts['升溫'] },
+          { phase: PHASE_NAMES[2], durationMin: peakMin, gameIds: pickGameIds(peopleCount, false, 'party', 4), transitionText: transitionTexts['高潮'] },
+          { phase: PHASE_NAMES[3], durationMin: coolMin, gameIds: pickGameIds(peopleCount, false, 'party', 2), transitionText: transitionTexts['收尾'] },
+        ]
+      }
+      if (mood === 'intense') {
+        return [
+          { phase: PHASE_NAMES[0], durationMin: warmMin, gameIds: pickGameIds(peopleCount, false, 'reaction', 3), transitionText: transitionTexts['暖場'] },
+          { phase: PHASE_NAMES[1], durationMin: rampMin, gameIds: pickGameIds(peopleCount, false, 'reaction', 3), transitionText: transitionTexts['升溫'] },
+          { phase: PHASE_NAMES[2], durationMin: peakMin, gameIds: pickGameIds(peopleCount, allow18, allow18 ? 'adult' : 'reaction', 4), transitionText: transitionTexts['高潮'] },
+          { phase: PHASE_NAMES[3], durationMin: coolMin, gameIds: pickGameIds(peopleCount, false, 'reaction', 2), transitionText: transitionTexts['收尾'] },
+        ]
+      }
+      return [
+        { phase: PHASE_NAMES[0], durationMin: warmMin, gameIds: pickGameIds(peopleCount, false, 'party', 3), transitionText: transitionTexts['暖場'] },
+        { phase: PHASE_NAMES[1], durationMin: rampMin, gameIds: pickGameIds(peopleCount, false, 'reaction', 3), transitionText: transitionTexts['升溫'] },
+        { phase: PHASE_NAMES[2], durationMin: peakMin, gameIds: pickGameIds(peopleCount, allow18, allow18 ? 'adult' : 'party', 4), transitionText: transitionTexts['高潮'] },
+        { phase: PHASE_NAMES[3], durationMin: coolMin, gameIds: pickGameIds(peopleCount, false, 'party', 2), transitionText: transitionTexts['收尾'] },
+      ]
+    })()
 
+    logger.info('api_party_dj_plan', { requestId, peopleCount, totalMin: durationMin, durationMs: Date.now() - start })
     return NextResponse.json({ phases, peopleCount, totalMin: durationMin })
   })
 }

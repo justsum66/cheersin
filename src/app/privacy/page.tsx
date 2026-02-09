@@ -47,9 +47,16 @@ export default function PrivacyPage() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-white mb-2">資料處理方式</h2>
+          <h2 className="text-lg font-semibold text-white mb-2">Cookie 與類似技術</h2>
           <p>
-            我們使用 Supabase 等雲端服務儲存與處理資料；付款由 PayPal 處理，我們不儲存完整信用卡號。測驗結果、學習進度、遊戲紀錄等用於提供服務與個人化推薦，不會出售給第三方。
+            我們使用 Cookie 與本地儲存以維持登入狀態、記住偏好設定與遊戲進度。必要 Cookie 為服務運作所必須；分析類 Cookie 僅用於匿名統計以改善產品。您可於瀏覽器設定中管理或刪除 Cookie，惟關閉必要 Cookie 可能影響登入與部分功能。
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-semibold text-white mb-2">資料處理方式與第三方服務</h2>
+          <p>
+            我們使用下列第三方服務處理或儲存資料，其各有自身隱私政策：Supabase（資料庫與認證）、PayPal（付款，我們不儲存完整信用卡號）、Vercel（主機）、Sentry（錯誤追蹤）、OpenRouter/AI 供應商（AI 侍酒師對話）。測驗結果、學習進度、遊戲紀錄等用於提供服務與個人化推薦，不會出售給第三方。
           </p>
         </div>
 

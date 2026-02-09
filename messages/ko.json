@@ -81,7 +81,21 @@
     "enterpriseSubmit": "문의 보내기",
     "bookDemo": "데모 예약",
     "support": "고객 지원",
-    "safePayment": "안전 결제·카드·PayPal"
+    "safePayment": "안전 결제·카드·PayPal",
+    "faq0q": "언제든 해지할 수 있나요?",
+    "faq0a": "네. 구독 관리에서 언제든 해지 가능하며, 당기 종료 후에는 청구되지 않습니다. 이용약관 참고.",
+    "faq1q": "결제 수단은?",
+    "faq1a": "카드와 PayPal, 안전하게 처리됩니다.",
+    "faq2q": "7일 무료 체험 후 자동 결제되나요?",
+    "faq2a": "체험 종료 전 해지하면 결제 없음. 계속 사용 시 체험 종료일에 결제. 첫 달 50% 등 프로모는 구독 플로우에 표시.",
+    "faq3q": "환불은?",
+    "faq3a": "첫 달 내 불만 시 이유 없이 전액 환불. 7일 이내 유료 기능 미사용 시 전액 환불. 이용약관 참고.",
+    "faq4q": "개인용? 상업적 이용 가능?",
+    "faq4a": "개인·소규모 이벤트용. 스트리밍·개인 채널 환영. 기업·상업은 문의(팀 플랜 또는 enterprise@cheersin.app).",
+    "faq5q": "프로모 코드?",
+    "faq5a": "제공 시 결제·요금 페이지에 적용 플랜과 규칙 표시. 결제 시 입력하여 적용.",
+    "faq6q": "벌칙 커스텀·비알코올 가능?",
+    "faq6a": "네. 파티 게임 벌칙은 커스텀 가능하며, 술 없이도 즐길 수 있습니다. 게임 내 비알코올 선택 가능."
   },
   "login": {
     "title": "로그인",
@@ -146,7 +160,10 @@
   },
   "games": {
     "filterAll": "전체",
-    "empty": "게임이 없습니다"
+    "empty": "게임이 없습니다",
+    "playAgain": "다시 하기",
+    "popular": "인기",
+    "new": "New"
   },
   "learn": {
     "sectionContinue": "학습 계속",
@@ -209,7 +226,19 @@
     "retry": "Retry",
     "upgradeToUnlock": "Upgrade to unlock longer plans",
     "offlineHint": "Please check your connection and try again",
-    "emptyState": "No plan yet. Fill the form above and click \"Generate party flow\"."
+    "emptyState": "No plan yet. Fill the form above and click \"Generate party flow\".",
+    "copyPlanLink": "Copy plan link",
+    "copyPlanLinkAria": "Copy party plan link (with params)",
+    "generatingLong": "Generating… You can cancel after 15s",
+    "cancel": "Cancel",
+    "copyPhase": "이 단계 복사",
+    "copyPhaseAria": "이 단계 텍스트 복사",
+    "moodLabel": "분위기",
+    "moodRelaxed": "편안",
+    "moodIntense": "신남",
+    "moodMixed": "혼합",
+    "downloadImage": "이미지 다운로드",
+    "downloadImageAria": "편성을 이미지로 다운로드"
   },
   "status": {
     "title": "Service status (live)",

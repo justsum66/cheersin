@@ -7,7 +7,7 @@
 | 級別 | 完成數 | 總數 | 完成率 | 說明 |
 |------|--------|------|--------|------|
 | **P0** | **30** | **30** | **100%** | R2-001～R2-030 全數實作（見 p0-tasks-done.md）；含 R2-022/023/024/025/028 |
-| **P1** | **30** | **200** | **15%** | R2-031/032/033/036/038/055/057/071/100 等；046 部分 |
+| **P1** | **93** | **200** | **46.5%** | 本輪 +4：042/056/063/070；派對房 5 項優化；PayPal 5 項優化 |
 | **P2** | **0** | **170** | **0%** | 未執行 R2-231～R2-370 |
 | **P3** | **0** | **100** | **0%** | 未執行 R2-371～R2-500 |
 
@@ -26,7 +26,7 @@
 ## 公式
 
 - **P0 完成率** = 30 / 30 = **100%**
-- **P1 完成率** = 30 / 200 = **15%**
+- **P1 完成率** = 93 / 200 = **46.5%**
 - **P2 完成率** = 0 / 170 = **0%**
 - **P3 完成率** = 0 / 100 = **0%**
 
@@ -38,5 +38,7 @@
 - i18n 30 項：docs/i18n-tasks-30.md、common.errorNetwork/sessionExpired、partyDj.useAiTransition/retry
 - E2E：critical-paths 選器與 timeout 調整（Quiz 結果、FAQ、truth-or-dare、取消訂閱頁）
 - 文件：ux-redesign-assessment.md、supabase-advisors-fixes.md、close-node-windows 建議、function search_path 遷移
+- **本輪派對房 5 項**：建立房間 loading 動畫+文案、房間已結束區塊 motion 入場、本局統計卡 motion、剩餘時間 AnimatedNumber、複製邀請 motion.button
+- **本輪 PayPal 5 項**：Webhook 錯誤 log 帶 eventType、api-error-log 支援 eventType、訂閱成功頁下次扣款日 motion、訂閱頁 PayPal 區 aria-busy、capture 已回傳 current_period_end
 - **本批**：Supabase 9 表 RLS 政策、4 支外鍵 index；Party DJ #1/#17/#19/#20；supabase-advisors-fixes 更新
 - **60 任務本批**：Party DJ E2E、#16/#25/#26/#29/#30；i18n partyDj、games、定價 FAQ；auth_rls_initplan；R2-002 phase2、R2-024 ToD API；docs/60-tasks-batch.md

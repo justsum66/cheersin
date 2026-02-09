@@ -1,76 +1,45 @@
 'use client'
 
-import type { ReactNode } from 'react'
-import Link from 'next/link'
-
 /**
- * UX_LAYOUT_200 #144 #145：空狀態插畫或圖示+文案，可選下一步 CTA
- * P3 任務 65：icon 與 ErrorFallback 插畫/Icon 風格一致（簡約、同色系 text-white/40）
- * 用於：空搜尋、空篩選、尚無通知、尚無歷史等
+ * R2-115：全局空狀態插圖 — 無數據時品牌化插圖 + 微小浮動動畫
  */
+import { motion } from 'framer-motion'
+
 export interface EmptyStateProps {
-  /** 圖示或插畫（lucide icon 或 img） */
-  icon?: ReactNode
-  /** 主標題 */
+  /** 標題（如「尚無資料」） */
   title: string
-  /** 說明文案 */
+  /** 副標或說明 */
   description?: string
-  /** 主要 CTA：{ href, label } 或自訂 ReactNode */
-  action?: { href: string; label: string } | ReactNode
-  /** 次要 CTA（可選） */
-  secondaryAction?: { href: string; label: string }
-  /** 額外 class */
+  /** 自訂插圖（可選）；不傳則用預設酒杯圖示 */
+  icon?: React.ReactNode
+  /** 主要動作（如「開始測驗」按鈕） */
+  action?: React.ReactNode
   className?: string
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  secondaryAction,
-  className = '',
-}: EmptyStateProps) {
-  /* N-EmptyState-01 RWD 文案/插畫；N-EmptyState-02 CTA 48px、焦點環 */
+export function EmptyState({ title, description, icon, action, className = '' }: EmptyStateProps) {
   return (
-    <div
-      className={`flex flex-col items-center justify-center text-center py-8 px-4 max-w-full min-w-0 safe-area-px ${className}`}
-      role="status"
-      aria-label={title}
+    <motion.div
+      className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      {icon && (
-        <div className="mb-4 text-white/40 [&>svg]:w-12 [&>svg]:h-12 [&>svg]:max-w-full" aria-hidden>
-          {icon}
-        </div>
-      )}
-      <h3 className="text-base md:text-lg font-semibold text-white mb-1 px-2">{title}</h3>
-      {description && (
-        <p className="text-white/60 text-sm max-w-sm mb-6 px-2">{description}</p>
-      )}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        {action != null &&
-          (typeof action === 'object' &&
-          'href' in action &&
-          'label' in action &&
-          typeof (action as { href: string; label: string }).href === 'string' ? (
-            <Link
-              href={(action as { href: string; label: string }).href}
-              className="btn-primary min-h-[48px] inline-flex items-center justify-center gap-2 btn-icon-text-gap games-focus-ring"
-            >
-              {(action as { href: string; label: string }).label}
-            </Link>
-          ) : (
-            (action as ReactNode)
-          ))}
-        {secondaryAction && (
-          <Link
-            href={secondaryAction.href}
-            className="btn-ghost min-h-[48px] inline-flex items-center justify-center gap-2 btn-icon-text-gap text-sm games-focus-ring"
-          >
-            {secondaryAction.label}
-          </Link>
+      <motion.div
+        className="mb-4 text-white/40"
+        animate={{ y: [0, -4, 0] }}
+        transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+      >
+        {icon ?? (
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M8 22h8M12 11v11M9 4l1.5 3.5L14 8l-2 1.5L9 4z" />
+            <path d="M15 4l-1.5 3.5L10 8l2 1.5L15 4z" />
+          </svg>
         )}
-      </div>
-    </div>
+      </motion.div>
+      <h3 className="text-lg font-semibold text-white/90 mb-1">{title}</h3>
+      {description && <p className="text-sm text-white/60 max-w-sm mb-4">{description}</p>}
+      {action}
+    </motion.div>
   )
 }

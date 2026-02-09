@@ -8,6 +8,8 @@ interface NotificationPanelProps {
   notificationsOpen: boolean
   setNotificationsOpen: (value: boolean | ((prev: boolean) => boolean)) => void
   prefersReducedMotion: boolean
+  /** R2-070：有新通知時鈴鐺微晃動 */
+  hasUnread?: boolean
 }
 
 /** P002: Notification panel extracted from Navigation.tsx for better code splitting */
@@ -15,6 +17,7 @@ export function NotificationPanel({
   notificationsOpen,
   setNotificationsOpen,
   prefersReducedMotion,
+  hasUnread = false,
 }: NotificationPanelProps) {
   const notificationsRef = useRef<HTMLDivElement>(null)
 
@@ -40,7 +43,13 @@ export function NotificationPanel({
         aria-label="站內通知"
         aria-expanded={notificationsOpen}
       >
-        <Bell className="w-5 h-5" />
+        <motion.span
+          animate={hasUnread && !prefersReducedMotion ? { rotate: [0, -12, 12, -8, 8, 0] } : {}}
+          transition={{ repeat: Infinity, repeatDelay: 2, duration: 0.5 }}
+          className="inline-flex"
+        >
+          <Bell className="w-5 h-5" />
+        </motion.span>
       </button>
       <AnimatePresence>
         {notificationsOpen && (

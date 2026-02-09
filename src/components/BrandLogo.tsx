@@ -3,9 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-const LOGO_SRC = '/logo.png'
+const LOGO_SRC = '/logo_monochrome_gold.png'
+/** 小型圖標用於 AI 頭像等場景 */
+const LOGO_ICON_SRC = '/sizes/icon_128_gold.png'
 const BRAND_NAME = 'Cheersin'
-const BRAND_TAGLINE = 'Sensory Lab'
+const BRAND_TAGLINE = '沁飲 Sensory Lab'
 
 export type BrandLogoVariant = 'nav' | 'compact' | 'header' | 'footer'
 
@@ -21,7 +23,7 @@ interface BrandLogoProps {
 }
 
 /**
- * 品牌 LOGO 統一元件：全站一致使用 logo.png + 「Cheersin」字樣
+ * 品牌 LOGO 統一元件：全站一致使用 logo_monochrome_gold.png + 「沁飲 Sensory Lab」字樣
  * - nav：導航用，含 tagline、懸停發光、連結回首頁
  * - compact：僅圖+品牌名，無 tagline
  * - header：頁面標題用，較小
@@ -94,4 +96,4 @@ export function BrandLogo({
   return content
 }
 
-export { BRAND_NAME, LOGO_SRC }
+export { BRAND_NAME, LOGO_SRC, LOGO_ICON_SRC }

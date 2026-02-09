@@ -24,14 +24,14 @@
 | 18 | 學習頁篩選 placeholder／清除 | learn.searchPlaceholder, learn.clearFilter | ✅ |
 | 19 | 文檔對齊與報告更新 | 本文件 + 完成率 | ✅ |
 | 20 | BUILD / TS / test 通過 | — | ✅ |
-| 21 | 遊戲大廳篩選／分類標籤 | games.filterAll, games.empty（已有）；分類標籤鍵若缺則補 | 待辦 |
-| 22 | 遊戲卡「人氣／New」 | 已有 Badge 文案或 games.popular / games.new | 待辦 |
-| 23 | 定價頁方案名稱與 FAQ | pricing.* 方案名、FAQ 題目與答案 | 待辦 |
+| 21 | 遊戲大廳篩選／分類標籤 | games.filterAll 已於 Lobby「全部」tab 使用 | ✅ |
+| 22 | 遊戲卡「人氣／New」 | GameCard 已用 t('games.popular')、t('games.new') | ✅ |
+| 23 | 定價頁方案名稱與 FAQ | pricing.faq0q/faq0a… faq6q/faq6a 已用於定價頁（zh-TW、en） | ✅ |
 | 24 | Quiz 結果頁 | quiz.resultTitle, quiz.resultDescription | ✅ 已有 |
 | 25 | 登入／註冊／忘記密碼 | login.*, auth.* | ✅ 已有 |
 | 26 | 錯誤頁 404/500 | notFound.*, error.* | ✅ 已有 |
 | 27 | Profile 與訂閱管理 | profile.*, subscription.* | ✅ 已有 |
-| 28 | 遊戲內常用按鈕（再來一局、分享） | 各遊戲內 t() 或 games.playAgain, common.share | 待辦 |
+| 28 | 遊戲內常用按鈕（再來一局、分享） | GameResultActions、Trivia 已用 t('games.playAgain')；exit 用 t('gamesError.backLobby') | ✅ |
 | 29 | 學習頁篩選／空狀態 | learn.noFilterMatch, learn.searchPlaceholder | ✅ 已有 |
 | 30 | 通用錯誤訊息（network、session） | common.errorNetwork, common.sessionExpired 已補（zh-TW, en） | ✅ |
 

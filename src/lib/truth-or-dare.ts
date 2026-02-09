@@ -278,3 +278,26 @@ export function getAdultTruthPool(): TruthDareItem[] {
 export function getAdultDarePool(): TruthDareItem[] {
   return adultDarePool
 }
+
+/**
+ * R2-024：從內部 API 取得外部 Truth or Dare 題庫（api.truthordarebot.xyz），快取於伺服器
+ * 遊戲可於 mount 時呼叫並與本地題庫合併以擴充題目來源
+ */
+export async function fetchExternalTruthDare(
+  type: 'truth' | 'dare',
+  rating: 'PG' | 'PG13' | 'R' = 'PG13',
+  count = 10
+): Promise<TruthDareItem[]> {
+  if (typeof window === 'undefined') return []
+  try {
+    const res = await fetch(
+      `/api/truth-or-dare-external?type=${type}&rating=${encodeURIComponent(rating)}&count=${count}`
+    )
+    if (!res.ok) return []
+    const data = (await res.json()) as { items?: { text: string; level: TruthDareLevel }[] }
+    const items = data.items ?? []
+    return items.map((x) => ({ text: x.text, level: x.level, stars: x.level === 'adult' ? 5 : x.level === 'spicy' ? 3 : 2 }))
+  } catch {
+    return []
+  }
+}

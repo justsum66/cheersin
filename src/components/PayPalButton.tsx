@@ -59,7 +59,8 @@ export function PayPalButton({
       onClick={handleClick}
       disabled={disabled || loading}
       className={className}
-      aria-label={`以 PayPal 訂閱 ${planName}`}
+      aria-label={loading ? '處理中' : `以 PayPal 訂閱 ${planName}`}
+      aria-busy={loading}
     >
       {children ?? (loading ? '處理中…' : `以 PayPal 訂閱 ${planName}`)}
     </button>

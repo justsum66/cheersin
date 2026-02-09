@@ -1,8 +1,9 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { motion } from 'framer-motion'
 
-/** P1-158：時間線組件 — 以時間為軸展示活動歷史（遊戲記錄、學習歷程） */
+/** P1-158：時間線組件 — 以時間為軸展示活動歷史；R2-063 節點依次從左側滑入 */
 export interface TimelineItem {
   id: string
   title: string
@@ -21,7 +22,13 @@ export function Timeline({ items, className = '' }: TimelineProps) {
   return (
     <ul className={`space-y-0 ${className}`} role="list">
       {items.map((item, i) => (
-        <li key={item.id} className="relative flex gap-4 pb-8 last:pb-0">
+        <motion.li
+          key={item.id}
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+          className="relative flex gap-4 pb-8 last:pb-0"
+        >
           {i < items.length - 1 && (
             <span
               className="absolute left-[11px] top-6 bottom-0 w-px bg-white/20"
@@ -41,7 +48,7 @@ export function Timeline({ items, className = '' }: TimelineProps) {
               <p className="text-xs text-white/40 mt-0.5">{item.meta}</p>
             )}
           </div>
-        </li>
+        </motion.li>
       ))}
     </ul>
   )

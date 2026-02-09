@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import { stripHtml } from '@/lib/games-sanitize'
 import BrandWatermark from './BrandWatermark'
+import { Countdown321 } from './Countdown321'
 
 export interface GameWrapperBodyProps {
   showReportModal: boolean
@@ -40,6 +41,10 @@ export interface GameWrapperBodyProps {
   handleTouchStartThree: (e: React.TouchEvent) => void
   handleTouchMoveThree: (e: React.TouchEvent) => void
   handleTouchEndThree: () => void
+  /** R2-040：3-2-1 倒數結束後呼叫 */
+  showCountdown?: boolean
+  onCountdownComplete?: () => void
+  reducedMotion?: boolean
 }
 
 export default function GameWrapperBody({
@@ -75,9 +80,15 @@ export default function GameWrapperBody({
   handleTouchStartThree,
   handleTouchMoveThree,
   handleTouchEndThree,
+  showCountdown = false,
+  onCountdownComplete,
+  reducedMotion = false,
 }: GameWrapperBodyProps) {
   return (
     <>
+      {showCountdown && onCountdownComplete && (
+        <Countdown321 onComplete={onCountdownComplete} skip={reducedMotion} />
+      )}
       {showReportModal && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-label="檢舉">
           <div className="w-full max-w-sm rounded-2xl bg-[#0a0a1a] border border-white/10 p-6 shadow-xl">
@@ -131,19 +142,37 @@ export default function GameWrapperBody({
         </div>
       )}
 
-      {isPaused && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4" role="dialog" aria-label="遊戲已暫停">
-          <p className="text-white text-xl font-bold mb-4">遊戲已暫停</p>
-          <button
-            type="button"
-            onClick={togglePause}
-            className="games-touch-target px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold"
+      <AnimatePresence>
+        {isPaused && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            role="dialog"
+            aria-label="遊戲已暫停"
           >
-            繼續
-          </button>
-          <p className="text-white/50 text-xs mt-2">也可按 P 鍵繼續</p>
-        </div>
-      )}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="text-center"
+            >
+              <p className="text-white text-xl font-bold mb-4">遊戲已暫停</p>
+              <button
+                type="button"
+                onClick={togglePause}
+                className="games-touch-target px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold"
+              >
+                繼續
+              </button>
+              <p className="text-white/50 text-xs mt-2">也可按 P 鍵繼續</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div
         className="flex-1 px-4 sm:px-6 md:px-8 py-4 md:py-6 lg:py-8 relative overflow-y-auto min-h-0 touch-manipulation safe-area-pb safe-area-px"

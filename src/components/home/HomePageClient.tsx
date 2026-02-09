@@ -12,6 +12,7 @@ import {
   ArrowRight,
   GraduationCap,
   Gamepad2,
+  BookOpen,
   Instagram,
   Facebook,
   Send,
@@ -54,6 +55,7 @@ import { LOGO_SRC, BRAND_NAME } from '@/components/BrandLogo'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { useTranslation } from '@/contexts/I18nContext'
+import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
 import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import { HERO_SUBTITLE_VARIANTS, HERO_ANIMATION_DELAYS, HOME_TRUST_COPY, HOME_AVATAR_LETTERS, HOME_FEATURES_LABEL, FOOTER_DRINK_NOTE, FOOTER_DRINK_NOTE_BOTTOM, BENTO_CARDS } from '@/config/home.config'
 import { COPY_CTA_IMMEDIATE_QUIZ } from '@/config/copy.config'
@@ -224,10 +226,10 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             {heroSubtitleText}
           </motion.p>
 
-          {/* E36/E11：CTA 區入場 delay 可配置、間距一致 */}
+          {/* E36/E11：CTA 區入場 delay 可配置、間距一致；R2-099 CTA 區塊背景漸層動畫 */}
           <motion.div
             style={{ y: buttonsY }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2"
+            className={`relative rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2 ${!reducedMotion ? 'hero-cta-bg-gradient' : ''}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.cta }}
@@ -249,7 +251,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                 } catch { /* noop */ }
               }}
             >
-              <div className="btn-primary btn-press-scale hero-cta-primary flex items-center justify-center gap-3 text-base md:text-lg group cursor-pointer games-touch-target">
+              <div className={`btn-primary btn-press-scale hero-cta-primary flex items-center justify-center gap-3 text-base md:text-lg group cursor-pointer games-touch-target ${!reducedMotion ? 'hero-cta-glow-pulse' : ''}`}>
                 <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" />
                 <span>{t('common.cta')}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -371,8 +373,8 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             {BENTO_CARDS.map((card, i) => (
               <BentoCard
                 key={card.id}
-                href={card.id === 'quiz' ? '/quiz' : card.id === 'games' ? '/games' : card.id === 'assistant' ? '/assistant' : '/learn'}
-                icon={card.id === 'quiz' ? Sparkles : card.id === 'games' ? Gamepad2 : card.id === 'assistant' ? MessageCircle : GraduationCap}
+                href={card.id === 'quiz' ? '/quiz' : card.id === 'games' ? '/games' : card.id === 'script-murder' ? '/script-murder' : card.id === 'assistant' ? '/assistant' : '/learn'}
+                icon={card.id === 'quiz' ? Sparkles : card.id === 'games' ? Gamepad2 : card.id === 'script-murder' ? BookOpen : card.id === 'assistant' ? MessageCircle : GraduationCap}
                 title={card.title}
                 description={card.description}
                 delay={i * 0.12 + 0.05}
@@ -466,118 +468,125 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         </div>
       </section>
 
-      {/* F01/F10/F11：Footer 主 CTA 單一、heading h2、aria-labelledby */}
-      <section id="footer-cta-section" className="py-10 md:py-14 px-4 relative overflow-hidden" aria-labelledby="home-cta-heading">
+      {/* 單一 Footer（方案 A）：CTA + 訂閱 + 網站地圖 + 法律與支援 + 版權，僅一處 contentinfo */}
+      <footer id="footer-cta-section" className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 px-4 relative overflow-hidden safe-area-pb print:py-6" role="contentinfo" aria-label="頁尾與網站地圖">
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a2e]/80 via-transparent to-transparent pointer-events-none" aria-hidden />
-        <div className="max-w-4xl mx-auto text-center relative z-10 px-4 footer-section-gap">
-          <h2 id="home-cta-heading" className="home-heading-2 text-white mb-2">{HOME_COPY.ctaFooterTitle}</h2>
-          <p className="home-text-muted home-body mb-6 text-balance">
-            {HOME_COPY.ctaFooterDesc}
-          </p>
-
-          {/* F06：Footer 主 CTA 點擊 analytics */}
-          <Link
-            href="/quiz"
-            className="inline-block mb-6 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
-            onClick={() => {
-              try {
-                fetch('/api/analytics', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }),
-                }).catch(() => {})
-              } catch { /* noop */ }
-            }}
-          >
-            <MagneticButton
-              as="span"
-              strength={0.15}
-              className="btn-primary inline-flex px-8 py-4 min-h-[56px] games-touch-target rounded-2xl font-bold text-base hover:scale-105 transition-transform duration-300 cursor-pointer items-center justify-center gap-2 games-focus-ring"
+        <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center mb-10">
+            <h2 id="home-cta-heading" className="home-heading-2 text-white mb-2">{HOME_COPY.ctaFooterTitle}</h2>
+            <p className="home-text-muted home-body mb-6 text-balance">{HOME_COPY.ctaFooterDesc}</p>
+            <Link
+              href="/quiz"
+              className="inline-block mb-6 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
+              onClick={() => {
+                try {
+                  fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }) }).catch(() => {})
+                } catch { /* noop */ }
+              }}
             >
-              <Sparkles className="w-5 h-5" /> {HOME_COPY.ctaFooterButton}
-            </MagneticButton>
-          </Link>
-
-          {/* F27/F28/F29/F50 / 任務 54：飲酒提醒 ≥12px、對比 ≥4.5:1 */}
-          <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">
-            {FOOTER_DRINK_NOTE}
-          </p>
-
-          {/* F13–F19：訂閱表單 id 供 aria、防重複、toast */}
-          <form
-            id="footer-subscribe-form"
-            className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-8 home-footer-form opacity-90 text-sm"
-            aria-label="Email 訂閱表單"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (subscribeSubmitting) return
-              setSubscribeSubmitting(true)
-              toast.success('已收到！我們會寄送新品與優惠給您。', { duration: 4000 })
-              setTimeout(() => setSubscribeSubmitting(false), 2000)
-            }}
-          >
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input type="email" placeholder="留下 Email，接收新品與優惠" className="input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]" aria-label="Email 訂閱" disabled={subscribeSubmitting} required />
-              <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
-                <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
-              </button>
+              <MagneticButton as="span" strength={0.15} className="btn-primary inline-flex px-8 py-4 min-h-[56px] games-touch-target rounded-2xl font-bold text-base hover:scale-105 transition-transform duration-300 cursor-pointer items-center justify-center gap-2 games-focus-ring">
+                <Sparkles className="w-5 h-5" /> {HOME_COPY.ctaFooterButton}
+              </MagneticButton>
+            </Link>
+            <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">{FOOTER_DRINK_NOTE}</p>
+            <form
+              id="footer-subscribe-form"
+              className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-6 home-footer-form opacity-90 text-sm"
+              aria-label="Email 訂閱表單"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (subscribeSubmitting) return
+                setSubscribeSubmitting(true)
+                toast.success('已收到！我們會寄送新品與優惠給您。', { duration: 4000 })
+                setTimeout(() => setSubscribeSubmitting(false), 2000)
+              }}
+            >
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input type="email" placeholder="留下 Email，接收新品與優惠" className="input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]" aria-label="Email 訂閱" disabled={subscribeSubmitting} required />
+                <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
+                  <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 text-left">
+                <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
+                  <input type="checkbox" name="consent_news" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="同意接收新品與優惠" required />
+                  同意接收新品與優惠
+                </label>
+                <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
+                  <input type="checkbox" name="consent_privacy" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="已讀隱私政策" required />
+                  已讀<Link href="/privacy" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">隱私政策</Link>
+                </label>
+              </div>
+            </form>
+            <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
+              {/* R2-086：社群圖標 hover 品牌色背景擴散 */}
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+              <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
             </div>
-            <div className="flex flex-col gap-2 text-left">
-              <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
-                <input type="checkbox" name="consent_news" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="同意接收新品與優惠" required />
-                同意接收新品與優惠
-              </label>
-              <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
-                <input type="checkbox" name="consent_privacy" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="已讀隱私政策" required />
-                已讀<Link href="/privacy" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">隱私政策</Link>
-              </label>
-            </div>
-          </form>
-
-          <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Instagram">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Facebook">
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line">
-              <span className="text-sm font-bold">LINE</span>
-            </a>
+            <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
           </div>
 
-          {/* F31/F32/F50 / 任務 54：底部飲酒提醒字級與對比 */}
-          <p className="text-white/70 text-sm mb-4" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
-          {/* UX_LAYOUT_200 #56：頁腳連結分組與標題 */}
+          {/* 網站地圖（原 Footer 內容）：產品／體驗／公司／語系 */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">{t('footer.sectionProduct')}</h3>
+              <ul className="space-y-2" aria-label={t('footer.sectionProduct')}>
+                {[{ href: '/quiz', label: t('nav.quiz') }, { href: '/games', label: t('nav.games') }, { href: '/assistant', label: t('nav.assistant') }, { href: '/learn', label: t('nav.learn') }].map(({ href, label }) => (
+                  <li key={href}><Link href={href} className="text-white/60 hover:text-white text-sm transition-colors min-h-[44px] min-w-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded" aria-label={label}>{label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">體驗</h3>
+              <ul className="space-y-2" aria-label="體驗">
+                {[{ href: '/script-murder', label: '酒局劇本殺' }, { href: '/party-dj', label: '派對 DJ' }, { href: '/party-room', label: '派對房' }].map(({ href, label }) => (
+                  <li key={href}><Link href={href} className="text-white/60 hover:text-white text-sm transition-colors min-h-[44px] min-w-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded" aria-label={label}>{label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">{t('footer.sectionCompany')}</h3>
+              <ul className="space-y-2" aria-label={t('footer.sectionCompany')}>
+                {[{ href: '/pricing', label: t('nav.pricing') }, { href: '/privacy', label: t('footer.privacy') }, { href: '/terms', label: t('footer.terms') }].map(({ href, label }) => (
+                  <li key={href}><Link href={href} className="text-white/60 hover:text-white text-sm transition-colors min-h-[44px] min-w-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded" aria-label={label}>{label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div className="col-span-2 md:col-span-1 flex flex-col gap-2">
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-2">{t('footer.sectionLanguage')}</h3>
+              <LocaleSwitcher />
+            </div>
+          </div>
+
+          {/* 法律與支援：無障礙、狀態、訂閱、取消、聯絡、企業 */}
           <h2 id="footer-links-heading" className="sr-only">法律與支援</h2>
-          <nav className="flex flex-wrap items-center justify-center gap-4 mb-8 text-sm home-footer-link" aria-labelledby="footer-links-heading">
-            <Link href="/privacy" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">隱私政策</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
-            <Link href="/terms" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">服務條款</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+          <nav className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mt-8 mb-6 text-sm home-footer-link" aria-labelledby="footer-links-heading">
             <Link href="/accessibility" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">無障礙聲明</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+            <span className="text-white/30" aria-hidden>|</span>
             <Link href="/status" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">系統狀態</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+            <span className="text-white/30" aria-hidden>|</span>
             <Link href="/subscription" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">訂閱管理</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+            <span className="text-white/30" aria-hidden>|</span>
             <Link href="/subscription/cancel" className="games-touch-target inline-flex items-center justify-center px-2 py-2 text-white/70 hover:text-white games-focus-ring rounded">取消訂閱</Link>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+            <span className="text-white/30" aria-hidden>|</span>
             <a href="mailto:hello@cheersin.app" className="games-touch-target inline-flex items-center justify-center px-2 py-2 games-focus-ring rounded">聯絡我們</a>
-            <span className="text-white/30 min-h-[48px] flex items-center" aria-hidden>|</span>
+            <span className="text-white/30" aria-hidden>|</span>
             <a href="mailto:enterprise@cheersin.app?subject=企業/團體需求&body=您好，我們對 Cheersin 企業或團體方案有興趣。%0D%0A%0D%0A需求類型：%0D%0A預估人數/場次：%0D%0A聯絡人：%0D%0A" className="games-touch-target inline-flex items-center justify-center px-2 py-2 text-white/70 hover:text-white games-focus-ring rounded">企業需求</a>
           </nav>
 
-          {/* AUDIT #19：Footer SpringDrag 僅桌面顯示，行動裝置隱藏以省資源 */}
-          <div className="hidden md:block mt-2">
-            <SpringDrag dragDirection="x" dragConstraints={{ left: -60, right: 60, top: 0, bottom: 0 }} className="inline-block cursor-grab active:cursor-grabbing rounded-full px-4 py-2 text-white/40 text-xs border border-white/10 hover:border-white/20 hover:text-white/60">
-              拖曳試試 →
-            </SpringDrag>
+          <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-white/50 text-sm text-center sm:text-left">{t('footer.copyright').replace('©', `© ${new Date().getFullYear()} `)}</p>
+            <p className="text-white/40 text-xs" aria-label="飲酒警語">飲酒過量有害健康</p>
           </div>
 
-          {faq}
+          <div className="hidden md:block mt-4">
+            <SpringDrag dragDirection="x" dragConstraints={{ left: -60, right: 60, top: 0, bottom: 0 }} className="inline-block cursor-grab active:cursor-grabbing rounded-full px-4 py-2 text-white/40 text-xs border border-white/10 hover:border-white/20 hover:text-white/60">拖曳試試 →</SpringDrag>
+          </div>
+
+          <div className="mt-8">{faq}</div>
         </div>
-      </section>
+      </footer>
     </div>
   )
 }
@@ -628,8 +637,11 @@ const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description
               }}
             />
           )}
+          {/* R2-037：Bento 卡片 hover 時圖標旋轉 15deg、背景微亮 */}
           <div className="flex items-start justify-between mb-2 md:mb-3 relative z-10">
-            <FeatureIcon icon={Icon} size="md" color="primary" />
+            <span className="inline-block transition-transform duration-200 group-hover:rotate-[15deg] group-hover:brightness-110">
+              <FeatureIcon icon={Icon} size="md" color="primary" />
+            </span>
             {badge && (
               <span className="home-badge">{badge}</span>
             )}

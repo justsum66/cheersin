@@ -3,6 +3,14 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 
+/** R2-015：錯誤邊界捕獲時上報 Sentry（若已整合） */
+function reportToSentry(error: Error, context?: string) {
+  if (typeof window === 'undefined') return
+  import('@sentry/nextjs').then((Sentry) => {
+    Sentry.captureException?.(error, { extra: { errorBoundary: context } })
+  }).catch(() => { /* Sentry 未安裝時略過 */ })
+}
+
 interface Props {
   children: ReactNode
   fallback?: ReactNode
@@ -27,7 +35,9 @@ export default class ErrorBoundaryBlock extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(`[ErrorBoundaryBlock${this.props.blockName ? `:${this.props.blockName}` : ''}]`, error, errorInfo.componentStack)
+    const context = this.props.blockName ?? 'ErrorBoundaryBlock'
+    console.error(`[ErrorBoundaryBlock${context ? `:${context}` : ''}]`, error, errorInfo.componentStack)
+    reportToSentry(error, context)
   }
 
   handleReset = () => {

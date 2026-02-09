@@ -81,7 +81,21 @@
     "enterpriseSubmit": "問い合わせ送信",
     "bookDemo": "デモ予約",
     "support": "サポート",
-    "safePayment": "安全・カード・PayPal"
+    "safePayment": "安全・カード・PayPal",
+    "faq0q": "いつでも解約できますか？",
+    "faq0a": "はい。サブスク管理からいつでも解約でき、当期終了後は課金されません。利用規約をご確認ください。",
+    "faq1q": "支払い方法は？",
+    "faq1a": "カードとPayPalに対応、安全に処理します。",
+    "faq2q": "7日無料は自動課金されますか？",
+    "faq2a": "試用終了前に解約すれば課金されません。続ける場合は試用終了日に課金。初月半額等は申込フローに表示。",
+    "faq3q": "返金は？",
+    "faq3a": "初月内は理由不要で全額返金。7日以内に有料機能を実質利用していない場合も全額返金。利用規約参照。",
+    "faq4q": "個人用？商用利用可？",
+    "faq4a": "個人・小規模イベント向け。配信・個人チャンネル歓迎。法人・商用はお問い合わせ（チームプランまたは enterprise@cheersin.app）。",
+    "faq5q": "プロモコードは？",
+    "faq5a": "発行時は決済・料金ページに適用プランとルールを表示。決済時に入力で適用。",
+    "faq6q": "罰ゲームはカスタム可？お酒なしでも？",
+    "faq6a": "はい。パーティゲームの罰ゲームはカスタム可能。お酒なしでも遊べます。ゲーム内でノンアルコール選択可。"
   },
   "login": {
     "title": "ログイン",
@@ -146,7 +160,10 @@
   },
   "games": {
     "filterAll": "すべて",
-    "empty": "ゲームはありません"
+    "empty": "ゲームはありません",
+    "playAgain": "もう一度プレイ",
+    "popular": "人気",
+    "new": "New"
   },
   "learn": {
     "sectionContinue": "学習を続ける",
@@ -209,7 +226,19 @@
     "retry": "Retry",
     "upgradeToUnlock": "Upgrade to unlock longer plans",
     "offlineHint": "Please check your connection and try again",
-    "emptyState": "No plan yet. Fill the form above and click \"Generate party flow\"."
+    "emptyState": "No plan yet. Fill the form above and click \"Generate party flow\".",
+    "copyPlanLink": "Copy plan link",
+    "copyPlanLinkAria": "Copy party plan link (with params)",
+    "generatingLong": "Generating… You can cancel after 15s",
+    "cancel": "Cancel",
+    "copyPhase": "このフェーズをコピー",
+    "copyPhaseAria": "このフェーズのテキストをコピー",
+    "moodLabel": "雰囲気",
+    "moodRelaxed": "ゆったり",
+    "moodIntense": "盛り上がり",
+    "moodMixed": "ミックス",
+    "downloadImage": "画像をダウンロード",
+    "downloadImageAria": "編成を画像でダウンロード"
   },
   "status": {
     "title": "Service status (live)",

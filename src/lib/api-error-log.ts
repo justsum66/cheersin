@@ -16,6 +16,8 @@ export interface StructuredApiError {
   action?: string
   code?: string
   isP0?: boolean
+  /** 請求處理耗時（毫秒） */
+  durationMs?: number
 }
 
 /** P3-58：敏感 key 不記錄明文，僅留前 4 字元或 [REDACTED] */
@@ -55,6 +57,9 @@ export type LogApiErrorOptions = {
   isP0?: boolean
   /** P3-57：從 request.headers.get('x-request-id') 傳入 */
   requestId?: string | null
+  durationMs?: number
+  /** PayPal webhook 錯誤時可帶 event_type 便於排查 */
+  eventType?: string
 }
 
 /**
@@ -65,7 +70,7 @@ export function logApiError(
   error: unknown,
   options: LogApiErrorOptions = {}
 ): void {
-  const payload: StructuredApiError = {
+  const payload: StructuredApiError & { eventType?: string } = {
     endpoint,
     level: 'error',
     message: formatError(error),
@@ -74,6 +79,8 @@ export function logApiError(
     ...(options.action && { action: options.action }),
     ...(options.code && { code: options.code }),
     ...(options.isP0 && { isP0: true }),
+    ...(options.durationMs != null && { durationMs: options.durationMs }),
+    ...(options.eventType && { eventType: options.eventType }),
   }
   console.error(JSON.stringify(payload))
 }
@@ -84,7 +91,7 @@ export function logApiError(
 export function logApiWarn(
   endpoint: string,
   message: string,
-  options: { action?: string; code?: string; requestId?: string | null } = {}
+  options: { action?: string; code?: string; requestId?: string | null; durationMs?: number } = {}
 ): void {
   const payload: StructuredApiError = {
     endpoint,
@@ -93,6 +100,7 @@ export function logApiWarn(
     timestamp: new Date().toISOString(),
     ...(options.requestId && { requestId: options.requestId }),
     ...(options.action && { action: options.action }),
+    ...(options.durationMs != null && { durationMs: options.durationMs }),
     ...(options.code && { code: options.code }),
   }
   console.warn(JSON.stringify(payload))

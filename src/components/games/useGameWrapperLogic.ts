@@ -103,6 +103,7 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
   const [fullscreenUnsupported, setFullscreenUnsupported] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [gameHasStarted, setGameHasStarted] = useState(false)
+  const [showCountdown, setShowCountdown] = useState(true)
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
   const [pendingSwitchGameId, setPendingSwitchGameId] = useState<string | null>(null)
   const systemReduced = useReducedMotion()
@@ -114,6 +115,19 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     return () => window.removeEventListener('cheersin-games-reduce-motion-change', on)
   }, [])
   const reducedMotion = !!systemReduced || userReduceMotion
+
+  /** R2-040：簡化動畫時跳過 3-2-1 倒數，直接開始 */
+  useEffect(() => {
+    if (reducedMotion && showCountdown) {
+      setShowCountdown(false)
+      setGameHasStarted(true)
+    }
+  }, [reducedMotion, showCountdown])
+
+  const onCountdownComplete = useCallback(() => {
+    setShowCountdown(false)
+    setGameHasStarted(true)
+  }, [])
 
   const contentScaleRef = useRef(1)
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -212,8 +226,9 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
   }, [title])
 
   useEffect(() => {
+    const ref = multiTouchClearTimerRef
     return () => {
-      const tid = multiTouchClearTimerRef.current
+      const tid = ref.current
       if (tid) clearTimeout(tid)
     }
   }, [])
@@ -395,10 +410,12 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     onTrialRoundEnd,
     gameHasStarted,
     setGameHasStarted,
+    showCountdown,
+    onCountdownComplete,
+    reducedMotion,
     isPausedState: isPaused,
     setIsPaused,
     currentGameId,
-    reducedMotion,
     registerSpace,
     registerDigit,
   }

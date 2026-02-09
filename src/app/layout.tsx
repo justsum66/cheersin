@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
 import { Playfair_Display, Inter, Noto_Sans_TC } from 'next/font/google'
 import './globals.css'
+import '@/components/games/games.css'
 import { Toaster } from 'react-hot-toast'
 import Navigation from '@/components/navigation/Navigation'
 import AuroraBackground from '@/components/AuroraBackground'
@@ -66,10 +67,11 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   icons: {
     icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/sizes/favicon_16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/sizes/favicon_32.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/sizes/apple_touch_180.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/sizes/favicon.ico',
   },
   openGraph: {
     title: 'Cheersin | 探索你的靈魂之酒',
@@ -113,7 +115,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://openrouter.ai" />
         <link rel="dns-prefetch" href="https://api.pinecone.io" />
         {/* P031: LCP optimization - preload critical hero image with fetchpriority */}
-        <link rel="preload" href="/logo.png" as="image" fetchPriority="high" />
+        <link rel="preload" href="/logo_monochrome_gold.png" as="image" fetchPriority="high" />
         {/* Phase 1 E1.2: Preload critical fonts for LCP */}
         <link
           rel="preload"

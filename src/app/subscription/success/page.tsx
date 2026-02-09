@@ -4,9 +4,11 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2, Sparkles, Bot } from 'lucide-react';
+import { CheckCircle, XCircle, Sparkles, Bot, Loader2 } from 'lucide-react';
+import { WineGlassLoading } from '@/components/ui/WineGlassLoading';
 import { setStoredTier } from '@/lib/subscription';
 import { clearCancelledAt } from '@/lib/subscription-retention';
+import { fireFullscreenConfetti } from '@/lib/celebration';
 import type { SubscriptionTier } from '@/lib/subscription';
 import { COPY_CTA_START_QUIZ } from '@/config/copy.config';
 
@@ -77,6 +79,12 @@ function SuccessContent() {
     }
   };
 
+  /** R2-064：訂閱成功時全螢幕慶祝 confetti */
+  useEffect(() => {
+    if (status !== 'success') return;
+    fireFullscreenConfetti().catch(() => {});
+  }, [status]);
+
   /** E24：訂閱成功時送 analytics */
   useEffect(() => {
     if (status !== 'success') return;
@@ -104,13 +112,9 @@ function SuccessContent() {
       <div className="relative z-10">
         {status === 'loading' && (
           <>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-20 h-20 mx-auto mb-6"
-            >
-              <div className="w-full h-full border-4 border-orange-500/30 border-t-orange-500 rounded-full" />
-            </motion.div>
+            <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <WineGlassLoading show inline />
+            </div>
             <h1 className="text-2xl font-bold text-white mb-2">處理中...</h1>
             <p className="text-white/60">正在確認您的訂閱</p>
           </>
@@ -137,7 +141,9 @@ function SuccessContent() {
                 您已訂閱 {planType === 'premium' ? 'VIP' : 'Pro'}，現在開始享受所有專屬功能。
               </p>
               {nextBillingDate && (
-                <p className="text-white/60 text-sm mb-8">下次扣款日：{nextBillingDate}</p>
+                <p className="text-white/60 text-sm mb-8">
+                  下次扣款日：<motion.span initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, duration: 0.25 }} className="font-medium text-white/80">{nextBillingDate}</motion.span>
+                </p>
               )}
               {!nextBillingDate && (
                 <p className="text-white/60 text-sm mb-8">下次扣款日請至訂閱管理查看</p>

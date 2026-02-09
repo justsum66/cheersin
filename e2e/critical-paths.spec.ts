@@ -177,6 +177,22 @@ test.describe('關鍵路徑：進遊戲完成一局', () => {
   })
 })
 
+/** Party DJ 30 #30：派對 DJ 表單送出並看到結果 */
+test.describe('關鍵路徑：派對 DJ', () => {
+  test('派對 DJ 表單送出並看到編排結果', async ({ page }) => {
+    test.setTimeout(90000)
+    await page.goto('/party-dj', { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await expect(page).toHaveURL(/\/party-dj/)
+    await page.waitForLoadState('networkidle').catch(() => {})
+    await dismissCookieBanner(page)
+    const submitBtn = page.getByRole('button', { name: /生成派對流程|Generate party flow/ })
+    await expect(submitBtn).toBeVisible({ timeout: 10000 })
+    await submitBtn.click()
+    const result = page.getByTestId('party-dj-plan-result').or(page.getByRole('region', { name: /派對流程|Party flow/ }))
+    await expect(result).toBeVisible({ timeout: 45000 })
+  })
+})
+
 test.describe('關鍵路徑：訂閱流程', () => {
   test('定價頁可載入且方案可見', async ({ page }) => {
     await page.goto('/pricing')

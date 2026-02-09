@@ -1,5 +1,7 @@
 'use client'
 
+import { QueryClientProvider } from '@tanstack/react-query'
+import { getQueryClient } from '@/lib/query-client'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { I18nProvider } from '@/contexts/I18nContext'
 import { NavVisibilityProvider } from '@/contexts/NavVisibilityContext'
@@ -17,8 +19,10 @@ function ApiLoadingOverlay() {
   return <WineGlassLoading show={loading} />
 }
 
+/** R2-025：react-query 統一 query 快取與重試 */
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
+    <QueryClientProvider client={getQueryClient()}>
     <ThemeProvider>
       <I18nProvider>
       <ToastProvider>
@@ -36,5 +40,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
       </ToastProvider>
       </I18nProvider>
     </ThemeProvider>
+    </QueryClientProvider>
   )
 }

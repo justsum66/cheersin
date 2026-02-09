@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
+import { motion, LayoutGroup } from 'framer-motion'
 import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import { Modal } from '@/components/ui/Modal'
@@ -21,10 +22,11 @@ import {
   GAMES_LOBBY_CATEGORY_RANDOM_I18N_KEY,
   GAMES_LOBBY_CATEGORY_TWO_I18N_KEY,
 } from '@/lib/games-ui-constants'
+import { useTranslation } from '@/contexts/I18nContext'
 import { NowPlayingCount } from './NowPlayingCount'
 import RandomBrewery from './RandomBrewery'
 import type { GameDifficulty, GameCategory } from '@/config/games.config'
-import { GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
+import { getGameMeta, GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
 
 export type { GameCategory }
 
@@ -179,6 +181,7 @@ interface LobbyProps {
 }
 
 export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, onSelect, displayFilter: controlledFilter, onDisplayFilterChange }: LobbyProps) {
+  const { t } = useTranslation()
   /** T051：預設「經典派對」= 熱門類型；P1-122 受控時用 props，否則用內部 state */
   const [internalFilter, setInternalFilter] = useState<DisplayCategory>('classic')
   const displayFilter = controlledFilter ?? internalFilter
@@ -205,6 +208,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   )
   /** 79 搜尋遊戲：依名稱或描述篩選；useDeferredValue 取代手動 debounce */
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
   const deferredQuery = useDeferredValue(searchQuery)
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -324,8 +328,10 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
 
   /** GAMES_500 #50：搜尋框 focus 時捲入視窗（移動端鍵盤不遮擋） */
   const handleSearchFocus = useCallback(() => {
+    setSearchFocused(true)
     searchInputRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [])
+  const handleSearchBlur = useCallback(() => { setSearchFocused(false) }, [])
 
   /** GAMES_500 #71：分類 tab 變更時當前項自動 scroll into view */
   useEffect(() => {
@@ -473,9 +479,11 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
         return null
       })}
 
-      {/* GAMES_500 #46 #47 #48 #70 #78 #88 #92：搜尋 placeholder/aria、min 2 字提示、搜尋中、Esc 清除、autocomplete、清除按鈕、i18n key */}
+      {/* GAMES_500 #46 #47 #48 #70 #78 #88 #92：搜尋 placeholder/aria、min 2 字提示、搜尋中、Esc 清除、autocomplete、清除按鈕、i18n key；R2-101 搜尋框 focus 時寬度過渡 */}
       <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-center">
-        <div className="relative w-full flex-1 sm:max-w-sm rounded-xl border border-white/10 overflow-hidden">
+        <div
+          className={`relative w-full flex-1 rounded-xl border border-white/10 overflow-hidden transition-[max-width] duration-300 ease-out ${searchFocused ? 'sm:max-w-md' : 'sm:max-w-sm'}`}
+        >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none" aria-hidden />
           <input
             ref={searchInputRef}
@@ -484,6 +492,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
                 e.currentTarget.blur()
@@ -515,10 +524,11 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           )}
         </div>
       </div>
-      {/* GAMES_500 #51 #52 #53 #79 #89：分類 tab 鍵盤 Home/End、aria-selected/tabIndex、icon 色盲友善、aria-describedby、scrollbar-hide */}
+      {/* GAMES_500 #51 #52 #53 #79 #89：分類 tab；R2-047 LayoutGroup 讓選中底線/背景平滑切換 */}
+      <LayoutGroup>
       <div
         ref={categoryTabListRef}
-        className="flex overflow-x-auto gap-0 mb-4 justify-start sm:justify-center scrollbar-hide pb-1 -mx-1 px-1"
+        className="flex overflow-x-auto gap-0 mb-4 justify-start sm:justify-center scrollbar-hide pb-1 -mx-1 px-1 relative"
         role="tablist"
         aria-label="遊戲分類篩選"
         aria-describedby="lobby-game-count"
@@ -537,14 +547,24 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               onKeyDown={(e) => handleCategoryKeyDown(e, cat)}
               aria-selected={isActive}
               aria-expanded={isActive}
-              className={`shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'bg-white/15 text-white border-primary-500' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
+              className={`relative shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'text-white border-transparent' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
             >
-              <Icon className="w-4 h-4 shrink-0" aria-hidden />
-              <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{DISPLAY_LABELS[cat]}</span>
+              {isActive && (
+                <motion.span
+                  layoutId="lobby-category-pill"
+                  className="absolute inset-0 rounded-t-xl bg-white/15 border-b-2 border-primary-500"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <Icon className="w-4 h-4 shrink-0" aria-hidden />
+                <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{cat === 'all' ? t('games.filterAll') : DISPLAY_LABELS[cat]}</span>
+              </span>
             </button>
           )
         })}
       </div>
+      </LayoutGroup>
       {/* P1-106：適合人數與遊戲時長篩選 chip */}
       <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label="人數與時長篩選">
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -641,6 +661,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
               twoPlayerFriendly: game.twoPlayerFriendly,
               onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? '暫無規則摘要' }),
+              isPremium: game.isPremium ?? getGameMeta(game.id)?.requiredTier === 'premium',
             }}
             index={index}
             onSelect={handleSelect}

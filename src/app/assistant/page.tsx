@@ -844,7 +844,7 @@ export default function AssistantPage() {
               {/* 127 AI 頭像：品牌風格（logo + 漸層） */}
               <div className="relative">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 flex items-center justify-center border border-white/10 overflow-hidden">
-                  <Image src="/logo.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
+                  <Image src="/sizes/icon_128_gold.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
                 </div>
                 <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
@@ -1318,7 +1318,7 @@ export default function AssistantPage() {
                   <div className="flex-shrink-0 mt-1">
                     {message.role === 'assistant' ? (
                       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 flex items-center justify-center border border-white/10 overflow-hidden ${isLoading && messages[messages.length - 1]?.id === message.id ? 'animate-pulse' : ''}`}>
-                        <Image src="/logo.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
+                        <Image src="/sizes/icon_128_gold.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
                       </div>
                     ) : (
                       <div className="w-10 h-10 rounded-xl bg-primary-800/60 flex items-center justify-center border border-primary-500/30">
@@ -1455,7 +1455,7 @@ export default function AssistantPage() {
                 aria-label="AI 正在回覆"
               >
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 flex items-center justify-center border border-white/10 flex-shrink-0 overflow-hidden animate-pulse">
-                  <Image src="/logo.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
+                  <Image src="/sizes/icon_128_gold.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
                 </div>
                 <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/[0.08] border border-white/10 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5">

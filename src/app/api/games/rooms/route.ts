@@ -6,6 +6,7 @@ import { generateShortSlug, hashRoomPassword } from '@/lib/games-room'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
+import { stripHtml } from '@/lib/sanitize'
 
 const MAX_SLUG_ATTEMPTS = 5
 
@@ -58,14 +59,18 @@ export async function POST(request: Request) {
       { status: 429, headers: { 'Retry-After': '60' } }
     )
   }
-  /** BE-21：body 驗證 — 僅接受可選 4 位數字密碼、P0-004 匿名模式；解析失敗不視為必填 */
+  /** BE-21：body 驗證 — 僅接受可選 4 位數字密碼、P0-004 匿名模式、Killer 派對房、#14 劇本殺 scriptId */
   let bodyPassword: string | undefined
   let anonymousMode = false
+  let partyRoom = false
+  let scriptId: string | undefined
   try {
     const body = (await request.json().catch(() => null)) as import('@/types/api-bodies').GamesRoomsPostBody | null
     if (body && typeof body === 'object') {
       if (typeof body.password === 'string' && /^\d{4}$/.test(body.password)) bodyPassword = body.password
       if (body.anonymousMode === true) anonymousMode = true
+      if (body.partyRoom === true) partyRoom = true
+      if (typeof body.scriptId === 'string' && body.scriptId.trim()) scriptId = stripHtml(body.scriptId.trim().slice(0, 64))
     }
   } catch {
     return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
@@ -89,27 +94,72 @@ export async function POST(request: Request) {
         { status: 503 }
       )
     }
-    // P1-20：建立房間時預設 expires_at = now + 24h，供 cleanup-expired-rooms 清理
-    // P3-43：若已登入則寫入 host_id，供 RLS 房主可修改
     const user = await getCurrentUser()
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    const insertPayload: { slug: string; password_hash?: string; expires_at: string; host_id?: string; settings?: { anonymousMode?: boolean } } = { slug, expires_at: expiresAt }
+    // 劇本殺房：#14 綁定 script_id，人數與過期時間依劇本
+    let expiresAt: string
+    let maxPlayers: number
+    const settings: { anonymousMode?: boolean; max_players?: number; partyRoom?: boolean; scriptId?: string; scriptRoom?: boolean } = {}
+    if (anonymousMode) settings.anonymousMode = true
+
+    if (scriptId) {
+      const { data: scriptRow, error: scriptErr } = await supabase
+        .from('scripts')
+        .select('id, min_players, max_players')
+        .eq('id', scriptId)
+        .single()
+      if (scriptErr || !scriptRow) {
+        return errorResponse(400, 'Invalid script', { message: '劇本不存在或無法使用' })
+      }
+      const minP = (scriptRow as { min_players: number | null }).min_players ?? 4
+      const maxP = (scriptRow as { max_players: number | null }).max_players ?? 8
+      maxPlayers = Math.min(12, Math.max(minP, maxP))
+      expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+      settings.scriptId = scriptId
+      settings.scriptRoom = true
+      settings.max_players = maxPlayers
+    } else if (partyRoom && user?.id) {
+      const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single()
+      const tier = (profile?.subscription_tier as string) ?? 'free'
+      const isPaid = tier === 'basic' || tier === 'premium'
+      maxPlayers = isPaid ? 12 : 4
+      const expiresMs = isPaid ? 24 * 60 * 60 * 1000 : 30 * 60 * 1000
+      expiresAt = new Date(Date.now() + expiresMs).toISOString()
+      settings.max_players = maxPlayers
+      settings.partyRoom = true
+    } else {
+      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      maxPlayers = 12
+    }
+
+    const insertPayload: {
+      slug: string
+      password_hash?: string
+      expires_at: string
+      host_id?: string
+      settings?: { anonymousMode?: boolean; max_players?: number; partyRoom?: boolean; scriptId?: string; scriptRoom?: boolean }
+    } = { slug, expires_at: expiresAt }
     if (bodyPassword) insertPayload.password_hash = hashRoomPassword(bodyPassword)
     if (user?.id) insertPayload.host_id = user.id
-    if (anonymousMode) insertPayload.settings = { anonymousMode: true }
+    if (Object.keys(settings).length > 0) insertPayload.settings = settings
     const { data: room, error: roomError } = await supabase
       .from('game_rooms')
       .insert(insertPayload)
       .select('id, slug, created_at')
       .single()
     if (roomError || !room) return serverErrorResponse(roomError)
-    logger.info('Game room created', { slug: room.slug, roomId: room.id })
-    return NextResponse.json({
+    logger.info('Game room created', { slug: room.slug, roomId: room.id, partyRoom, scriptId })
+    let invitePath = '/games?room=' + room.slug
+    if (scriptId) invitePath = `/script-murder?room=${room.slug}`
+    else if (partyRoom) invitePath = `/party-room?room=${room.slug}`
+    const res: { roomId: string; slug: string; inviteUrl: string; createdAt: string; maxPlayers?: number; scriptId?: string } = {
       roomId: room.id,
       slug: room.slug,
-      inviteUrl: `${getBaseUrl()}/games?room=${room.slug}`,
+      inviteUrl: `${getBaseUrl()}${invitePath}`,
       createdAt: room.created_at,
-    })
+    }
+    if (partyRoom || scriptId) res.maxPlayers = maxPlayers
+    if (scriptId) res.scriptId = scriptId
+    return NextResponse.json(res)
   } catch (e: unknown) {
     return serverErrorResponse(e)
   }

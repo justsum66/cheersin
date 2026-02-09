@@ -55,6 +55,8 @@
 多張表 RLS 使用 `auth.uid()` 未包成 `(select auth.uid())`，導致每行重算。建議改為 `(select auth.uid())`。  
 涉及：subscriptions, quiz_results, game_sessions, learning_progress, achievements, chat_history, wine_favorites, profiles, game_rooms, game_room_players, user_achievements, chat_conversations, notifications, push_subscriptions, chapter_progress。
 
+**已修**：migration `20260209150000_auth_rls_initplan.sql` 已將 profiles, game_rooms, game_room_players, user_achievements, chat_conversations, notifications 之 policy 改為 `(select auth.uid())`。其餘表（subscriptions, quiz_results 等）若存在於專案 migration 中可再補一檔。
+
 [Remediation](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select)
 
 ### Unused Index / Duplicate Index
@@ -64,7 +66,7 @@
 
 ### Multiple Permissive Policies
 
-- wine_favorites：同一 role/action 有兩條 permissive（Users can manage own favorites、Users can view own favorites），可合併為一條。
+- wine_favorites：本 codebase 僅一條 policy「Users can manage own favorites」；若生產 DB 有兩條可合併為一條。
 
 ---
 

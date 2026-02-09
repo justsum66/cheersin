@@ -1,12 +1,25 @@
 /**
  * 151 動態課程頁：依 courseId 顯示章節與內容；153-154 進度寫入 cheersin_learn_progress；143 Pro 試用閘門
  * generateStaticParams 預渲染課程頁；revalidate 3600 實現 ISR
+ * 任務 6：非首屏以 dynamic 載入，減少初始 bundle
  */
 import { notFound } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { getCourse, getCourseIds } from '@/lib/courses'
-import { CoursePageClient } from '@/components/learn/CoursePageClient'
 import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
 import type { Metadata } from 'next'
+
+const CoursePageClient = dynamic(
+  () => import('@/components/learn/CoursePageClient').then((m) => ({ default: m.CoursePageClient })),
+  {
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <p className="text-white/60 animate-pulse">載入課程中…</p>
+      </div>
+    ),
+    ssr: true,
+  }
+)
 
 /** ISR：每小時重新驗證課程內容 */
 export const revalidate = 3600

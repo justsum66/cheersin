@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Award } from 'lucide-react'
+import { Check, X, Award, Loader2 } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useTriviaQuestions } from '@/hooks/useTriviaQuestions'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 
 type Difficulty = 'easy' | 'medium' | 'hard'
 type TriviaQ = { q: string; a: string[]; correct: number; difficulty: Difficulty }
@@ -102,6 +103,8 @@ export default function Trivia() {
   const [showResult, setShowResult] = useState(false)
   const [selected, setSelected] = useState<number | null>(null)
   const [isAnswered, setIsAnswered] = useState(false)
+  /** R2-112：提交答案時短暫顯示載入態，再顯示勾/叉 */
+  const [submittingIndex, setSubmittingIndex] = useState<number | null>(null)
   const [wrongAnswers, setWrongAnswers] = useState<{ q: string; correct: string; picked: string }[]>([])
   const [answerHistory, setAnswerHistory] = useState<('correct' | 'wrong')[]>([])
   const [streak, setStreak] = useState(0)
@@ -181,38 +184,42 @@ export default function Trivia() {
   }, [])
 
   const handleAnswer = (index: number) => {
-    if (isAnswered) return
+    if (isAnswered || submittingIndex != null) return
     clearTimer()
     const q = QUESTIONS[current]
-    setSelected(index)
-    setIsAnswered(true)
-    const correct = index === q.correct
-    setAnswerHistory((prev) => [...prev, correct ? 'correct' : 'wrong'].slice(-5) as ('correct' | 'wrong')[])
-    if (correct) {
-      play('correct')
-      setScore(score + 1)
-      setStreak((s) => {
-        const next = s + 1
-        setMaxStreak((m) => Math.max(m, next))
-        return next
-      })
-    } else {
-      play('wrong')
-      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
-      setStreak(0)
-      setWrongAnswers((prev) => [...prev, { q: q.q, correct: q.a[q.correct], picked: q.a[index] }])
-    }
-    if (nextQuestionTimeoutRef.current) clearTimeout(nextQuestionTimeoutRef.current)
-    nextQuestionTimeoutRef.current = setTimeout(() => {
-      nextQuestionTimeoutRef.current = null
-      if (current < QUESTIONS.length - 1) {
-        setCurrent(current + 1)
-        setSelected(null)
-        setIsAnswered(false)
+    setSubmittingIndex(index)
+    setTimeout(() => {
+      setSelected(index)
+      setIsAnswered(true)
+      setSubmittingIndex(null)
+      const correct = index === q.correct
+      setAnswerHistory((prev) => [...prev, correct ? 'correct' : 'wrong'].slice(-5) as ('correct' | 'wrong')[])
+      if (correct) {
+        play('correct')
+        setScore(score + 1)
+        setStreak((s) => {
+          const next = s + 1
+          setMaxStreak((m) => Math.max(m, next))
+          return next
+        })
       } else {
-        setShowResult(true)
+        play('wrong')
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
+        setStreak(0)
+        setWrongAnswers((prev) => [...prev, { q: q.q, correct: q.a[q.correct], picked: q.a[index] }])
       }
-    }, 1500)
+      if (nextQuestionTimeoutRef.current) clearTimeout(nextQuestionTimeoutRef.current)
+      nextQuestionTimeoutRef.current = setTimeout(() => {
+        nextQuestionTimeoutRef.current = null
+        if (current < QUESTIONS.length - 1) {
+          setCurrent(current + 1)
+          setSelected(null)
+          setIsAnswered(false)
+        } else {
+          setShowResult(true)
+        }
+      }, 1500)
+    }, 380)
   }
 
   const handleAnswerRef = useRef(handleAnswer)
@@ -271,8 +278,15 @@ export default function Trivia() {
   }
 
     if (showResult) {
+        const lowScore = QUESTIONS.length ? score <= Math.min(2, Math.ceil(QUESTIONS.length * 0.25)) : false
         return (
-            <div className="flex flex-col items-center justify-center h-full text-center" data-testid="trivia-result">
+            <motion.div
+                className="flex flex-col items-center justify-center h-full text-center"
+                data-testid="trivia-result"
+                initial={lowScore ? { opacity: 1 } : {}}
+                animate={lowScore ? { x: [0, -8, 8, -6, 6, 0], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 60px 20px rgba(239,68,68,0.15)', '0 0 0 0 rgba(239,68,68,0)'] } : {}}
+                transition={lowScore ? { duration: 0.6, ease: 'easeOut' } : {}}
+            >
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -282,8 +296,8 @@ export default function Trivia() {
                 </motion.div>
 
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">測驗完成！</h2>
-                <div className="text-5xl md:text-6xl font-display font-bold gradient-text mb-6">
-                    {score} / {QUESTIONS.length}
+                <div className="text-5xl md:text-6xl font-display font-bold gradient-text mb-6 tabular-nums">
+                    <AnimatedNumber value={score} /> / {QUESTIONS.length}
                 </div>
 
                 <p className="text-white/50 mb-4 text-lg md:text-xl">
@@ -326,14 +340,26 @@ export default function Trivia() {
                 <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label={t('games.playAgain')} data-testid="trivia-restart">
                     {t('games.playAgain')}
                 </button>
-            </div>
+            </motion.div>
         )
     }
 
     return (
         <div className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 safe-area-px" role="main" aria-label="知識問答">
             <GameRules rules={`答對不喝、答錯請喝。\n快捷鍵：1–4 選擇選項。`} />
-            {/* 進度條 */}
+            {/* 進度條；R2-120 多輪進度指示器：圓點 + 進度條 */}
+            <div className="mb-2 flex items-center gap-1.5 flex-wrap">
+                {QUESTIONS.map((_, i) => (
+                    <motion.span
+                        key={i}
+                        className={`shrink-0 w-2 h-2 rounded-full ${i < current ? 'bg-primary-500' : i === current ? 'bg-primary-400' : 'bg-white/20'}`}
+                        initial={false}
+                        animate={{ scale: i === current ? 1.2 : 1, opacity: i <= current ? 1 : 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        aria-hidden
+                    />
+                ))}
+            </div>
             <div className="mb-4 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
                 <motion.div
                     className="h-full bg-primary-500 rounded-full"
@@ -345,7 +371,7 @@ export default function Trivia() {
             <div className="mb-4 flex flex-wrap gap-2 items-center border-b border-white/10 pb-3">
                 <span className="text-primary-500 font-mono tracking-widest uppercase text-sm">第 {current + 1} / {QUESTIONS.length} 題</span>
                 <span className="text-white/40 text-sm" aria-label="難度">{DIFFICULTY_LABEL[QUESTIONS[current].difficulty]}</span>
-                <span className="text-white/50 text-sm ml-auto">得分：{score}</span>
+                <span className="text-white/50 text-sm ml-auto">得分：<AnimatedNumber value={score} className="tabular-nums" /></span>
                 {answerHistory.length > 0 && (
                   <span className="text-white/40 text-xs ml-2" role="status" aria-live="polite">本局最近：{answerHistory.map((o) => (o === 'correct' ? '✓' : '✗')).join(' ')}</span>
                 )}
@@ -368,7 +394,36 @@ export default function Trivia() {
                 ))}
             </div>
             {timerEnabled && timeLeft != null && !isAnswered && (
-                <p className={`text-sm mb-2 font-mono tabular-nums ${timeLeft <= 5 ? 'text-red-400 font-semibold' : 'text-primary-400'}`} role="timer" aria-live="polite">剩餘 {timeLeft} 秒</p>
+                <motion.div
+                  className="flex items-center gap-3 mb-2"
+                  role="timer"
+                  aria-live="polite"
+                  aria-label={`剩餘 ${timeLeft} 秒`}
+                  animate={timeLeft <= 5 ? { boxShadow: ['0 0 0 0 rgba(248,113,113,0)', '0 0 0 8px rgba(248,113,113,0.25)', '0 0 0 0 rgba(248,113,113,0)'] } : {}}
+                  transition={timeLeft <= 5 ? { repeat: Infinity, duration: 1.2 } : {}}
+                >
+                  <span className="relative w-10 h-10 shrink-0">
+                    <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
+                      <path
+                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.1)"
+                        strokeWidth="3"
+                      />
+                      <motion.path
+                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                        fill="none"
+                        stroke={timeLeft <= 5 ? 'rgb(248,113,113)' : 'rgb(168,85,247)'}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray="97.3"
+                        animate={{ strokeDashoffset: 97.3 * (1 - timeLeft / (timerSeconds ?? 15)) }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </svg>
+                  </span>
+                  <p className={`text-sm font-mono tabular-nums ${timeLeft <= 5 ? 'text-red-400 font-semibold' : 'text-primary-400'}`}>剩餘 {timeLeft} 秒</p>
+                </motion.div>
             )}
             <h2 className="text-lg md:text-2xl font-bold text-white mb-6 leading-relaxed" id="trivia-question">
                 {QUESTIONS[current].q}
@@ -386,8 +441,8 @@ export default function Trivia() {
                         ref={(el) => { optionRefs.current[i] = el }}
                         type="button"
                         onClick={() => handleAnswer(i)}
-                        disabled={isAnswered}
-                        aria-label={`選項 ${i + 1}：${opt}`}
+                        disabled={isAnswered || submittingIndex != null}
+                        aria-label={submittingIndex === i ? '提交中' : `選項 ${i + 1}：${opt}`}
                         initial={false}
                         animate={isAnswered && selected === i ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } } : {}}
                         className={`p-4 md:p-5 rounded-xl text-left text-base md:text-lg font-medium transition-colors games-focus-ring flex items-center justify-between border min-h-[48px] ${isAnswered && i === QUESTIONS[current].correct
@@ -398,8 +453,21 @@ export default function Trivia() {
                             }`}
                     >
                         <span><span className="text-white/50 mr-2">{i + 1}.</span>{opt}</span>
-                        {isAnswered && i === QUESTIONS[current].correct && <Check className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />}
-                        {isAnswered && selected === i && i !== QUESTIONS[current].correct && <X className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />}
+                        {submittingIndex === i && (
+                          <span className="flex-shrink-0" aria-hidden>
+                            <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
+                          </span>
+                        )}
+                        {isAnswered && submittingIndex === null && i === QUESTIONS[current].correct && (
+                          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+                            <Check className="w-5 h-5 md:w-6 md:h-6" />
+                          </motion.span>
+                        )}
+                        {isAnswered && selected === i && i !== QUESTIONS[current].correct && (
+                          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+                            <X className="w-5 h-5 md:w-6 md:h-6" />
+                          </motion.span>
+                        )}
                     </motion.button>
                 ))}
             </div>

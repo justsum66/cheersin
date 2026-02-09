@@ -1,0 +1,84 @@
+/**
+ * R2-002 Phase2：自 globals.css 遷出之 .games-* 區塊
+ * 遊戲區字級、觸控目標、按鈕組、卡片；由根 layout 引入（不使用 @layer 以利單檔編譯）
+ */
+/* RWD 13–22：遊戲區字級與排版 */
+.games-heading {
+    font-size: var(--text-2xl);
+  }
+  @media (min-width: 768px) {
+    .games-heading {
+      font-size: var(--text-3xl);
+    }
+  }
+  .games-body {
+    font-size: var(--text-base);
+  }
+  @media (min-width: 768px) {
+    .games-body {
+      font-size: var(--text-lg);
+    }
+  }
+  .games-result-text {
+    font-size: var(--text-xl);
+  }
+  @media (min-width: 768px) {
+    .games-result-text {
+      font-size: var(--text-2xl);
+    }
+  }
+  .games-btn-text {
+    font-size: var(--text-base);
+  }
+  @media (min-width: 768px) {
+    .games-btn-text {
+      font-size: var(--text-lg);
+    }
+  }
+  .games-question {
+    line-height: 1.625;
+  }
+  .games-helper {
+    font-size: var(--text-sm);
+  }
+  /* 任務 83 / P1-037：觸控目標 ≥44px */
+  .games-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  .min-touch-44 {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .games-cta {
+    min-height: 48px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  .games-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .games-btn-group {
+      gap: 1rem;
+    }
+  }
+  .games-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .games-card {
+      padding: 1.5rem;
+    }
+  }
+  .games-card-xl {
+    border-radius: 1rem;
+  }
+.games-input {
+  min-height: 48px;
+}

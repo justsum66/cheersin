@@ -828,10 +828,13 @@ export default function LearnPage() {
         </a>
         <div className="max-w-4xl xl:max-w-[1440px] mx-auto px-0 sm:px-2 space-y-8 md:space-y-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
+        <div className="flex items-center justify-between mb-6 md:mb-8 flex-wrap gap-2">
           <Link href="/" className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-1 text-white/60 hover:text-white">
             <ChevronLeft className="w-5 h-5" />
             返回
+          </Link>
+          <Link href="/script-murder" className="text-primary-400 hover:text-primary-300 text-sm">
+            酒局劇本殺
           </Link>
         </div>
 
@@ -1421,6 +1424,20 @@ export default function LearnPage() {
             <div>
               <h2 className="font-semibold text-white">知識圖譜</h2>
               <p className="text-white/50 text-sm">課程關聯視覺化，完成後可接續的課程</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
+          </Link>
+          {/* 殺手 #20：劇本殺導流 — 品酒學院入口 */}
+          <Link
+            href="/script-murder"
+            className="flex items-center gap-3 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md"
+          >
+            <div className="p-2 rounded-xl bg-amber-500/20">
+              <BookOpen className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">酒局劇本殺</h2>
+              <p className="text-white/50 text-sm">4–8 人秘密角色、投票、懲罰，選劇本開房即玩</p>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: '派對遊樂場 | Cheersin — 你的 AI 派對靈魂伴侶',
     description: '你的 AI 派對靈魂伴侶，多人同樂。懲罰可自訂、不飲酒也能玩。',
     url: `${BASE}/games`,
-    images: [{ url: `${BASE}/icons/icon-512.png`, width: 512, height: 512, alt: 'Cheersin 派對遊樂場' }],
+    images: [{ url: `${BASE}/sizes/icon_512_gold.png`, width: 512, height: 512, alt: 'Cheersin 沁飲 派對遊樂場' }],
   },
 }
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 /** 94 證書 OG 預覽：分享證書連結時顯示的預覽圖 */
-export const alt = '課程完成證書 | Cheersin 品酒學院'
+export const alt = '課程完成證書 | 沁飲 Cheersin 品酒學院'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -26,10 +26,10 @@ export default function CertificateOpenGraphImage() {
           課程完成證書
         </div>
         <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)', textAlign: 'center', maxWidth: 900 }}>
-          恭喜完成 Cheersin 品酒學院課程
+          恭喜完成 沁飲 Cheersin 品酒學院課程
         </div>
         <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', marginTop: 32 }}>
-          Cheersin 品酒學院 · 葡萄酒 · 威士忌 · 清酒 · 精釀啤酒
+          沁飲 Cheersin 品酒學院 · 葡萄酒 · 威士忌 · 清酒 · 精釀啤酒
         </div>
       </div>
     ),

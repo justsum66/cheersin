@@ -229,11 +229,7 @@ export const GAMES_META: GameMeta[] = [
   { id: 'emoji-puzzle', name: '表情拼圖', description: '看Emoji猜答案，考驗你的想像力！', icon: Smile, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 12, searchKeys: 'biaoqing pin tu emoji puzzle', twoPlayerFriendly: true, rulesSummary: '看Emoji組合猜答案。' },
   { id: 'memory-match', name: '記憶配對', description: '翻牌配對遊戲，考驗你的記憶力！', icon: Brain, color: 'primary', players: '2-4 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'jiyi peidui memory match', twoPlayerFriendly: true, rulesSummary: '翻牌配對考驗記憶。' },
   { id: 'rhythm-master', name: '節奏大師', description: '測試你的節奏感，重現聽到的節奏！', icon: Music, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'jiezou dashi rhythm master', rulesSummary: '節奏記憶重現遊戲。' },
-  { id: 'drinking-fist', name: '酒拳', description: '亞洲常見猜拳喝酒，二人即可！', icon: HandMetal, color: 'primary', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'jiuquan drinking fist', twoPlayerFriendly: true, rulesSummary: '猜拳輸的人喝。' },
-  { id: 'captain-hook', name: '虎克船長', description: '名字接龍類，港台大陸熟悉的派對遊戲。', icon: List, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: 'hukechuanzhang captain hook', rulesSummary: '輪流喊下一位名字，錯或慢喝。' },
-  { id: 'count-seven', name: '數七', description: '遇 7 或倍數拍手，日韓新加坡常見！', icon: Ban, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 5, searchKeys: 'shuqi count seven', twoPlayerFriendly: true, rulesSummary: '遇 7 倍數拍手，說錯喝。' },
-  { id: 'ultimate-code', name: '終極密碼', description: '數字範圍猜謎，泛亞派對熱門。', icon: AlertTriangle, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'zhongjimima ultimate code', twoPlayerFriendly: true, rulesSummary: '猜數字縮小範圍，踩到炸彈喝。' },
-  { id: 'support-front', name: '支援前線', description: '隨機抽人／抽籤，派對熱門。', icon: Sparkles, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'zhiyuan qianxian support front', twoPlayerFriendly: true, rulesSummary: '隨機抽籤選出一位。' },
+  /* R2-011 去換皮：drinking-fist→finger-guessing、captain-hook→name-train、count-seven→buzz-game、ultimate-code→number-bomb、support-front→random-picker 已移除，保留有獨特機制者 */
 ]
 
 /** P2-271：遊戲 ID → 分類對照，使用 Map 以獲得更穩定的查找性能（大數據量下優於 Object） */
@@ -267,7 +263,6 @@ const GAME_CATEGORY_MAP = new Map<string, GameCategory>([
   ['tic-tac-shot', 'facetoface'], ['compliment-battle', 'party'], ['cocktail-mix', 'party'],
   ['reverse-say', 'reaction'], ['riddle-guess', 'party'], ['story-chain', 'party'],
   ['emoji-puzzle', 'party'], ['memory-match', 'party'], ['rhythm-master', 'party'],
-  ['drinking-fist', 'other'], ['captain-hook', 'party'], ['count-seven', 'reaction'], ['ultimate-code', 'guess'], ['support-front', 'draw'],
 ])
 
 /** 依遊戲 ID 取得分類；相容舊的 Record 用法，對外保留 getter */

@@ -583,9 +583,11 @@ export function LearnCourseContent({
           {progressPct > 0 && (
             <div className="mt-3 flex items-center gap-2 min-w-0" aria-live="polite" aria-atomic="true" aria-label={`已完成 ${progressPct}%`}>
               <div className="flex-1 min-w-0 h-2 rounded-full bg-white/10 overflow-hidden">
-                <div
+                <motion.div
                   className="h-full rounded-full bg-primary-500 progress-bar-fill"
-                  style={{ width: `${progressPct}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
               <span className="text-sm text-primary-400 font-medium tabular-nums shrink-0">已完成 {progressPct}%</span>
@@ -910,7 +912,8 @@ export function LearnCourseContent({
                                   disabled={showCorrect}
                                   whileHover={!showCorrect ? { scale: 1.05, y: -2 } : {}}
                                   whileTap={!showCorrect ? { scale: 0.95 } : {}}
-                                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                                  animate={showCorrect ? (chosen ? { scale: [1, 1.08, 1.05] } : wrong ? { x: [0, -8, 8, -6, 6, 0] } : {}) : {}}
+                                  transition={showCorrect && (chosen || wrong) ? { duration: chosen ? 0.35 : 0.45, ease: chosen ? 'easeOut' : 'easeInOut' } : { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
                                   className={`min-h-[48px] min-w-[48px] px-3 py-2 rounded-lg text-sm border transition-all games-focus-ring ${
                                     chosen
                                       ? 'bg-primary-500/30 border-primary-500 text-primary-300 ring-2 ring-primary-500/50 shadow-lg'

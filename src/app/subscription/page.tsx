@@ -216,7 +216,8 @@ export default function SubscriptionPage() {
                   ))}
                 </ul>
 
-                {/* UX_LAYOUT_200 #132：付款按鈕信任感（鎖/安全） */}
+                {/* UX_LAYOUT_200 #132：付款按鈕信任感（鎖/安全）；PayPal 區塊無障礙與 loading 狀態 */}
+                <div role="region" aria-label={`${plan.name} PayPal 訂閱`} aria-busy={processingPlan === plan.id}>
                 <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-3" aria-hidden>
                   <Lock className="w-3.5 h-3.5" />
                   安全付款 · 由 PayPal 處理
@@ -246,6 +247,7 @@ export default function SubscriptionPage() {
                     '立即訂閱'
                   )}
                 </PayPalButton>
+                </div>
               </motion.div>
             ))}
           </div>

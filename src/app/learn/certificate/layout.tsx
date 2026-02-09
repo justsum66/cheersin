@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_TW',
     url: `${BASE}/learn/certificate`,
-    images: [{ url: '/icons/icon-512.png', width: 512, height: 512, alt: 'Cheersin 品酒學院證書' }],
+    images: [{ url: '/sizes/icon_512_gold.png', width: 512, height: 512, alt: 'Cheersin 沁飲 品酒學院證書' }],
   },
   twitter: {
     card: 'summary',

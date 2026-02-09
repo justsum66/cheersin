@@ -30,6 +30,11 @@ export default class GameErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[GameErrorBoundary]', error, errorInfo.componentStack)
+    if (typeof window !== 'undefined') {
+      import('@sentry/nextjs').then((Sentry) => {
+        Sentry.captureException?.(error, { extra: { errorBoundary: 'GameErrorBoundary', gameName: this.props.gameName } })
+      }).catch(() => {})
+    }
   }
 
   handleReset = () => {

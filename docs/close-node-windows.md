@@ -43,5 +43,6 @@ cd C:\Users\paul0\.minimax-agent\projects\3\cheersin
 
 ## 5. 執行 E2E / Build 前建議
 
-- 執行 `npm run test:e2e:critical` 或 `npm run build` 前，建議先關閉多餘的 node（避免埠 3000/3099 衝突或記憶體不足）。
-- 一鍵關閉所有 node：`npm run stop:dev`（專案內已定義 script）。
+- 執行 `npm run test:e2e:critical` 或 `npm run build` 前，**建議先關閉多餘的 node**（避免埠 3000/3099 衝突、記憶體不足或 ECONNRESET）。
+- **一鍵關閉所有 node**：`npm run stop:dev`（專案內已定義 script，Windows 執行 `taskkill /F /IM node.exe`）。
+- 關閉後請重新 `npm run dev` 再進行開發。

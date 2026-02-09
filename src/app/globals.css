@@ -4,23 +4,7 @@
 
 /* P0-013：設計規範單一來源為 src/lib/design-tokens.ts；本檔案 :root 與其對齊，變更時請同步。 */
 
-/* Phase 1 E4.1: 首頁 LCP 優化 - 預加載及字體顯示優化 */
-/* 第一屏關鍵元素優先渲染 */
-.lcp-priority {
-  content-visibility: visible;
-  contain: none;
-}
-
-/* 非第一屏元素延遲渲染 */
-.lcp-defer {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 500px;
-}
-
-/* 字體顯示優化 - 避免 FOIT */
-.font-display-swap {
-  font-display: swap;
-}
+/* R2-002 phase1：移除未使用之 .lcp-priority / .lcp-defer / .font-display-swap（無 tsx 引用），改由 layout/next 字體與 content-visibility 於組件內使用 */
 
 :root {
   /* 品牌色：深酒紅 #8B0000、香檳金 #D4AF37 */
@@ -191,31 +175,7 @@
     }
   }
   /* 任務 70：reduced-motion 由 PageTransition、MagneticButton、Navigation、CookieConsentBanner、ParticleBubbles、AuroraBackground 等組件處理 */
-  /* RWD 13–22：遊戲區字級與排版（第二批） */
-  .games-heading { font-size: var(--text-2xl); }
-  @media (min-width: 768px) { .games-heading { font-size: var(--text-3xl); } }
-  .games-body { font-size: var(--text-base); }
-  @media (min-width: 768px) { .games-body { font-size: var(--text-lg); } }
-  .games-result-text { font-size: var(--text-xl); }
-  @media (min-width: 768px) { .games-result-text { font-size: var(--text-2xl); } }
-  .games-btn-text { font-size: var(--text-base); }
-  @media (min-width: 768px) { .games-btn-text { font-size: var(--text-lg); } }
-  .games-question { line-height: 1.625; }
-  .games-helper { font-size: var(--text-sm); }
-  /* RWD 15：輔助文案 text-sm = 14px，不小於 12px */
-  /* RWD 20：遊戲區中央對齊由 GameWrapper 內層 text-center 提供 */
-  /* RWD 21：重要數字由 tabular-nums 類提供 */
-  /* RWD 22：文案區使用 min-w-0 max-w-full 不固定寬度 */
-  /* 任務 83 / P1-037：觸控目標 ≥44px（Apple HIG / Material）；全站可點擊用 .games-touch-target 或 .min-touch-44 */
-  .games-touch-target { min-height: 48px; min-width: 48px; }
-  .min-touch-44 { min-height: 44px; min-width: 44px; }
-  .games-cta { min-height: 48px; padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
-  .games-btn-group { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  @media (min-width: 768px) { .games-btn-group { gap: 1rem; } }
-  .games-card { padding: 1rem; border-radius: 0.75rem; }
-  @media (min-width: 768px) { .games-card { padding: 1.5rem; } }
-  .games-card-xl { border-radius: 1rem; }
-  .games-input { min-height: 48px; }
+  /* R2-002 Phase2：.games-heading/.games-body/.games-touch-target/.games-btn-group/.games-card 等已遷至 src/components/games/games.css，由 (app)/games/layout 引入 */
   /* 121 響應式：320px–2560px 適配；錨點 #faq 等平滑捲動 */
   html {
     min-width: 320px;
@@ -844,6 +804,30 @@
     box-shadow: 0 10px 28px -4px rgba(139, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 60px -8px rgba(139, 0, 0, 0.7);
     animation: none;
   }
+  /* R2-066：主 CTA 呼吸光暈（微弱脈動） */
+  .hero-cta-glow-pulse {
+    animation: hero-cta-glow-pulse 3s ease-in-out infinite;
+  }
+  @keyframes hero-cta-glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px -4px rgba(139, 0, 0, 0.25); }
+    50% { box-shadow: 0 0 28px -2px rgba(139, 0, 0, 0.4); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-cta-glow-pulse { animation: none; }
+  }
+  /* R2-099：首頁 CTA 區塊背景漸層流動動畫 */
+  .hero-cta-bg-gradient {
+    background: linear-gradient(120deg, rgba(139,0,0,0.08) 0%, rgba(138,43,226,0.06) 35%, rgba(212,175,55,0.08) 70%, rgba(139,0,0,0.06) 100%);
+    background-size: 200% 200%;
+    animation: hero-cta-bg-shift 8s ease-in-out infinite;
+  }
+  @keyframes hero-cta-bg-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-cta-bg-gradient { animation: none; }
+  }
   
   /* Phase 1 A1.3: CTA glow 呼吸動畫 */
   @keyframes cta-glow-pulse {
@@ -867,6 +851,13 @@
     box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.55);
     outline: none;
     outline-offset: 2px;
+  }
+  /* R2-050：表單輸入框 focus 微放大（可選，與 input-glass 並存） */
+  .input-focus-scale {
+    transition: border-color 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out, transform 150ms ease-out;
+  }
+  .input-focus-scale:focus-visible {
+    transform: scale(1.01);
   }
   /* P2 完美像素：placeholder 0.38 略弱於內容層次 */
   .input-glass::placeholder {

@@ -33,11 +33,11 @@ export async function POST(
       const supabase = createServerClient()
       const { data: room, error: roomError } = await supabase
         .from('game_rooms')
-        .select('id, password_hash')
+        .select('id, password_hash, settings')
         .eq('slug', slug)
         .single()
       if (roomError || !room) throw roomError || new Error('Room not found')
-      const roomWithHash = room as { id: string; password_hash?: string | null }
+      const roomWithHash = room as { id: string; password_hash?: string | null; settings?: { max_players?: number } | null }
       if (roomWithHash.password_hash) {
         const provided = typeof body.password === 'string' ? body.password.trim() : ''
         const hash = hashRoomPassword(provided)
@@ -45,12 +45,13 @@ export async function POST(
           return errorResponse(403, 'Invalid password', { message: '房間密碼錯誤' })
         }
       }
+      const maxPlayersForRoom = typeof roomWithHash.settings?.max_players === 'number' ? roomWithHash.settings.max_players : MAX_PLAYERS
       const { data: existingPlayers } = await supabase
         .from('game_room_players')
         .select('id, is_spectator')
         .eq('room_id', room.id)
       const nonSpectatorCount = (existingPlayers ?? []).filter((p) => !(p as { is_spectator?: boolean }).is_spectator).length
-      if (!isSpectator && nonSpectatorCount >= MAX_PLAYERS) {
+      if (!isSpectator && nonSpectatorCount >= maxPlayersForRoom) {
         return errorResponse(400, 'Room full', { message: '房間已滿' })
       }
       const nextIndex = (existingPlayers ?? []).length

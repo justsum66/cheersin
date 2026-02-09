@@ -60,14 +60,19 @@ export function Tabs({ tabs, defaultTab, onChange, className = '', tabListClassN
           </button>
         ))}
       </div>
-      <div
+      {/* R2-061：切換 Tab 時內容淡入 */}
+      <motion.div
         role="tabpanel"
         id={`panel-${activeId}`}
         aria-labelledby={`tab-${activeId}`}
         className="pt-4"
+        key={activeId}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
       >
         {activeTab?.content}
-      </div>
+      </motion.div>
     </div>
   )
 }

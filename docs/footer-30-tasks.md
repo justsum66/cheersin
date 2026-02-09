@@ -36,3 +36,5 @@
 | 30 | 與設計系統 DESIGN_SYSTEM 對齊 | ✅ |
 
 完成即勾選；已實作項已標 ✅。
+
+**首頁單一 Footer（方案 A）**：首頁不再渲染獨立 `<Footer />`，改為在 HomePageClient 內單一 `<footer role="contentinfo">`，合併 CTA、訂閱、網站地圖（產品／體驗／公司／語系）、法律與支援 nav、版權，避免雙 footer 與重複連結。

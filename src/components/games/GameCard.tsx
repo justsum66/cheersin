@@ -9,6 +9,7 @@ import FeatureIcon from '@/components/ui/FeatureIcon'
 import { Badge } from '@/components/ui/Badge'
 import { GAME_DIFFICULTY_LABELS, type GameDifficulty } from '@/config/games.config'
 import { GAMES_CARD_PLAYERS_I18N_KEY } from '@/lib/games-ui-constants'
+import { useTranslation } from '@/contexts/I18nContext'
 
 /** 卡片 hover 邊框漸變發光；顏色與遊戲主色呼應 */
 const colorHoverGlow: Record<string, string> = {
@@ -108,6 +109,7 @@ function StarRow({ rating, onRate, gameId }: { rating?: number; onRate?: (id: st
 
 /** 純展示遊戲卡片，memo 避免 Lobby 篩選/搜尋時全列表 re-render；GAMES_500 #130 減少動畫時已關閉 hover/scale；#112 右鍵選單（收藏／評分／分享） */
 function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLabel, lineClampLines = 2 }: GameCardProps) {
+  const { t } = useTranslation()
   const reducedMotion = useReducedMotion()
   const lineClampClass = lineClampLines === 1 ? 'line-clamp-1' : lineClampLines === 3 ? 'line-clamp-3' : 'line-clamp-2'
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
@@ -197,12 +199,12 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
       {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
       {game.isNew && !game.isPremium && (
         <span className="absolute top-2 right-2 z-10 animate-[pulse_2s_ease-in-out_infinite]">
-          <Badge variant="accent" size="sm">New</Badge>
+          <Badge variant="accent" size="sm">{t('games.new')}</Badge>
         </span>
       )}
       {game.popular && !game.isNew && (
         <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
-          人氣
+          {t('games.popular')}
         </span>
       )}
       {/* GAMES_500 #110：免費試玩（accent）與 PRO 鎖定視覺區分 — 試玩用 accent，PRO 在 learn 課程卡 */}

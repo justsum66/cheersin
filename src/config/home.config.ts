@@ -37,10 +37,11 @@ export const HOME_FEATURES_LABEL = 'Core Features'
 export const FOOTER_DRINK_NOTE = '未滿 18 歲請勿飲酒 · 飲酒過量有害健康'
 export const FOOTER_DRINK_NOTE_BOTTOM = '飲酒過量有害健康'
 
-/** B29/B50：Bento 四卡文案可配置（品牌）；P0-001 圍繞 AI 派對靈魂伴侶 */
+/** B29/B50：Bento 四卡文案可配置（品牌）；P0-001 圍繞 AI 派對靈魂伴侶；#20 劇本殺導流 */
 export const BENTO_CARDS = [
   { id: 'quiz' as const, title: '靈魂酒測', description: '30 秒測出你的命定酒款，AI 精準推薦。', badge: '最受歡迎' },
   { id: 'games' as const, title: '派對遊樂場', description: '你的 AI 派對靈魂伴侶 — 真心話、國王杯；懲罰可自訂，不飲酒也能玩。', badge: undefined },
+  { id: 'script-murder' as const, title: '酒局劇本殺', description: '4–8 人秘密角色、投票、懲罰，選劇本開房即玩。', badge: '新' },
   { id: 'assistant' as const, title: 'AI 侍酒師', description: '幫你選遊戲、依人數推薦、問酒款搭餐，派對組織者。', badge: undefined },
   { id: 'learn' as const, title: '品酒學院', description: '系統化課程，從入門到進階，輕鬆學。', badge: undefined },
 ] as const

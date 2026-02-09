@@ -160,7 +160,18 @@ export default function RiddleGuess() {
             >
               <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-2 text-amber-400">第 {round} 回合</h2>
-                <p className="text-lg mb-4">目前玩家：{currentPlayer}</p>
+                <p className="text-lg mb-4">
+                  目前玩家：
+                  <motion.span
+                    key={currentPlayerIndex}
+                    animate={{ scale: [1, 1.12, 1] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                    className="inline-block ml-1 px-2 py-0.5 rounded-lg bg-amber-500/30 font-semibold"
+                    aria-live="polite"
+                  >
+                    {currentPlayer}
+                  </motion.span>
+                </p>
                 <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg p-6">
                   <Lightbulb className="w-12 h-12 mx-auto mb-4 text-amber-400" />
                   <p className="text-2xl font-bold text-center">&quot;{currentRiddle.riddle}&quot;</p>
@@ -183,14 +194,16 @@ export default function RiddleGuess() {
                 />
                 <div className="flex gap-2 mt-4">
                   {!hintClue && (
-                    <button
+                    <motion.button
                       type="button"
                       onClick={revealHint}
                       className="games-touch-target flex-1 py-3 px-4 rounded-xl bg-amber-500/40 border border-amber-400/50 font-medium text-amber-100 hover:bg-amber-500/50 transition-colors"
                       aria-label="顯示提示（會增加懲罰）"
+                      animate={reducedMotion ? undefined : { rotate: [0, -4, 4, -2, 2, 0] }}
+                      transition={reducedMotion ? undefined : { repeat: Infinity, repeatDelay: 3, duration: 0.5 }}
                     >
                       💡 提示
-                    </button>
+                    </motion.button>
                   )}
                   <button
                     className="games-touch-target flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-white hover:scale-105 transition-transform"

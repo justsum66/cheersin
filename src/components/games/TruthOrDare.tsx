@@ -7,7 +7,7 @@ import { Heart, Flame, SkipForward, RotateCcw, Star, Plus, Trash2 } from 'lucide
 import toast from 'react-hot-toast'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
-import { getTruthPool, getDarePool, type TruthDareItem, type TruthDareLevel } from '@/lib/truth-or-dare'
+import { getTruthPool, getDarePool, fetchExternalTruthDare, type TruthDareItem, type TruthDareLevel } from '@/lib/truth-or-dare'
 import { usePunishment } from './Punishments/PunishmentContext'
 import { LIGHT_PUNISHMENTS } from './Punishments/presets'
 import { useGamesPlayers } from './GamesContext'
@@ -82,9 +82,33 @@ export default function TruthOrDare() {
   const [customDare, setCustomDare] = useState<TruthDareItem[]>(() => loadCustomPools().dare)
   const [customInput, setCustomInput] = useState({ truth: '', dare: '' })
   const [showCustomForm, setShowCustomForm] = useState(false)
+  /** R2-024：外部 API 題庫，mount 時拉取一次並與本地合併 */
+  const [externalTruth, setExternalTruth] = useState<TruthDareItem[]>([])
+  const [externalDare, setExternalDare] = useState<TruthDareItem[]>([])
 
-  const truthPool = useMemo(() => [...getTruthPool(), ...customTruth], [customTruth])
-  const darePool = useMemo(() => [...getDarePool(), ...customDare], [customDare])
+  const truthPool = useMemo(
+    () => [...getTruthPool(), ...customTruth, ...externalTruth],
+    [customTruth, externalTruth]
+  )
+  const darePool = useMemo(
+    () => [...getDarePool(), ...customDare, ...externalDare],
+    [customDare, externalDare]
+  )
+
+  /** R2-024：進入遊戲後拉取外部題庫一次，擴充題目來源 */
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      fetchExternalTruthDare('truth', 'PG13', 10),
+      fetchExternalTruthDare('dare', 'PG13', 10),
+    ]).then(([truth, dare]) => {
+      if (!cancelled) {
+        setExternalTruth(truth)
+        setExternalDare(dare)
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   /** 持久化自訂題目 */
   useEffect(() => {

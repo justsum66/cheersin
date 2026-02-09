@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { useTranslation } from '@/contexts/I18nContext'
 import { ERROR_FORM_HEADING } from '@/config/errors.config'
 import { COPY_TOAST_LOGIN_REDIRECT } from '@/config/copy.config'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: '登入連結不完整，請重新寄送',
@@ -33,6 +34,8 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -117,6 +120,29 @@ export default function LoginPage() {
     setLoginError(null)
     const form = e.currentTarget
     const email = (form.elements.namedItem('email') as HTMLInputElement)?.value ?? ''
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      setLoginError('請完成真人驗證後再登入。')
+      return
+    }
+    if (turnstileToken) {
+      try {
+        const verifyRes = await fetch('/api/auth/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: turnstileToken }),
+        })
+        const verifyData = (await verifyRes.json()) as { success?: boolean }
+        if (!verifyData.success) {
+          setTurnstileToken(null)
+          setTurnstileResetKey((k) => k + 1)
+          setLoginError('驗證失敗，請重新完成驗證後再試。')
+          return
+        }
+      } catch {
+        setLoginError('驗證服務暫時無法使用，請稍後再試。')
+        return
+      }
+    }
     if (supabase) {
       try {
         const limitRes = await fetch(`/api/auth/login-limit?email=${encodeURIComponent(email)}`)
@@ -307,6 +333,11 @@ export default function LoginPage() {
               </label>
               <Link href="/auth/forgot-password" className="text-primary-500 hover:text-primary-400">{t('login.forgotPassword')}</Link>
             </div>
+            <TurnstileWidget
+              onVerify={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              resetKey={turnstileResetKey}
+            />
             <button
               type="submit"
               disabled={loading}

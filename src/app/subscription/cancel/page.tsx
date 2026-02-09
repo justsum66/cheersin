@@ -54,6 +54,17 @@ export default function SubscriptionCancelPage() {
           <Link href="/subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">訂閱管理</Link> 查看。
         </p>
 
+        {/* R2-219：取消後你將失去的 Pro 權益清單（挽留情境） */}
+        <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 text-left" role="region" aria-label="取消後將失去的權益">
+          <p className="text-sm text-white/80 font-medium mb-2">取消後你將失去：</p>
+          <ul className="text-xs text-white/60 space-y-1 list-disc list-inside">
+            <li>無限次數派對遊戲與進階題庫</li>
+            <li>品酒學院完整課程與證書</li>
+            <li>侍酒師 AI 深度對話與推薦</li>
+            <li>專屬優惠與活動優先報名</li>
+          </ul>
+        </div>
+
         {/* P3 挽留：保留方案優惠文案 */}
         <div className="mb-6 p-4 rounded-xl bg-primary-500/10 border border-primary-500/20 text-left">
           <p className="text-sm text-white/90 font-medium flex items-center gap-2 mb-1">

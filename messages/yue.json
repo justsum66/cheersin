@@ -81,7 +81,21 @@
     "enterpriseSubmit": "送出詢價",
     "bookDemo": "預約 Demo",
     "support": "即時客服",
-    "safePayment": "安全付款 · 支援信用卡與 PayPal"
+    "safePayment": "安全付款 · 支援信用卡與 PayPal",
+    "faq0q": "可以隨時取消嗎？",
+    "faq0a": "可以，隨時喺帳戶內「訂閱管理」或「取消訂閱」取消，當期結束後唔會再扣款。詳見服務條款。",
+    "faq1q": "支援邊啲付款方式？",
+    "faq1a": "支援信用卡同 PayPal，安全加密。",
+    "faq2q": "免費試用 7 天會自動扣款嗎？",
+    "faq2a": "試用期結束前可隨時取消，唔會扣款；若繼續使用則依方案喺試用結束日扣款。首月半價等促銷會喺訂閱流程載明。",
+    "faq3q": "唔滿意可以退款嗎？",
+    "faq3a": "首月內唔滿意可申請全額退款，無需理由。7 日內未實質使用付費功能可申請全額退款。詳見服務條款。",
+    "faq4q": "方案係個人用定可商業使用？",
+    "faq4a": "方案供個人與小型活動使用；直播、個人頻道歡迎。商業授權或企業需求請聯絡（定價頁「團隊方案」或 enterprise@cheersin.app）。",
+    "faq5q": "有優惠碼嗎？點用？",
+    "faq5a": "若有優惠碼，會喺結帳頁或定價頁標明適用方案、使用規則與期限。輸入後系統會自動折抵。",
+    "faq6q": "懲罰可自訂、唔飲酒都玩到嗎？",
+    "faq6a": "可以。派對遊戲嘅懲罰可自訂，唔飲酒都可以同樂，適合所有人。遊戲內可選非酒精懲罰。"
   },
   "login": {
     "title": "登入",
@@ -146,7 +160,10 @@
   },
   "games": {
     "filterAll": "全部",
-    "empty": "尚無遊戲"
+    "empty": "尚無遊戲",
+    "playAgain": "再玩一次",
+    "popular": "人氣",
+    "new": "New"
   },
   "learn": {
     "sectionContinue": "繼續學習",
@@ -209,7 +226,19 @@
     "retry": "重試",
     "upgradeToUnlock": "升級方案可解鎖更長編排",
     "offlineHint": "請連線後再試",
-    "emptyState": "尚未生成編排，填寫上方表單後點擊「生成派對流程」"
+    "emptyState": "尚未生成編排，填寫上方表單後點擊「生成派對流程」",
+    "copyPlanLink": "複製方案連結",
+    "copyPlanLinkAria": "複製派對方案連結（含參數）",
+    "generatingLong": "生成中… 若超過 15 秒可取消",
+    "cancel": "取消",
+    "copyPhase": "複製此階段",
+    "copyPhaseAria": "複製此階段文字",
+    "moodLabel": "氣氛偏好",
+    "moodRelaxed": "輕鬆",
+    "moodIntense": "刺激",
+    "moodMixed": "混合",
+    "downloadImage": "下載圖片",
+    "downloadImageAria": "將編排結果下載為圖片"
   },
   "status": {
     "title": "服務連線狀態（即時）",

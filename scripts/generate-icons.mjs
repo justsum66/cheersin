@@ -1,5 +1,5 @@
 /**
- * 從 public/logo.png 產生 favicon 與 PWA 圖示。
+ * 從 public/logo_monochrome_gold.png 產生 favicon 與 PWA 圖示（可選，全站已改用 public/sizes/ 預生成圖）。
  * 需安裝 sharp：npm i -D sharp
  * 執行：node scripts/generate-icons.mjs
  */
@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 const publicDir = path.join(root, 'public')
-const logoPath = path.join(publicDir, 'logo.png')
+const logoPath = path.join(publicDir, 'logo_monochrome_gold.png')
 const iconsDir = path.join(publicDir, 'icons')
 
 const sizes = [
@@ -29,7 +29,7 @@ async function main() {
     process.exit(1)
   }
   if (!fs.existsSync(logoPath)) {
-    console.warn('Missing public/logo.png')
+    console.warn('Missing public/logo_monochrome_gold.png')
     process.exit(1)
   }
   if (!fs.existsSync(iconsDir)) {

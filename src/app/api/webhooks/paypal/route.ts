@@ -423,6 +423,7 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
 
 // Main webhook handler；EXPERT_60 P1：冪等 — 已處理 event_id 則 return 200 不重複寫入
 export async function POST(request: NextRequest) {
+  const startMs = Date.now()
   const requestId = request.headers.get('x-request-id') ?? undefined
   const body = await request.text()
   const headers = request.headers
@@ -480,9 +481,19 @@ export async function POST(request: NextRequest) {
     }
 
     await handlePayPalEvent(event, requestId)
+    const durationMs = Date.now() - startMs
+    logApiWarn('webhooks/paypal', `Event processed`, { requestId, durationMs })
     return NextResponse.json({ received: true }, { status: 200 })
   } catch (error) {
-    logApiError('webhooks/paypal', error, { action: 'handle-event', isP0: true, requestId })
+    const durationMs = Date.now() - startMs
+    let eventType: string | undefined
+    try {
+      const parsed = JSON.parse(body) as { event_type?: string }
+      eventType = typeof parsed?.event_type === 'string' ? parsed.event_type : undefined
+    } catch {
+      eventType = undefined
+    }
+    logApiError('webhooks/paypal', error, { action: 'handle-event', isP0: true, requestId, durationMs, eventType })
     return errorResponse(500, 'WEBHOOK_HANDLER_FAILED', { message: 'Webhook handler failed' })
   }
 }

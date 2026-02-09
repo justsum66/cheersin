@@ -87,15 +87,17 @@ describe('Games key path smoke', () => {
 
   it('Trivia shows result area after completing all questions', async () => {
     render(wrap(Trivia))
-    for (let i = 0; i < 8; i++) {
-      const firstOption = screen.getByRole('button', { name: /選項 1：/ })
+    // Trivia 預設 8 題；答題後 380ms + 1500ms 才切換下一題或結果，故每次等 2s
+    for (let i = 0; i < 10; i++) {
+      const firstOption = screen.queryByRole('button', { name: /選項 1：/ })
+      if (!firstOption) break
       fireEvent.click(firstOption)
-      await new Promise((r) => setTimeout(r, 1600))
+      await new Promise((r) => setTimeout(r, 2100))
     }
     await waitFor(() => {
       expect(screen.getByTestId('trivia-result')).toBeInTheDocument()
-    }, { timeout: 3000 })
-  }, 25000)
+    }, { timeout: 6000 })
+  }, 40000)
 
   it('LiarDice renders and roll button works', async () => {
     render(wrap(LiarDice))

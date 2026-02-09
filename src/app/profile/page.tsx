@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, Reorder } from 'framer-motion'
+import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import {
     User,
@@ -299,17 +299,31 @@ export default function ProfilePage() {
             <div className="max-w-6xl xl:max-w-[1440px] mx-auto relative z-10">
                 {/* E70 編輯模式：頂部「編輯」按鈕切換 */}
                 <div className="flex justify-end mb-4">
-                    <button
+                    <motion.button
                         type="button"
                         onClick={() => setEditMode((v) => !v)}
                         className="flex items-center gap-2 min-h-[48px] px-4 rounded-xl text-sm font-medium border border-white/20 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors games-focus-ring"
                         aria-pressed={editMode}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
                     >
                         <Pencil className="w-4 h-4" />
-                        {editMode ? '完成' : '編輯'}
-                    </button>
+                        <AnimatePresence mode="wait">
+                            <motion.span key={editMode ? 'done' : 'edit'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                                {editMode ? '完成' : '編輯'}
+                            </motion.span>
+                        </AnimatePresence>
+                    </motion.button>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={editMode ? 'edit' : 'view'}
+                        initial={{ opacity: 0.92 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0.92 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+                    >
 
                     {/* Sidebar / Identity Card */}
                     <div className="lg:col-span-1 space-y-6">
@@ -776,7 +790,8 @@ export default function ProfilePage() {
                         </motion.div>
 
                     </div>
-                </div>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </main>
     )

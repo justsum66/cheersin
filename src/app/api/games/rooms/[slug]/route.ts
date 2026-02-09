@@ -20,8 +20,9 @@ export async function GET(
         slug: string
         created_at: string
         expires_at: string | null
+        host_id: string | null
         password_hash?: string | null
-        settings?: { anonymousMode?: boolean } | null
+        settings?: { anonymousMode?: boolean; max_players?: number; partyRoom?: boolean; scriptId?: string; scriptRoom?: boolean } | null
         game_room_players: Array<{
           id: string
           display_name: string
@@ -32,22 +33,28 @@ export async function GET(
       }
       const { data: roomRow, error: roomError } = await supabase
         .from('game_rooms')
-        .select('id, slug, created_at, expires_at, password_hash, settings, game_room_players(id, display_name, order_index, joined_at, is_spectator)')
+        .select('id, slug, created_at, expires_at, host_id, password_hash, settings, game_room_players(id, display_name, order_index, joined_at, is_spectator)')
         .eq('slug', slug)
         .single()
       if (roomError || !roomRow) throw roomError || new Error('Room not found')
       const room = roomRow as RoomRow
       const players = room.game_room_players ?? []
       const sortedPlayers = [...players].sort((a, b) => a.order_index - b.order_index)
-      const anonymousMode = !!(room.settings as { anonymousMode?: boolean } | null)?.anonymousMode
+      const settings = (room.settings as { anonymousMode?: boolean; max_players?: number; scriptId?: string; scriptRoom?: boolean } | null) ?? {}
+      const anonymousMode = !!settings.anonymousMode
+      const maxPlayers = typeof settings.max_players === 'number' ? settings.max_players : 12
       return NextResponse.json({
         room: {
           id: room.id,
           slug: room.slug,
+          hostId: room.host_id ?? null,
           createdAt: room.created_at,
           expiresAt: room.expires_at,
           hasPassword: !!room.password_hash,
           anonymousMode,
+          maxPlayers,
+          scriptId: settings.scriptId ?? null,
+          scriptRoom: !!settings.scriptRoom,
         },
         players: sortedPlayers.map((p) => ({
           id: p.id,

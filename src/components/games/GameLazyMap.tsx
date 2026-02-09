@@ -117,11 +117,7 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'emoji-puzzle': () => import(/* webpackChunkName: "games-party" */ './EmojiPuzzle'),
   'memory-match': () => import(/* webpackChunkName: "games-party" */ './MemoryMatch'),
   'rhythm-master': () => import(/* webpackChunkName: "games-party" */ './RhythmMaster'),
-  'drinking-fist': () => import(/* webpackChunkName: "games-other" */ './FingerGuessing'),
-  'captain-hook': () => import(/* webpackChunkName: "games-party" */ './NameTrain'),
-  'count-seven': () => import(/* webpackChunkName: "games-reaction" */ './BuzzGame'),
-  'ultimate-code': () => import(/* webpackChunkName: "games-guess" */ './NumberBomb'),
-  'support-front': () => import(/* webpackChunkName: "games-draw" */ './RandomPicker'),
+  /* R2-011 去換皮：drinking-fist/captain-hook/count-seven/ultimate-code/support-front 已移除，與 finger-guessing/name-train/buzz-game/number-bomb/random-picker 共用組件 */
 }
 
 /** React.lazy 遊戲組件對照表：選中時才載入，減少首屏 bundle */

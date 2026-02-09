@@ -19,6 +19,8 @@ import {
   Flag,
   SkipForward,
   RotateCw,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import {
   getPassPhoneEnabled,
@@ -40,6 +42,7 @@ import {
   REPLAY_UI_DISPLAY_COUNT,
 } from './GameStateProvider'
 import { useGamePause } from './GameTimerProvider'
+import { useGameSound } from './GameSoundProvider'
 import type { SwitchGameItem } from './GameWrapperTypes'
 
 export interface GameWrapperHeaderProps {
@@ -170,6 +173,7 @@ export default function GameWrapperHeader({
   }, [passPhone])
 
   const passEnabled = passPhone?.enabled ?? false
+  const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useGameSound() ?? { enabled: true, setEnabled: () => {} }
 
   const handleShare = useCallback(() => {
     setShowSettingsMenu(false)
@@ -264,6 +268,17 @@ export default function GameWrapperHeader({
                 className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[#0a0a1a] border border-white/10 p-2 shadow-xl z-20"
                 onMouseDown={(e) => e.preventDefault()}
               >
+                <button
+                  type="button"
+                  onClick={() => { setSoundEnabled(!soundEnabled); setShowSettingsMenu(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] min-w-[48px] items-center games-focus-ring"
+                  aria-label={soundEnabled ? '關閉音效' : '開啟音效'}
+                >
+                  <motion.span key={soundEnabled ? 'on' : 'off'} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                    {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  </motion.span>
+                  {soundEnabled ? '音效開' : '音效關'}
+                </button>
                 <button
                   type="button"
                   onClick={() => { onToggleFullscreen(); setShowSettingsMenu(false); }}

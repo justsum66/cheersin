@@ -36,7 +36,7 @@ export default async function LearnCourseOpenGraphImage({ params }: Props) {
         <div style={{ fontSize: 22, color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: 900 }}>
           {description}
         </div>
-        <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', marginTop: 24 }}>Cheersin 酒類學堂</div>
+        <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', marginTop: 24 }}>沁飲 Cheersin 酒類學堂</div>
       </div>
     ),
     { ...size }
