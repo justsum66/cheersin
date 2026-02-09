@@ -7,7 +7,7 @@
 | 級別 | 完成數 | 總數 | 完成率 | 說明 |
 |------|--------|------|--------|------|
 | **P0** | **30** | **30** | **100%** | R2-001～R2-030 全數實作（見 p0-tasks-done.md）；含 R2-022/023/024/025/028 |
-| **P1** | **93** | **200** | **46.5%** | 本輪 +4：042/056/063/070；派對房 5 項優化；PayPal 5 項優化 |
+| **P1** | **133** | **200** | **66.5%** | 本輪 +4：R2-065/098/128/130；另本批 DC-04/06、PR-16、SM-16、Supabase Advisors 修復 |
 | **P2** | **0** | **170** | **0%** | 未執行 R2-231～R2-370 |
 | **P3** | **0** | **100** | **0%** | 未執行 R2-371～R2-500 |
 
@@ -26,7 +26,7 @@
 ## 公式
 
 - **P0 完成率** = 30 / 30 = **100%**
-- **P1 完成率** = 93 / 200 = **46.5%**
+- **P1 完成率** = 100 / 200 = **50%**
 - **P2 完成率** = 0 / 170 = **0%**
 - **P3 完成率** = 0 / 100 = **0%**
 
@@ -42,3 +42,8 @@
 - **本輪 PayPal 5 項**：Webhook 錯誤 log 帶 eventType、api-error-log 支援 eventType、訂閱成功頁下次扣款日 motion、訂閱頁 PayPal 區 aria-busy、capture 已回傳 current_period_end
 - **本批**：Supabase 9 表 RLS 政策、4 支外鍵 index；Party DJ #1/#17/#19/#20；supabase-advisors-fixes 更新
 - **60 任務本批**：Party DJ E2E、#16/#25/#26/#29/#30；i18n partyDj、games、定價 FAQ；auth_rls_initplan；R2-002 phase2、R2-024 ToD API；docs/60-tasks-batch.md
+- **本批下一批計畫**：DC-04 script-murder 改用 useGameRoom、DC-06 劇本殺 useGameState、PR-16 派對房 Lobby/Active/Ended、SM-16 角色卡無障礙、Supabase 31 issues（auth_rls_initplan + game_states RLS + wine_favorites 合併）、P1 R2-065/098/128/130
+- **本輪計畫執行**：Phase 1 專家評分報告 + 檢查清單（EXPERT_AUDIT_REPORT.md、EXPERT_CHECKLIST.md）；Phase 2 Supabase（ai_feedback RLS、profiles 重複索引、rls-policies-audit、supabase-api-table-matrix、SB-01/02/03/05/17/19/23）；Pinecone RAG 可配置（topK/namespace/scoreMin）、Admin 同步狀態提示、data/README RAG 說明；Groq 模型可配置（GROQ_CHAT_MODEL/VISION）、429 跳過重試、timeout、.env.example；Phase 3 DC-09/DC-15、PR-13 空狀態 i18n、room-state-hooks-usage.md
+- **本批任務**：DC-10/DC-11 按鈕與 loading 骨架、PR-14/PR-15 房內即將開始與 glass、SM-14 join/script-murder stripHtml、I18N-04 登入/忘記密碼/設定密碼頁 i18n（含 set-password 收尾 auth.updating/backToProfile）
+- **多軌道計畫本輪**：DC-12/DC-13 型別集中與刪除重複、Bento 動效（perspective）、I18N-05 games.*、FOLDER folder-cleanup-15-tasks.md、PR-18 Realtime、SM-03 離開房間/leave API、SM-04/SM-11 持久化與 Realtime、Party DJ 列印樣式、SM-19 劇本 locked 權限提示、PP-14 型別集中
+- **本輪 10 項 P1 與修復**：Runtime 修復（party-room/script-murder setError 字串化）、I18N-07 錯誤/not-found 全 locale、派對房加入房間流程（join API + myPlayerRowId + 離開按鈕）、R2-031 派對房加入按鈕 whileTap、R2-033/036/038 已有（GameCard hover、Skeleton shimmer、Toast 動畫）、R2-065 FlipCard 元件、R2-098 Typewriter 元件、R2-130 全員乾杯已有、品牌驗證（favicon/logo/OG/SW）

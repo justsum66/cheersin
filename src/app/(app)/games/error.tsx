@@ -14,7 +14,7 @@ export default function GamesError({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    console.error('[Games]', error?.message ?? error)
+    console.error('[Games]', error instanceof Error ? error.message : String(error))
   }, [error])
 
   return (

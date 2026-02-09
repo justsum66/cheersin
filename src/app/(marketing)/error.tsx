@@ -19,7 +19,7 @@ export default function MarketingError({
     if (process.env.NODE_ENV === 'development' && isChunkError) {
       console.warn('Chunk load error (dev). Fix: run "npm run clean" then "npm run dev", or use "npm run dev:turbo" only if needed.')
     } else {
-      console.error('Marketing error:', error?.message ?? error)
+      console.error('Marketing error:', error instanceof Error ? error.message : String(error))
     }
   }, [error, isChunkError])
 

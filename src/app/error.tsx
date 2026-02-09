@@ -14,7 +14,7 @@ export default function Error({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    console.error('App error:', error?.message ?? error)
+    console.error('App error:', error instanceof Error ? error.message : String(error))
   }, [error])
 
   return (
