@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, X, Award } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
+import { useTriviaQuestions } from '@/hooks/useTriviaQuestions'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -70,30 +72,31 @@ const FILTER_OPTIONS: { value: DifficultyFilter; label: string }[] = [
 
 const TIMER_OPTIONS = [10, 15, 20] as const
 
-/** P2-388 / Trivia API：可選從 API 取得題目（需 TRIVIA_API_KEY），否則用本地題庫 */
-function useTriviaQuestions(count: number, difficultyFilter: DifficultyFilter, refetchKey: number) {
-  const [questions, setQuestions] = useState<TriviaQ[]>(() => shuffleQuestions(count, difficultyFilter))
-  useEffect(() => {
-    fetch(`/api/trivia/questions?limit=${count}&difficulty=${difficultyFilter === 'all' ? '' : difficultyFilter}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const list = data?.questions
-        if (Array.isArray(list) && list.length >= 3) {
-          setQuestions(list.slice(0, count))
-        } else {
-          setQuestions(shuffleQuestions(count, difficultyFilter))
-        }
-      })
-      .catch(() => setQuestions(shuffleQuestions(count, difficultyFilter)))
-  }, [count, difficultyFilter, refetchKey])
-  return questions
+/** R2-025：使用 useTriviaQuestions 取得題目，API 失敗或不足時 fallback 本地題庫 */
+function useTriviaQuestionsWithFallback(count: number, difficultyFilter: DifficultyFilter, refetchKey: number) {
+  const difficultyParam = difficultyFilter === 'all' ? '' : difficultyFilter
+  const { data, isLoading, isFetching } = useTriviaQuestions(count, difficultyParam, refetchKey)
+  const questions: TriviaQ[] = useMemo(() => {
+    const list = data?.questions
+    if (Array.isArray(list) && list.length >= 3) {
+      return list.slice(0, count).map((item) => ({
+        q: item.q,
+        a: item.a,
+        correct: item.correct,
+        difficulty: (item.difficulty as Difficulty) || 'medium',
+      }))
+    }
+    return shuffleQuestions(count, difficultyFilter)
+  }, [data, count, difficultyFilter])
+  return { questions, isLoading: isLoading || isFetching }
 }
 
 export default function Trivia() {
+  const { t } = useTranslation()
   const { play } = useGameSound()
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all')
   const [refetchKey, setRefetchKey] = useState(0)
-  const QUESTIONS = useTriviaQuestions(8, difficultyFilter, refetchKey)
+  const { questions: QUESTIONS } = useTriviaQuestionsWithFallback(8, difficultyFilter, refetchKey)
   const [current, setCurrent] = useState(0)
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
@@ -320,8 +323,8 @@ export default function Trivia() {
                         </button>
                     ))}
                 </div>
-                <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label="再玩一次" data-i18n-key="games.playAgain" data-testid="trivia-restart">
-                    再玩一次
+                <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label={t('games.playAgain')} data-testid="trivia-restart">
+                    {t('games.playAgain')}
                 </button>
             </div>
         )

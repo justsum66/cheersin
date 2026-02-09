@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@/lib/celebration', () => ({ fireFullscreenConfetti: vi.fn() }))
 vi.mock('@/hooks/useGameSound', () => ({ useGameSound: () => ({ play: vi.fn() }) }))
 import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { GameSessionProvider } from '../GameSessionProvider'
 import Roulette from '../Roulette'
 import Dice from '../Dice'
@@ -27,11 +28,15 @@ import WhoMostLikely from '../WhoMostLikely'
 
 const defaultPlayers = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
+const testQueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
 function wrap(Component: React.ComponentType) {
   return (
-    <GameSessionProvider players={defaultPlayers}>
-      <Component />
-    </GameSessionProvider>
+    <QueryClientProvider client={testQueryClient}>
+      <GameSessionProvider players={defaultPlayers}>
+        <Component />
+      </GameSessionProvider>
+    </QueryClientProvider>
   )
 }
 

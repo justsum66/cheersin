@@ -20,8 +20,15 @@ import { CHAT_FALLBACK_ORDER } from '@/config/chat.config'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { persistChatHistory } from '@/lib/chat-history-persist'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { hasUpstashRedis, checkRateLimitUpstash } from '@/lib/rate-limit-upstash'
 import { getLongCached, setLongCached, shouldLongCache } from '@/lib/chat-response-cache'
 import { getGamesListForPrompt } from '@/lib/games-for-ai'
+import {
+  isCocktailIntent,
+  extractCocktailSearchQuery,
+  searchCocktails,
+  formatCocktailsForPrompt,
+} from '@/lib/cocktaildb'
 
 const NAMESPACE_KNOWLEDGE = 'knowledge'
 const NAMESPACE_WINES = 'wines'
@@ -262,14 +269,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    /** EXPERT_60 P2：依 tier 不同 limit；前端可傳 subscriptionTier（來自 useSubscription） */
+    /** EXPERT_60 P2：依 tier 不同 limit；R2-028：有 Upstash Redis 時用 Redis 限流（多實例一致） */
     const limitPerMin = getRateLimitPerMin(subscriptionTier)
     const clientIp = getClientIp(request.headers)
-    const rateLimitResult = checkRateLimit(`chat:${clientIp}`, {
-      windowMs: 60000,
-      max: limitPerMin
-    })
-    
+    const tier = subscriptionTier === 'basic' || subscriptionTier === 'premium' ? 'pro' as const : 'free' as const
+    const rateLimitResult = hasUpstashRedis()
+      ? (await checkRateLimitUpstash(`chat:${clientIp}`, { tier })) ?? checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, max: limitPerMin })
+      : checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, max: limitPerMin })
+
     if (!rateLimitResult.success) {
       return NextResponse.json(
         {
@@ -300,15 +307,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
+    const lastUserStr = typeof lastUser === 'string' ? lastUser : ''
+
     const userContext: SommelierUserContext = {
       ...rawContext,
       recentTurns: last5Turns?.slice(-10)?.slice(-5),
       gamesListForPrompt: getGamesListForPrompt(),
     }
+    /** R2-022：用戶問調酒時呼叫 TheCocktailDB 並注入題材 */
+    if (lastUserStr && isCocktailIntent(lastUserStr)) {
+      try {
+        const query = extractCocktailSearchQuery(lastUserStr)
+        const cocktails = await searchCocktails(query)
+        if (cocktails.length > 0) {
+          userContext.cocktailContext = formatCocktailsForPrompt(cocktails)
+        }
+      } catch {
+        /* 調酒 API 失敗不影響主流程 */
+      }
+    }
     const contextWithRag = await enrichContextWithRag(messages, userContext)
     const sources = contextWithRag?.ragSources?.map((s) => ({ index: s.index, source: s.source })) ?? []
-    const lastUser = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
-    const lastUserStr = typeof lastUser === 'string' ? lastUser : ''
 
     const startMs = Date.now()
 
