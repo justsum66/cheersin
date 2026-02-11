@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, VolumeX, Loader2 } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 interface PronunciationButtonProps {
   text: string
@@ -73,7 +74,7 @@ export function PronunciationButton({
         throw new Error('Speech synthesis not supported')
       }
     } catch (e) {
-      console.error('Pronunciation failed:', e)
+      logger.error('Pronunciation failed', { err: e instanceof Error ? e.message : String(e) })
       setError(true)
       setIsLoading(false)
     }

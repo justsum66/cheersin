@@ -8,6 +8,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 interface ErrorFallbackProps {
   error: Error
@@ -16,8 +17,7 @@ interface ErrorFallbackProps {
 
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   useEffect(() => {
-    // 記錄錯誤到 console
-    console.error('Error boundary caught:', error)
+    logger.error('Error boundary caught', { message: error.message })
     
     // 可選：發送錯誤到 analytics
     try {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { logger } from '@/lib/logger'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Mic, Volume2, Play, User, Award, RotateCcw } from 'lucide-react'
@@ -81,7 +82,7 @@ export default function SoundImitate() {
       setTimeLeft(10)
       play('click')
     } catch (error) {
-      console.error('錄音失敗:', error)
+      logger.error('錄音失敗', { err: error instanceof Error ? error.message : String(error) })
       alert('無法訪問麥克風，請檢查權限設置')
     }
   }

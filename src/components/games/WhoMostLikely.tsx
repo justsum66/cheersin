@@ -8,6 +8,7 @@ import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
+import { logger } from '@/lib/logger'
 import {
   getQuestionsByCategory,
   type WhoMostLikelyCategory,
@@ -303,7 +304,7 @@ export default function WhoMostLikely() {
                   type="button"
                   onClick={() => {
                     const p = navigator.share?.({ title: '誰最可能', text: getShareText() })
-                    if (p) p.catch((err: unknown) => { console.error('[WhoMostLikely] share failed', err) })
+                    if (p) p.catch((err: unknown) => { logger.error('[WhoMostLikely] share failed', { err: err instanceof Error ? err.message : String(err) }) })
                   }}
                   className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white/90 text-sm font-medium inline-flex items-center gap-2 games-focus-ring"
                 >

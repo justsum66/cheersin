@@ -5,8 +5,8 @@ import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
 import { logger } from '@/lib/logger'
 
-/** Q-05 Quiz 錯誤態 — DEDUP #7 使用 PageErrorContent 統一版面；I18N-07 t(error.*) */
-export default function QuizError({
+/** SM-60：劇本殺頁錯誤邊界 — 使用 PageErrorContent 統一版面；i18n error.scriptMurder* */
+export default function ScriptMurderError({
   error,
   reset,
 }: {
@@ -15,18 +15,18 @@ export default function QuizError({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    logger.error('[Quiz]', { message: error instanceof Error ? error.message : String(error) })
+    logger.error('[ScriptMurder]', { message: error instanceof Error ? error.message : String(error) })
   }, [error])
 
   return (
     <PageErrorContent
-      title={t('error.quizTitle')}
-      description={t('error.quizDescription')}
+      title={t('error.scriptMurderTitle')}
+      description={t('error.scriptMurderDescription')}
       onRetry={reset}
       retryLabel={t('error.retry')}
       links={[
         { href: '/', label: t('notFound.back') },
-        { href: '/quiz', label: t('nav.quiz') },
+        { href: '/script-murder', label: t('scriptMurder.title') },
       ]}
     />
   )

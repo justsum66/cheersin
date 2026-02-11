@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { PayPalButton } from '@/components/PayPalButton';
 import { getErrorMessage } from '@/lib/api-response';
 import ResubscribeBanner from '@/components/ResubscribeBanner';
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface Plan {
   id: string;
@@ -23,6 +24,7 @@ interface Plan {
 }
 
 export default function SubscriptionPage() {
+  const { t } = useTranslation()
   const searchParams = useSearchParams();
   const planParam = searchParams.get('plan'); // D1：從定價頁帶入 basic | premium
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -31,28 +33,17 @@ export default function SubscriptionPage() {
   const [promoCode, setPromoCode] = useState('');
   const [promoValid, setPromoValid] = useState<boolean | null>(null);
   const [promoChecking, setPromoChecking] = useState(false);
+  /** R2-210：訂閱管理 — 當前方案、下次扣款日 */
+  const [currentSubscription, setCurrentSubscription] = useState<{ tier: string; current_period_end: string | null } | null>(null);
   const planRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
-  /** D1：定價頁帶 plan 時，載入後捲至對應方案卡片 */
-  useEffect(() => {
-    if (loading || !planParam || plans.length === 0) return;
-    const el = planRefs.current[planParam];
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [loading, planParam, plans.length]);
-
   /** E53：訂閱 API 逾時 30s；失敗時顯示「請稍後再試」 */
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const response = await fetchWithTimeout('/api/subscription', { timeoutMs: 30000 });
       if (response.status === 503) {
         setPlans([]);
-        toast.error('訂閱服務暫不可用，請稍後再試或聯繫客服。');
+        toast.error(t('subscription.subscriptionUnavailable'));
         try {
           fetch('/api/analytics', {
             method: 'POST',
@@ -71,6 +62,14 @@ export default function SubscriptionPage() {
       }
       const data = await response.json();
       setPlans(data.plans ?? []);
+      if (data.subscription && typeof data.subscription === 'object') {
+        setCurrentSubscription({
+          tier: data.subscription.tier ?? 'free',
+          current_period_end: data.subscription.current_period_end ?? null,
+        });
+      } else {
+        setCurrentSubscription(null);
+      }
     } catch (error) {
       try {
         fetch('/api/analytics', {
@@ -83,7 +82,20 @@ export default function SubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchPlans();
+  }, [fetchPlans]);
+
+  /** D1：定價頁帶 plan 時，載入後捲至對應方案卡片 */
+  useEffect(() => {
+    if (loading || !planParam || plans.length === 0) return;
+    const el = planRefs.current[planParam];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [loading, planParam, plans.length]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-wine-950 pt-0 pb-20 px-4">
@@ -111,6 +123,31 @@ export default function SubscriptionPage() {
           解鎖完整功能，依方案選擇
         </motion.p>
       </div>
+
+      {/* R2-210：訂閱管理 — 顯示當前方案、下次扣款日、升級/取消按鈕 */}
+      {currentSubscription && currentSubscription.tier !== 'free' && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-lg mx-auto mb-6 p-4 rounded-2xl bg-white/5 border border-white/10"
+          role="region"
+          aria-label="當前訂閱"
+        >
+          <p className="text-white/70 text-sm font-medium mb-1">當前方案</p>
+          <p className="text-white font-semibold capitalize">{currentSubscription.tier}</p>
+          {currentSubscription.current_period_end && (
+            <p className="text-white/50 text-sm mt-1">下次扣款日：{currentSubscription.current_period_end}</p>
+          )}
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Link href="/pricing" className="min-h-[40px] px-4 py-2 rounded-xl bg-primary-500/20 text-primary-300 text-sm font-medium games-focus-ring">
+              變更方案
+            </Link>
+            <Link href="/subscription/cancel" className="min-h-[40px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium games-focus-ring hover:bg-white/15">
+              取消訂閱
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* E41：優惠碼輸入欄；使用規則載明於 FAQ */}
       <div className="max-w-sm mx-auto mb-6 flex gap-2">

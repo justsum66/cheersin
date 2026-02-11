@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fireFullscreenConfetti } from '@/lib/celebration'
+import { logger } from '@/lib/logger'
 import { useGamesPlayers, useGamesShake } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameProgress, useGameStats, useGameReplay, useGameTrial, useGameSpectator, useGameReduceMotion } from './GameWrapper'
@@ -372,7 +373,7 @@ export default function Roulette() {
                         await navigator.clipboard.writeText(`命運轉盤 中獎：${name}`)
                         playSound('click')
                       } catch (err) {
-                        console.error('[Roulette] clipboard write failed', err)
+                        logger.error('[Roulette] clipboard write failed', { err: err instanceof Error ? err.message : String(err) })
                       }
                     }}
                     className="min-h-[48px] min-w-[48px] px-2 py-1 rounded-lg bg-white/10 text-white/80 text-sm hover:bg-white/20 hover:scale-[1.02] transition-transform transition-colors"

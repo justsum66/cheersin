@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Volume2, BookOpen, Wrench, History, TrendingUp, Globe, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { logger } from '@/lib/logger';
 
 // 清酒專業術語資料庫
 const SAKE_TERMS = [
@@ -307,7 +308,7 @@ export function SakeGlossary() {
 
   // 播放發音（模擬功能）
   const playPronunciation = (term: string) => {
-    console.log(`播放 ${term} 的發音`);
+    logger.debug(`播放 ${term} 的發音`)
     // 在實際應用中，這裡會調用語音合成API
   };
 

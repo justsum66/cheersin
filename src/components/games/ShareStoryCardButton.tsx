@@ -7,6 +7,7 @@
 import { useRef, useCallback, useState } from 'react'
 import { Share2, Loader2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
+import { logger } from '@/lib/logger'
 import { APP_NAME, OFFICIAL_HASHTAG } from '@/lib/constants'
 
 const CARD_WIDTH = 405
@@ -64,7 +65,9 @@ export function ShareStoryCardButton({
         URL.revokeObjectURL(a.href)
       }
     } catch (e) {
-      if (e instanceof Error && e.name !== 'AbortError') console.error('ShareStoryCard', e.message)
+      if (e instanceof Error && e.name !== 'AbortError') {
+        logger.error('ShareStoryCard', { message: e.message })
+      }
     } finally {
       setGenerating(false)
     }

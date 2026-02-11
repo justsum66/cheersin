@@ -1,6 +1,7 @@
 'use client'
 
 import { useReportWebVitals } from 'next/web-vitals'
+import { logger } from '@/lib/logger'
 
 /**
  * 296 RUM：LCP、FID、CLS、FCP、TTFB、INP
@@ -11,7 +12,7 @@ export default function WebVitalsReporter() {
     if (process.env.NODE_ENV === 'development') {
       const { name, value, id, rating } = metric
       const status = rating === 'good' ? '✓' : rating === 'needs-improvement' ? '!' : '✗'
-      console.log(`[Web Vitals] ${status} ${name}: ${Math.round(value)}ms (${id})`)
+      logger.debug(`[Web Vitals] ${status} ${name}: ${Math.round(value)}ms (${id})`)
     }
     if (metric.name === 'LCP' && metric.value > 2500 && typeof window !== 'undefined') {
       try {
@@ -19,7 +20,7 @@ export default function WebVitalsReporter() {
         const last = sessionStorage.getItem(key)
         if (!last || Date.now() - parseInt(last, 10) > 60000) {
           sessionStorage.setItem(key, String(Date.now()))
-          console.warn(`[Perf] LCP 超過 2.5s 目標：${Math.round(metric.value)}ms`)
+          logger.warn('[Perf] LCP 超過 2.5s 目標', { valueMs: Math.round(metric.value) })
         }
       } catch {
         /* ignore */

@@ -1,9 +1,11 @@
 import Groq from 'groq-sdk'
-import { GROQ_API_KEY } from './env-config'
+import { logger } from './logger'
+import { CHAT_TIMEOUT_MS, GROQ_API_KEY, GROQ_CHAT_MODEL, GROQ_VISION_MODEL } from './env-config'
 import { getTaiwanWinesContext } from './taiwan-wines'
 
 const groq = new Groq({
   apiKey: GROQ_API_KEY || undefined,
+  timeout: CHAT_TIMEOUT_MS,
 })
 
 export interface ChatMessage {
@@ -134,7 +136,7 @@ export async function chatWithSommelier(
       { role: 'system', content: systemPrompt },
       ...messages,
     ],
-    model: 'llama-3.3-70b-versatile',
+    model: GROQ_CHAT_MODEL,
     temperature: 0.8,
     max_tokens: 1024,
   })
@@ -158,7 +160,7 @@ export async function* chatWithSommelierStream(
   const systemPrompt = getSommelierSystemPrompt(userContext)
   const stream = await groq.chat.completions.create({
     messages: [{ role: 'system', content: systemPrompt }, ...messages],
-    model: 'llama-3.3-70b-versatile',
+    model: GROQ_CHAT_MODEL,
     temperature: 0.8,
     max_tokens: 1024,
     stream: true,
@@ -172,8 +174,6 @@ export async function* chatWithSommelierStream(
 /** B1-46 酒標辨識：多模態訊息（最後一則 user 可為 content 陣列含 text + image_url），使用 Groq Vision 模型 */
 export type MultimodalContentPart = { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
 export type VisionMessage = { role: 'user'; content: string | MultimodalContentPart[] } | { role: 'assistant' | 'system'; content: string }
-
-const GROQ_VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
 
 export async function chatWithSommelierVision(
   messages: VisionMessage[],
@@ -218,7 +218,7 @@ ${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: 'user', content: prompt }],
-    model: 'llama-3.3-70b-versatile',
+    model: GROQ_CHAT_MODEL,
     temperature: 0.9,
     max_tokens: 1024,
   })
@@ -232,7 +232,7 @@ ${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
       return JSON.parse(jsonMatch[0])
     }
   } catch (e) {
-    console.error('Failed to parse soul wine result:', e)
+    logger.error('Failed to parse soul wine result', { err: e instanceof Error ? e.message : String(e) })
   }
 
   // 預設回覆

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
+import { logger } from '@/lib/logger'
 
 /** E83 P2：全域錯誤頁 — DEDUP #7 使用 PageErrorContent 統一版面；i18n 接線 error.* */
 export default function Error({
@@ -14,7 +15,7 @@ export default function Error({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    console.error('App error:', error instanceof Error ? error.message : String(error))
+    logger.error('App error:', { message: error instanceof Error ? error.message : String(error) })
   }, [error])
 
   return (

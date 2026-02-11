@@ -16,9 +16,16 @@ import { queryVectors } from '@/lib/pinecone'
 import { recordApiCall } from '@/lib/api-usage'
 import { hasPinecone } from '@/lib/env-config'
 import { parseWinesFromResponse } from '@/lib/wine-response'
-import { CHAT_FALLBACK_ORDER } from '@/config/chat.config'
+import {
+  CHAT_FALLBACK_ORDER,
+  RAG_NAMESPACE,
+  RAG_SCORE_MIN,
+  RAG_SIMILAR_TOP_K_CONFIG,
+  RAG_TOP_K_CONFIG,
+} from '@/config/chat.config'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { persistChatHistory } from '@/lib/chat-history-persist'
+import { logger } from '@/lib/logger'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { hasUpstashRedis, checkRateLimitUpstash } from '@/lib/rate-limit-upstash'
 import { getLongCached, setLongCached, shouldLongCache } from '@/lib/chat-response-cache'
@@ -30,7 +37,6 @@ import {
   formatCocktailsForPrompt,
 } from '@/lib/cocktaildb'
 
-const NAMESPACE_KNOWLEDGE = 'knowledge'
 const NAMESPACE_WINES = 'wines'
 
 const MAX_RETRIES = 2
@@ -92,7 +98,7 @@ function recordChatFailure(provider: string, model: string, startMs: number, rea
     success: false,
     latencyMs: Date.now() - startMs,
   })
-  if (reason) console.warn(`[chat fallback] ${provider} failed:`, reason)
+  if (reason) logger.warn(`[chat fallback] ${provider} failed`, { reason })
 }
 
 /** P3-51 / P2-410 / P2-390：Chat 主線依 CHAT_FALLBACK_ORDER 依序嘗試；記錄 model、latency、Token 用量；失敗時記錄供監控 */
@@ -128,8 +134,15 @@ async function chatWithGroqOrFallback(
           return { message: text, model }
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error)
+          const is429 = (err: unknown) =>
+            (err as { status?: number })?.status === 429 ||
+            /rate limit|429/i.test(reason)
           if (startMs != null) recordChatFailure('groq', 'llama-3.3-70b', startMs, reason)
-          if (attempt < MAX_RETRIES) console.warn(`Groq attempt ${attempt + 1} failed, retrying...`, error)
+          if (is429(error)) {
+            logger.warn('Groq 429 rate limit, skip retry and try next provider')
+            break
+          }
+          if (attempt < MAX_RETRIES) logger.warn(`Groq attempt ${attempt + 1} failed, retrying`, { error: reason })
           else break
         }
       }
@@ -144,7 +157,7 @@ async function chatWithGroqOrFallback(
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error)
         if (startMs != null) recordChatFailure('nim', 'llama', startMs, reason)
-        console.warn('NIM chat failed, trying next provider:', error)
+        logger.warn('NIM chat failed, trying next provider', { reason })
       }
       continue
     }
@@ -157,7 +170,7 @@ async function chatWithGroqOrFallback(
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error)
         if (startMs != null) recordChatFailure('openrouter', 'fallback', startMs, reason)
-        console.warn('OpenRouter chat failed, trying next provider:', error)
+        logger.warn('OpenRouter chat failed, trying next provider', { reason })
       }
     }
   }
@@ -166,7 +179,7 @@ async function chatWithGroqOrFallback(
   throw new Error('All chat providers failed')
 }
 
-/** RAG：用最後一則用戶訊息查 Pinecone，回傳帶編號的 context 與 sources（引用來源標注） */
+/** RAG：用最後一則用戶訊息查 Pinecone，回傳帶編號的 context 與 sources（引用來源標注）；topK/namespace 可配置，低於 RAG_SCORE_MIN 的結果過濾 */
 async function enrichContextWithRag(
   messages: ChatMessage[],
   userContext?: SommelierUserContext
@@ -179,15 +192,18 @@ async function enrichContextWithRag(
     const embedding = await getEmbedding(lastUserContent)
     if (!embedding?.length) return userContext
     const result = await queryVectors(embedding, {
-      topK: 5,
+      topK: RAG_TOP_K_CONFIG,
       includeMetadata: true,
-      namespace: NAMESPACE_KNOWLEDGE,
+      namespace: RAG_NAMESPACE,
     })
-    if (!result.matches?.length) return userContext
+    const matches = (result.matches ?? []).filter(
+      (m) => RAG_SCORE_MIN <= 0 || (typeof (m as { score?: number }).score === 'number' && (m as { score: number }).score >= RAG_SCORE_MIN)
+    )
+    if (!matches.length) return userContext
     const sources: { index: number; source: string; text: string }[] = []
-    const numberedBlocks = result.matches.map((m, i) => {
+    const numberedBlocks = matches.map((m, i) => {
       const text = (m.metadata?.text as string) || (m.metadata?.content as string) || ''
-      const source = [m.metadata?.course_id, m.metadata?.chapter].filter(Boolean).join(' / ') || m.id
+      const source = [m.metadata?.course_id, m.metadata?.chapter].filter(Boolean).join(' / ') || (m.metadata?.source as string) || m.id
       sources.push({ index: i + 1, source, text: text.slice(0, 500) })
       return `[${i + 1}] ${text.slice(0, 800)}`
     })
@@ -199,7 +215,7 @@ async function enrichContextWithRag(
   }
 }
 
-/** 根據助理回答內容查 Pinecone，回傳 3 個相似問題/主題（相似問題推薦） */
+/** 根據助理回答內容查 Pinecone，回傳相似問題/主題（相似問題推薦）；topK 可配置，低分過濾 */
 async function getSimilarQuestions(
   assistantReply: string,
   userQuestion: string
@@ -210,14 +226,17 @@ async function getSimilarQuestions(
     const embedding = await getEmbedding(text)
     if (!embedding?.length) return []
     const result = await queryVectors(embedding, {
-      topK: 3,
+      topK: RAG_SIMILAR_TOP_K_CONFIG,
       includeMetadata: true,
-      namespace: NAMESPACE_KNOWLEDGE,
+      namespace: RAG_NAMESPACE,
     })
-    return (result.matches || [])
+    const matches = (result.matches ?? []).filter(
+      (m) => RAG_SCORE_MIN <= 0 || (typeof (m as { score?: number }).score === 'number' && (m as { score: number }).score >= RAG_SCORE_MIN)
+    )
+    return matches
       .map((m) => (m.metadata?.chapter as string) || (m.metadata?.source as string) || '')
       .filter(Boolean)
-      .slice(0, 3)
+      .slice(0, RAG_SIMILAR_TOP_K_CONFIG)
   } catch {
     return []
   }
@@ -361,7 +380,7 @@ export async function POST(request: NextRequest) {
           similarQuestions,
         })
       } catch (visionErr) {
-        console.warn('Vision chat failed, falling back to text-only:', visionErr)
+        logger.warn('Vision chat failed, falling back to text-only', { err: visionErr instanceof Error ? visionErr.message : String(visionErr) })
         recordApiCall({ endpoint: 'chat', model: 'groq/vision-fail', success: false, latencyMs: Date.now() - startMs })
         // 不 return，繼續走下方文字流程（會當成無圖請求）
       }
@@ -443,13 +462,7 @@ export async function POST(request: NextRequest) {
             const errMsg = err instanceof Error ? err.message : String(err)
             const isAbort = err instanceof Error && err.name === 'AbortError'
             const isRateLimit = /rate limit|429/i.test(errMsg)
-            console.error(JSON.stringify({
-              endpoint: 'chat',
-              level: 'error',
-              stream: true,
-              message: errMsg,
-              timestamp: new Date().toISOString(),
-            }))
+            logger.error('Chat stream error', { endpoint: 'chat', stream: true, message: errMsg })
             recordApiCall({ endpoint: 'chat', model: 'stream', success: false, latencyMs: Date.now() - startMs })
             /** P3-39：串流錯誤帶 code、retryable 供前端決定是否重試 */
             const code = isRateLimit ? 'RATE_LIMIT' : isAbort ? 'TIMEOUT' : 'UPSTREAM_ERROR'
@@ -499,12 +512,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     /** EXPERT_60 P0：關鍵 API 錯誤監控 — 結構化 log，不含 PII */
     const errMsg = error instanceof Error ? error.message : String(error)
-    console.error(JSON.stringify({
-      endpoint: 'chat',
-      level: 'error',
-      message: errMsg,
-      timestamp: new Date().toISOString(),
-    }))
+    logger.error('Chat API error', { endpoint: 'chat', message: errMsg })
     const fallback = OFFLINE_FALLBACK_REPLIES[Math.floor(Math.random() * OFFLINE_FALLBACK_REPLIES.length)]
     return NextResponse.json(
       { error: 'Failed to get response', message: fallback },

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const eventId = rawId ?? null
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[RUM] ${name}: ${Math.round(numValue)}`)
+      logger.debug(`[RUM] ${name}: ${Math.round(numValue)}`)
     }
 
     // 僅在 production 持久化至 Supabase，避免 dev 冷編譯時阻塞並降低 TTFB 影響

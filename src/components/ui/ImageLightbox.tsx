@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ZoomIn, ZoomOut, Download } from 'lucide-react'
 import Image from 'next/image'
+import { logger } from '@/lib/logger'
 
 interface ImageLightboxProps {
   src: string
@@ -58,7 +59,7 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {
-      console.error('Download failed:', e)
+      logger.error('Download failed', { err: e instanceof Error ? e.message : String(e) })
     }
   }
 

@@ -12,6 +12,7 @@ import { usePunishment } from './Punishments/PunishmentContext'
 import { LIGHT_PUNISHMENTS } from './Punishments/presets'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { logger } from '@/lib/logger'
 import { useGameReduceMotion, useGameStats } from './GameWrapper'
 
 /** 難度：輕鬆 / 刺激 / 限制級 */
@@ -33,7 +34,7 @@ function loadCustomPools(): { truth: TruthDareItem[]; dare: TruthDareItem[] } {
       dare: Array.isArray(parsed.dare) ? parsed.dare : [],
     }
   } catch (err) {
-    console.error('[TruthOrDare] loadCustomPools parse failed', err)
+    logger.error('[TruthOrDare] loadCustomPools parse failed', { err: err instanceof Error ? err.message : String(err) })
     return { truth: [], dare: [] }
   }
 }
@@ -115,7 +116,7 @@ export default function TruthOrDare() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ truth: customTruth, dare: customDare }))
     } catch (err) {
-      console.error('[TruthOrDare] localStorage setItem failed', err)
+      logger.error('[TruthOrDare] localStorage setItem failed', { err: err instanceof Error ? err.message : String(err) })
     }
   }, [customTruth, customDare])
 

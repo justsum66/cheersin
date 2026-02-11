@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
+import { logger } from '@/lib/logger'
 
 /** 57 錯誤邊界與 fallback — DEDUP #7 使用 PageErrorContent 統一版面；I18N-07 t(error.*) */
 export default function LearnError({
@@ -14,7 +15,7 @@ export default function LearnError({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    console.error('[Learn]', error instanceof Error ? error.message : String(error))
+    logger.error('[Learn]', { message: error instanceof Error ? error.message : String(error) })
   }, [error])
 
   return (

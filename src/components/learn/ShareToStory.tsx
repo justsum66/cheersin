@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Share2, Instagram, Download, X, Sparkles, Award } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 interface ShareToStoryProps {
   courseTitle: string
@@ -69,7 +70,7 @@ export function ShareToStory({
       URL.revokeObjectURL(url)
       setIsOpen(false)
     } catch (e) {
-      console.error('Share generation failed:', e)
+      logger.error('Share generation failed', { err: e instanceof Error ? e.message : String(e) })
     } finally {
       setIsGenerating(false)
     }

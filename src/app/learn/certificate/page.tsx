@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, Award, Share2, Download, FileDown } from 'lucide-react'
+import { logger } from '@/lib/logger'
 import { getSommelierLevel } from '@/lib/gamification'
 
 const PROGRESS_KEY = 'cheersin_learn_progress'
@@ -148,7 +149,7 @@ export default function CertificatePage() {
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {
-      console.error('Download PNG failed:', e)
+      logger.error('Download PNG failed', { err: e instanceof Error ? e.message : String(e) })
     } finally {
       setDownloadLoading(false)
     }

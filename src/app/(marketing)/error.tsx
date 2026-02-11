@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
+import { logger } from '@/lib/logger'
 
 /** 行銷區（首頁等）錯誤邊界：單一組件崩潰不導致整站白屏 */
 export default function MarketingError({
@@ -17,9 +18,9 @@ export default function MarketingError({
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && isChunkError) {
-      console.warn('Chunk load error (dev). Fix: run "npm run clean" then "npm run dev", or use "npm run dev:turbo" only if needed.')
+      logger.warn('Chunk load error (dev). Fix: run "npm run clean" then "npm run dev", or use "npm run dev:turbo" only if needed.')
     } else {
-      console.error('Marketing error:', error instanceof Error ? error.message : String(error))
+      logger.error('Marketing error:', { message: error instanceof Error ? error.message : String(error) })
     }
   }, [error, isChunkError])
 

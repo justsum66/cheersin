@@ -3,6 +3,7 @@
  * 需：PayPal API（plan change / cancel）、後端儲存、郵件服務（Resend）
  */
 
+import { logger } from './logger'
 import { createServerClientOptional } from './supabase-server'
 
 export type SubscriptionLifecycleEvent =
@@ -73,7 +74,7 @@ export async function sendExpiryReminder(payload: ExpiryEmailPayload): Promise<b
   `
 
   if (!apiKey) {
-    console.log('[subscription-lifecycle] sendExpiryReminder skip (no RESEND_API_KEY)', payload.userId, payload.daysLeft)
+    logger.info('[subscription-lifecycle] sendExpiryReminder skip (no RESEND_API_KEY)', { userId: payload.userId, daysLeft: payload.daysLeft })
     return true
   }
 
@@ -93,12 +94,12 @@ export async function sendExpiryReminder(payload: ExpiryEmailPayload): Promise<b
     })
     if (!res.ok) {
       const err = await res.text()
-      console.error('[subscription-lifecycle] Resend error:', res.status, err)
+      logger.error('[subscription-lifecycle] Resend error', { status: res.status, err })
       return false
     }
     return true
   } catch (e) {
-    console.error('[subscription-lifecycle] sendExpiryReminder failed:', e)
+    logger.error('[subscription-lifecycle] sendExpiryReminder failed', { err: e instanceof Error ? e.message : String(e) })
     return false
   }
 }
@@ -111,7 +112,7 @@ export async function validatePromoCode(
 
   const supabase = createServerClientOptional()
   if (!supabase) {
-    console.warn('[subscription-lifecycle] validatePromoCode: Supabase not configured')
+    logger.warn('[subscription-lifecycle] validatePromoCode: Supabase not configured')
     return { valid: false }
   }
 

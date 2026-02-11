@@ -2,6 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 /** R2-015：錯誤邊界捕獲時上報 Sentry（若已整合） */
 function reportToSentry(error: Error, context?: string) {
@@ -36,7 +37,7 @@ export default class ErrorBoundaryBlock extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const context = this.props.blockName ?? 'ErrorBoundaryBlock'
-    console.error(`[ErrorBoundaryBlock${context ? `:${context}` : ''}]`, error, errorInfo.componentStack)
+    logger.error(`[ErrorBoundaryBlock${context ? `:${context}` : ''}]`, { message: error.message, componentStack: errorInfo.componentStack })
     reportToSentry(error, context)
   }
 

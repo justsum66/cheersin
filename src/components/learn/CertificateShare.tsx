@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Award, Share2, Copy, Download, Check, Twitter, Instagram, Sparkles } from 'lucide-react'
 import html2canvas from 'html2canvas'
+import { logger } from '@/lib/logger'
 
 interface CertificateShareProps {
   courseTitle: string
@@ -43,7 +44,7 @@ export function CertificateShare({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (e) {
-      console.error('Copy failed:', e)
+      logger.error('Copy failed', { err: e instanceof Error ? e.message : String(e) })
     }
   }
 
@@ -61,7 +62,7 @@ export function CertificateShare({
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch (e) {
-      console.error('Download failed:', e)
+      logger.error('Download failed', { err: e instanceof Error ? e.message : String(e) })
     }
     setDownloading(false)
   }

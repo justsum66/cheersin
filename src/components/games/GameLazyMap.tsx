@@ -2,6 +2,7 @@
 
 import type React from 'react'
 import { lazy, Suspense } from 'react'
+import { logger } from '@/lib/logger'
 
 /** R2-012：依分類動態 Code Splitting，webpackChunkName 為 games-${category}，用戶只下載當前分類遊戲代碼 */
 type GameLoader = () => Promise<{ default: React.ComponentType }>
@@ -129,7 +130,7 @@ const GAME_LAZY_MAP: Record<string, React.LazyExoticComponent<React.ComponentTyp
 export function prefetchGame(gameId: string): void {
   const loader = GAME_LOADERS[gameId]
   if (loader) loader().catch((err) => {
-    console.error('[GameLazyMap] prefetch failed', gameId, err)
+    logger.error('[GameLazyMap] prefetch failed', { gameId, err: err instanceof Error ? err.message : String(err) })
   })
 }
 

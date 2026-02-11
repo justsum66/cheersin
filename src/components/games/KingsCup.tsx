@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { logger } from '@/lib/logger'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -298,7 +299,7 @@ export default function KingsCup() {
                       if (isDrawPending) return
                       setIsDrawPending(true)
                       if (drawCooldownRef.current) clearTimeout(drawCooldownRef.current)
-                      try { drawCard() } catch (e) { console.error('[KingsCup] drawCard error', e) }
+                      try { drawCard() } catch (e) { logger.error('[KingsCup] drawCard error', { err: e instanceof Error ? e.message : String(e) }) }
                       drawCooldownRef.current = setTimeout(() => {
                         drawCooldownRef.current = null
                         setIsDrawPending(false)

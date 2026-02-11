@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/I18nContext'
+import { logger } from '@/lib/logger'
 
 /** GAMES_500 #10：遊戲頁路由錯誤邊界專用文案 — 遊戲頁載入失敗時顯示；i18n Phase 3 t('gamesError.*') */
 export default function GamesError({
@@ -14,7 +15,7 @@ export default function GamesError({
 }) {
   const { t } = useTranslation()
   useEffect(() => {
-    console.error('[Games]', error instanceof Error ? error.message : String(error))
+    logger.error('[Games]', { message: error instanceof Error ? error.message : String(error) })
   }, [error])
 
   return (

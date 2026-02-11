@@ -7,6 +7,7 @@ import GameRules from './GameRules'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
+import { logger } from '@/lib/logger'
 import { getStatementsByCategory, CATEGORY_LABEL, type NeverHaveIEverCategory } from '@/lib/never-have-i-ever'
 
 /** 266–270 題庫分類：愛情/職場/生活/黑歷史/18+（直接使用 data/neverHaveIEver.json） */
@@ -130,7 +131,7 @@ export default function NeverHaveIEver() {
         setCopyToast(false)
       }, 2000)
     } catch (err) {
-      console.error('[NeverHaveIEver] clipboard write failed', err)
+      logger.error('[NeverHaveIEver] clipboard write failed', { err: err instanceof Error ? err.message : String(err) })
     }
   }, [current])
 

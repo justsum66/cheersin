@@ -23,6 +23,7 @@ import { useTranslation } from '@/contexts/I18nContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { canUseAICall, getMaxAICallsPerDay, getAiCallsUsedToday, incrementAiCallsUsedToday } from '@/lib/subscription'
 import { UpgradeModal } from '@/components/UpgradeModal'
+import { logger } from '@/lib/logger'
 import { MarkdownMessage } from '@/components/assistant/MarkdownMessage'
 
 interface Message {
@@ -187,7 +188,7 @@ export default function AssistantPage() {
     }
   })
   const { tier } = useSubscription()
-  const { locale } = useTranslation()
+  const { locale, t } = useTranslation()
   const usedToday = getAiCallsUsedToday()
   const maxPerDay = getMaxAICallsPerDay(tier)
   const canSend = canUseAICall(tier, usedToday)
@@ -456,7 +457,7 @@ export default function AssistantPage() {
           const is429 = msg.includes('429') || msg.includes('Rate limited') || msg.includes('每分鐘')
           const isNetwork = /network|fetch|failed|load/i.test(msg) || (typeof navigator !== 'undefined' && !navigator.onLine)
           const errMsg = userCancelled
-            ? '已取消'
+            ? t('assistant.cancelled')
             : is429
               ? '請求太頻繁，請 1 分鐘後再試。'
               : isAbort
@@ -464,7 +465,7 @@ export default function AssistantPage() {
                 : isNetwork
                   ? '連線不穩或網路中斷，請檢查網路後再試。'
                   : msg || '抱歉，發生了一些問題，請稍後再試。'
-          if (userCancelled) toast('已取消', { icon: '⏹' })
+          if (userCancelled) toast(t('assistant.cancelled'), { icon: '⏹' })
           else { announceError(errMsg); toast.error(errMsg, { duration: 5000 }) }
           setMessages((prev) =>
             prev.map((m) => (m.id === assistantId ? { ...m, content: errMsg } : m))
@@ -543,9 +544,9 @@ export default function AssistantPage() {
         date: new Date().toISOString(),
       })
       localStorage.setItem(WISHLIST_KEY, JSON.stringify(list))
-      toast.success('已加入願望清單')
+      toast.success(t('assistant.addToWishlistSuccess'))
     } catch {
-      toast.error('無法加入願望清單')
+      toast.error(t('assistant.addToWishlistError'))
     }
   }
 
@@ -561,9 +562,9 @@ export default function AssistantPage() {
         date: new Date().toISOString(),
       })
       localStorage.setItem(WISHLIST_KEY, JSON.stringify(list))
-      toast.success('已加入願望清單')
+      toast.success(t('assistant.addToWishlistSuccess'))
     } catch {
-      toast.error('無法加入願望清單')
+      toast.error(t('assistant.addToWishlistError'))
     }
   }
 
@@ -595,7 +596,7 @@ export default function AssistantPage() {
     }
     const SR = Win && ((Win as unknown as { SpeechRecognition?: new () => SpeechRecognitionInstance }).SpeechRecognition || (Win as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionInstance }).webkitSpeechRecognition)
     if (!SR) {
-      setInput((prev) => prev + '（此瀏覽器不支援語音輸入）')
+      setInput((prev) => prev + (prev ? ' ' : '') + t('assistant.voiceNotSupported'))
       return
     }
     const recognition = new SR()
@@ -754,7 +755,7 @@ export default function AssistantPage() {
       URL.revokeObjectURL(url)
       toast.success('已下載截圖')
     } catch (e) {
-      console.error('Screenshot failed:', e)
+      logger.error('Screenshot failed', { err: e instanceof Error ? e.message : String(e) })
       toast.error('下載截圖失敗')
     } finally {
       setShareLoading(false)
@@ -792,7 +793,7 @@ export default function AssistantPage() {
         URL.revokeObjectURL(url)
       }
     } catch (e) {
-      console.error('Share failed:', e)
+      logger.error('Share failed', { err: e instanceof Error ? e.message : String(e) })
     } finally {
       setShareLoading(false)
     }
@@ -1410,7 +1411,7 @@ export default function AssistantPage() {
                         <button onClick={() => speakReply(message.content)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors games-focus-ring flex items-center justify-center" title="朗讀">
                           <Volume2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => addToWishlist(message.content, message.id)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-primary-400 transition-colors games-focus-ring flex items-center justify-center" title="加入願望清單">
+                        <button onClick={() => addToWishlist(message.content, message.id)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-primary-400 transition-colors games-focus-ring flex items-center justify-center" title={t('assistant.addToWishlist')}>
                           <Heart className="w-4 h-4" />
                         </button>
                         <button onClick={() => handleLike(message.id, true)} className={`p-1.5 min-h-[48px] min-w-[48px] rounded-lg transition-colors games-focus-ring flex items-center justify-center ${message.liked === true ? 'text-primary-500 bg-primary-500/20' : 'text-white/30 hover:text-primary-400 hover:bg-white/10'}`} title="讚">
@@ -1434,7 +1435,7 @@ export default function AssistantPage() {
                           className="input-glass text-sm resize-none"
                         />
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => { setFeedbackMessageId(null); setFeedbackText(''); }} className="px-3 py-1.5 min-h-[48px] rounded-lg text-white/60 hover:text-white text-sm games-focus-ring">略過</button>
+                          <button type="button" onClick={() => { setFeedbackMessageId(null); setFeedbackText(''); }} className="px-3 py-1.5 min-h-[48px] rounded-lg text-white/60 hover:text-white text-sm games-focus-ring">{t('assistant.skip')}</button>
                           <button type="button" onClick={() => submitFeedback(message.id)} className="px-3 py-1.5 min-h-[48px] rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm games-focus-ring">送出</button>
                         </div>
                       </div>
