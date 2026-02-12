@@ -83,6 +83,7 @@ export function ScriptMurderRoom({
           {scriptDetail?.title} — {t('scriptMurder.lobbyTitleSuffix')}
         </h1>
         <p className="text-white/60 text-sm mb-6">{t('scriptMurder.lobbyShareInvite')}</p>
+        <p className="text-white/50 text-xs mb-4" role="doc-tip">{t('scriptMurder.onboardingSteps')}</p>
         {room.expiresAt && (
           <p className="text-white/40 text-xs mb-4" role="timer">
             {new Date(room.expiresAt).getTime() < Date.now()

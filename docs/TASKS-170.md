@@ -276,3 +276,8 @@
 | 2026-02-12 | (續) | **Batch 5 (GAME)**：GAME-010 觸覺可開關 games-settings/useHaptic/SettingsModal；docs/game-batch5-audit |
 | 2026-02-12 | (續) | **Batch 6 (TEST)**：TEST-015 a11y 含 /learn；docs/test-batch6-audit、CONTRIBUTING 檢查清單 |
 | 2026-02-12 | (續) | **Batch 7 (DEV)**：DEV-013～018 docs/dev-batch7-audit、dev-checklist 擴充 |
+| 2026-02-12 | **Phase 2 續：下一批** | **Batch 1 (UX)**：UX-002/003/004/006/023～025 docs/ux-batch3-audit、Navigation 鍵盤捲動 |
+| 2026-02-12 | (續) | **Batch 2 (COPY)**：COPY-001/002/007/008 登入 trustPrivacy、派對房/劇本殺 onboardingSteps、assistant errorFallback/emptyReply、ux-copy-checklist |
+| 2026-02-12 | (續) | **Batch 3 (GAME)**：GAME-004 房主離開即結束房間（leave API + party-room-flow-api）、GAME-005 邀請 i18n、GAME-006 輪詢 2s、GAME-007/008/009 docs/game-batch5-audit |
+| 2026-02-12 | (續) | **Batch 4 (TEST)**：TEST-001 leave-route 單元測試、validate:lessons/content、check:i18n、test:stress 兩輪、game-test-checklist 更新 |
+| 2026-02-12 | (續) | **Batch 5 (DEV)**：DEV-019/020 docs/dev-batch7-audit（依賴審計、bundle 預算） |

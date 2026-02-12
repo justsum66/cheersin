@@ -30,16 +30,16 @@
 
 ## COPY-001：首頁 hero CTA 文案轉換導向
 
-- [ ] 首頁 hero 主 CTA 文案明確傳達價值主張（如「開始檢測」「探索靈魂之酒」），並導向 quiz 或主要轉換路徑
+- [x] 首頁 hero 主 CTA 已導向 quiz/主要轉換（如「開始檢測」「探索靈魂之酒」）；見 HomePageClient
 
 ## COPY-002：登入/註冊頁說明與信任文案
 
-- [x] 登入頁文案已 i18n（login.*），含歡迎、導向、錯誤訊息；可再補信任/隱私一句於 footer
+- [x] 登入頁文案已 i18n（login.*），含歡迎、導向、錯誤訊息；已補 `login.trustPrivacy` 信任/隱私一句
 
 ## COPY-007：派對房與劇本殺 onboarding 清晰
 
-- [ ] 首次進入派對房/劇本殺有簡短步驟或提示，可完成「建立→邀請→開始」；文案見 `partyRoom.*`、`scriptMurder.*`
+- [x] 派對房頁使用 `partyRoom.onboardingSteps`；劇本殺大廳與房間使用 `scriptMurder.onboardingSteps`；簡短步驟提示
 
 ## COPY-008：助理/AI 回覆邊界與 fallback 文案
 
-- [ ] 助理無回覆或錯誤時顯示友善 fallback（非技術語）；可統一為 `assistant.errorFallback`、`assistant.emptyReply` 等 key
+- [x] 助理錯誤使用 `assistant.errorFallback`；空回覆/無文字使用 `assistant.emptyReply`；側欄與氣泡一致

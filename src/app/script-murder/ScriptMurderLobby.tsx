@@ -46,6 +46,7 @@ export function ScriptMurderLobby({
           <h1 className="text-2xl font-bold text-white">{t('scriptMurder.title')}</h1>
         </div>
         <p className="text-white/70 mb-8">{t('scriptMurder.description')}</p>
+        <p className="text-white/50 text-xs mb-8" role="doc-tip">{t('scriptMurder.onboardingSteps')}</p>
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}

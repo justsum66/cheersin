@@ -1,6 +1,36 @@
-# Game Batch 5 審計（GAME-001, 002, 010～022）
+# Game Batch 5 審計（GAME-001, 002, 004～009, 010～022）
 
-對應計畫「下一批 70 任務」Batch 5。
+對應計畫「下一批 70 任務」Batch 5 與「下一批任務實作計畫」Batch 3。
+
+## GAME-004：房主離開時房間處置（移交或結束）明確
+
+- **狀態**：已實作。`POST /api/games/rooms/[slug]/leave` 若離開者為房主（player.user_id === room.host_id），將房間 `expires_at` 設為現在，回傳 `endRoom: true`；前端 `isRoomEnded` 觸發後顯示 PartyRoomEnded。無房主移交。
+- **驗收**：文件見 `docs/party-room-flow-api.md`；實作與文件一致。
+
+## GAME-005：邀請連結複製與分享文案正確
+
+- **狀態**：已實作。`useCopyInvite` 供 party-room、script-murder 使用；PartyRoomActive 使用 `partyRoom.inviteLink`、`partyRoom.copyInviteAria`、`common.copied`；script-murder 使用 `scriptMurder.copyInvite`、`scriptMurder.copied`。i18n 已涵蓋。
+- **驗收**：可複製且文案可讀。
+
+## GAME-006：乾杯/遊戲切換即時反映給所有成員
+
+- **狀態**：已實作。game-state 經 POST 寫入；前端 `usePolling(refetchRoomAndState, 2000)` 改為 2s 輪詢，搭配 usePartyRoomRealtime（game_rooms）確保無延遲 >2s。
+- **驗收**：乾杯/遊戲切換於 2s 內反映。
+
+## GAME-007：真心話大冒險/輪盤/骰子在房內可選可玩
+
+- **狀態**：已實作。PartyRoomActive 房主可選 truth-or-dare、roulette、liar-dice；「先去派對遊樂場」連結至 `/games?room={slug}`，「繼續遊戲」連結至 `/games?room={slug}&game={currentGameId}`。
+- **驗收**：流程完整，房內可選可玩。
+
+## GAME-008：遊戲結束與返回大廳狀態清晰
+
+- **狀態**：派對房結束由 PartyRoomEnded 顯示本局統計、「建立新房間」「返回大廳」；遊戲頁從 party-room 進入時以 room 參數維持房間脈絡，返回派對房可經導航或「繼續遊戲」連結。各遊戲元件有結束狀態與返回（依既有 GamesPageClient Lobby 流程）。
+- **驗收**：有按鈕或引導返回大廳/派對房。
+
+## GAME-009：劇本殺角色分配與劇本載入無錯
+
+- **狀態**：已實作。`useScriptMurderState.startGame` 以 `scriptDetail.roles` 與 `players` 做 1:1 隨機分配（assignments[playerId]=roleId）；劇本由 `scriptDetail`（useScriptMurderRoom 依 room.scriptId 載入）提供章節與角色；ScriptMurderPlay 以 `scriptState.assignments` 與 `scriptDetail.roles` 對應顯示 myRole。
+- **驗收**：角色與劇本對應正確；玩家數超過角色數時 startGame 回傳 false。
 
 ## GAME-001：派對房建立→加入→遊戲→離開無狀態錯亂
 

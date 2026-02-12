@@ -1,6 +1,6 @@
-# DEV Batch 7 審計（DEV-013～018）
+# DEV Batch 7 審計（DEV-013～020）
 
-對應計畫「下一批 70 任務」Batch 7。
+對應計畫「下一批 70 任務」Batch 7 與「下一批任務實作計畫」Batch 5。
 
 ## DEV-013：重大 API 變更有遷移或版本說明
 
@@ -31,6 +31,16 @@
 
 - **作法**：資料庫備份頻率、RTO/RPO 目標、還原步驟可於 docs 簡要列出；Supabase 等 managed 服務依其 SLA。
 - **驗收**：可選。
+
+## DEV-019：依賴固定與審計排程
+
+- **作法**：使用 `package-lock.json` 固定版本；定期執行 `npm audit`（或 CI 步驟 `npm run audit`）；已知接受之漏洞可於 CONTRIBUTING 或 CI 註明。
+- **驗收**：可選；package.json 已有 `audit`、`audit:fix` script；CI 可選加 audit 步驟。
+
+## DEV-020：效能預算或 bundle 預算
+
+- **作法**：可於 CI 使用 `ANALYZE=true next build` 產出 bundle 報告；next.config 可設 `experimental.serverComponentsExternalPackages` 等；門檻（如關鍵路徑 &lt; 200KB）可文件化或設於 CI。
+- **驗收**：可選；專案已有 `analyze` script；門檻可於 docs/performance-audit.md 註明。
 
 ---
 

@@ -464,7 +464,7 @@ export default function AssistantPage() {
                 ? (maxAttempts > 1 ? '回覆逾時，已自動重試仍失敗。請稍後再試。' : '回覆逾時（超過 30 秒），請稍後再試。')
                 : isNetwork
                   ? '連線不穩或網路中斷，請檢查網路後再試。'
-                  : msg || '抱歉，發生了一些問題，請稍後再試。'
+                  : msg || t('assistant.errorFallback')
           if (userCancelled) toast(t('assistant.cancelled'), { icon: '⏹' })
           else { announceError(errMsg); toast.error(errMsg, { duration: 5000 }) }
           setMessages((prev) =>
@@ -1043,7 +1043,7 @@ export default function AssistantPage() {
                                       <span className={`text-xs font-medium ${m.role === 'user' ? 'text-primary-300' : 'text-white/70'}`}>
                                         {m.role === 'user' ? '我' : 'AI'}
                                       </span>
-                                      <p className="text-white/80 text-sm truncate mt-0.5">{m.content || '(無文字)'}</p>
+                                      <p className="text-white/80 text-sm truncate mt-0.5">{m.content || t('assistant.emptyReply')}</p>
                                       <p className="text-white/40 text-[10px] mt-1">{m.timestamp.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}</p>
                                     </button>
                                     {idx >= 0 && (
@@ -1337,7 +1337,7 @@ export default function AssistantPage() {
                         : 'glass-card bg-white/[0.06] border border-white/10 text-gray-100 rounded-tl-sm backdrop-blur-xl text-left'}
                         `}>
                       {message.role === 'assistant' ? (
-                        <MarkdownMessage content={message.content} />
+                        <MarkdownMessage content={message.content?.trim() ? message.content : t('assistant.emptyReply')} />
                       ) : (
                         message.content
                       )}

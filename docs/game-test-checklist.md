@@ -15,14 +15,15 @@
 
 | ID | 項目 | 實作/驗收 |
 |----|------|-----------|
-| TEST-001 | 關鍵 API 路由單元測試 | src/__tests__/api：rooms, game-state, subscription, upload, chat, health 等 |
+| TEST-001 | 關鍵 API 路由單元測試 | src/__tests__/api：rooms, game-state, leave, subscription, upload, chat, health 等；leave 涵蓋 400/404/500 |
 | TEST-002 | E2E critical-paths 全通過 | e2e/critical-paths.spec.ts：nav, quiz, 登入, 訂閱 |
 | TEST-003 | test:run 無失敗 | vitest 全部 pass |
 | TEST-004 | test:stress 兩輪通過 | 無 flake |
 | TEST-005 | TypeScript strict 無 any 新增 | tsc 過，any 僅註記 |
 | TEST-006 | 建置成功 npm run build | 常規驗證 |
 | TEST-007 | 學習與課程 validate 腳本通過 | validate:lessons, validate:content |
+| TEST-008 | i18n check 腳本通過 | npm run check:i18n |
 | TEST-009 | E2E persona-flows 至少 6 條通過 | assistant, games, learn, party-room, script-murder, subscription 等 |
-| TEST-010 | 遊戲邏輯單元測試 | truth-or-dare、never-have-i-ever 等 lib 單元測試 |
+| TEST-010 | 遊戲邏輯單元測試 | truth-or-dare、never-have-i-ever 等 lib 單元測試；games.smoke 涵蓋關鍵遊戲 |
 
 執行：`npm run test:run`、`npm run build`、必要時 `npm run test:e2e:critical`。

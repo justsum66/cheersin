@@ -51,7 +51,28 @@ export default function Navigation() {
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const bottomNavRef = useRef<HTMLElement>(null)
   useFocusTrap(isMobileMenuOpen, mobileMenuRef)
+
+  /** UX-004：手機輸入框 focus 時，鍵盤彈起後將底部導航 scrollIntoView 保持可操作 */
+  const keyboardScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement
+      if (!target?.matches?.('input, textarea, select, [contenteditable="true"]')) return
+      if (typeof window === 'undefined' || window.innerWidth >= 768 || !bottomNavRef.current) return
+      if (keyboardScrollTimeoutRef.current) clearTimeout(keyboardScrollTimeoutRef.current)
+      keyboardScrollTimeoutRef.current = setTimeout(() => {
+        bottomNavRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
+        keyboardScrollTimeoutRef.current = null
+      }, 400)
+    }
+    document.addEventListener('focusin', onFocusIn)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+      if (keyboardScrollTimeoutRef.current) clearTimeout(keyboardScrollTimeoutRef.current)
+    }
+  }, [])
 
   /** N28：滾動閾值常數；P1：滾動後背景至少 0.92 不透明度，白字對比 ≥4.5:1 */
   const navOpacity = useMemo(
@@ -269,8 +290,9 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* N21：底部導航 z-index、N18 safe-area、N01 aria-current */}
+      {/* N21：底部導航 z-index、N18 safe-area、N01 aria-current；UX-004 ref 供鍵盤彈起時 scrollIntoView */}
       <nav
+        ref={bottomNavRef}
         className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#0a0a1a]/95 backdrop-blur-xl safe-area-pb print:hidden"
         style={{ zIndex: Z_NAV_BOTTOM }}
         aria-label="底部導航"

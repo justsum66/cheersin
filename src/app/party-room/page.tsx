@@ -27,7 +27,7 @@ import { PartyRoomLobby } from './PartyRoomLobby'
 import { PartyRoomActive } from './PartyRoomActive'
 import { PartyRoomEnded } from './PartyRoomEnded'
 
-const POLL_INTERVAL_MS = 3000
+const POLL_INTERVAL_MS = 2000
 const PARTY_ROOM_PLAYER_KEY = (slug: string) => `party_room_player_${slug}`
 
 export default function PartyRoomPage() {
@@ -280,6 +280,7 @@ export default function PartyRoomPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 px-4 py-8">
         <h1 className="text-2xl font-bold text-white text-center">{t('partyRoom.title')}</h1>
         <p className="text-white/70 text-center max-w-md">{t('partyRoom.subtitle')}</p>
+        <p className="text-white/50 text-xs text-center max-w-md mt-1" role="doc-tip">{t('partyRoom.onboardingSteps')}</p>
         <div className="flex flex-col gap-2 w-full max-w-sm">
           <label className="text-sm text-white/60">{t('partyRoom.peopleCount')} / {t('partyRoom.peopleCountValue')}</label>
           <div className="flex gap-2">
@@ -384,6 +385,7 @@ export default function PartyRoomPage() {
       >
         <h1 className="text-2xl font-bold text-white text-center">{t('partyRoom.joinRoom')}</h1>
         <p className="text-white/70 text-center max-w-md">{t('partyRoom.enterNamePlaceholder')}</p>
+        <p className="text-white/50 text-xs text-center max-w-md mt-1" role="doc-tip">{t('partyRoom.onboardingSteps')}</p>
         <form
           className="flex flex-col gap-4 w-full max-w-sm"
           onSubmit={(e) => {

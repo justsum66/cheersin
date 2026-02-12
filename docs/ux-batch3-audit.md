@@ -1,6 +1,43 @@
-# UX Batch 3 審計（UX-008～012, 014～019, 021, 022）
+# UX Batch 3 審計（UX-008～012, 014～019, 021, 022）+ 下一批 UX 補齊（002～006, 023～025）
 
-對應計畫「下一批 70 任務」Batch 3。
+對應計畫「下一批 70 任務」Batch 3；下一批計畫 Batch 1（UX 補齊）。
+
+## UX-002：表單與 API 錯誤有明確用戶可見回饋
+
+- **狀態**：登入/表單錯誤有 inline role=alert 與 toast；訂閱、派對房 join、遊戲建立等 API 失敗處已使用 `toast.error` 或 `getDisplayErrorMessage`。關鍵 API 失敗時非僅 console。
+- **驗收**：表單與關鍵 API 錯誤皆有 toast 或頁面提示。
+
+## UX-003：觸控目標至少 48px
+
+- **狀態**：全站 CTA 與按鈕使用 `min-h-[48px]` 或 `games-touch-target`（globals.css、各元件）；導航、遊戲控制已審計。
+- **驗收**：符合規範。
+
+## UX-004：手機底部導航不被鍵盤完全遮擋
+
+- **狀態**：Navigation 內輸入框 focus 時（input/textarea/select），400ms 後將底部導航 `scrollIntoView({ block: 'end' })`，鍵盤彈起時保持可操作。
+- **驗收**：手機或模擬器輸入頁 focus 後可捲動至底部導航。
+
+## UX-006：圖示系統統一（lucide）
+
+- **狀態**：專案僅使用 `lucide-react`，未混用 heroicons / react-icons / MUI icons（已 grep 確認）。
+- **驗收**：無混用。
+
+## UX-023：進階動畫可關閉或降級
+
+- **狀態**：globals.css、framer-motion 元件已尊重 `prefers-reduced-motion`；見 A11Y-009、ux-batch3 UX-016。
+- **驗收**：reduced-motion 已有則標註完成。
+
+## UX-024：列印樣式（證書、學習單）
+
+- **狀態**：可選。LearnCourseContent 列印已有 `max-width:720px`、`line-height:1.6`；證書頁可補列印專用 CSS。
+- **驗收**：可選或文件化。
+
+## UX-025：鍵盤快捷鍵說明
+
+- **狀態**：可選。若有全域快捷鍵可於說明頁或 tooltip 標註。
+- **驗收**：可選或文件化。
+
+---
 
 ## UX-008：深色/淺色主題無對比遺漏
 

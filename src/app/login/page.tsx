@@ -430,6 +430,9 @@ export default function LoginPage() {
             {t('login.agreePrivacy')}{' '}
             <Link href="/privacy" className="text-primary-500 hover:text-primary-400 font-medium underline underline-offset-1">{t('footer.privacy')}</Link>。
           </p>
+          <p className="text-center mt-1 text-white/35 text-xs" role="note">
+            {t('login.trustPrivacy')}
+          </p>
           <p className="text-center mt-2 text-white/40 text-sm">
             {t('login.noAccount')} <Link href="/register" className="text-primary-500 hover:text-primary-400 font-medium">{t('login.registerFree')}</Link>
           </p>
