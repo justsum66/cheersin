@@ -4,7 +4,7 @@
  * P3-57：context 可含 requestId，由 route 從 request.headers.get('x-request-id') 傳入
  */
 
-import { maskSensitiveContext } from './api-error-log'
+import { maskSensitiveContext } from './mask-context'
 
 const isDev = process.env.NODE_ENV === 'development'
 

@@ -596,10 +596,10 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           ))}
         </div>
       </div>
-      {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；P1-114 隨機選一個 */}
+      {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；P1-114 隨機選一個；I18N-05 */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <p id="lobby-game-count" className="text-sm text-white/50" aria-live="polite">
-          共 {games.length} 款遊戲{sortedGames.length !== games.length ? `（當前 ${sortedGames.length} 款）` : ''}
+          {(t('games.gameCountTemplate') ?? '').replace(/\{\{total\}\}/g, String(games.length))}{sortedGames.length !== games.length ? (t('games.gameCountFilteredTemplate') ?? '').replace(/\{\{count\}\}/g, String(sortedGames.length)) : ''}
         </p>
         {sortedGames.length > 0 && (
           <button
@@ -609,40 +609,48 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               onSelect(sortedGames[idx].id)
             }}
             className="min-h-[44px] px-3 py-1.5 rounded-xl bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 text-sm font-medium flex items-center gap-1.5 games-focus-ring"
-            aria-label="隨機選一個遊戲"
+            aria-label={t('games.randomPickAria') ?? undefined}
           >
             <Shuffle className="w-4 h-4 shrink-0" aria-hidden />
-            隨機來一個
+            {t('games.randomPick')}
           </button>
         )}
       </div>
-      {/* GAMES_500 #49 #63 #64 #87：空狀態建議關鍵字／清除搜尋；建立房間為同頁區塊 */}
+      {/* GAMES_500 #49 #63 #64 #87：空狀態建議關鍵字／清除搜尋；建立房間為同頁區塊；I18N-05 */}
       {sortedGames.length === 0 && (
         <div className="text-center py-8 px-4" role="status" aria-live="polite">
           <Search className="w-10 h-10 text-white/30 mx-auto mb-3" aria-hidden />
-          <p className="text-white/50 text-sm mb-1">沒有符合的遊戲，試試其他分類或搜尋關鍵字</p>
-          <p className="text-white/40 text-xs mb-2">試試關鍵字：</p>
+          <p className="text-white/50 text-sm mb-1">{t('games.noMatch')}</p>
+          <p className="text-white/40 text-xs mb-2">{t('games.tryKeywords')}</p>
           <div className="flex flex-wrap justify-center gap-2 mb-3">
-            {['派對', '轉盤', '骰子', '真心話'].map((kw) => (
-              <button
-                key={kw}
-                type="button"
-                onClick={() => setSearchQuery(kw)}
-                className="min-h-[44px] px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                aria-label={`搜尋 ${kw}`}
-              >
-                {kw}
-              </button>
-            ))}
+            {[
+              { key: 'party', labelKey: 'games.keywordParty' as const },
+              { key: 'roulette', labelKey: 'games.keywordRoulette' as const },
+              { key: 'dice', labelKey: 'games.keywordDice' as const },
+              { key: 'truthOrDare', labelKey: 'games.keywordTruthOrDare' as const },
+            ].map(({ key, labelKey }) => {
+              const label = t(labelKey) ?? ''
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSearchQuery(label)}
+                  className="min-h-[44px] px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
+                  aria-label={(t('games.searchKeywordAria') ?? '').replace(/\{\{keyword\}\}/g, label)}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
-          <p className="text-white/40 text-xs mb-4">或向下捲動建立房間，邀請好友一起玩</p>
+          <p className="text-white/40 text-xs mb-4">{t('games.scrollToCreate')}</p>
           {deferredQuery.trim().length >= 2 && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
             >
-              清除搜尋
+              {t('games.clearSearch')}
             </button>
           )}
         </div>
@@ -660,7 +668,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               onRate: handleRate,
               isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
               twoPlayerFriendly: game.twoPlayerFriendly,
-              onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? '暫無規則摘要' }),
+              onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
               isPremium: game.isPremium ?? getGameMeta(game.id)?.requiredTier === 'premium',
             }}
             index={index}
@@ -678,11 +686,11 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
         <RandomBrewery />
       </div>
 
-      {/* P1-118：遊戲規則快速預覽 Modal */}
+      {/* P1-118：遊戲規則快速預覽 Modal；I18N-05 */}
       <Modal
         open={rulesModal != null}
         onClose={() => setRulesModal(null)}
-        title={rulesModal ? `規則：${rulesModal.name}` : undefined}
+        title={rulesModal ? (t('games.rulesTitle') ?? '').replace(/\{\{name\}\}/g, rulesModal.name) : undefined}
       >
         <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{rulesModal?.rules ?? ''}</p>
       </Modal>

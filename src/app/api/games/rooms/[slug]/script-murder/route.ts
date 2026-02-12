@@ -7,6 +7,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { SLUG_PATTERN } from '@/lib/games-room'
+import { stripHtml } from '@/lib/sanitize'
 import type { ScriptRoomState } from '@/types/script-murder'
 
 const SCRIPT_MURDER_GAME_ID = 'script_murder'
@@ -77,8 +78,8 @@ export async function POST(
     }
 
     if (action === 'vote') {
-      const playerId = typeof body.playerId === 'string' ? body.playerId : ''
-      const option = typeof body.option === 'string' ? body.option : ''
+      const playerId = typeof body.playerId === 'string' ? body.playerId.trim() : ''
+      const option = typeof body.option === 'string' ? stripHtml(body.option).trim().slice(0, 64) : ''
       if (!playerId || option === '') return errorResponse(400, 'Missing playerId or option', { message: '缺少 playerId 或 option' })
       const { data: player } = await supabase
         .from('game_room_players')

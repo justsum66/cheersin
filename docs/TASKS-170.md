@@ -257,3 +257,9 @@
 | 2026-02-12 | GAME-015, GAME-016 | 派對房 join API 回傳 code ROOM_FULL/INVALID_PASSWORD；messages 新增 roomFull、wrongPassword；前端依 code 顯示 i18n |
 | 2026-02-12 | SEC-006 | sanitize.ts 註明 ld+json 政策；新增 SafeJsonLdScript 並替換各處 ld+json |
 | 2026-02-12 | A11Y-006 | 定價首訪、KingsCup、GameWrapperBody、GameWrapperHeader、PunishmentWheelModal、PaidGameLock 等補齊 Esc 關閉 |
+| 2026-02-12 | **Phase 2 續：40 任務** | **Batch 1 (SEC)**：SEC-007 CSP 註解、SEC-008 Turnstile 流程註解、SEC-010 .env.example 審計註明、SEC-012 upload 白名單註解、SEC-014 audit script、SEC-015 SENSITIVE_KEYS 擴充 |
+| 2026-02-12 | (續) | **Batch 2 (PERF)**：PERF-003 GameLazyMap 註解、PERF-004/018 next.config images 註解、PERF-008 games/rooms Cache-Control、PERF-013 Turnstile dynamic 註解 |
+| 2026-02-12 | (續) | **Batch 3 (A11Y)**：A11Y-005 skip link aria-label、A11Y-011 ScriptMurder aria-live、accessibility-audit-checklist.md |
+| 2026-02-12 | (續) | **Batch 4 (I18N+UX)**：I18N-003/007 t() fallback + interpolate、I18N-005 apiErrors + getDisplayErrorMessage、I18N-008 layout meta 註解、UX-007/020 OfflineBanner i18n、meta/apiErrors/gameError/offlineMessage 多語 |
+| 2026-02-12 | (續) | **Batch 5 (COPY/GAME/TEST)**：COPY-003/006 not-found/error 友善+規則 modal 註解、GAME-013 GameErrorBoundary i18n 文案、TEST-008 check:i18n 關鍵命名空間、TEST-013 getErrorCode + api-response 註解 |
+| 2026-02-12 | (續) | **Batch 6 (DEV)**：DEV-004 mask-context 抽離、api-error-log/middleware 改 logger、DEV-008 prestart 已有、DEV-009 depcheck 已有 |

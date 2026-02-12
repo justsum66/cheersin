@@ -1,21 +1,23 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useAccordion } from '@/hooks/useAccordion'
+import { TypewriterText } from '@/components/ui/TypewriterText'
 
 export interface FAQItem {
   q: string
   a: string
 }
 
-/** Client：FAQ 折疊互動 — DEDUP #8 使用共用 useAccordion */
+/** Client：FAQ 折疊互動 — DEDUP #8 使用共用 useAccordion；R2-111 FAQ 標題打字機 */
 export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
   const [openIndex, setOpenIndex] = useAccordion(null)
+  const reducedMotion = useReducedMotion()
 
   return (
     <div className="mt-8 max-w-2xl mx-auto">
-      <h3 className="text-sm font-medium text-white/60 mb-3">常見問題</h3>
+      <TypewriterText text="常見問題" as="h3" reducedMotion={!!reducedMotion} className="text-sm font-medium text-white/60 mb-3" />
       <div className="space-y-2">
         {items.map((item, index) => (
           <motion.div

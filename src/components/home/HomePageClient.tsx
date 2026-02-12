@@ -386,6 +386,28 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         </div>
       </section>
 
+      {/* R2-117：品牌故事區 — InView 左右交錯入場 */}
+      <section className="py-10 md:py-14 border-t border-white/10 bg-white/[0.02]" aria-labelledby="home-story-heading">
+        <h2 id="home-story-heading" className="sr-only">關於 Cheersin</h2>
+        <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <InViewAnimate delay={0} y={24} amount={0.2} className="md:pr-4" reducedMotion={!!reducedMotion}>
+              <span className="text-primary-500 font-mono text-xs tracking-widest uppercase">關於我們</span>
+              <h3 className="home-heading-2 text-white mt-2 mb-3">重新定義品酒體驗</h3>
+              <p className="text-white/70 text-sm md:text-base leading-relaxed">
+                Cheersin 從靈魂酒測出發，結合派對遊戲、品酒學堂與 AI 侍酒師，讓每個人都能輕鬆找到自己的命定酒款，在聚會中創造專屬回憶。
+              </p>
+            </InViewAnimate>
+            <InViewAnimate delay={0.1} y={24} amount={0.2} className="md:pl-4" reducedMotion={!!reducedMotion}>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-6 text-center">
+                <p className="text-primary-400 font-semibold text-lg mb-1">派對 · 學習 · 諮詢</p>
+                <p className="text-white/50 text-sm">一站滿足探索、玩樂與進階需求</p>
+              </div>
+            </InViewAnimate>
+          </div>
+        </div>
+      </section>
+
       <section className="py-10 md:py-14 border-t border-white/10 bg-white/[0.02]" aria-labelledby="home-stats-heading">
         <h2 id="home-stats-heading" className="sr-only">用戶數據與評價</h2>
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4">
@@ -472,7 +494,12 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
       <footer id="footer-cta-section" className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 px-4 relative overflow-hidden safe-area-pb print:py-6" role="contentinfo" aria-label="頁尾與網站地圖">
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a2e]/80 via-transparent to-transparent pointer-events-none" aria-hidden />
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center mb-10">
+          {/* R2-125：下載/CTA 區塊輕微浮動，吸引注意 */}
+          <motion.div
+            className="max-w-4xl mx-auto text-center mb-10"
+            animate={reducedMotion ? undefined : { y: [0, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
             <h2 id="home-cta-heading" className="home-heading-2 text-white mb-2">{HOME_COPY.ctaFooterTitle}</h2>
             <p className="home-text-muted home-body mb-6 text-balance">{HOME_COPY.ctaFooterDesc}</p>
             <Link
@@ -489,6 +516,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               </MagneticButton>
             </Link>
             <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">{FOOTER_DRINK_NOTE}</p>
+          </motion.div>
             <form
               id="footer-subscribe-form"
               className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-6 home-footer-form opacity-90 text-sm"
@@ -525,7 +553,6 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
             </div>
             <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
-          </div>
 
           {/* 網站地圖（原 Footer 內容）：產品／體驗／公司／語系 */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
@@ -625,7 +652,8 @@ const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description
           onMouseLeave={handleMouseLeave}
           whileHover={reducedMotion ? undefined : { rotateX: 1.5, rotateY: -1.5, translateZ: 6, scale: 1.02 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="card-3d card-glow-hover glass-card-spotlight bento-card-hover p-4 md:p-5 group hover:border-primary-500/30 hover:shadow-glass-hover h-full flex flex-col relative overflow-hidden"
+          style={{ transformStyle: 'preserve-3d' }}
+          className="card-glow-hover glass-card-spotlight bento-card-hover p-4 md:p-5 group hover:border-primary-500/30 hover:shadow-glass-hover h-full flex flex-col relative overflow-hidden"
         >
           {/* P1-048：鼠標追隨光暈，僅在非 reduced-motion 且 hover 時顯示 */}
           {!reducedMotion && glow && (

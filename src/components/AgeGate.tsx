@@ -30,11 +30,14 @@ export default function AgeGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation()
   const [status, setStatus] = useState<'loading' | 'verified' | 'gate' | 'under18' | 'skip'>('loading')
 
-  /** 僅在 /games 或 /games/* 路徑時才檢查年齡門檻 */
-  const isGamesRoute = pathname?.startsWith('/games') ?? false
+  /** 僅在 /games、/script-murder、/party-room 路徑時才檢查年齡門檻（SM-58 Gate 元件） */
+  const isAgeGatedRoute =
+    (pathname?.startsWith('/games') ?? false) ||
+    (pathname?.startsWith('/script-murder') ?? false) ||
+    (pathname?.startsWith('/party-room') ?? false)
 
   useEffect(() => {
-    if (!isGamesRoute) {
+    if (!isAgeGatedRoute) {
       setStatus('skip')
       return
     }
@@ -44,7 +47,7 @@ export default function AgeGate({ children }: { children: React.ReactNode }) {
       return
     }
     setStatus('gate')
-  }, [isGamesRoute])
+  }, [isAgeGatedRoute])
 
   const handleConfirm = () => {
     setVerifiedCookie()

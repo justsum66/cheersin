@@ -3,9 +3,11 @@
  * P3-57：API 請求 ID — 為每個請求產生 x-request-id，傳給 route 並回傳 X-Request-Id 供追蹤日誌
  * P2-303 / P2-327：API 請求結構化日誌（timestamp, requestId, method, path）；響應時間由各 route 或 instrumentation 記錄
  * P2-335：CSRF — 狀態變更的 /api 要求 Origin/Referer 為同源或白名單；webhook/auth 路徑排除
+ * DEV-004：使用 logger 取代 console
  */
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { logger } from '@/lib/logger'
 
 const CORS_ORIGINS = process.env.CORS_ALLOWED_ORIGINS?.trim()
 const ALLOW_ORIGIN = CORS_ORIGINS ? CORS_ORIGINS.split(',')[0]?.trim() : ''
@@ -43,7 +45,7 @@ function logApiRequest(requestId: string, method: string, path: string): void {
       level: 'info',
       type: 'api_request',
     }
-    console.info(JSON.stringify(payload))
+    logger.info('api_request', payload)
   }
 }
 

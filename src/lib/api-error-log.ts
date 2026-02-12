@@ -1,7 +1,12 @@
 /**
  * E04：關鍵 API 錯誤結構化 log（不含 PII）
  * P3-57：支援 requestId 貫穿日誌；P3-58：不記錄敏感欄位（password、token 等）
+ * DEV-004：改為使用 logger，避免直接 console
  */
+import { logger } from './logger'
+import { maskSensitiveContext } from './mask-context'
+
+export { maskSensitiveContext }
 
 export type ApiErrorLevel = 'error' | 'warn'
 
@@ -18,32 +23,6 @@ export interface StructuredApiError {
   isP0?: boolean
   /** 請求處理耗時（毫秒） */
   durationMs?: number
-}
-
-/** P3-58：敏感 key 不記錄明文，僅留前 4 字元或 [REDACTED] */
-const SENSITIVE_KEYS = new Set([
-  'password', 'token', 'apiKey', 'api_key', 'secret', 'authorization',
-  'cookie', 'x-admin-secret', 'set-cookie', 'authorization'
-])
-
-function maskValue(key: string, value: unknown): unknown {
-  if (value == null) return value
-  const k = key.toLowerCase().replace(/-/g, '')
-  if (SENSITIVE_KEYS.has(k) || k.includes('password') || k.includes('secret') || k.includes('token')) {
-    const s = String(value)
-    if (s.length <= 4) return '[REDACTED]'
-    return s.slice(0, 4) + '***'
-  }
-  return value
-}
-
-/** P3-58：從 context 物件中遮罩敏感欄位，避免日誌洩漏 */
-export function maskSensitiveContext<T extends Record<string, unknown>>(context: T): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(context)) {
-    out[key] = maskValue(key, value)
-  }
-  return out
 }
 
 function formatError(error: unknown): string {
@@ -82,7 +61,7 @@ export function logApiError(
     ...(options.durationMs != null && { durationMs: options.durationMs }),
     ...(options.eventType && { eventType: options.eventType }),
   }
-  console.error(JSON.stringify(payload))
+  logger.error(payload.message, payload as unknown as Record<string, unknown>)
 }
 
 /**
@@ -103,5 +82,5 @@ export function logApiWarn(
     ...(options.durationMs != null && { durationMs: options.durationMs }),
     ...(options.code && { code: options.code }),
   }
-  console.warn(JSON.stringify(payload))
+  logger.warn(payload.message, payload as unknown as Record<string, unknown>)
 }

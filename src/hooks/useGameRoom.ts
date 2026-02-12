@@ -25,6 +25,10 @@ export interface GameRoomState {
   inviteUrl: string | null
   /** P0-004：匿名模式開啟時，API 已回傳玩家A/B，此處僅供 UI 開關顯示 */
   anonymousMode: boolean
+  /** DC-05：房型上限、房主、過期時間，供 party-room 等使用 */
+  maxPlayers: number
+  hostId: string | null
+  expiresAt: string | null
   loading: boolean
   error: string | null
 }
@@ -35,6 +39,12 @@ export function useGameRoom(slug: string | null) {
   const [players, setPlayers] = useState<RoomPlayer[]>([])
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [anonymousMode, setAnonymousModeState] = useState(false)
+  const [maxPlayers, setMaxPlayers] = useState(4)
+  const [hostId, setHostId] = useState<string | null>(null)
+  const [expiresAt, setExpiresAt] = useState<string | null>(null)
+  /** DC-04：劇本殺房專用，供 useScriptMurderRoom 使用 */
+  const [scriptId, setScriptId] = useState<string | null>(null)
+  const [scriptRoom, setScriptRoom] = useState(false)
   const [loading, setLoading] = useState(!!slug)
   const [error, setError] = useState<string | null>(null)
   /** GAMES_500 #167：房間不存在時不重複請求 — 410/過期後 visibility 不 refetch */
@@ -51,6 +61,10 @@ export function useGameRoom(slug: string | null) {
         setError('房間已過期')
         setRoomId(null)
         setPlayers([])
+        setHostId(null)
+        setExpiresAt(null)
+        setScriptId(null)
+        setScriptRoom(false)
         setLoading(false)
         return
       }
@@ -62,6 +76,10 @@ export function useGameRoom(slug: string | null) {
           setError('房間已過期')
           setRoomId(null)
           setPlayers([])
+          setHostId(null)
+          setExpiresAt(null)
+          setScriptId(null)
+          setScriptRoom(false)
           setLoading(false)
           return
         }
@@ -75,6 +93,11 @@ export function useGameRoom(slug: string | null) {
       const roomAnonymous = !!data.room?.anonymousMode
       setRoomId(data.room?.id ?? null)
       setAnonymousModeState(roomAnonymous)
+      setMaxPlayers(data.room?.maxPlayers ?? 4)
+      setHostId(data.room?.hostId ?? null)
+      setExpiresAt(data.room?.expiresAt ?? null)
+      setScriptId(data.room?.scriptId ?? null)
+      setScriptRoom(!!data.room?.scriptRoom)
       setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }) => ({
         id: p.id,
         displayName: p.displayName,
@@ -94,6 +117,10 @@ export function useGameRoom(slug: string | null) {
       setError(msg)
       setRoomId(null)
       setPlayers([])
+      setHostId(null)
+      setExpiresAt(null)
+      setScriptId(null)
+      setScriptRoom(false)
     } finally {
       setLoading(false)
     }
@@ -107,6 +134,11 @@ export function useGameRoom(slug: string | null) {
       setPlayers([])
       setInviteUrl(null)
       setAnonymousModeState(false)
+      setMaxPlayers(4)
+      setHostId(null)
+      setExpiresAt(null)
+      setScriptId(null)
+      setScriptRoom(false)
       setError(null)
       return
     }
@@ -229,6 +261,11 @@ export function useGameRoom(slug: string | null) {
     players,
     inviteUrl,
     anonymousMode,
+    maxPlayers,
+    hostId,
+    expiresAt,
+    scriptId,
+    scriptRoom,
     setAnonymousMode,
     loading,
     error,

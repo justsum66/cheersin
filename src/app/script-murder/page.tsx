@@ -24,6 +24,8 @@ import { ScriptMurderRoom } from './ScriptMurderRoom'
 import { ScriptMurderPlay } from './ScriptMurderPlay'
 import { ScriptMurderEnded } from './ScriptMurderEnded'
 
+const SCRIPT_MURDER_PLAYER_KEY = (slug: string) => `script_murder_player_${slug}`
+
 export default function ScriptMurderPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -54,6 +56,7 @@ export default function ScriptMurderPage() {
     setDisplayName,
     joined,
     joinError,
+    joinLoading,
     myPlayerRowId,
     setMyPlayerRowId,
   } = roomData
@@ -79,13 +82,15 @@ export default function ScriptMurderPage() {
 
   const getInviteUrl = useCallback(() => inviteUrl, [inviteUrl])
 
-  const { copyInvite, copied: inviteCopied } = useCopyInvite(getInviteUrl, () =>
-    toast.success(t('scriptMurder.copied') ?? '已複製邀請連結', { duration: 2000 })
+  const { copyInvite, copied: inviteCopied } = useCopyInvite(
+    getInviteUrl,
+    () => toast.success(t('scriptMurder.copied') ?? '已複製邀請連結', { duration: 2000 }),
+    () => toast.error(t('scriptMurder.copyFailed'))
   )
   const isHost = !!room && !!user?.id && room.hostId === user.id
   const freeScriptLimit = tier === 'free' ? 1 : Infinity
 
-  /** SM-03：離開房間，以 myPlayerRowId 呼叫 leave API 後導向大廳 */
+  /** SM-03 / SM-49：離開房間，成功後清除 sessionStorage 與 myPlayerRowId 再導向大廳 */
   const handleLeave = useCallback(async () => {
     if (!roomSlug || !myPlayerRowId) return
     try {
@@ -96,14 +101,16 @@ export default function ScriptMurderPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (res.ok) {
+        if (typeof window !== 'undefined') sessionStorage.removeItem(SCRIPT_MURDER_PLAYER_KEY(roomSlug))
+        setMyPlayerRowId(null)
         router.push('/script-murder')
       } else {
-        toast.error((data as { message?: string }).message ?? t('scriptMurder.returnList'))
+        toast.error(getErrorMessage(data, t('scriptMurder.returnList')))
       }
     } catch {
       toast.error(t('scriptMurder.returnList'))
     }
-  }, [roomSlug, myPlayerRowId, router, t])
+  }, [roomSlug, myPlayerRowId, router, t, setMyPlayerRowId])
 
   const fetchScripts = useCallback(async () => {
     setLoadingScripts(true)
@@ -132,11 +139,11 @@ export default function ScriptMurderPage() {
           )
         )
     } catch {
-      setError('無法載入劇本列表')
+      setError(t('scriptMurder.errorLoadScripts'))
     } finally {
       setLoadingScripts(false)
     }
-  }, [setError])
+  }, [setError, t])
 
   useEffect(() => {
     if (!roomSlug) {
@@ -153,10 +160,28 @@ export default function ScriptMurderPage() {
   useScriptMurderRealtime(roomSlug || null, refetchRoomAndState)
   usePolling(refetchRoomAndState, { intervalMs: 3000, enabled: !!roomSlug })
 
+  /** SM-49：從 sessionStorage 還原已加入的 player id */
+  useEffect(() => {
+    if (!roomSlug || typeof window === 'undefined') return
+    const stored = sessionStorage.getItem(SCRIPT_MURDER_PLAYER_KEY(roomSlug))
+    if (stored) setMyPlayerRowId(stored)
+  }, [roomSlug, setMyPlayerRowId])
+
+  /** 玩家列表與 displayName 同步 myPlayerRowId，並寫入 sessionStorage */
   useEffect(() => {
     const pid = players.find((p) => p.displayName === displayName)?.id
-    if (pid && !myPlayerRowId) setMyPlayerRowId(pid)
-  }, [players, displayName, myPlayerRowId, setMyPlayerRowId])
+    if (pid && !myPlayerRowId) {
+      setMyPlayerRowId(pid)
+      if (roomSlug && typeof window !== 'undefined') sessionStorage.setItem(SCRIPT_MURDER_PLAYER_KEY(roomSlug), pid)
+    }
+  }, [players, displayName, myPlayerRowId, setMyPlayerRowId, roomSlug])
+
+  /** SM-49：若 myPlayerRowId 已不在玩家列表中則清除並移除 sessionStorage */
+  useEffect(() => {
+    if (!roomSlug || !myPlayerRowId || players.some((p) => p.id === myPlayerRowId)) return
+    setMyPlayerRowId(null)
+    if (typeof window !== 'undefined') sessionStorage.removeItem(SCRIPT_MURDER_PLAYER_KEY(roomSlug))
+  }, [myPlayerRowId, players, roomSlug, setMyPlayerRowId])
 
   useEffect(() => {
     if (!scriptState?.assignments || !getPlayerId() || myRoleId) return
@@ -198,14 +223,15 @@ export default function ScriptMurderPage() {
         createRoom={createRoom}
         creating={creating}
         freeScriptLimit={freeScriptLimit}
+        onRetry={fetchScripts}
       />
     )
   }
 
   if (!room) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-        {error && <p className="text-red-400">{error}</p>}
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto">
+        {error && <p className="text-red-400 text-center">{error}</p>}
         <Link href="/script-murder" className="text-primary-400 hover:text-primary-300">
           {t('scriptMurder.returnList')}
         </Link>
@@ -215,8 +241,8 @@ export default function ScriptMurderPage() {
 
   if (!room.scriptRoom || !room.scriptId) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-        <p className="text-white/70">{t('scriptMurder.notScriptRoom')}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto">
+        <p className="text-white/70 text-center">{t('scriptMurder.notScriptRoom')}</p>
         <Link href="/script-murder" className="text-primary-400 hover:text-primary-300">
           {t('scriptMurder.goScriptMurder')}
         </Link>
@@ -232,7 +258,7 @@ export default function ScriptMurderPage() {
   if (!stateReady && room.scriptId) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4 px-4"
+        className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto"
         role="status"
         aria-label={t('scriptMurder.loadingRoom')}
       >
@@ -245,7 +271,7 @@ export default function ScriptMurderPage() {
   if (!scriptDetail && room.scriptId) {
     if (scriptLockedMessage) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" role="status">
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto" role="status">
           <p className="text-amber-400/90 text-center max-w-sm">{scriptLockedMessage}</p>
           <Link href="/pricing" className="min-h-[48px] px-4 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium games-focus-ring">
             {t('scriptMurder.upgradeUnlock')}
@@ -258,7 +284,7 @@ export default function ScriptMurderPage() {
     }
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4 px-4"
+        className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto"
         role="status"
         aria-label={t('scriptMurder.loadingScript')}
       >
@@ -283,6 +309,7 @@ export default function ScriptMurderPage() {
         setDisplayName={setDisplayName}
         joinRoom={joinRoom}
         joinError={joinError}
+        joinLoading={joinLoading}
         startGame={startGame}
         showStartConfirm={showStartConfirm}
         setShowStartConfirm={setShowStartConfirm}
@@ -318,7 +345,7 @@ export default function ScriptMurderPage() {
     if (!currentChapter) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-          <p className="text-white/50">載入中…</p>
+          <p className="text-white/50">{t('scriptMurder.loading')}</p>
         </div>
       )
     }
@@ -341,8 +368,8 @@ export default function ScriptMurderPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-      <p className="text-white/50">載入中…</p>
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto">
+      <p className="text-white/50">{t('scriptMurder.loading')}</p>
     </div>
   )
 }

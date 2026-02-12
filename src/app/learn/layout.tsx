@@ -38,10 +38,7 @@ export default function LearnLayout({
   return (
     <>
       <LearnBreadcrumbJsonLd />
-      <a
-        href="#learn-main"
-        className="skip-link"
-      >
+      <a href="#learn-main" className="skip-link" aria-label="跳至主要內容">
         跳至主要內容
       </a>
       {children}

@@ -35,7 +35,7 @@ export function createServerClient(): SupabaseClient {
     return getServerClient()
 }
 
-/** 可選 Server Client：env 未設定時回傳 null，用於可選持久化（如 api_calls、chat_history） */
+/** 可選 Server Client：env 未設定時回傳 null 不拋錯（SB-23）；用於可選持久化（如 api_calls、chat_history）。本 client 為 service role，無 cookie 依賴。 */
 export function createServerClientOptional(): SupabaseClient | null {
     try {
         return getServerClient()

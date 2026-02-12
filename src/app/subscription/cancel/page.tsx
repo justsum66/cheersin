@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { HelpCircle, Gift, RotateCcw } from 'lucide-react';
 import { CANCELLED_AT_KEY } from '@/lib/subscription-retention';
+import { useTranslation } from '@/contexts/I18nContext';
 
-/** P3-55：取消頁顯示挽留窗至 current_period_end */
+/** P3-55：取消頁顯示挽留窗至 current_period_end；I18N-06 */
 export default function SubscriptionCancelPage() {
+  const { t } = useTranslation()
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
 
   useEffect(() => {
@@ -39,57 +41,53 @@ export default function SubscriptionCancelPage() {
           <HelpCircle className="w-10 h-10 text-yellow-400" aria-hidden />
         </div>
 
-        <h1 className="home-heading-2 font-display font-bold text-white mb-2" data-testid="cancel-page-heading">訂閱已取消</h1>
-        {/* E49 / P3-55：已取消，可使用至 current_period_end；無則以當期結束日說明 */}
+        <h1 className="home-heading-2 font-display font-bold text-white mb-2" data-testid="cancel-page-heading">{t('subscription.cancelPageTitle')}</h1>
         <p className="text-white/90 text-sm mb-2" role="status">
           {periodEnd
-            ? `已取消。您的方案可使用至 ${periodEnd}。`
-            : '已取消。您的方案可使用至當期結束日。'}
+            ? (t('subscription.cancelMessageWithDate') ?? '').replace(/\{\{date\}\}/g, periodEnd)
+            : t('subscription.cancelMessageDefault')}
         </p>
         <p className="home-text-muted mb-2 max-w-[65ch] mx-auto">
-          沒關係，你隨時可以回來！免費功能依然可以使用。
+          {t('subscription.comeBackAnytime')}
         </p>
         <p className="text-white/60 text-sm mb-6 max-w-[65ch] mx-auto">
-          到期日請至{' '}
-          <Link href="/subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">訂閱管理</Link> 查看。
+          {t('subscription.checkManageLink')}{' '}
+          <Link href="/subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">{t('subscription.manageLink')}</Link> {t('subscription.manageLinkSuffix')}
         </p>
 
-        {/* R2-219：取消後你將失去的 Pro 權益清單（挽留情境） */}
-        <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 text-left" role="region" aria-label="取消後將失去的權益">
-          <p className="text-sm text-white/80 font-medium mb-2">取消後你將失去：</p>
+        <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 text-left" role="region" aria-label={t('subscription.loseRegionAria') ?? undefined}>
+          <p className="text-sm text-white/80 font-medium mb-2">{t('subscription.loseTitle')}</p>
           <ul className="text-xs text-white/60 space-y-1 list-disc list-inside">
-            <li>無限次數派對遊戲與進階題庫</li>
-            <li>品酒學院完整課程與證書</li>
-            <li>侍酒師 AI 深度對話與推薦</li>
-            <li>專屬優惠與活動優先報名</li>
+            <li>{t('subscription.loseItem1')}</li>
+            <li>{t('subscription.loseItem2')}</li>
+            <li>{t('subscription.loseItem3')}</li>
+            <li>{t('subscription.loseItem4')}</li>
           </ul>
         </div>
 
-        {/* P3 挽留：保留方案優惠文案 */}
         <div className="mb-6 p-4 rounded-xl bg-primary-500/10 border border-primary-500/20 text-left">
           <p className="text-sm text-white/90 font-medium flex items-center gap-2 mb-1">
             <RotateCcw className="w-4 h-4 text-primary-400 shrink-0" aria-hidden />
-            改變心意？
+            {t('subscription.changeMind')}
           </p>
-          <p className="text-xs text-white/60">
-            保留方案可再送 7 天使用，或隨時重新訂閱享首月優惠。
+          <p className="text-xs text-white/60 mb-2">
+            {t('subscription.retainOrResub')}
           </p>
+          <p className="text-xs text-primary-300 font-medium">{t('subscription.retentionOffer')}</p>
         </div>
 
-        {/* P2 任務 37：取消頁 CTA 層次 — 主 CTA 保留方案、次 CTA 訂閱管理 */}
-        <div className="space-y-3" role="group" aria-label="下一步動作">
+        <div className="space-y-3" role="group" aria-label={t('subscription.nextStepsAria') ?? undefined}>
           <Link href="/pricing" className="btn-primary block w-full text-center min-h-[48px] py-3 games-focus-ring rounded-xl font-semibold">
-            保留方案 / 重新訂閱
+            {t('subscription.ctaRetain')}
           </Link>
           <Link href="/subscription" className="btn-secondary block w-full text-center min-h-[48px] games-focus-ring rounded-xl">
-            訂閱管理
+            {t('subscription.ctaManage')}
           </Link>
           <Link href="/" className="block w-full text-center py-3 min-h-[48px] inline-flex items-center justify-center text-sm text-white/60 hover:text-white font-medium transition-colors games-focus-ring rounded">
-            回到首頁
+            {t('subscription.ctaHome')}
           </Link>
         </div>
 
-        {/* Special offer */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -98,7 +96,7 @@ export default function SubscriptionCancelPage() {
         >
           <p className="text-sm text-gray-300 flex items-center justify-center gap-2">
             <Gift className="w-4 h-4 text-primary-400 shrink-0" aria-hidden />
-            限時優惠：首月訂閱享 <span className="text-primary-500 font-bold">8 折</span> 優惠
+            {t('subscription.specialOffer')} <span className="text-primary-500 font-bold">{t('subscription.specialOfferDiscount')}</span> {t('subscription.specialOfferSuffix')}
           </p>
         </motion.div>
       </motion.div>

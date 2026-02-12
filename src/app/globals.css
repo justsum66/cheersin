@@ -1865,10 +1865,12 @@
 
 /* HOME_50 第三批：任務 25 Bento 網格、任務 29/31/37/40 排版與設計 */
 /* P1：Bento 四卡間距與 --space-section 對齊 */
+/* R2-037 / Bento 動效：父層 perspective 讓 3D 傾角正確投影 */
 .home-bento-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-section, 1.5rem);
+  perspective: 800px;
 }
 @media (min-width: 640px) {
   .home-bento-grid {
@@ -1967,6 +1969,8 @@
     margin-right: auto !important;
   }
   pre[data-code-block], .markdown-body pre { background: #f5f5f5 !important; color: #111 !important; padding: 1rem !important; overflow: auto !important; }
+  /* PR-44：派對房列印 — 隱藏按鈕/連結，保留房間標題、人數、乾杯數、剩餘時間、玩家列表 */
+  .party-room-no-print { display: none !important; }
 }
 
 /* P1-164：Pro 用戶漸變邊框 — 頭像框/卡片尊貴感 */

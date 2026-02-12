@@ -1,6 +1,6 @@
 'use client'
 
-/** UX_LAYOUT_200 #115：危險操作二次確認 — 可重用確認對話框；A-09 模態框開關 transition 順暢 */
+/** UX_LAYOUT_200 #115：危險操作二次確認 — 可重用確認對話框；A-09 模態框開關 transition 順暢；SM-65 關閉時 focus 回觸發按鈕 */
 import { useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -11,8 +11,10 @@ export interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'danger' | 'default'
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   onCancel: () => void
+  /** SM-65：關閉時 focus 回到此元素（觸發按鈕的 ref） */
+  triggerRef?: React.RefObject<HTMLElement | null>
 }
 
 export function ConfirmDialog({
@@ -24,18 +26,32 @@ export function ConfirmDialog({
   variant = 'danger',
   onConfirm,
   onCancel,
+  triggerRef,
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
+
+  const returnFocus = useCallback(() => {
+    if (triggerRef?.current) {
+      // SM-65：下一幀 focus，確保 dialog 已關閉
+      requestAnimationFrame(() => triggerRef.current?.focus())
+    }
+  }, [triggerRef])
 
   useEffect(() => {
     if (!open) return
     cancelRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
+      if (e.key === 'Escape') {
+        onCancel()
+        returnFocus()
+      }
+      if (e.key === 'Enter') {
+        void Promise.resolve(onConfirm()).finally(returnFocus)
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open, onCancel])
+  }, [open, onCancel, onConfirm, returnFocus])
 
   const isDanger = variant === 'danger'
 
@@ -76,7 +92,10 @@ export function ConfirmDialog({
               <button
                 ref={cancelRef}
                 type="button"
-                onClick={onCancel}
+                onClick={() => {
+                  onCancel()
+                  returnFocus()
+                }}
                 className="btn-ghost min-h-[48px] px-4 games-focus-ring"
                 aria-label={cancelLabel}
               >
@@ -84,7 +103,7 @@ export function ConfirmDialog({
               </button>
               <button
                 type="button"
-                onClick={onConfirm}
+                onClick={() => void Promise.resolve(onConfirm()).finally(returnFocus)}
                 className={isDanger ? 'btn-danger min-h-[48px] px-4 games-focus-ring' : 'btn-primary min-h-[48px] px-4 games-focus-ring'}
                 aria-label={confirmLabel}
               >

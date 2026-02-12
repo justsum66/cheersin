@@ -158,6 +158,10 @@ const PERSIST_EVENT_NAMES = new Set([
   'room_create',
   'room_join',
   'room_leave',
+  'party_room_create',
+  'party_room_join',
+  'party_room_cheers',
+  'party_room_select_game',
 ])
 
 /**

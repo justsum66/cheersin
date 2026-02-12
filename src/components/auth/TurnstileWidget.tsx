@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * R2-017：Cloudflare Turnstile 無感知真人驗證
+ * R2-017 / PERF-013：Cloudflare Turnstile 無感知真人驗證（dynamic import，ssr: false，不阻塞主線程）
  * 用於登入、註冊、忘記密碼表單，防機器人。
  * 未設定 NEXT_PUBLIC_TURNSTILE_SITE_KEY 時不渲染，表單仍可送出（開發/未上線）。
  */

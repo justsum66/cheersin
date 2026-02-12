@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { cookies } from 'next/headers'
 import { Suspense } from 'react'
 import { Playfair_Display, Inter, Noto_Sans_TC } from 'next/font/google'
 import './globals.css'
@@ -25,6 +26,9 @@ import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
 import ErrorFallback from '@/components/ErrorFallback'
 import Loading from '@/app/loading'
 import { TOAST_DURATION_SUCCESS, TOAST_DURATION_ERROR, TOAST_DURATION_DEFAULT } from '@/config/toast.config'
+import { getRootMeta } from '@/lib/i18n/server-meta'
+import { COOKIE_KEY } from '@/lib/i18n/config'
+import type { Locale } from '@/lib/i18n/config'
 
 /** 11 標題字體：Playfair Display 高級感 */
 const playfair = Playfair_Display({
@@ -56,39 +60,48 @@ const notoSansTC = Noto_Sans_TC({
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
-/** T021 P2：meta 說明目標客群（成人/酒類），搜尋即知、不誤導為兒童產品。SEO：robots 可索引、canonical 與 OG 一致。 */
-export const metadata: Metadata = {
-  title: { default: 'Cheersin | 探索你的靈魂之酒', template: '%s | Cheersin' },
-  description: 'Cheersin — 你的 AI 派對靈魂伴侶。靈魂酒測發現命定酒款、AI 幫你選遊戲與問酒、派對桌遊同樂、品酒學院從零學起。測驗免費，一站滿足。未滿18歲請勿飲酒。',
-  keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '台灣'],
-  authors: [{ name: 'Cheersin Team', url: BASE }],
-  metadataBase: new URL(BASE),
-  alternates: { canonical: BASE },
-  robots: { index: true, follow: true },
-  icons: {
-    icon: [
-      { url: '/sizes/favicon_16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/sizes/favicon_32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [{ url: '/sizes/apple_touch_180.png', sizes: '180x180', type: 'image/png' }],
-    shortcut: '/sizes/favicon.ico',
-  },
-  openGraph: {
-    title: 'Cheersin | 探索你的靈魂之酒',
-    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。',
-    type: 'website',
-    locale: 'zh_TW',
-    url: BASE,
-    /** T009 P2：分享預覽 — 動態 opengraph-image.tsx 產出 1200×630；metadataBase 會解析為絕對 URL */
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Cheersin 探索你的靈魂之酒' }],
-  },
-  /** E66 P2：Twitter 卡片與分享預覽一致，含圖片 */
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Cheersin | 探索你的靈魂之酒',
-    description: '你的 AI 派對靈魂伴侶 — 靈魂酒測、選遊戲、問酒款、派對桌遊、品酒學院，一站滿足。',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Cheersin 探索你的靈魂之酒' }],
-  },
+const LOCALES: Locale[] = ['zh-TW', 'zh-CN', 'yue', 'en', 'ja', 'ko']
+/** I18N-16：RTL 預留 — 未來若新增阿拉伯語等，加入此陣列即可讓 html[dir="rtl"] 生效 */
+const RTL_LOCALES: Locale[] = []
+
+/** I18N-17 / I18N-008：關鍵頁 meta 依 locale（cookie）切換 title/description/og；SEO、OG 一致。 */
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies()
+  const localeRaw = cookieStore.get(COOKIE_KEY)?.value ?? 'zh-TW'
+  const locale: Locale = LOCALES.includes(localeRaw as Locale) ? (localeRaw as Locale) : 'zh-TW'
+  const meta = getRootMeta(locale)
+  const ogLocale = locale === 'zh-TW' ? 'zh_TW' : locale === 'zh-CN' ? 'zh_CN' : locale === 'en' ? 'en_US' : locale
+  return {
+    title: { default: meta.title, template: '%s | Cheersin' },
+    description: meta.description,
+    keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '台灣'],
+    authors: [{ name: 'Cheersin Team', url: BASE }],
+    metadataBase: new URL(BASE),
+    alternates: { canonical: BASE },
+    robots: { index: true, follow: true },
+    icons: {
+      icon: [
+        { url: '/sizes/favicon_16.png', sizes: '16x16', type: 'image/png' },
+        { url: '/sizes/favicon_32.png', sizes: '32x32', type: 'image/png' },
+      ],
+      apple: [{ url: '/sizes/apple_touch_180.png', sizes: '180x180', type: 'image/png' }],
+      shortcut: '/sizes/favicon.ico',
+    },
+    openGraph: {
+      title: meta.ogTitle,
+      description: meta.ogDescription,
+      type: 'website',
+      locale: ogLocale,
+      url: BASE,
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: meta.ogTitle }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: meta.ogTitle,
+      description: meta.ogDescription,
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: meta.ogTitle }],
+    },
+  }
 }
 
 /** A11y: 不限制 maximumScale，允許低視力用戶縮放（axe meta-viewport） */
@@ -98,13 +111,17 @@ export const viewport: Viewport = {
   themeColor: '#0a0a0f',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = await cookies()
+  const localeRaw = cookieStore.get(COOKIE_KEY)?.value ?? 'zh-TW'
+  const locale: Locale = LOCALES.includes(localeRaw as Locale) ? (localeRaw as Locale) : 'zh-TW'
+  const dir = RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr'
   return (
-    <html lang="zh-TW" className={`${playfair.variable} ${inter.variable} ${notoSansTC.variable}`} suppressHydrationWarning>
+    <html lang={locale} dir={dir} className={`${playfair.variable} ${inter.variable} ${notoSansTC.variable}`} suppressHydrationWarning>
       <head>
         {/* 26 preconnect 外部資源 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -140,8 +157,8 @@ export default function RootLayout({
             {/* P2-260：第三方分析由 DeferredAnalytics 延遲載入；若接入 GA 請用 next/script strategy="lazyOnload" */}
         <DeferredAnalytics />
             <NavHiddenEffect />
-            {/* 128 Skip to content；AUDIT #22 確認首頁可跳至 #main-content 或主內容 */}
-            <a href="#main-content" className="skip-link">
+            {/* A11Y-005：Skip link 鍵盤可達、聚焦時可見，跳至主內容 */}
+            <a href="#main-content" className="skip-link" aria-label="跳至主內容">
               跳至主內容
             </a>
             <AuroraBackground />

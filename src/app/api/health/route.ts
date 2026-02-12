@@ -23,8 +23,9 @@ function hintFor(name: string, message: string): string {
         if (m.includes('fetch failed')) return 'Check NEXT_PUBLIC_SUPABASE_URL reachable; project may be paused (Supabase dashboard).'
         if (m.includes('missing') || m.includes('env')) return 'Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local'
     }
-    if (name === 'Groq AI' && (m.includes('401') || m.includes('invalid') || m.includes('api key'))) {
-        return 'Fix GROQ_API_KEY in .env.local (get key at console.groq.com)'
+    if (name === 'Groq AI') {
+        if (m.includes('429') || m.includes('rate limit')) return 'Groq rate limit; chat will fallback to next provider. Retry later or upgrade Groq tier.'
+        if (m.includes('401') || m.includes('invalid') || m.includes('api key')) return 'Fix GROQ_API_KEY in .env.local (get key at console.groq.com)'
     }
     if (name === 'OpenRouter') {
         if (m.includes('401') || m.includes('user not found')) return 'Fix OPENROUTER_API_KEY in .env.local (get key at openrouter.ai/keys)'

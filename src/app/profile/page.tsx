@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
@@ -37,6 +37,7 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import FeatureIcon from '@/components/ui/FeatureIcon'
+import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import PushSubscribe from '@/components/pwa/PushSubscribe'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -45,73 +46,92 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { SUBSCRIPTION_TIERS, hasProBadge } from '@/lib/subscription'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
 import { getStreak } from '@/lib/gamification'
+import { useTranslation } from '@/contexts/I18nContext'
 
 /** 211–215：學習進度 key */
 const LEARN_PROGRESS_KEY = 'cheersin_learn_progress'
 /** 211–215：遊戲統計 key（可擴充） */
 const GAMES_STATS_KEY = 'cheersin_games_played'
 
-/** P0-025：從 Supabase profiles 取得的資料或預設值（單一來源，無 Mock） */
+/** P0-025：從 Supabase profiles 取得的資料或預設值（單一來源，無 Mock）；levelLabel 由 t(LEVEL_LABEL_KEYS[level]) 取得 */
 interface ProfileData {
     xp: number
     level: number
     nextLevel: number
-    levelLabel: string
     displayName: string | null
     reviewsGiven: number
     winesTasted: number
 }
 
-function levelToLabel(level: number): string {
-    if (level >= 10) return '大師侍酒師'
-    if (level >= 7) return '高級侍酒師 II'
-    if (level >= 5) return '高級侍酒師'
-    if (level >= 3) return '品鑑家'
-    return '見習品鑑家'
+/** P0-008：等級對應 i18n key（levelToLabel 由 t 提供） */
+const LEVEL_LABEL_KEYS: Record<number, string> = {
+    1: 'profile.levelTrainee',
+    2: 'profile.levelTrainee2',
+    3: 'profile.levelConnoisseur',
+    4: 'profile.levelConnoisseur2',
+    5: 'profile.levelSommelier',
+    6: 'profile.levelSommelier2',
+    7: 'profile.levelSommelier3',
+    8: 'profile.levelSommelier4',
+    9: 'profile.levelMasterTrainee',
+    10: 'profile.levelMaster',
 }
 
 /** P0-008：升級路徑 — 累積 XP 達此值即為該等級（與 profile nextLevel = (level+1)*1000 對齊） */
-const LEVEL_PATH: { level: number; xpRequired: number; label: string; reward: string }[] = [
-    { level: 1, xpRequired: 0, label: '見習品鑑家', reward: '基礎頭像框' },
-    { level: 2, xpRequired: 2000, label: '見習品鑑家 II', reward: '銀色頭像框' },
-    { level: 3, xpRequired: 3000, label: '品鑑家', reward: '品鑑家頭像框' },
-    { level: 4, xpRequired: 4000, label: '品鑑家 II', reward: '輪盤主題・經典' },
-    { level: 5, xpRequired: 5000, label: '高級侍酒師', reward: '高級頭像框' },
-    { level: 6, xpRequired: 6000, label: '高級侍酒師 II', reward: '輪盤主題・派對' },
-    { level: 7, xpRequired: 7000, label: '高級侍酒師 III', reward: '金色頭像框' },
-    { level: 8, xpRequired: 8000, label: '高級侍酒師 IV', reward: '輪盤主題・限定' },
-    { level: 9, xpRequired: 9000, label: '大師見習', reward: '大師預覽框' },
-    { level: 10, xpRequired: 10000, label: '大師侍酒師', reward: '大師頭像框 + 專屬輪盤' },
+const LEVEL_PATH_KEYS: { level: number; xpRequired: number; labelKey: string; rewardKey: string }[] = [
+    { level: 1, xpRequired: 0, labelKey: 'profile.levelTrainee', rewardKey: 'profile.rewardAvatarBasic' },
+    { level: 2, xpRequired: 2000, labelKey: 'profile.levelTrainee2', rewardKey: 'profile.rewardAvatarSilver' },
+    { level: 3, xpRequired: 3000, labelKey: 'profile.levelConnoisseur', rewardKey: 'profile.rewardAvatarConnoisseur' },
+    { level: 4, xpRequired: 4000, labelKey: 'profile.levelConnoisseur2', rewardKey: 'profile.rewardRouletteClassic' },
+    { level: 5, xpRequired: 5000, labelKey: 'profile.levelSommelier', rewardKey: 'profile.rewardAvatarPro' },
+    { level: 6, xpRequired: 6000, labelKey: 'profile.levelSommelier2', rewardKey: 'profile.rewardRouletteParty' },
+    { level: 7, xpRequired: 7000, labelKey: 'profile.levelSommelier3', rewardKey: 'profile.rewardAvatarGold' },
+    { level: 8, xpRequired: 8000, labelKey: 'profile.levelSommelier4', rewardKey: 'profile.rewardRouletteLimited' },
+    { level: 9, xpRequired: 9000, labelKey: 'profile.levelMasterTrainee', rewardKey: 'profile.rewardAvatarMasterPreview' },
+    { level: 10, xpRequired: 10000, labelKey: 'profile.levelMaster', rewardKey: 'profile.rewardAvatarMaster' },
+]
+
+/** 211–215：成就徽章（可後端擴充）；label 由 t(profile.achievementX) 提供 */
+const ACHIEVEMENT_KEYS = [
+    { id: 'first-quiz', labelKey: 'profile.achievementFirstQuiz', icon: Wine, unlocked: true },
+    { id: 'streak-7', labelKey: 'profile.achievementStreak7', icon: Flame, unlocked: true },
+    { id: 'games-10', labelKey: 'profile.achievementGames10', icon: Gamepad2, unlocked: false },
+    { id: 'learn-1', labelKey: 'profile.achievementLearn1', icon: BookOpen, unlocked: false },
 ]
 
 const DEFAULT_PROFILE: ProfileData = {
     xp: 0,
     level: 1,
     nextLevel: 1000,
-    levelLabel: levelToLabel(1),
     displayName: null,
     reviewsGiven: 0,
     winesTasted: 0,
 }
 
-/** 211–215：成就徽章（可後端擴充） */
-const ACHIEVEMENTS = [
-    { id: 'first-quiz', label: '靈魂酒測初體驗', icon: Wine, unlocked: true },
-    { id: 'streak-7', label: '連續 7 天登入', icon: Flame, unlocked: true },
-    { id: 'games-10', label: '玩過 10 場派對遊戲', icon: Gamepad2, unlocked: false },
-    { id: 'learn-1', label: '完成第一堂課', icon: BookOpen, unlocked: false },
-]
-
 export default function ProfilePage() {
+    const { t, locale } = useTranslation()
     const router = useRouter()
     const { tier, expiresAt } = useSubscription()
+    /** I18N-10：到期日依 locale 格式化；7 天內顯示相對時間（今天/明天/N 天後） */
+    const expiryLabel = (() => {
+      if (tier === 'free' || !expiresAt) return null
+      const endMs = new Date(expiresAt).getTime()
+      const nowMs = Date.now()
+      const days = Math.floor((endMs - nowMs) / (24 * 60 * 60 * 1000))
+      if (days < 0) return t('profile.expiresOn').replace('{{date}}', new Date(expiresAt).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }))
+      if (days === 0) return t('common.expiresToday')
+      if (days === 1) return t('common.expiresTomorrow')
+      if (days <= 31) return t('common.expiresInDays').replace('{{count}}', String(days))
+      return t('common.expiresOnDate').replace('{{date}}', new Date(expiresAt).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }))
+    })()
     const { user, setUser, isLoading: authLoading } = useUser()
     const supabase = useSupabase()
     const showBadge = hasProBadge(tier)
-    const tierLabel = SUBSCRIPTION_TIERS[tier]?.label ?? '免費'
+    const tierLabel = SUBSCRIPTION_TIERS[tier]?.label ?? t('pricing.free')
     /** P0-025：從 Supabase profiles 取得；無 Mock */
     const [profileLoading, setProfileLoading] = useState(true)
     const [profileData, setProfileData] = useState<ProfileData>(DEFAULT_PROFILE)
+    const levelLabel = t(LEVEL_LABEL_KEYS[profileData.level] ?? 'profile.levelTrainee')
     const displayName = (profileData.displayName || user?.name || user?.email) ?? '—'
     const displayEmail = user?.email ?? '—'
     const avatarSeed = user?.id ?? 'guest'
@@ -127,8 +147,9 @@ export default function ProfilePage() {
     const [wishlist, setWishlist] = useState<{ id: string; name: string; type: string }[]>([])
     /** E70 編輯模式：頂部「編輯」切換 */
     const [editMode, setEditMode] = useState(false)
-    /** 任務 90：登出前確認 Dialog，避免誤觸 */
+    /** 任務 90：登出前確認 Dialog，避免誤觸；SM-65 focus 回觸發按鈕 */
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+    const logoutTriggerRef = useRef<HTMLButtonElement>(null)
 
     /** P0-025：已登入時從 Supabase profiles 取得 xp、level、display_name */
     useEffect(() => {
@@ -155,7 +176,6 @@ export default function ProfilePage() {
                     xp,
                     level,
                     nextLevel,
-                    levelLabel: levelToLabel(level),
                     displayName: data?.display_name ?? null,
                     reviewsGiven: 0,
                     winesTasted: 0,
@@ -208,33 +228,33 @@ export default function ProfilePage() {
                 const parsed = JSON.parse(raw) as { id: string; name?: string; type?: string; content?: string }[]
                 const normalized = (Array.isArray(parsed) ? parsed : []).map((item) => ({
                     id: item.id,
-                    name: item.name ?? item.content?.slice(0, 80) ?? '推薦',
-                    type: item.type ?? '推薦',
+                    name: item.name ?? item.content?.slice(0, 80) ?? t('profile.recommendFallback'),
+                    type: item.type ?? t('profile.recommendFallback'),
                 }))
                 setWishlist(normalized)
             }
         } catch {
             /* ignore */
         }
-    }, [])
+    }, [t])
 
     /** 216–225 分享：Web Share API 或複製連結 */
     const handleShare = () => {
         const url = typeof window !== 'undefined' ? window.location.origin : 'https://cheersin.app'
-        const text = '探索你的靈魂之酒 — Cheersin'
+        const text = t('profile.shareText')
         if (typeof navigator !== 'undefined' && navigator.share) {
             navigator.share({ title: 'Cheersin', text, url }).catch(() => {
-                navigator.clipboard?.writeText(url).then(() => alert('連結已複製'))
+                navigator.clipboard?.writeText(url).then(() => alert(t('profile.linkCopied')))
             })
         } else {
-            navigator.clipboard?.writeText(url).then(() => alert('連結已複製'))
+            navigator.clipboard?.writeText(url).then(() => alert(t('profile.linkCopied')))
         }
     }
 
     /** 216–225 邀請連結：複製帶 ref 的連結；獎勵為佔位 */
     const inviteUrl = typeof window !== 'undefined' ? `${window.location.origin}/?ref=invite` : ''
     const handleInvite = () => {
-        navigator.clipboard?.writeText(inviteUrl).then(() => alert('邀請連結已複製，邀請好友可獲獎勵（即將推出）'))
+        navigator.clipboard?.writeText(inviteUrl).then(() => alert(t('profile.inviteLinkCopied')))
     }
 
     /** E66 願望清單：滑動刪除（移除單項） */
@@ -263,14 +283,14 @@ export default function ProfilePage() {
     /** P0-025：未登入時顯示 empty 狀態，不顯示 Mock */
     if (!authLoading && !user) {
         return (
-            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label={t('profile.mainAria')}>
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
                 <div className="relative z-10 text-center max-w-md px-4">
                     <User className="w-16 h-16 text-white/30 mx-auto mb-4" aria-hidden />
-                    <h1 className="text-xl font-bold text-white mb-2">登入以查看個人資料</h1>
-                    <p className="text-white/60 text-sm mb-6">登入後可查看等級、成就、願望酒單與學習進度。</p>
+                    <h1 className="text-xl font-bold text-white mb-2">{t('profile.loginToView')}</h1>
+                    <p className="text-white/60 text-sm mb-6">{t('profile.loginToViewDesc')}</p>
                     <Link href="/login" className="btn-primary inline-flex items-center gap-2 min-h-[48px] px-6 py-3 games-focus-ring rounded-xl">
-                        前往登入
+                        {t('profile.goLogin')}
                         <ChevronRight className="w-4 h-4" />
                     </Link>
                 </div>
@@ -281,18 +301,18 @@ export default function ProfilePage() {
     /** P0-025：載入 profile 時顯示 loading */
     if (profileLoading && user) {
         return (
-            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label="個人頁面">
+            <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile flex flex-col items-center justify-center" role="main" aria-label={t('profile.mainAria')}>
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
                 <div className="relative z-10 text-center">
                     <div className="w-12 h-12 border-2 border-primary-500/50 border-t-primary-400 rounded-full animate-spin mx-auto mb-4" aria-hidden />
-                    <p className="text-white/70 text-sm">載入個人資料中…</p>
+                    <p className="text-white/70 text-sm">{t('profile.loadingProfile')}</p>
                 </div>
             </main>
         )
     }
 
     return (
-        <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile" role="main" aria-label="個人頁面">
+        <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile" role="main" aria-label={t('profile.mainAria')}>
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
 
@@ -310,7 +330,7 @@ export default function ProfilePage() {
                         <Pencil className="w-4 h-4" />
                         <AnimatePresence mode="wait">
                             <motion.span key={editMode ? 'done' : 'edit'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                                {editMode ? '完成' : '編輯'}
+                                {editMode ? t('profile.done') : t('profile.edit')}
                             </motion.span>
                         </AnimatePresence>
                     </motion.button>
@@ -337,16 +357,16 @@ export default function ProfilePage() {
                             {/* E61 頭像 120px + 編輯浮層 */}
                             <div className="relative mb-6">
                                 <div className="w-[120px] h-[120px] rounded-full p-1 bg-gradient-to-br from-primary-500 to-secondary-500">
-                                    <div className="w-full h-full rounded-full bg-black overflow-hidden relative">
-                                        <Image src={avatarUrl} alt={`使用者 ${displayName} 的頭像`} width={120} height={120} className="w-full h-full object-cover" unoptimized={avatarUrl.startsWith('data:')} />
-                                    </div>
+                                    <motion.div className="w-full h-full rounded-full bg-black overflow-hidden relative" key={avatarUrl} initial={{ opacity: 0.7 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+                                        <Image src={avatarUrl} alt={t('profile.avatarAlt').replace('{{name}}', displayName)} width={120} height={120} className="w-full h-full object-cover" unoptimized={avatarUrl.startsWith('data:')} />
+                                    </motion.div>
                                 </div>
                                 {editMode && (
                                     <button
                                         type="button"
                                         className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center text-white/90 hover:text-white transition-colors min-h-[48px] min-w-[48px] games-focus-ring"
-                                        title="更換頭像（即將推出）"
-                                        aria-label="編輯頭像"
+                                        title={t('profile.changeAvatar')}
+                                        aria-label={t('profile.editAvatar')}
                                     >
                                         <Pencil className="w-6 h-6" />
                                     </button>
@@ -355,7 +375,7 @@ export default function ProfilePage() {
                                     <Award className="w-5 h-5 text-yellow-500" />
                                 </div>
                                 {showBadge && (
-                                    <div className="absolute top-0 right-0 px-2 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-bold flex items-center gap-1" title={`方案：${tierLabel}`}>
+                                    <div className="absolute top-0 right-0 px-2 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-bold flex items-center gap-1" title={t('profile.planLabel').replace('{{tier}}', tierLabel)}>
                                         <Crown className="w-3.5 h-3.5" />
                                         {tierLabel}
                                     </div>
@@ -372,7 +392,7 @@ export default function ProfilePage() {
                                 />
                             </div>
                             <div className="flex justify-between w-full text-xs text-white/40 mb-8">
-                                <span>{profileData.levelLabel}</span>
+                                <span>{levelLabel}</span>
                                 <span>{profileData.xp} / {profileData.nextLevel} XP</span>
                             </div>
 
@@ -385,12 +405,12 @@ export default function ProfilePage() {
                                     <div className="p-4 rounded-2xl bg-white/5 flex flex-col items-center">
                                         <Flame className="w-6 h-6 text-orange-500 mb-2" />
                                         <span className="text-2xl font-bold text-white tabular-nums">{streakDays}</span>
-                                        <span className="text-xs text-white/40 uppercase tracking-wider">連續天數</span>
+                                        <span className="text-xs text-white/40 uppercase tracking-wider">{t('profile.streakDays')}</span>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/5 flex flex-col items-center">
                                         <Star className="w-6 h-6 text-yellow-500 mb-2" />
                                         <span className="text-2xl font-bold text-white tabular-nums">{profileData.reviewsGiven}</span>
-                                        <span className="text-xs text-white/40 uppercase tracking-wider">總評論數</span>
+                                        <span className="text-xs text-white/40 uppercase tracking-wider">{t('profile.totalReviews')}</span>
                                     </div>
                                   </div>
                                 )
@@ -398,10 +418,10 @@ export default function ProfilePage() {
                             {/* 216–225 分享、邀請 */}
                             <div className="flex gap-2 w-full mt-4">
                                 <button type="button" onClick={handleShare} className="flex-1 flex items-center justify-center gap-2 py-3 min-h-[48px] rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring">
-                                    <Share2 className="w-4 h-4" /> 分享
+                                    <Share2 className="w-4 h-4" /> {t('profile.share')}
                                 </button>
                                 <button type="button" onClick={handleInvite} className="flex-1 flex items-center justify-center gap-2 py-3 min-h-[48px] rounded-xl bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 text-sm font-medium border border-primary-500/30 games-focus-ring">
-                                    <UserPlus className="w-4 h-4" /> 邀請好友
+                                    <UserPlus className="w-4 h-4" /> {t('profile.inviteFriends')}
                                 </button>
                             </div>
                             {/* 294 推播訂閱（需 VAPID） */}
@@ -417,8 +437,8 @@ export default function ProfilePage() {
                             transition={{ delay: 0.1 }}
                             className="glass p-2 space-y-1 rounded-2xl bg-white/5 border border-white/5"
                         >
-                            <NavButton icon={User} label="個人資料" active showArrow />
-                            <NavButton icon={Settings} label="偏好設定" showArrow />
+                            <NavButton icon={User} label={t('profile.navProfile')} active showArrow />
+                            <NavButton icon={Settings} label={t('profile.navSettings')} showArrow />
                         </motion.div>
                         {/* P1：訂閱區塊 — 未訂閱主 CTA「升級方案」btn-primary，已訂閱「管理訂閱」btn-secondary、邊框區分 */}
                         <motion.div
@@ -427,17 +447,17 @@ export default function ProfilePage() {
                             transition={{ delay: 0.12 }}
                             className={`rounded-2xl p-4 ${tier === 'free' ? 'bg-white/5 border border-white/10' : 'bg-white/5 border border-primary-500/30'}`}
                         >
-                            <h3 className="text-sm font-semibold text-white mb-2">訂閱狀態</h3>
+                            <h3 className="text-sm font-semibold text-white mb-2">{t('profile.subscriptionStatus')}</h3>
                             <p className="text-white/80 text-sm">{tierLabel}</p>
-                            <p className="text-white/50 text-xs mt-1">到期日：{tier === 'free' ? '—' : expiresAt ? new Date(expiresAt).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' }) : '依方案續訂'}</p>
+                            <p className="text-white/50 text-xs mt-1">{tier === 'free' ? '—' : expiryLabel ?? t('profile.expiresByPlan')}</p>
                             {tier === 'free' ? (
                                 <Link href="/pricing" className="btn-primary mt-3 inline-flex items-center gap-2 min-h-[48px] min-w-[48px] px-3 py-2 text-sm font-medium games-focus-ring rounded">
-                                    升級方案
+                                    {t('profile.upgradePlan')}
                                     <ChevronRight className="w-4 h-4" />
                                 </Link>
                             ) : (
                                 <Link href="/subscription" className="btn-secondary mt-3 inline-flex items-center gap-2 min-h-[48px] min-w-[48px] px-3 py-2 text-sm font-medium games-focus-ring rounded">
-                                    管理訂閱
+                                    {t('profile.manageSubscription')}
                                     <ChevronRight className="w-4 h-4" />
                                 </Link>
                             )}
@@ -453,16 +473,16 @@ export default function ProfilePage() {
                             >
                                 <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
                                     <Crown className="w-4 h-4 text-primary-400" />
-                                    Pro 專屬客服
+                                    {t('profile.proSupport')}
                                 </h3>
-                                <p className="text-white/60 text-xs mb-3">一對一諮詢，優先回覆</p>
+                                <p className="text-white/60 text-xs mb-3">{t('profile.proSupportDesc')}</p>
                                 <a href="mailto:support@cheersin.app" className="flex items-center gap-2 text-sm text-primary-400 hover:text-primary-300 mb-2">
                                     <Mail className="w-4 h-4" />
                                     support@cheersin.app
                                 </a>
                                 <a href="https://line.me/R/ti/p/@cheersin" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary-400 hover:text-primary-300">
                                     <MessageCircle className="w-4 h-4" />
-                                    LINE 專屬客服
+                                    {t('profile.lineSupport')}
                                 </a>
                             </motion.div>
                         )}
@@ -473,9 +493,9 @@ export default function ProfilePage() {
                             transition={{ delay: 0.18 }}
                             className="pt-2"
                         >
-                            <a href="mailto:hello@cheersin.app?subject=用戶回饋" className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors min-h-[48px] min-w-[48px] inline-flex games-focus-ring rounded">
+                            <a href={`mailto:hello@cheersin.app?subject=${encodeURIComponent(t('profile.feedbackSubject'))}`} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors min-h-[48px] min-w-[48px] inline-flex games-focus-ring rounded">
                                 <MessageSquare className="w-4 h-4" />
-                                給我們回饋
+                                {t('profile.feedback')}
                             </a>
                         </motion.div>
                         {/* 任務 90：登出前確認 Dialog；E69 登出：頁面底部、紅色文字警示 */}
@@ -486,20 +506,22 @@ export default function ProfilePage() {
                             className="pt-4"
                         >
                             <button
+                                ref={logoutTriggerRef}
                                 type="button"
                                 onClick={() => setShowLogoutConfirm(true)}
                                 className="btn-danger w-full min-h-[48px] games-focus-ring"
                             >
                                 <LogOut className="w-5 h-5" />
-                                {user ? '登出' : '前往登入'}
+                                {user ? t('profile.logout') : t('profile.goLogin')}
                             </button>
                             <ConfirmDialog
                                 open={showLogoutConfirm}
-                                title="確定要登出嗎？"
-                                message="登出後需重新登入才能使用個人功能。"
-                                confirmLabel="登出"
-                                cancelLabel="取消"
+                                title={t('profile.logoutConfirmTitle')}
+                                message={t('profile.logoutConfirmMessage')}
+                                confirmLabel={t('profile.logoutConfirm')}
+                                cancelLabel={t('profile.cancel')}
                                 variant="danger"
+                                triggerRef={logoutTriggerRef}
                                 onConfirm={() => {
                                     setShowLogoutConfirm(false)
                                     if (supabase) {
@@ -524,26 +546,26 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <StatCard
                                 icon={Wine}
-                                label="品酒數量"
+                                label={t('profile.winesTasted')}
                                 value={profileData.winesTasted}
-                                trend={profileData.winesTasted > 0 ? '—' : '尚無資料'}
+                                trend={profileData.winesTasted > 0 ? '—' : t('profile.noData')}
                                 color="primary"
                                 delay={0.2}
                             />
                             <StatCard
                                 icon={Zap}
-                                label="等級進度"
+                                label={t('profile.levelProgress')}
                                 value={`Lv. ${profileData.level}`}
                                 valueSize="sm"
-                                trend={profileData.xp > 0 ? `${Math.round((profileData.xp / profileData.nextLevel) * 100)}% 至下一級` : '—'}
+                                trend={profileData.xp > 0 ? t('profile.percentToNext').replace('{{percent}}', String(Math.round((profileData.xp / profileData.nextLevel) * 100))) : '—'}
                                 color="secondary"
                                 delay={0.3}
                             />
                             <StatCard
                                 icon={Target}
-                                label="味覺準確度"
+                                label={t('profile.tasteAccuracy')}
                                 value="—"
-                                trend="完成靈魂酒測後顯示"
+                                trend={t('profile.tasteAccuracyHint')}
                                 color="accent"
                                 delay={0.4}
                             />
@@ -558,11 +580,11 @@ export default function ProfilePage() {
                         >
                             <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
                                 <Trophy className="w-5 h-5 text-primary-400" />
-                                升級路徑與獎勵
+                                {t('profile.levelPathTitle')}
                             </h2>
-                            <p className="text-white/60 text-sm mb-4">完成遊戲、靈魂酒測與學習可獲得 XP，升級解鎖頭像框與輪盤主題。</p>
+                            <p className="text-white/60 text-sm mb-4">{t('profile.levelPathDesc')}</p>
                             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                                {LEVEL_PATH.map(({ level, xpRequired, label, reward }) => {
+                                {LEVEL_PATH_KEYS.map(({ level, xpRequired, labelKey, rewardKey }) => {
                                     const isCurrent = profileData.level === level
                                     const isUnlocked = profileData.level >= level
                                     return (
@@ -574,10 +596,10 @@ export default function ProfilePage() {
                                                 {level}
                                             </span>
                                             <div className="min-w-0 flex-1">
-                                                <p className={`text-sm font-medium truncate ${isUnlocked ? 'text-white' : 'text-white/50'}`}>{label}</p>
-                                                <p className="text-xs text-white/40 truncate">{xpRequired.toLocaleString()} XP · {reward}</p>
+                                                <p className={`text-sm font-medium truncate ${isUnlocked ? 'text-white' : 'text-white/50'}`}>{t(labelKey)}</p>
+                                                <p className="text-xs text-white/40 truncate">{xpRequired.toLocaleString()} XP · {t(rewardKey)}</p>
                                             </div>
-                                            {isCurrent && <span className="text-xs text-primary-400 font-medium shrink-0">當前</span>}
+                                            {isCurrent && <span className="text-xs text-primary-400 font-medium shrink-0">{t('profile.currentLevel')}</span>}
                                         </div>
                                     )
                                 })}
@@ -594,91 +616,71 @@ export default function ProfilePage() {
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                                     <FeatureIcon icon={Wind} size="sm" color="white" />
-                                    靈魂酒測
+                                    {t('profile.soulQuiz')}
                                 </h2>
                                 <Link href="/quiz" className="text-sm text-primary-400 hover:text-primary-300 min-h-[48px] inline-flex items-center games-focus-ring rounded">
-                                    {soulWine ? '重新檢測' : '開始檢測'} &rarr;
+                                    {soulWine ? t('profile.retakeQuiz') : t('profile.startQuiz')} &rarr;
                                 </Link>
                             </div>
                             {soulWine?.name && (
                                 <div className="mb-6 p-4 rounded-xl bg-primary-500/10 border border-primary-500/20">
-                                    <p className="text-white/60 text-sm mb-1">我的靈魂酒款</p>
+                                    <p className="text-white/60 text-sm mb-1">{t('profile.mySoulWine')}</p>
                                     <p className="text-xl font-bold text-primary-300">{soulWine.name}</p>
                                     {soulWine.type && <p className="text-white/50 text-sm mt-1">{soulWine.type}</p>}
                                 </div>
                             )}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <TraitBar label="濃郁度" value={soulWine?.traits?.bold ?? 80} color="bg-red-500" icon={Flame} />
-                                <TraitBar label="酸度" value={soulWine?.traits?.acid ?? 60} color="bg-yellow-500" icon={Zap} />
-                                <TraitBar label="甜度" value={soulWine?.traits?.sweet ?? 30} color="bg-pink-500" icon={Droplets} />
-                                <TraitBar label="單寧" value={soulWine?.traits?.tannin ?? 75} color="bg-purple-500" icon={Wine} />
+                                <TraitBar label={t('profile.traitBold')} value={soulWine?.traits?.bold ?? 80} color="bg-red-500" icon={Flame} />
+                                <TraitBar label={t('profile.traitAcid')} value={soulWine?.traits?.acid ?? 60} color="bg-yellow-500" icon={Zap} />
+                                <TraitBar label={t('profile.traitSweet')} value={soulWine?.traits?.sweet ?? 30} color="bg-pink-500" icon={Droplets} />
+                                <TraitBar label={t('profile.traitTannin')} value={soulWine?.traits?.tannin ?? 75} color="bg-purple-500" icon={Wine} />
                             </div>
                         </motion.div>
 
-                        {/* 211–215：遊戲統計 + 學習進度 + 成就 */}
+                        {/* 211–215：遊戲統計 + 學習進度 + 成就；R2-097 InView 觸發從零生長動畫 */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.55 }}
-                                className="glass-card p-6"
-                            >
+                            <InViewAnimate delay={0} y={20} amount={0.2} className="glass-card p-6">
                                 <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                                     <Gamepad2 className="w-5 h-5 text-primary-400" />
-                                    遊戲統計
+                                    {t('profile.gamesPlayed')}
                                 </h2>
                                 <div className="space-y-2 text-white/80 text-sm">
-                                    <p>已玩 <span className="font-bold text-primary-400">{gamesPlayed}</span> 場派對遊戲</p>
+                                    <p>{t('profile.gamesPlayedCount').replace('{{count}}', String(gamesPlayed))}</p>
                                     <Link href="/games" className="text-primary-400 hover:text-primary-300 text-sm min-h-[48px] inline-flex items-center games-focus-ring rounded">
-                                        去玩遊戲 &rarr;
+                                        {t('profile.goPlayGames')} &rarr;
                                     </Link>
                                 </div>
-                            </motion.div>
+                            </InViewAnimate>
                             {/* 216–225 好友、私訊佔位（即將推出） */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.58 }}
-                                className="glass-card p-6 opacity-80"
-                            >
+                            <InViewAnimate delay={0.06} y={20} amount={0.2} className="glass-card p-6 opacity-80">
                                 <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                                     <Users className="w-5 h-5 text-primary-400" />
-                                    好友
+                                    {t('profile.friends')}
                                 </h2>
-                                <p className="text-white/50 text-sm">好友功能即將推出，敬請期待。</p>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.59 }}
-                                className="glass-card p-6 opacity-80"
-                            >
+                                <p className="text-white/50 text-sm">{t('profile.friendsComingSoon')}</p>
+                            </InViewAnimate>
+                            <InViewAnimate delay={0.08} y={20} amount={0.2} className="glass-card p-6 opacity-80">
                                 <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                                     <MessageSquare className="w-5 h-5 text-primary-400" />
-                                    私訊
+                                    {t('profile.messages')}
                                 </h2>
-                                <p className="text-white/50 text-sm">私訊功能即將推出，敬請期待。</p>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6 }}
-                                className="glass-card p-6"
-                            >
+                                <p className="text-white/50 text-sm">{t('profile.messagesComingSoon')}</p>
+                            </InViewAnimate>
+                            <InViewAnimate delay={0.1} y={20} amount={0.2} className="glass-card p-6">
                                 <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                                     <BookOpen className="w-5 h-5 text-primary-400" />
-                                    學習進度
+                                    {t('profile.learnProgress')}
                                 </h2>
                                 {/* E46：已完課數/總課數可於 Profile 查詢 */}
                                 {(() => {
                                     const completedCount = Object.values(learnProgress).filter(({ completed, total }) => total > 0 && completed >= total).length
                                     return (
-                                      <p className="text-white/70 text-sm mb-3">已完課 <span className="font-bold text-primary-400">{completedCount}</span> / 總 <span className="font-medium">{LEARN_COURSE_COUNT}</span> 門</p>
+                                      <p className="text-white/70 text-sm mb-3">{t('profile.learnCompleted').replace('{{completed}}', String(completedCount)).replace('{{total}}', String(LEARN_COURSE_COUNT))}</p>
                                     )
                                 })()}
                                 <div className="space-y-2">
                                     {Object.keys(learnProgress).length === 0 ? (
-                                        <p className="text-white/50 text-sm">尚未開始課程</p>
+                                        <p className="text-white/50 text-sm">{t('profile.learnNotStarted')}</p>
                                     ) : (
                                         Object.entries(learnProgress).map(([courseId, { completed, total }]) => (
                                             <div key={courseId} className="flex items-center justify-between text-sm">
@@ -691,14 +693,14 @@ export default function ProfilePage() {
                                     )}
                                     <div className="flex flex-wrap gap-2">
                                     <Link href="/learn" className="text-primary-400 hover:text-primary-300 text-sm min-h-[48px] inline-flex items-center games-focus-ring rounded">
-                                        前往學堂 &rarr;
+                                        {t('profile.goLearn')} &rarr;
                                     </Link>
                                     <Link href="/learn/certificate" className="text-primary-400 hover:text-primary-300 text-sm min-h-[48px] inline-flex items-center games-focus-ring rounded px-2">
-                                        取得證書 &rarr;
+                                        {t('profile.getCertificate')} &rarr;
                                     </Link>
                                 </div>
                                 </div>
-                            </motion.div>
+                            </InViewAnimate>
                         </div>
 
                         {/* E64 成就：橫向滾動、未解鎖半透明 */}
@@ -710,20 +712,24 @@ export default function ProfilePage() {
                         >
                             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                                 <Trophy className="w-5 h-5 text-yellow-500" />
-                                成就
+                                {t('profile.achievements')}
                             </h2>
-                            <div className="flex overflow-x-auto gap-4 pb-2 -mx-1 scrollbar-hide" role="list" aria-label="成就列表">
-                                {ACHIEVEMENTS.map((a) => (
-                                    <div
+                            <div className="flex overflow-x-auto gap-4 pb-2 -mx-1 scrollbar-hide" role="list" aria-label={t('profile.achievements')}>
+                                {ACHIEVEMENT_KEYS.map((a) => (
+                                    <motion.div
                                         key={a.id}
                                         role="listitem"
                                         className={`shrink-0 flex items-center gap-3 p-3 min-h-[48px] rounded-xl border transition-shadow duration-300 games-focus-ring ${a.unlocked ? 'bg-white/5 border-white/20 hover:shadow-lg hover:border-white/30' : 'bg-white/[0.02] border-white/5 opacity-50'}`}
-                                        title={a.label}
+                                        title={t(a.labelKey)}
                                         tabIndex={0}
+                                        initial={false}
+                                        animate={a.unlocked ? { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0)' } : {}}
+                                        whileHover={a.unlocked ? { scale: 1.02, boxShadow: '0 4px 20px rgba(212, 175, 55, 0.15)' } : {}}
+                                        transition={{ duration: 0.2 }}
                                     >
                                         <a.icon className={`w-6 h-6 shrink-0 ${a.unlocked ? 'text-primary-400' : 'text-white/30'}`} aria-hidden />
-                                        <span className="text-sm text-white/80 whitespace-nowrap">{a.label}</span>
-                                    </div>
+                                        <span className="text-sm text-white/80 whitespace-nowrap">{t(a.labelKey)}</span>
+                                    </motion.div>
                                 ))}
                             </div>
                         </motion.div>
@@ -737,10 +743,10 @@ export default function ProfilePage() {
                         >
                             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                                 <Heart className="w-5 h-5 text-pink-500" />
-                                願望酒單
+                                {t('profile.wishlist')}
                             </h2>
                             {wishlist.length === 0 ? (
-                                <p className="text-white/50 text-sm mb-4">尚未加入酒款，到 AI 侍酒師或探索頁面加入吧</p>
+                                <p className="text-white/50 text-sm mb-4">{t('profile.wishlistEmpty')}</p>
                             ) : (
                                 /* B5.2 拖曳排序願望清單 */
                                 <Reorder.Group axis="y" values={wishlist} onReorder={handleWishlistReorder} className="space-y-3 mb-4">
@@ -759,8 +765,8 @@ export default function ProfilePage() {
                                                 type="button"
                                                 onClick={() => removeFromWishlist(w.id)}
                                                 className="p-2 min-h-[48px] min-w-[48px] rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0 flex items-center justify-center games-focus-ring"
-                                                title="移除"
-                                                aria-label="從願望清單移除"
+                                                title={t('profile.remove')}
+                                                aria-label={t('profile.removeFromWishlist')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -769,7 +775,7 @@ export default function ProfilePage() {
                                 </Reorder.Group>
                             )}
                             <Link href="/assistant" className="text-primary-400 hover:text-primary-300 text-sm min-h-[48px] inline-flex items-center games-focus-ring rounded">
-                                用 AI 侍酒師找酒 &rarr;
+                                {t('profile.findWithAssistant')} &rarr;
                             </Link>
                         </motion.div>
 
@@ -782,10 +788,10 @@ export default function ProfilePage() {
                         >
                             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                                 <Clock className="w-5 h-5 text-white/50" />
-                                近期活動
+                                {t('profile.recentActivity')}
                             </h2>
                             <div className="space-y-4">
-                                <p className="text-white/50 text-sm">尚無近期品飲紀錄，完成靈魂酒測或記錄酒款後會顯示於此。</p>
+                                <p className="text-white/50 text-sm">{t('profile.recentActivityEmpty')}</p>
                             </div>
                         </motion.div>
 

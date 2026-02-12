@@ -1,4 +1,10 @@
 {
+  "meta": {
+    "defaultTitle": "Cheersin | あなたのソウルワインを見つける",
+    "defaultDescription": "Cheersin — AI パーティーコンパニオン。ソウルワイン診断、ゲーム、ワイン Q&A、パーティーゲーム、ワインアカデミー。",
+    "ogTitle": "Cheersin | あなたのソウルワインを見つける",
+    "ogDescription": "AI パーティーコンパニオン — ソウルワイン診断、ゲーム、ワイン Q&A、パーティーゲーム。"
+  },
   "common": {
     "appName": "Cheersin",
     "tagline": "あなたのソウルワインを見つける",
@@ -12,7 +18,14 @@
     "close": "閉じる",
     "back": "Back",
     "share": "Share",
-    "copied": "Copied"
+    "copied": "Copied",
+    "errorNetwork": "ネットワークエラー。接続を確認して再度お試しください。",
+    "sessionExpired": "セッションの有効期限が切れました。再ログインしてください。",
+    "offlineMessage": "オフラインです。一部の機能は利用できません。",
+    "expiresToday": "本日まで",
+    "expiresTomorrow": "明日まで",
+    "expiresInDays": "あと{{count}}日で期限切れ",
+    "expiresOnDate": "有効期限：{{date}}"
   },
   "nav": {
     "home": "ホーム",
@@ -151,12 +164,46 @@
     "learnTitle": "読み込みに失敗しました",
     "learnDescription": "品酒学院を読み込めませんでした。再試行するかホームに戻ってください。",
     "quizTitle": "テストの読み込みに失敗しました",
-    "quizDescription": "ソウルワイン診断を読み込めませんでした。再試行するかホームに戻ってください。"
+    "quizDescription": "ソウルワイン診断を読み込めませんでした。再試行するかホームに戻ってください。",
+    "scriptMurderTitle": "劇本殺の読み込みに失敗しました",
+    "scriptMurderDescription": "劇本殺を読み込めませんでした。再試行するか劇本一覧に戻ってください。"
+  },
+  "apiErrors": {
+    "INTERNAL_ERROR": "しばらくしてからお試しください。",
+    "INVALID_JSON": "リクエストが不正です。",
+    "UNAUTHORIZED": "再ログインしてください。",
+    "NOT_FOUND": "見つかりません。",
+    "ROOM_NOT_FOUND": "ルームが存在しないか終了しました。",
+    "TURNSTILE_FAILED": "認証に失敗しました。再試行してください。"
   },
   "subscription": {
     "success": "登録完了",
     "cancel": "解約",
-    "manage": "サブスク管理"
+    "manage": "サブスク管理",
+    "cancelPageTitle": "解約しました",
+    "cancelMessageWithDate": "解約済み。プランは{{date}}までご利用いただけます。",
+    "cancelMessageDefault": "解約済み。プランは当期終了日までご利用いただけます。",
+    "comeBackAnytime": "いつでもまたご利用いただけます。無料機能は引き続きご利用可能です。",
+    "checkManageLink": "有効期限は",
+    "manageLink": "サブスク管理",
+    "manageLinkSuffix": "でご確認ください。",
+    "loseTitle": "解約後は以下がご利用いただけなくなります：",
+    "loseItem1": "無制限パーティーゲーム・上級問題集",
+    "loseItem2": "ワインアカデミー全コース・修了証",
+    "loseItem3": "AIソムリエとの会話・おすすめ",
+    "loseItem4": "限定オファー・イベント優先案内",
+    "changeMind": "心変わりしましたか？",
+    "retainOrResub": "プラン維持で7日間延長、またはいつでも再登録で初月特典。",
+    "retentionOffer": "再登録で翌月50%オフ。",
+    "ctaRetain": "プラン維持／再登録",
+    "ctaManage": "サブスク管理",
+    "ctaHome": "ホームに戻る",
+    "specialOffer": "期間限定：初月",
+    "specialOfferDiscount": "20%オフ",
+    "specialOfferSuffix": "",
+    "loseRegionAria": "解約で失う特典",
+    "nextStepsAria": "次のステップ",
+    "subscriptionUnavailable": "申し込みは一時ご利用いただけません。しばらくしてからお試しください。"
   },
   "profile": {
     "stats": "データ",
@@ -216,7 +263,9 @@
     "currentGame": "現在",
     "gameTruthOrDare": "トゥルース・オア・デア",
     "gameRoulette": "ルーレット",
-    "gameLiarDice": "ライアーダイス"
+    "gameLiarDice": "ライアーダイス",
+    "unlock12Players": "12人に増員",
+    "unlock12PlayersAria": "アップグレードで12人まで可能"
   },
   "scriptMurder": {
     "title": "Script murder",
@@ -257,7 +306,52 @@
     "returnList": "Back to list",
     "existingRooms": "Existing rooms",
     "partyGamesLink": "Party games",
-    "academyLink": "Wine Academy"
+    "academyLink": "Wine Academy",
+    "displayName": "表示名",
+    "enterNamePlaceholder": "ニックネームを入力",
+    "joinButton": "参加",
+    "joining": "参加中…",
+    "backToHome": "ホームに戻る",
+    "goToPartyGames": "パーティーゲームへ",
+    "playersAndDuration": "{{min}}–{{max}}人 · 約{{minDur}}分",
+    "roomFallbackTitle": "脚本ルーム",
+    "playersCount": "{{current}}/{{max}}人",
+    "errorLoadScripts": "脚本リストを読み込めません",
+    "loading": "読み込み中…",
+    "roomFull": "満室です",
+    "noPlayersYet": "まだ参加者はいません",
+    "roomExpired": "期限切れ",
+    "createRoomAria": "{{title}}のルームを作成",
+    "upgradeUnlockAria": "アップグレードで全脚本を解除",
+    "loadingScriptsAria": "脚本を読み込み中",
+    "copyFailed": "コピーに失敗しました。リンクを手動でコピーしてください",
+    "startGameFailed": "ゲームの開始に失敗しました。もう一度お試しください",
+    "chapterError": "チャプターデータエラー",
+    "noVoteOptions": "この投票に選択肢はありません"
+  },
+  "werewolf": {
+    "title": "人狼 簡易版",
+    "rulesTitle": "ルール",
+    "rules": "4-8人。役割：人狼（{{wolfCount}}人）、占い師（1人、6人以上で出現）、残りは村人。\n夜：人狼が1人を処刑。\n昼：話し合いの後投票、最多得票者が処刑。\n人狼全滅で村人勝利；村人が人狼以下で人狼勝利。",
+    "assignAndStart": "役割を振り分けて開始",
+    "nightPrompt": "第{{round}}の夜 — 人狼は目を開け、処刑する相手を選んでください",
+    "nightVictim": "昨夜の処刑：{{name}}（一杯飲んでください）",
+    "dayDiscuss": "昼の話し合いの後、投票してください",
+    "startVote": "投票開始",
+    "votePrompt": "処刑する人を投票で選んでください",
+    "voteResult": "投票で処刑：{{name}}（{{role}}、飲んでください）",
+    "copyTemplate": "人狼簡易版：投票で処刑 {{name}}（{{role}}）{{suffix}}",
+    "copySuffixNext": "、次の夜",
+    "copySuffixVillagersWin": "、村人勝ち",
+    "copySuffixWolvesWin": "、人狼勝ち",
+    "villagersWin": "村人勝利！",
+    "wolvesWin": "人狼勝利！",
+    "playAgain": "もう一度",
+    "nextNight": "次の夜",
+    "roleWolf": "人狼",
+    "roleVillager": "村人",
+    "roleSeer": "占い師",
+    "defaultPlayer": "プレイヤー{{n}}"
   },
   "partyDj": {
     "title": "AI Party DJ",
@@ -310,6 +404,12 @@
     "contactUs": "Contact us",
     "reportIntro": "If something is wrong, report via ",
     "reportSuffix": "."
+  },
+  "gameError": {
+    "title": "ゲームの読み込みに失敗しました",
+    "desc": "このゲームでエラーが発生しました。更新するかゲーム一覧に戻ってお試しください。",
+    "retry": "再試行",
+    "backLobby": "ロビーに戻る"
   },
   "gamesError": {
     "title": "Games page failed to load",

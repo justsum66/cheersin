@@ -1,6 +1,6 @@
 /**
  * GET/POST /api/games/rooms/[slug]/game-state
- * 房間內特定遊戲的狀態：讀取（GET）與更新（POST）；P1-15：POST 限流 60/分/IP；P2-29：payload 大小與 key 數限制
+ * 房間內特定遊戲的狀態：讀取（GET）與更新（POST）；P1-15：POST 限流 60/分/IP；P2-29：payload 大小與 key 數限制；PR-32：party-room payload Zod 校驗
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
@@ -8,11 +8,13 @@ import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { SLUG_PATTERN } from '@/lib/games-room'
+import { parsePartyStatePayload } from '@/lib/games/party-state-schema'
 
 const PAYLOAD_MAX_BYTES = 50_000
 const PAYLOAD_MAX_KEYS = 100
 
 const GAME_ID_UP_DOWN_STAIRS = 'up-down-stairs'
+const GAME_ID_PARTY_ROOM = 'party-room'
 
 /** GET: 查詢該房間指定 game_id 的 state（query: game_id） */
 export async function GET(
@@ -80,7 +82,12 @@ export async function POST(
     if (rawPayload != null && (typeof rawPayload !== 'object' || Array.isArray(rawPayload))) {
       return errorResponse(400, 'payload must be a JSON object', { message: 'Invalid payload type' })
     }
-    const payload = rawPayload != null && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload : {}
+    let payload: Record<string, unknown> = rawPayload != null && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload as Record<string, unknown> : {}
+    if (gameId === GAME_ID_PARTY_ROOM) {
+      const parsed = parsePartyStatePayload(payload)
+      if (!parsed.success) return errorResponse(400, 'INVALID_PARTY_STATE', { message: parsed.error })
+      payload = parsed.data as unknown as Record<string, unknown>
+    }
     const payloadKeys = Object.keys(payload)
     if (payloadKeys.length > PAYLOAD_MAX_KEYS) {
       return errorResponse(400, 'PAYLOAD_TOO_MANY_KEYS', {

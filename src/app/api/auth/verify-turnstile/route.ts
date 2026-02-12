@@ -1,7 +1,7 @@
 /**
- * R2-017：Cloudflare Turnstile 後端驗證
+ * R2-017 / SEC-008：Cloudflare Turnstile 後端驗證
  * POST body: { token: string }
- * 回傳 { success: boolean }；success 為 true 才允許登入/註冊/重設密碼。
+ * 回傳 { success: boolean }。前端僅在 success 為 true 後才呼叫 signIn/重設密碼，驗證失敗時不建立 session。
  */
 import { NextRequest, NextResponse } from 'next/server'
 

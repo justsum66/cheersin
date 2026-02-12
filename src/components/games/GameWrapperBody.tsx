@@ -299,6 +299,7 @@ export default function GameWrapperBody({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1 rounded-full bg-white/30 mx-auto mb-4 sm:hidden" aria-hidden />
+              {/* COPY-006：遊戲說明可於遊戲內查看 — 規則按鈕開啟此 modal */}
               <h2 id="rules-modal-heading" className="text-lg font-bold text-white mb-3">規則說明</h2>
               <div className="games-body text-white/80 space-y-2" role="region" aria-labelledby="rules-modal-heading">
                 {(stripHtml(rulesContent) || '')

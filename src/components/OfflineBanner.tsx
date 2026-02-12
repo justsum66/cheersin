@@ -1,14 +1,14 @@
 'use client'
 
-/** UX_LAYOUT_200 #147：網路離線提示 — 離線時顯示橫幅、上線後隱藏 */
+/** UX_LAYOUT_200 #147 / UX-020：網路離線提示 — 離線時顯示橫幅、上線後隱藏；文案多語 */
 import { useState, useEffect } from 'react'
 import { WifiOff } from 'lucide-react'
-
-// P003: Optimized icon import for better tree-shaking
+import { useTranslation } from '@/contexts/I18nContext'
 
 const Z_INDEX = 45
 
 export function OfflineBanner() {
+  const { t } = useTranslation()
   const [isOnline, setIsOnline] = useState(true)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function OfflineBanner() {
       style={{ zIndex: Z_INDEX }}
     >
       <WifiOff className="w-5 h-5 shrink-0" aria-hidden />
-      目前離線，部分功能可能無法使用
+      {t('common.offlineMessage')}
     </div>
   )
 }

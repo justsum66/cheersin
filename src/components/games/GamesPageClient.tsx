@@ -21,10 +21,12 @@ import { PullToRefresh } from '@/components/PullToRefresh'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useNavVisibility } from '@/contexts/NavVisibilityContext'
+import { useTranslation } from '@/contexts/I18nContext'
 import { getMaxRoomPlayers } from '@/lib/subscription'
 import { LazyGame, prefetchGame } from '@/components/games/GameLazyMap'
 import { gamesWithCategory, getGameMeta, GUEST_TRIAL_GAME_IDS, type GameId } from '@/config/games.config'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
+import { STORAGE_KEYS } from '@/lib/constants'
 import toast from 'react-hot-toast'
 import { getWeeklyPlayCounts, incrementWeeklyPlay } from '@/lib/games-weekly'
 import { getLastSession, saveLastSession, clearLastSession } from '@/lib/games-last-session'
@@ -81,7 +83,21 @@ function GamesPageContent() {
     router.replace(`/games?${p.toString()}`, { scroll: false })
   }, [searchParams, router])
   const { tier } = useSubscription()
+  const { t } = useTranslation()
   const [ageVerified, setAgeVerified] = useState(false)
+  /** R2-181：玩滿 3 局後顯示升級提示；讀取 localStorage 遊戲次數 */
+  const [freeGamesPlayedCount, setFreeGamesPlayedCount] = useState(0)
+  const [upgradePromptDismissed, setUpgradePromptDismissed] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.GAMES_STATS)
+      const n = raw ? Math.max(0, parseInt(raw, 10) || 0) : 0
+      setFreeGamesPlayedCount(n)
+    } catch {
+      setFreeGamesPlayedCount(0)
+    }
+  }, [])
   useEffect(() => {
     setAgeVerified(getAgeGatePassed())
   }, [])
@@ -1006,6 +1022,30 @@ function GamesPageContent() {
                   </Link>
                 </div>
               )}
+              {/* R2-181：玩了 3 局後提示升級解鎖 18+ 與更多遊戲；可關閉 */}
+              {(!roomSlug || joinedDisplayName) && tier === 'free' && freeGamesPlayedCount >= 3 && !upgradePromptDismissed && (
+                <div className="mb-4 p-4 rounded-2xl bg-primary-500/15 border border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="升級 Pro 解鎖更多">
+                  <p className="text-white/90 text-sm">
+                    升級到 Pro 解鎖 18+ 模式和 50+ 遊戲
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/pricing"
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring"
+                    >
+                      升級
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setUpgradePromptDismissed(true)}
+                      className="min-h-[44px] px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 text-sm games-focus-ring"
+                      aria-label="關閉"
+                    >
+                      <X className="w-4 h-4" aria-hidden />
+                    </button>
+                  </div>
+                </div>
+              )}
               {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
               {(!roomSlug || joinedDisplayName) && (
                 <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
@@ -1042,7 +1082,15 @@ function GamesPageContent() {
               )}
             </motion.div>
           ) : activeGame && selectedGame ? (
-            <GameErrorBoundary key={activeGame} gameName={selectedGame.name} onReset={() => setActiveGame(null)}>
+            <GameErrorBoundary
+              key={activeGame}
+              gameName={selectedGame.name}
+              onReset={() => setActiveGame(null)}
+              title={t('gameError.title')}
+              desc={t('gameError.desc')}
+              retryLabel={t('gameError.retry')}
+              backLobbyLabel={t('gameError.backLobby')}
+            >
               <GameWrapper
                 title={selectedGame.name}
                 description={selectedGame.description}

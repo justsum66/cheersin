@@ -1,24 +1,42 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import AddToHomeScreenBanner from './AddToHomeScreenBanner'
-import OfflineBanner from './OfflineBanner'
 
 const SW_URL = '/sw.js'
 /** PWA.1：點「稍後」後多久內不再顯示更新提示（ms） */
 const SW_UPDATE_DISMISS_MS = 24 * 60 * 60 * 1000
 const SW_UPDATE_DISMISS_KEY = 'cheersin_sw_update_dismissed'
 
-/** 291–292 PWA：註冊 Service Worker + 添加到主畫面橫幅 + 更新提示；PWA.1 優化：稍後冷卻、無障礙 */
+/** 任務 11：開發環境或明確關閉時不註冊 SW，避免開發時快取干擾 */
+function shouldRegisterSw(): boolean {
+  if (typeof window === 'undefined') return false
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SW_ENABLED !== 'true') return false
+  if (process.env.NEXT_PUBLIC_SW_ENABLED === 'false') return false
+  return true
+}
+
+/** 291–292 PWA：註冊 Service Worker + 添加到主畫面橫幅 + 更新提示；SW 15 項 #9 離線橫幅僅由 layout OfflineBanner 負責 */
 export default function PwaProvider() {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false)
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null)
+  const refreshingRef = useRef(false)
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !shouldRegisterSw()) return
 
-    navigator.serviceWorker.register(SW_URL).then((registration) => {
+    let onVisibilityChange: () => void = () => {}
+    const onControllerChange = () => {
+      if (refreshingRef.current) return
+      refreshingRef.current = true
+      window.location.reload()
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+
+    navigator.serviceWorker.register(SW_URL, { scope: '/' }).then((registration) => {
       setSwRegistration(registration)
+      onVisibilityChange = () => { if (document.visibilityState === 'visible') registration.update().catch(() => {}) }
+      window.addEventListener('visibilitychange', onVisibilityChange)
 
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
@@ -42,12 +60,10 @@ export default function PwaProvider() {
       /* ignore */
     })
 
-    let refreshing = false
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return
-      refreshing = true
-      window.location.reload()
-    })
+    return () => {
+      window.removeEventListener('visibilitychange', onVisibilityChange)
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+    }
   }, [])
 
   const handleUpdate = useCallback(() => {
@@ -66,7 +82,6 @@ export default function PwaProvider() {
 
   return (
     <>
-      <OfflineBanner />
       <AddToHomeScreenBanner />
       {swUpdateAvailable && (
         <div

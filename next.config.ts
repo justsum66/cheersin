@@ -96,6 +96,7 @@ const nextConfig: NextConfig = {
     }
     return config
   },
+  /** PERF-004 / PERF-018：圖片 WebP/AVIF；首屏圖由元件設 priority */
   images: {
     formats: ['image/webp', 'image/avif'],
     /* 白名單：限制外部圖片來源，防止 SSRF */
@@ -122,7 +123,7 @@ const nextConfig: NextConfig = {
     ]
   },
   /* P3-72：靜態資源 Cache-Control — 圖片/字體/_next/static max-age=1 年 */
-  /* SEC-01～04：全站安全標頭 — 先匹配靜態再匹配全站，確保皆有 security + 靜態有 cache */
+  /* SEC-01～04 / SEC-007：全站安全標頭與 CSP 覆蓋；CSP 可設 CSP_REPORT_ONLY=false 強制執行 */
   async headers() {
     /** P0-019 / SEC-18：CSP 防 XSS。預設 report-only；正式上線設 CSP_REPORT_ONLY=false 強制執行。 */
     const cspReportOnly = process.env.CSP_REPORT_ONLY !== 'false'

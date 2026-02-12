@@ -30,6 +30,7 @@ import { TOAST_COPY_SUCCESS, TOAST_COPY_ERROR } from '@/config/toast.config'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import Link from 'next/link'
 import { useUser } from '@/contexts/UserContext'
+import { useTranslation } from '@/contexts/I18nContext'
 import {
   QUIZ_INTRO,
   QUIZ_STORAGE_KEY,
@@ -259,6 +260,7 @@ type Step = 'intro' | 'preference' | 'zodiac' | 'questions' | 'result'
 
 export default function QuizPage() {
   const { user } = useUser()
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>('intro')
   /** T031：選「只要遊戲」時結果為派對遊戲推薦、無酒款 */
   const [preferGamesOnly, setPreferGamesOnly] = useState(false)
@@ -424,7 +426,7 @@ export default function QuizPage() {
         body: JSON.stringify({ name: 'quiz_share', value: 1, id: 'result' }),
       }).catch(() => {})
     } catch { /* noop */ }
-    const text = `我的靈魂之酒是 ${r.name}（${r.type}）！用 Cheersin 測出你的命定酒款 🍷`
+    const text = t('quiz.shareText').replace(/\{\{\s*name\s*\}\}/g, r.name).replace(/\{\{\s*type\s*\}\}/g, r.type)
     const url = getShareBaseUrl() + '/quiz'
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
@@ -1061,7 +1063,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                     <FeatureIcon icon={result.icon} size="lg" color="primary" />
                   </motion.div>
                   <span className="inline-block px-4 py-1 rounded-full border border-white/20 text-white/50 text-sm tracking-widest uppercase mb-2">
-                    您的靈魂之酒
+                    {t('quiz.yourSoulWine')}
                   </span>
                   <p className="text-white/50 text-xs mb-2" aria-hidden>根據你的回答（共 18 題）</p>
                   {/* 68 你的味覺 DNA 獨特標籤；AUDIT #24 結果頁主標題 h1 */}
@@ -1235,7 +1237,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                     分享
                   </button>
                   <a
-                    href={`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(getShareBaseUrl() + '/quiz')}&text=${encodeURIComponent(`我的靈魂之酒是 ${result.name}（${result.type}）！`)}`}
+                    href={`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(getShareBaseUrl() + '/quiz')}&text=${encodeURIComponent(t('quiz.shareText').replace(/\{\{\s*name\s*\}\}/g, result.name).replace(/\{\{\s*type\s*\}\}/g, result.type))}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-secondary min-h-[48px] min-w-[48px] flex items-center gap-2 games-focus-ring"

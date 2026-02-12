@@ -29,16 +29,18 @@ export async function GET(
           order_index: number
           joined_at?: string
           is_spectator?: boolean
+          is_active?: boolean
         }> | null
       }
       const { data: roomRow, error: roomError } = await supabase
         .from('game_rooms')
-        .select('id, slug, created_at, expires_at, host_id, password_hash, settings, game_room_players(id, display_name, order_index, joined_at, is_spectator)')
+        .select('id, slug, created_at, expires_at, host_id, password_hash, settings, game_room_players(id, display_name, order_index, joined_at, is_spectator, is_active)')
         .eq('slug', slug)
         .single()
       if (roomError || !roomRow) throw roomError || new Error('Room not found')
       const room = roomRow as RoomRow
-      const players = room.game_room_players ?? []
+      const allPlayers = room.game_room_players ?? []
+      const players = allPlayers.filter((p) => (p as { is_active?: boolean }).is_active !== false)
       const sortedPlayers = [...players].sort((a, b) => a.order_index - b.order_index)
       const settings = (room.settings as { anonymousMode?: boolean; max_players?: number; scriptId?: string; scriptRoom?: boolean } | null) ?? {}
       const anonymousMode = !!settings.anonymousMode
@@ -75,7 +77,7 @@ export async function GET(
   }
 }
 
-/** P0-004：PATCH 房間設定（僅房主）；body: { anonymousMode: boolean } */
+/** P0-004：PATCH 房間設定（僅房主）；body: { anonymousMode?: boolean, endRoom?: boolean }；PR-35：endRoom 提前結束房間 */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -84,10 +86,9 @@ export async function PATCH(
   if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
   const user = await getCurrentUser()
   if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
-  let anonymousMode: boolean
+  let body: { anonymousMode?: boolean; endRoom?: boolean }
   try {
-    const body = (await request.json()) as { anonymousMode?: boolean }
-    anonymousMode = body.anonymousMode === true
+    body = (await request.json()) as { anonymousMode?: boolean; endRoom?: boolean }
   } catch {
     return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
   }
@@ -95,11 +96,23 @@ export async function PATCH(
     const supabase = createServerClient()
     const { data: room, error: fetchErr } = await supabase
       .from('game_rooms')
-      .select('id, host_id, settings')
+      .select('id, host_id, settings, expires_at')
       .eq('slug', slug)
       .single()
     if (fetchErr || !room) return errorResponse(404, 'Room not found', { message: '找不到該房間' })
     if (room.host_id !== user.id) return errorResponse(403, 'Forbidden', { message: '僅房主可修改設定' })
+
+    if (body.endRoom === true) {
+      const now = new Date().toISOString()
+      const { error: endErr } = await supabase
+        .from('game_rooms')
+        .update({ expires_at: now })
+        .eq('id', room.id)
+      if (endErr) return serverErrorResponse(endErr)
+      return NextResponse.json({ ok: true, endRoom: true, expiresAt: now })
+    }
+
+    const anonymousMode = body.anonymousMode === true
     const currentSettings = (room.settings as { anonymousMode?: boolean } | null) ?? {}
     const { error: updateErr } = await supabase
       .from('game_rooms')

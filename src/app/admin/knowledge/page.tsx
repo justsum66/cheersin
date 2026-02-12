@@ -31,6 +31,7 @@ export default function AdminKnowledgePage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [forbidden, setForbidden] = useState(false)
+  const [syncSuccess, setSyncSuccess] = useState<string | null>(null)
 
   const headers = () => ({
     'Content-Type': 'application/json',
@@ -96,6 +97,8 @@ export default function AdminKnowledgePage() {
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setForm({ title: '', course_id: '', chapter: '', content: '' })
       setShowForm(false)
+      setSyncSuccess('已新增並同步至 Pinecone')
+      setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Create failed')
@@ -122,6 +125,8 @@ export default function AdminKnowledgePage() {
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setEditing(null)
       setForm({ title: '', course_id: '', chapter: '', content: '' })
+      setSyncSuccess('已更新並同步至 Pinecone')
+      setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Update failed')
@@ -137,6 +142,8 @@ export default function AdminKnowledgePage() {
       const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE', headers: headers() })
       const data = await res.json()
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
+      setSyncSuccess('已刪除並自 Pinecone 移除')
+      setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Delete failed')
@@ -179,6 +186,11 @@ export default function AdminKnowledgePage() {
         {error && (
           <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
             {error}
+          </div>
+        )}
+        {syncSuccess && (
+          <div role="status" aria-live="polite" className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+            {syncSuccess}
           </div>
         )}
 

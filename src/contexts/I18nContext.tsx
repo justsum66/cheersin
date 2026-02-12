@@ -29,10 +29,19 @@ function setLocaleCookie(locale: Locale): void {
   document.cookie = `${COOKIE_KEY}=${encodeURIComponent(locale)};path=/;max-age=31536000;SameSite=Lax`
 }
 
+/** I18N-007：參數化文案，支援 {{key}} 替換 */
+export function interpolate(template: string, params: Record<string, string | number>): string {
+  let out = template
+  for (const [key, value] of Object.entries(params)) {
+    out = out.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value))
+  }
+  return out
+}
+
 type I18nContextValue = {
   locale: Locale
   setLocale: (locale: Locale) => void
-  t: (key: string) => string
+  t: (key: string, params?: Record<string, string | number>) => string
   localeNames: Record<Locale, string>
   locales: readonly Locale[]
 }
@@ -53,18 +62,19 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleCookie(next)
   }, [])
 
-  /** I18N-14 / I18N-003：缺 key 時依序 fallback → defaultLocale → en（ja/ko/yue 等）→ 最後回傳 key，不顯示 key 名 */
+  /** I18N-14 / I18N-003：缺 key 時依序 fallback → defaultLocale → en（ja/ko/yue 等）；I18N-007：可傳 params 做 {{key}} 替換 */
   const t = useCallback(
-    (key: string): string => {
+    (key: string, params?: Record<string, string | number>): string => {
       const msg = messages[locale] as Record<string, unknown>
       const fallbackMsg = messages[defaultLocale] as Record<string, unknown>
       const enMsg = messages['en'] as Record<string, unknown>
-      return (
+      const raw =
         getByPath(msg, key) ??
         getByPath(fallbackMsg, key) ??
         (locale !== 'en' ? getByPath(enMsg, key) : undefined) ??
         key
-      )
+      const resolved = typeof raw === 'string' ? raw : String(raw)
+      return params && Object.keys(params).length > 0 ? interpolate(resolved, params) : resolved
     },
     [locale]
   )

@@ -11,6 +11,11 @@ interface Props {
   onReset?: () => void
   /** GAMES_500 #302：回大廳 CTA；未提供時使用 Link 至 /games */
   onBackToLobby?: () => void
+  /** GAME-013：錯誤邊界文案可從父層傳入 i18n */
+  title?: string
+  desc?: string
+  retryLabel?: string
+  backLobbyLabel?: string
 }
 
 interface State {
@@ -53,40 +58,42 @@ export default class GameErrorBoundary extends Component<Props, State> {
           aria-labelledby="game-error-title"
           aria-describedby="game-error-desc"
         >
-          {/* G-Common-08：錯誤區 RWD、重試鈕可點 */}
+          {/* G-Common-08 / GAME-013：錯誤區 RWD、重試鈕可點；文案可由父層傳入 i18n */}
           <AlertTriangle className="w-12 h-12 text-red-400 mb-4" aria-hidden />
-          <h3 id="game-error-title" className="text-lg font-bold text-white mb-2">遊戲載入失敗</h3>
+          <h3 id="game-error-title" className="text-lg font-bold text-white mb-2">
+            {this.props.title ?? '遊戲載入失敗'}
+          </h3>
           <p id="game-error-desc" className="text-white/60 text-sm mb-4 max-w-md">
-            {this.props.gameName ? `「${this.props.gameName}」` : '此遊戲'}發生錯誤，請重新整理或返回遊戲列表再試。
+            {this.props.desc ?? (this.props.gameName ? `「${this.props.gameName}」` : '此遊戲') + '發生錯誤，請重新整理或返回遊戲列表再試。'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
               onClick={this.handleReset}
               className="game-btn-touch games-focus-ring min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-sm font-medium focus:outline-none"
-              aria-label="重試載入遊戲"
+              aria-label={this.props.retryLabel ?? '重試載入遊戲'}
             >
               <RefreshCw className="w-4 h-4" />
-              重試
+              {this.props.retryLabel ?? '重試'}
             </button>
             {this.props.onBackToLobby ? (
               <button
                 type="button"
                 onClick={this.props.onBackToLobby}
                 className="game-btn-touch games-focus-ring min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-sm font-medium focus:outline-none"
-                aria-label="返回遊戲大廳"
+                aria-label={this.props.backLobbyLabel ?? '返回遊戲大廳'}
               >
                 <Home className="w-4 h-4" />
-                回大廳
+                {this.props.backLobbyLabel ?? '回大廳'}
               </button>
             ) : (
               <Link
                 href="/games"
                 className="game-btn-touch games-focus-ring min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-sm font-medium focus:outline-none"
-                aria-label="返回遊戲大廳"
+                aria-label={this.props.backLobbyLabel ?? '返回遊戲大廳'}
               >
                 <Home className="w-4 h-4" />
-                回大廳
+                {this.props.backLobbyLabel ?? '回大廳'}
               </Link>
             )}
           </div>

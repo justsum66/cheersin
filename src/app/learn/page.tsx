@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useDeferredValue, useRef, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network, Users, Sparkles } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network, Users, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -1778,9 +1778,13 @@ export default function LearnPage() {
                 className="cursor-pointer group/card"
               >
                 {/* P2.D3.2 快速預覽 hover：桌面版 hover 顯示描述 */}
+                {/* R2-113：懸停時顯示課程預覽與「開始學習」按鈕 */}
                 <div className="hidden sm:block absolute inset-0 z-[2] pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 rounded-2xl bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 flex flex-col justify-end">
                   <p className="text-white/90 text-sm line-clamp-3 mb-2">{course.description}</p>
-                  <span className="text-primary-300 text-xs font-medium">點擊進入課程</span>
+                  <span className="text-primary-300 text-xs font-medium inline-flex items-center gap-1">
+                    開始學習
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
                 </div>
                 {/* L05/L06：課程卡 hover 一致、focus-visible 由內層 Link 提供 */}
                 <div

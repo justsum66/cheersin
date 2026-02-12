@@ -1,13 +1,16 @@
 /**
- * P2-357：安全的文件上傳 — 白名單類型、大小限制、隨機檔名，防路徑遍歷與惡意檔
+ * P2-357 / SEC-012：安全的文件上傳 — 白名單 MIME、大小限制強制、隨機檔名，防路徑遍歷與惡意檔
  * POST /api/upload：multipart/form-data，field name: file
+ * 僅允許 image/jpeg、image/png、image/webp，單檔最大 5MB
  */
 import { NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { randomUUID } from 'crypto'
 
+/** SEC-012：白名單 MIME，禁止執行檔與任意類型 */
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
-const MAX_BYTES = 5 * 1024 * 1024 // 5MB
+/** SEC-012：單檔大小上限 5MB */
+const MAX_BYTES = 5 * 1024 * 1024
 const BUCKET = 'uploads'
 
 export async function POST(request: Request) {

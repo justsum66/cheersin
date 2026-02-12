@@ -6,6 +6,15 @@ import { normalizeEnv, normalizeUrl } from './env'
 
 /** Groq：console.groq.com，必填（chat 主線） */
 export const GROQ_API_KEY = normalizeEnv(process.env.GROQ_API_KEY)
+/** Chat 模型（可切換 llama-3.3-70b-versatile 等）；Vision 模型用於酒標辨識 */
+export const GROQ_CHAT_MODEL = normalizeEnv(process.env.GROQ_CHAT_MODEL) || 'llama-3.3-70b-versatile'
+export const GROQ_VISION_MODEL = normalizeEnv(process.env.GROQ_VISION_MODEL) || 'meta-llama/llama-4-scout-17b-16e-instruct'
+/** Chat 請求逾時（ms）；與 chat route 一致，預設 30s */
+export const CHAT_TIMEOUT_MS = (() => {
+  const raw = process.env.CHAT_TIMEOUT_MS ?? process.env.CHAT_TIMEOUT
+  const n = raw ? parseInt(String(raw), 10) : NaN
+  return Number.isFinite(n) && n > 0 ? n : 30_000
+})()
 
 /** NVIDIA NIM：build.nvidia.com API key（nvapi- 開頭），選填，chat fallback */
 export const NVIDIA_NIM_API_KEY = normalizeEnv(process.env.NVIDIA_NIM_API_KEY)

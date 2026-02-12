@@ -51,3 +51,23 @@ export function trackRoomJoin(roomId: string, playerCount: number): void {
 export function trackRoomLeave(roomId: string, reason?: string): void {
   sendEvent('room_leave', 1, `${roomId}:${reason ?? 'user_action'}`.slice(0, 256))
 }
+
+/** PR-27：派對房建立房間 */
+export function trackPartyRoomCreate(slug: string, maxPlayers: number): void {
+  sendEvent('party_room_create', Math.min(maxPlayers, 12), slug.slice(0, 256))
+}
+
+/** PR-27：派對房加入房間 */
+export function trackPartyRoomJoin(slug: string, playerCount: number): void {
+  sendEvent('party_room_join', Math.max(0, playerCount), slug.slice(0, 256))
+}
+
+/** PR-27：派對房乾杯 */
+export function trackPartyRoomCheers(slug: string, count: number): void {
+  sendEvent('party_room_cheers', Math.max(0, Math.min(count, VALUE_MAX)), slug.slice(0, 256))
+}
+
+/** PR-27：派對房房主選遊戲 */
+export function trackPartyRoomSelectGame(slug: string, gameId: string): void {
+  sendEvent('party_room_select_game', 1, `${slug}:${gameId}`.slice(0, 256))
+}

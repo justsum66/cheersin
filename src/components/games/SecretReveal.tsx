@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, RotateCcw, Timer, ThumbsUp, ThumbsDown } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { TypewriterText } from '@/components/ui/TypewriterText'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import {
   getPromptsByCategory,
   CATEGORY_LABEL,
@@ -23,9 +25,11 @@ const CATEGORY_OPTIONS: { value: SecretRevealCategory | 'all'; label: string }[]
 ]
 
 /** 236–245：秘密爆料遊戲：輪流分享秘密、其他人猜真假、猜錯喝、說謊被抓喝兩倍、60 秒講述、投票、統計 */
+/** R2-098：遊戲中題目/故事使用 TypewriterText 打字機效果 */
 export default function SecretReveal() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = usePrefersReducedMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [categoryFilter, setCategoryFilter] = useState<SecretRevealCategory | 'all'>('all')
   const [pool, setPool] = useState<SecretRevealPrompt[]>([])
@@ -176,7 +180,12 @@ export default function SecretReveal() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-lg text-center mt-4"
         >
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-6 px-4">{currentPrompt.text}</h2>
+          <TypewriterText
+            text={currentPrompt.text}
+            as="h2"
+            reducedMotion={reducedMotion}
+            className="text-xl md:text-2xl font-bold text-white mb-6 px-4 block"
+          />
           {(currentPrompt as { level?: string }).level && (
             <p className="text-white/40 text-xs mb-2">秘密分級：{(currentPrompt as { level?: string }).level === 'bold' ? '大膽' : (currentPrompt as { level?: string }).level === 'mild' ? '溫和' : '普通'}</p>
           )}

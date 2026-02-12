@@ -4,7 +4,7 @@ import type React from 'react'
 import { lazy, Suspense } from 'react'
 import { logger } from '@/lib/logger'
 
-/** R2-012：依分類動態 Code Splitting，webpackChunkName 為 games-${category}，用戶只下載當前分類遊戲代碼 */
+/** R2-012 / PERF-003：依分類動態 Code Splitting，所有遊戲皆 lazy 載入，無首屏載入全部遊戲 */
 type GameLoader = () => Promise<{ default: React.ComponentType }>
 const GAME_LOADERS: Record<string, GameLoader> = {
   'truth-or-dare': () => import(/* webpackChunkName: "games-party" */ './TruthOrDare'),

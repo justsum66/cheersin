@@ -20,6 +20,7 @@ import { usePartyRoomRealtime } from '@/hooks/usePartyRoomRealtime'
 import { usePolling } from '@/hooks/usePolling'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { getErrorMessage } from '@/lib/api-response'
+import { getDisplayErrorMessage } from '@/lib/api-error-i18n'
 import { trackPartyRoomCreate, trackPartyRoomJoin, trackPartyRoomCheers, trackPartyRoomSelectGame } from '@/lib/game-analytics'
 import { motion } from 'framer-motion'
 import { PartyRoomLobby } from './PartyRoomLobby'
@@ -137,7 +138,7 @@ export default function PartyRoomPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          setError(getErrorMessage(data, '建立房間失敗'))
+          setError(getDisplayErrorMessage(data, t, '建立房間失敗'))
           setCreating(false)
           return
         }
@@ -150,7 +151,7 @@ export default function PartyRoomPage() {
       })
       .catch(() => setError('建立房間失敗'))
       .finally(() => setCreating(false))
-  }, [selectedMaxPlayers])
+  }, [selectedMaxPlayers, t])
 
   /** PR-22：僅在點擊建立或重試時建立房間；有 room= query 時由 URL 還原 slug，不自動建立 */
   useEffect(() => {
@@ -208,7 +209,7 @@ export default function PartyRoomPage() {
             ? t('partyRoom.roomFull')
             : code === 'INVALID_PASSWORD'
               ? t('partyRoom.wrongPassword')
-              : getErrorMessage(data, t('partyRoom.joinError'))
+              : getDisplayErrorMessage(data, t, t('partyRoom.joinError'))
         setJoinError(msg)
         setJoinLoading(false)
         return
@@ -239,7 +240,7 @@ export default function PartyRoomPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(getErrorMessage(data, t('partyRoom.roomNotFoundDesc')))
+        toast.error(getDisplayErrorMessage(data, t, t('partyRoom.roomNotFoundDesc')))
         return
       }
       refetchRoomAndState()
@@ -261,7 +262,7 @@ export default function PartyRoomPage() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        toast.error(getErrorMessage(data, t('partyRoom.roomNotFoundDesc')))
+        toast.error(getDisplayErrorMessage(data, t, t('partyRoom.roomNotFoundDesc')))
         return
       }
       if (typeof window !== 'undefined') sessionStorage.removeItem(PARTY_ROOM_PLAYER_KEY(effectiveSlug))

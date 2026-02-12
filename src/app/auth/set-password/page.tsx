@@ -2,7 +2,7 @@
 
 /**
  * P2-347：重設密碼 — 用戶從郵件連結進入後設定新密碼
- * redirectTo 指向此頁；Supabase 以 hash 或 query 帶入 token，換 session 後顯示表單
+ * redirectTo 指向此頁；Supabase 以 hash 或 query 帶入 token，換 session 後顯示表單；I18N-04 文案 i18n
  */
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,8 +10,10 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Wine, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useTranslation } from '@/contexts/I18nContext'
 
 export default function SetPasswordPage() {
+  const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,11 +33,11 @@ export default function SetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password.length < 8) {
-      toast.error('密碼至少 8 個字元')
+      toast.error(t('auth.passwordMinLength'))
       return
     }
     if (password !== confirm) {
-      toast.error('兩次輸入的密碼不一致')
+      toast.error(t('auth.passwordMismatch'))
       return
     }
     setLoading(true)
@@ -43,10 +45,10 @@ export default function SetPasswordPage() {
       const supabase = createClient()
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
-      toast.success('密碼已更新')
+      toast.success(t('auth.passwordUpdated'))
       router.replace('/profile')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '更新失敗')
+      toast.error(err instanceof Error ? err.message : t('auth.updateFailed'))
     } finally {
       setLoading(false)
     }
@@ -55,24 +57,24 @@ export default function SetPasswordPage() {
   if (!ready) {
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
-        <p className="text-white/70">驗證中…</p>
+        <p className="text-white/70">{t('auth.verifying')}</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 safe-area-px page-container-mobile" role="main" aria-label="設定新密碼">
+    <main className="min-h-screen flex items-center justify-center p-4 safe-area-px page-container-mobile" role="main" aria-label={t('auth.setPassword')}>
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-6">
           <Link href="/" className="rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 p-3">
             <Wine className="w-8 h-8 text-white" />
           </Link>
         </div>
-        <h1 className="text-xl font-display font-bold text-white text-center mb-2">設定新密碼</h1>
-        <p className="text-white/60 text-sm text-center mb-6">請輸入新密碼（至少 8 個字元）</p>
+        <h1 className="text-xl font-display font-bold text-white text-center mb-2">{t('auth.setPassword')}</h1>
+        <p className="text-white/60 text-sm text-center mb-6">{t('auth.newPasswordLabel')}</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="new-password" className="block text-sm text-white/70 mb-1">新密碼</label>
+            <label htmlFor="new-password" className="block text-sm text-white/70 mb-1">{t('auth.newPassword')}</label>
             <input
               id="new-password"
               type="password"
@@ -81,11 +83,11 @@ export default function SetPasswordPage() {
               className="input-glass w-full min-h-[48px]"
               minLength={8}
               required
-              aria-label="新密碼"
+              aria-label={t('auth.newPassword')}
             />
           </div>
           <div>
-            <label htmlFor="confirm-password" className="block text-sm text-white/70 mb-1">再輸入一次</label>
+            <label htmlFor="confirm-password" className="block text-sm text-white/70 mb-1">{t('auth.confirmPassword')}</label>
             <input
               id="confirm-password"
               type="password"
@@ -94,7 +96,7 @@ export default function SetPasswordPage() {
               className="input-glass w-full min-h-[48px]"
               minLength={8}
               required
-              aria-label="確認密碼"
+              aria-label={t('auth.confirmPassword')}
             />
           </div>
           <button
@@ -103,11 +105,11 @@ export default function SetPasswordPage() {
             className="btn-primary w-full min-h-[48px] flex items-center justify-center gap-2"
           >
             <Lock className="w-4 h-4" />
-            {loading ? '更新中…' : '更新密碼'}
+            {loading ? t('auth.updating') : t('auth.submitSet')}
           </button>
         </form>
         <p className="text-center text-white/50 text-sm mt-4">
-          <Link href="/profile" className="text-primary-400 hover:underline">返回個人頁</Link>
+          <Link href="/profile" className="text-primary-400 hover:underline">{t('auth.backToProfile')}</Link>
         </p>
       </div>
     </main>

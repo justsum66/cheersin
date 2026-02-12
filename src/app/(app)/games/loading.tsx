@@ -1,6 +1,6 @@
 import { Skeleton, SkeletonCard, SkeletonText } from '@/components/ui/Skeleton'
 
-/** GAMES_500 #7 #8 #9：遊樂場載入骨架 — 與 Lobby 對應（搜尋+分類+網格）；骨架動畫與 prefers-reduced-motion */
+/** GAMES_500 #7 #8 #9 / UX-007：遊樂場載入骨架 — 與 Lobby、error 頁同 gradient/設計系統 */
 export default function Loading() {
   return (
     <div

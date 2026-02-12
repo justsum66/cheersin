@@ -28,6 +28,23 @@ export interface PayPalLink {
   href?: string
 }
 
+/** PP-14：訂閱 API 回傳形狀（GET /api/subscription 或 useSubscription 對齊） */
+export interface SubscriptionResponse {
+  tier?: 'free' | 'basic' | 'premium'
+  status?: string
+  currentPeriodEnd?: string
+  paypalSubscriptionId?: string
+  links?: PayPalLink[]
+}
+
+/** PP-14：Webhook 收到之 PayPal 事件 payload 常用欄位（供 webhooks/paypal route 型別用） */
+export interface PayPalWebhookEvent {
+  id?: string
+  event_type?: string
+  resource?: Record<string, unknown>
+  resource_type?: string
+}
+
 /** POST /api/report */
 export interface ReportPostBody {
   type?: string
@@ -35,7 +52,7 @@ export interface ReportPostBody {
   context?: { roomSlug?: string; gameId?: string }
 }
 
-/** POST /api/games/rooms — 建立房間；P0-004 匿名模式；Killer 派對房：房限與邀請；#14 劇本殺房 */
+/** POST /api/games/rooms — 建立房間；P0-004 匿名模式；Killer 派對房：房限與邀請；#14 劇本殺房；PR-31 參數校驗 */
 export interface GamesRoomsPostBody {
   password?: string
   /** 房主開啟後，所有玩家暱稱顯示為玩家A、玩家B… */
@@ -44,6 +61,8 @@ export interface GamesRoomsPostBody {
   partyRoom?: boolean
   /** 劇本殺房：綁定 script_id，人數與邀請路徑依劇本 */
   scriptId?: string
+  /** 派對房可選人數上限（4 | 8 | 12），未傳則依訂閱狀態決定 */
+  maxPlayers?: 4 | 8 | 12
 }
 
 /** POST /api/games/rooms/[slug]/join */
@@ -53,11 +72,14 @@ export interface GamesRoomJoinPostBody {
   isSpectator?: boolean
 }
 
-/** POST /api/games/rooms/[slug]/game-state */
+/** POST /api/games/rooms/[slug]/game-state；GET 回傳 state 型別見 @/types/games PartyState / ScriptState；PR-42 集中型別 */
 export interface GameStatePostBody {
   game_id?: string
   payload?: Record<string, unknown>
 }
+
+/** 派對房／遊戲房間與狀態型別集中於 @/types/games；此處 re-export 供 API 與前端共用 */
+export type { RoomInfo, PartyState, GamesRoomGetResponse } from './games'
 
 /** POST /api/recommend */
 export interface RecommendPostBody {

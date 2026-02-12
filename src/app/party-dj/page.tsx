@@ -372,7 +372,7 @@ export default function PartyDJPage() {
   }, [plan, user?.id, queryClient])
 
   return (
-    <div className="min-h-[60vh] flex flex-col items-center gap-6 px-4 py-8 min-w-0 w-full max-w-[100vw] bg-dark-950 text-white" role="main">
+    <div className="min-h-[60vh] flex flex-col items-center gap-6 px-4 py-8 min-w-0 w-full max-w-[100vw] bg-dark-950 text-white print:bg-white print:text-black print:py-4" role="main">
       <div className="flex items-center gap-3 text-primary-400">
         <Music2 className="w-12 h-12" aria-hidden />
         <Sparkles className="w-8 h-8" aria-hidden />
@@ -383,11 +383,11 @@ export default function PartyDJPage() {
       </p>
 
       {!online && (
-        <p className="text-amber-400 text-sm text-center px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30" role="status">
+        <p className="text-amber-400 text-sm text-center px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 print:hidden" role="status">
           {t('partyDj.offlineHint')}
         </p>
       )}
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4 min-w-0" aria-label={t('partyDj.title')}>
+      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4 min-w-0 print:hidden" aria-label={t('partyDj.title')}>
         <label className="text-white/80 text-sm">
           {t('partyDj.people')}
           <input
@@ -447,7 +447,7 @@ export default function PartyDJPage() {
       </form>
 
       {!plan && !loading && !error && savedPlans.length > 0 && (
-        <div className="w-full max-w-sm space-y-2">
+        <div className="w-full max-w-sm space-y-2 print:hidden">
           <p className="text-white/70 text-sm font-medium">{t('partyDj.recentPlans')}</p>
           <ul className="space-y-2">
             {savedPlans.map((item) => {
@@ -470,7 +470,7 @@ export default function PartyDJPage() {
       )}
 
       {!plan && !loading && !error && savedPlans.length === 0 && (
-        <p className="text-white/50 text-sm text-center max-w-sm" role="status">
+        <p className="text-white/50 text-sm text-center max-w-sm print:hidden" role="status">
           {t('partyDj.emptyState')}
         </p>
       )}
@@ -550,10 +550,10 @@ export default function PartyDJPage() {
         />
       )}
 
-      <Link href="/assistant" className="text-white/50 hover:text-white/80 text-sm">
+      <Link href="/assistant" className="text-white/50 hover:text-white/80 text-sm print:hidden">
         {t('partyDj.askAssistant')}
       </Link>
-      <Link href="/" className="text-white/50 hover:text-white/80 text-sm">
+      <Link href="/" className="text-white/50 hover:text-white/80 text-sm print:hidden">
         {t('partyDj.backHome')}
       </Link>
     </div>

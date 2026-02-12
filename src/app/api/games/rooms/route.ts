@@ -10,11 +10,43 @@ import { stripHtml } from '@/lib/sanitize'
 
 const MAX_SLUG_ATTEMPTS = 5
 
-/** P3-62 / P2-310：GET ?host=me&limit=&offset= — 需登入，回傳當前用戶為 host 的房間列表（分頁） */
+/** P3-62 / P2-310：GET ?host=me 或 ?list=active — host=me 需登入回傳我的房間；list=active 回傳進行中派對房（PR-34） */
 export async function GET(request: Request) {
   const url = new URL(request.url)
+  const listActive = url.searchParams.get('list') === 'active'
+
+  if (listActive) {
+    const limit = Math.min(Number(url.searchParams.get('limit')) || 20, 50)
+    const now = new Date().toISOString()
+    try {
+      const supabase = createServerClient()
+      const { data: rows, error } = await supabase
+        .from('game_rooms')
+        .select('id, slug, created_at, expires_at, settings, game_room_players(id)')
+        .not('expires_at', 'is', null)
+        .gt('expires_at', now)
+        .order('created_at', { ascending: false })
+        .limit(limit * 2)
+      if (error) return serverErrorResponse(error)
+      const partyRooms = (rows ?? []).filter((r) => (r.settings as { partyRoom?: boolean } | null)?.partyRoom === true).slice(0, limit)
+      const list = partyRooms.map((r) => ({
+        slug: r.slug,
+        expiresAt: r.expires_at,
+        createdAt: r.created_at,
+        playerCount: Array.isArray(r.game_room_players) ? r.game_room_players.length : 0,
+      }))
+      return NextResponse.json(
+        { rooms: list, meta: { limit, total: list.length } },
+        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
+      )
+    } catch (e) {
+      logger.error('Games rooms list=active failed', { error: e instanceof Error ? e.message : 'Unknown' })
+      return serverErrorResponse(e)
+    }
+  }
+
   if (url.searchParams.get('host') !== 'me') {
-    return errorResponse(400, 'Bad request', { message: 'Use host=me to list your rooms' })
+    return errorResponse(400, 'Bad request', { message: 'Use host=me to list your rooms or list=active for active party rooms' })
   }
   const user = await getCurrentUser()
   if (!user?.id) {
@@ -35,7 +67,10 @@ export async function GET(request: Request) {
     if (error) return serverErrorResponse(error)
     const list = rooms ?? []
     const meta = buildPaginatedMeta(limit, offset, list.length, undefined, list.length >= limit ? String(offset + limit) : null)
-    return NextResponse.json({ rooms: list, meta })
+    return NextResponse.json(
+      { rooms: list, meta },
+      { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+    )
   } catch (e) {
     logger.error('Games rooms GET failed', { error: e instanceof Error ? e.message : 'Unknown' })
     return serverErrorResponse(e)
@@ -59,21 +94,31 @@ export async function POST(request: Request) {
       { status: 429, headers: { 'Retry-After': '60' } }
     )
   }
-  /** BE-21：body 驗證 — 僅接受可選 4 位數字密碼、P0-004 匿名模式、Killer 派對房、#14 劇本殺 scriptId */
+  /** BE-21 / PR-31：body 驗證 — 密碼、匿名、派對房、劇本殺 scriptId、maxPlayers；回傳統一格式 */
   let bodyPassword: string | undefined
   let anonymousMode = false
   let partyRoom = false
   let scriptId: string | undefined
+  let bodyMaxPlayers: 4 | 8 | 12 | undefined
   try {
     const body = (await request.json().catch(() => null)) as import('@/types/api-bodies').GamesRoomsPostBody | null
     if (body && typeof body === 'object') {
       if (typeof body.password === 'string' && /^\d{4}$/.test(body.password)) bodyPassword = body.password
       if (body.anonymousMode === true) anonymousMode = true
       if (body.partyRoom === true) partyRoom = true
+      if (body.partyRoom !== undefined && typeof body.partyRoom !== 'boolean') {
+        return errorResponse(400, 'INVALID_PARTY_ROOM', { message: 'partyRoom 須為布林值' })
+      }
+      if (body.maxPlayers !== undefined) {
+        if (body.maxPlayers !== 4 && body.maxPlayers !== 8 && body.maxPlayers !== 12) {
+          return errorResponse(400, 'INVALID_MAX_PLAYERS', { message: 'maxPlayers 僅可為 4、8 或 12' })
+        }
+        bodyMaxPlayers = body.maxPlayers
+      }
       if (typeof body.scriptId === 'string' && body.scriptId.trim()) scriptId = stripHtml(body.scriptId.trim().slice(0, 64))
     }
   } catch {
-    return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
+    return errorResponse(400, 'INVALID_JSON', { message: '請提供有效的 JSON body' })
   }
   try {
     const supabase = createServerClient()
@@ -89,10 +134,7 @@ export async function POST(request: Request) {
     }
     if (!slugFree) {
       logger.warn('Game room slug collision: all attempts taken', { attempts: MAX_SLUG_ATTEMPTS })
-      return NextResponse.json(
-        { error: '暫時無法建立房間，請稍後再試' },
-        { status: 503 }
-      )
+      return errorResponse(503, 'ROOM_CREATE_LIMIT', { message: '暫時無法建立房間，請稍後再試' })
     }
     const user = await getCurrentUser()
     // 劇本殺房：#14 綁定 script_id，人數與過期時間依劇本
@@ -121,7 +163,15 @@ export async function POST(request: Request) {
       const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single()
       const tier = (profile?.subscription_tier as string) ?? 'free'
       const isPaid = tier === 'basic' || tier === 'premium'
-      maxPlayers = isPaid ? 12 : 4
+      const defaultMax = isPaid ? 12 : 4
+      if (bodyMaxPlayers !== undefined) {
+        if (!isPaid && bodyMaxPlayers > 4) {
+          return errorResponse(400, 'UPGRADE_REQUIRED', { message: '免費方案僅支援 4 人，升級可解鎖 12 人' })
+        }
+        maxPlayers = bodyMaxPlayers
+      } else {
+        maxPlayers = defaultMax
+      }
       const expiresMs = isPaid ? 24 * 60 * 60 * 1000 : 30 * 60 * 1000
       expiresAt = new Date(Date.now() + expiresMs).toISOString()
       settings.max_players = maxPlayers

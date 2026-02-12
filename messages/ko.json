@@ -1,4 +1,10 @@
 {
+  "meta": {
+    "defaultTitle": "Cheersin | 당신의 소울 와인을 찾아보세요",
+    "defaultDescription": "Cheersin — AI 파티 동반자. 소울 와인 테스트, 게임, 와인 Q&A, 파티 게임, 와인 아카데미.",
+    "ogTitle": "Cheersin | 당신의 소울 와인을 찾아보세요",
+    "ogDescription": "AI 파티 동반자 — 소울 와인 테스트, 게임, 와인 Q&A, 파티 게임."
+  },
   "common": {
     "appName": "Cheersin",
     "tagline": "당신의 소울 와인을 찾아보세요",
@@ -12,7 +18,14 @@
     "close": "닫기",
     "back": "Back",
     "share": "Share",
-    "copied": "Copied"
+    "copied": "Copied",
+    "errorNetwork": "네트워크 오류. 연결을 확인한 후 다시 시도해 주세요.",
+    "sessionExpired": "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.",
+    "offlineMessage": "오프라인입니다. 일부 기능을 사용할 수 없습니다.",
+    "expiresToday": "오늘 만료",
+    "expiresTomorrow": "내일 만료",
+    "expiresInDays": "{{count}}일 후 만료",
+    "expiresOnDate": "만료일: {{date}}"
   },
   "nav": {
     "home": "홈",
@@ -151,12 +164,46 @@
     "learnTitle": "로드 실패",
     "learnDescription": "품주 학원을 불러올 수 없습니다. 다시 시도하거나 홈으로 돌아가 주세요.",
     "quizTitle": "퀴즈 로드 실패",
-    "quizDescription": "소울 와인 퀴즈를 불러올 수 없습니다. 다시 시도하거나 홈으로 돌아가 주세요."
+    "quizDescription": "소울 와인 퀴즈를 불러올 수 없습니다. 다시 시도하거나 홈으로 돌아가 주세요.",
+    "scriptMurderTitle": "스크립트 머더 로드 실패",
+    "scriptMurderDescription": "스크립트 머더를 불러올 수 없습니다. 다시 시도하거나 스크립트 목록으로 돌아가 주세요."
+  },
+  "apiErrors": {
+    "INTERNAL_ERROR": "잠시 후 다시 시도해 주세요.",
+    "INVALID_JSON": "요청 형식이 올바르지 않습니다.",
+    "UNAUTHORIZED": "다시 로그인해 주세요.",
+    "NOT_FOUND": "찾을 수 없습니다.",
+    "ROOM_NOT_FOUND": "방이 없거나 종료되었습니다.",
+    "TURNSTILE_FAILED": "인증에 실패했습니다. 다시 시도해 주세요."
   },
   "subscription": {
     "success": "구독 완료",
     "cancel": "구독 취소",
-    "manage": "구독 관리"
+    "manage": "구독 관리",
+    "cancelPageTitle": "구독이 취소되었습니다",
+    "cancelMessageWithDate": "취소되었습니다. 요금제는 {{date}}까지 이용 가능합니다.",
+    "cancelMessageDefault": "취소되었습니다. 요금제는 당기 종료일까지 이용 가능합니다.",
+    "comeBackAnytime": "언제든 다시 이용하실 수 있습니다. 무료 기능은 계속 이용 가능합니다.",
+    "checkManageLink": "만료일은",
+    "manageLink": "구독 관리",
+    "manageLinkSuffix": "에서 확인하세요.",
+    "loseTitle": "취소 시 다음 혜택을 잃게 됩니다:",
+    "loseItem1": "무제한 파티 게임 및 고급 문제 세트",
+    "loseItem2": "와인 아카데미 전체 과정 및 수료증",
+    "loseItem3": "소믈리에 AI 대화 및 추천",
+    "loseItem4": "전용 혜택 및 이벤트 우선 접근",
+    "changeMind": "마음이 바뀌셨나요?",
+    "retainOrResub": "요금제 유지 시 7일 연장, 또는 재구독 시 첫 달 혜택.",
+    "retentionOffer": "재구독 시 다음 달 50% 할인.",
+    "ctaRetain": "요금제 유지 / 재구독",
+    "ctaManage": "구독 관리",
+    "ctaHome": "홈으로",
+    "specialOffer": "한정: 첫 달",
+    "specialOfferDiscount": "20% 할인",
+    "specialOfferSuffix": "",
+    "loseRegionAria": "취소 시 잃는 혜택",
+    "nextStepsAria": "다음 단계",
+    "subscriptionUnavailable": "구독 서비스를 일시적으로 이용할 수 없습니다. 나중에 다시 시도해 주세요."
   },
   "profile": {
     "stats": "통계",
@@ -216,7 +263,9 @@
     "currentGame": "현재",
     "gameTruthOrDare": "진실 또는 대담",
     "gameRoulette": "룰렛",
-    "gameLiarDice": "라이어 다이스"
+    "gameLiarDice": "라이어 다이스",
+    "unlock12Players": "12명까지 확장",
+    "unlock12PlayersAria": "업그레이드로 12명까지"
   },
   "scriptMurder": {
     "title": "Script murder",
@@ -257,7 +306,52 @@
     "returnList": "Back to list",
     "existingRooms": "Existing rooms",
     "partyGamesLink": "Party games",
-    "academyLink": "Wine Academy"
+    "academyLink": "Wine Academy",
+    "displayName": "표시 이름",
+    "enterNamePlaceholder": "닉네임 입력",
+    "joinButton": "참가",
+    "joining": "참가 중…",
+    "backToHome": "홈으로",
+    "goToPartyGames": "파티 게임으로",
+    "playersAndDuration": "{{min}}–{{max}}명 · 약 {{minDur}}분",
+    "roomFallbackTitle": "스크립트 방",
+    "playersCount": "{{current}}/{{max}}명",
+    "errorLoadScripts": "스크립트 목록을 불러올 수 없습니다",
+    "loading": "로딩 중…",
+    "roomFull": "방이 가득 찼습니다",
+    "noPlayersYet": "아직 참가자가 없습니다",
+    "roomExpired": "만료됨",
+    "createRoomAria": "{{title}} 방 만들기",
+    "upgradeUnlockAria": "업그레이드하여 모든 스크립트 잠금 해제",
+    "loadingScriptsAria": "스크립트 로딩 중",
+    "copyFailed": "복사에 실패했습니다. 링크를 수동으로 복사해 주세요",
+    "startGameFailed": "게임 시작에 실패했습니다. 다시 시도해 주세요",
+    "chapterError": "챕터 데이터 오류",
+    "noVoteOptions": "이 투표에 선택지가 없습니다"
+  },
+  "werewolf": {
+    "title": "늑대인간 간이판",
+    "rulesTitle": "규칙",
+    "rules": "4-8명. 역할: 늑대({{wolfCount}}명), 예언자(1명, 6명 이상일 때), 나머지 마을 주민.\n밤: 늑대가 한 명 제거.\n낮: 논의 후 투표, 최다 표를 받은 사람 제거.\n늑대 전멸 시 마을 주민 승리; 마을 주민≤늑대 시 늑대 승리.",
+    "assignAndStart": "역할 분배하고 시작",
+    "nightPrompt": "제 {{round}} 밤 — 늑대는 눈을 뜨고 제거할 대상을 선택하세요",
+    "nightVictim": "어젯밤 제거: {{name}} (한 잔 드세요)",
+    "dayDiscuss": "낮 동안 논의 후 투표하세요",
+    "startVote": "투표 시작",
+    "votePrompt": "제거할 사람을 투표로 선택하세요",
+    "voteResult": "투표로 제거: {{name}} ({{role}}, 드세요)",
+    "copyTemplate": "늑대인간 간이판: 투표로 제거 {{name}} ({{role}}){{suffix}}",
+    "copySuffixNext": ", 다음 밤",
+    "copySuffixVillagersWin": ", 마을 주민 승리",
+    "copySuffixWolvesWin": ", 늑대 승리",
+    "villagersWin": "마을 주민 승리!",
+    "wolvesWin": "늑대 승리!",
+    "playAgain": "다시 하기",
+    "nextNight": "다음 밤",
+    "roleWolf": "늑대",
+    "roleVillager": "마을 주민",
+    "roleSeer": "예언자",
+    "defaultPlayer": "플레이어 {{n}}"
   },
   "partyDj": {
     "title": "AI Party DJ",
@@ -310,6 +404,12 @@
     "contactUs": "Contact us",
     "reportIntro": "If something is wrong, report via ",
     "reportSuffix": "."
+  },
+  "gameError": {
+    "title": "게임을 불러올 수 없습니다",
+    "desc": "이 게임에서 오류가 발생했습니다. 새로고침하거나 게임 목록으로 돌아가 주세요.",
+    "retry": "다시 시도",
+    "backLobby": "로비로"
   },
   "gamesError": {
     "title": "Games page failed to load",

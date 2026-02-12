@@ -4,19 +4,27 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from '../GameRules'
 import CopyResultButton from '../CopyResultButton'
 
-const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4', '玩家 5', '玩家 6']
-type Role = 'wolf' | 'villager' | 'seer'
+/** WW-21：角色型別集中 */
+export type WerewolfRole = 'wolf' | 'villager' | 'seer'
 
-/** 狼人殺簡化版：4-8 人，狼人 / 村民 / 預言家。夜晚狼刀、預言家查人；白天投票出局。 */
+/** 預設玩家名稱；WW-25 可選 i18n */
+function getDefaultPlayers(t: (key: string) => string): string[] {
+  return Array.from({ length: 6 }, (_, i) => t('werewolf.defaultPlayer').replace('{{n}}', String(i + 1)))
+}
+
+/** 狼人殺簡化版：4-8 人，狼人 / 村民 / 預言家。夜晚狼刀、預言家查人；白天投票出局。WW-01～30 */
 export default function WerewolfLite() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-  const players = contextPlayers.length >= 4 && contextPlayers.length <= 8 ? contextPlayers : DEFAULT_PLAYERS.slice(0, 6)
+  const defaultPlayers = useMemo(() => getDefaultPlayers(t), [t])
+  const players = contextPlayers.length >= 4 && contextPlayers.length <= 8 ? contextPlayers : defaultPlayers.slice(0, 6)
   const [phase, setPhase] = useState<'idle' | 'night' | 'day' | 'vote' | 'result'>('idle')
-  const [roles, setRoles] = useState<Record<number, Role>>({})
+  const [roles, setRoles] = useState<Record<number, WerewolfRole>>({})
   const [alive, setAlive] = useState<Set<number>>(new Set())
   const [nightTarget, setNightTarget] = useState<number | null>(null)
   const [voteTarget, setVoteTarget] = useState<number | null>(null)
@@ -33,7 +41,7 @@ export default function WerewolfLite() {
       const j = Math.floor(Math.random() * (k + 1));
       [indices[k], indices[j]] = [indices[j], indices[k]]
     }
-    const r: Record<number, Role> = {}
+    const r: Record<number, WerewolfRole> = {}
     for (let i = 0; i < wolfCount; i++) r[indices[i]] = 'wolf'
     if (hasSeer) r[indices[wolfCount]] = 'seer'
     for (let i = wolfCount + (hasSeer ? 1 : 0); i < n; i++) r[indices[i]] = 'villager'
@@ -87,33 +95,33 @@ export default function WerewolfLite() {
   const gameOver = aliveList.length <= 2 || wolvesAlive === 0
   const villagersWin = wolvesAlive === 0
 
+  const rulesText = t('werewolf.rules').replace('{{wolfCount}}', String(wolfCount))
+
   return (
-    <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="狼人殺簡化版">
-      <GameRules
-        rules={`4-8 人。角色：狼人（${wolfCount} 人）、預言家（1 人，6 人以上才有）、其餘村民。\n夜晚：狼人刀一人出局。\n白天：討論後投票，得票最高者出局。\n狼人全出局則村民勝；村民≤狼人則狼人勝。`}
-      />
-      <p className="text-white/50 text-sm mb-2 text-center">狼人殺簡化版</p>
+    <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label={t('werewolf.title')}>
+      <GameRules rules={rulesText} title={t('werewolf.rulesTitle')} />
+      <p className="text-white/50 text-sm mb-2 text-center">{t('werewolf.title')}</p>
 
       {phase === 'idle' && (
         <motion.button
           type="button"
-          className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
+          className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring games-touch-target"
           onClick={assignRoles}
           whileTap={{ scale: 0.98 }}
         >
-          分配角色並開始
+          {t('werewolf.assignAndStart')}
         </motion.button>
       )}
 
       {phase === 'night' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
-          <p className="text-white/70 mb-2">第 {round} 晚 — 狼人請睜眼，選擇要刀的對象</p>
+          <p className="text-white/70 mb-2">{t('werewolf.nightPrompt').replace('{{round}}', String(round))}</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {aliveList.filter((i) => roles[i] !== 'wolf').map((i) => (
               <button
                 key={i}
                 type="button"
-                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-red-500/30 text-white text-sm games-focus-ring"
+                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-red-500/30 text-white text-sm games-focus-ring games-touch-target"
                 onClick={() => killAtNight(i)}
               >
                 {players[i]}
@@ -126,28 +134,28 @@ export default function WerewolfLite() {
       {phase === 'day' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           {nightTarget != null && (
-            <p className="text-red-400 font-bold mb-2">昨晚出局：{players[nightTarget]}（請喝一杯）</p>
+            <p className="text-red-400 font-bold mb-2">{t('werewolf.nightVictim').replace('{{name}}', players[nightTarget])}</p>
           )}
-          <p className="text-white/70 mb-4">白天討論後投票</p>
+          <p className="text-white/70 mb-4">{t('werewolf.dayDiscuss')}</p>
           <button
             type="button"
-            className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring"
+            className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring games-touch-target"
             onClick={startVote}
           >
-            開始投票
+            {t('werewolf.startVote')}
           </button>
         </motion.div>
       )}
 
       {phase === 'vote' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
-          <p className="text-white/70 mb-4">投票選出要出局的人</p>
+          <p className="text-white/70 mb-4">{t('werewolf.votePrompt')}</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {aliveList.map((i) => (
               <button
                 key={i}
                 type="button"
-                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm games-focus-ring"
+                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm games-focus-ring games-touch-target"
                 onClick={() => castVoteOut(i)}
               >
                 {players[i]}
@@ -157,41 +165,47 @@ export default function WerewolfLite() {
         </motion.div>
       )}
 
-      {phase === 'result' && (
+      {phase === 'result' && voteTarget != null && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
           >
-            {voteTarget != null && (
-              <p className="text-white/80 mb-2">投票出局：<span className="font-bold">{players[voteTarget]}</span>（{roles[voteTarget] === 'wolf' ? '狼人' : '村民'}，請喝）</p>
-            )}
-            {voteTarget != null && (
-              <CopyResultButton
-                text={`狼人殺簡化版：投票出局 ${players[voteTarget]}（${roles[voteTarget] === 'wolf' ? '狼人' : '村民'}）${gameOver ? (villagersWin ? '，村民勝' : '，狼人勝') : '，下一夜'}`}
-                className="mb-4 games-focus-ring"
-              />
-            )}
+            <p className="text-white/80 mb-2">
+              {t('werewolf.voteResult')
+                .replace('{{name}}', players[voteTarget])
+                .replace('{{role}}', roles[voteTarget] === 'wolf' ? t('werewolf.roleWolf') : t('werewolf.roleVillager'))}
+            </p>
+            <CopyResultButton
+              text={t('werewolf.copyTemplate')
+                .replace('{{name}}', players[voteTarget])
+                .replace('{{role}}', roles[voteTarget] === 'wolf' ? t('werewolf.roleWolf') : t('werewolf.roleVillager'))
+                .replace('{{suffix}}', gameOver ? (villagersWin ? t('werewolf.copySuffixVillagersWin') : t('werewolf.copySuffixWolvesWin')) : t('werewolf.copySuffixNext'))}
+              label={t('games.copyResult')}
+              className="mb-4 games-focus-ring"
+            />
             {gameOver ? (
               <>
-                <p className="text-lg font-bold mb-4">{villagersWin ? '村民勝！' : '狼人勝！'}</p>
-                <button
+                <p className="text-lg font-bold mb-4">{villagersWin ? t('werewolf.villagersWin') : t('werewolf.wolvesWin')}</p>
+                <motion.button
                   type="button"
-                  className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring"
+                  className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring games-touch-target"
                   onClick={reset}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  再來一局
-                </button>
+                  {t('werewolf.playAgain')}
+                </motion.button>
               </>
             ) : (
-              <button
+              <motion.button
                 type="button"
-                className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring"
+                className="min-h-[48px] min-w-[48px] px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring games-touch-target"
                 onClick={nextRound}
+                whileTap={{ scale: 0.98 }}
               >
-                下一夜
-              </button>
+                {t('werewolf.nextNight')}
+              </motion.button>
             )}
           </motion.div>
         </AnimatePresence>
