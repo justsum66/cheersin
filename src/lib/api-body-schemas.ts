@@ -66,4 +66,52 @@ export const LearnProgressPostBodySchema = z.object({
   chapterId: z.number().int().min(0),
 })
 
+/** POST /api/games/rooms/[slug]/script-murder — 劇本殺動作 body */
+const SCRIPT_MURDER_ACTIONS = ['advance', 'vote', 'punishment_done'] as const
+export const ScriptMurderPostBodySchema = z.object({
+  action: z.enum(SCRIPT_MURDER_ACTIONS),
+  playerId: z.string().trim().optional(),
+  option: z.string().trim().optional(),
+})
+
+/** POST /api/recommend — 推薦酒款/知識 body；namespace 白名單 wines | knowledge */
+const RECOMMEND_NAMESPACES = ['wines', 'knowledge'] as const
+export const RecommendPostBodySchema = z.object({
+  query: z.string().trim().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  vector: z.array(z.number()).optional(),
+  topK: z.number().int().min(1).max(20).optional(),
+  namespace: z.enum(RECOMMEND_NAMESPACES).optional(),
+  soul_wine: z.string().trim().optional(),
+  soul_wine_type: z.string().trim().optional(),
+  quiz_tags: z.array(z.string()).optional(),
+  recentChat: z.string().optional(),
+})
+
+/** POST /api/report — 檢舉 body；type 白名單與 REPORT_TYPES 一致 */
+const REPORT_TYPES = ['不當內容', '騷擾', '作弊或濫用', '其他'] as const
+export const ReportPostBodySchema = z.object({
+  type: z.enum(REPORT_TYPES).optional(),
+  description: z.string().max(500).optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
+})
+
+/** POST /api/learn/notes — 課程筆記 body */
+const LEARN_NOTES_CONTENT_MAX = 10000
+export const LearnNotesPostBodySchema = z.object({
+  courseId: z.string().trim().min(1, 'courseId required'),
+  chapterId: z.number().int().min(0).optional(),
+  content: z.string().max(LEARN_NOTES_CONTENT_MAX),
+})
+
+/** POST /api/learn/certificate — 證書 body */
+export const LearnCertificatePostBodySchema = z.object({
+  courseId: z.string().trim().min(1, 'courseId required'),
+})
+
+/** POST /api/subscription/promo — 優惠碼驗證 body */
+export const SubscriptionPromoPostBodySchema = z.object({
+  code: z.string().min(1, 'code required').trim(),
+})
+
 export { MAX_DISPLAY_NAME_LENGTH }

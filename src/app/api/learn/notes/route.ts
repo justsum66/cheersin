@@ -1,11 +1,13 @@
 /**
- * P3-412：課程筆記 API — 與 learning_notes 表同步
+ * P3-412：課程筆記 API — 與 learning_notes 表同步；SEC-003 Zod 校驗
  * GET: ?courseId=xxx 回傳該課程下該用戶的筆記列表
  * POST: body { courseId, chapterId?, content } 新增或更新一則筆記
  */
 import { NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { getCurrentUser } from '@/lib/get-current-user'
+import { errorResponse } from '@/lib/api-response'
+import { LearnNotesPostBodySchema } from '@/lib/api-body-schemas'
 
 export async function GET(request: Request) {
   const user = await getCurrentUser()
@@ -38,18 +40,12 @@ export async function POST(request: Request) {
   if (!user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  let body: { courseId?: string; chapterId?: number; content?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-  const courseId = typeof body.courseId === 'string' ? body.courseId.trim() : ''
-  const content = typeof body.content === 'string' ? body.content : ''
-  if (!courseId || content.length > 10000) {
-    return NextResponse.json({ error: 'courseId and content (max 10000 chars) required' }, { status: 400 })
-  }
-  const chapterId = typeof body.chapterId === 'number' && Number.isInteger(body.chapterId) ? body.chapterId : null
+  const raw = await request.json().catch(() => null)
+  if (raw === null) return errorResponse(400, 'INVALID_JSON', { message: '請求 body 必須為有效 JSON' })
+  const parsed = LearnNotesPostBodySchema.safeParse(raw)
+  if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: 'courseId 與 content 為必填，content 最多 10000 字' })
+  const { courseId, content, chapterId: chId } = parsed.data
+  const chapterId = chId ?? null
   const supabase = createServerClientOptional()
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 })

@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { ScriptMurderPostBodySchema } from '@/lib/api-body-schemas'
 import { SLUG_PATTERN } from '@/lib/games-room'
 import { stripHtml } from '@/lib/sanitize'
 import type { ScriptRoomState } from '@/types/script-murder'
@@ -20,13 +21,11 @@ export async function POST(
     const { slug } = await params
     if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
 
-    const body = (await request.json().catch(() => ({}))) as {
-      action?: string
-      playerId?: string
-      option?: string
-    }
-    const action = body.action === 'advance' || body.action === 'vote' || body.action === 'punishment_done' ? body.action : null
-    if (!action) return errorResponse(400, 'Invalid action', { message: '缺少或無效的 action' })
+    const raw = await request.json().catch(() => ({}))
+    const parsed = ScriptMurderPostBodySchema.safeParse(raw)
+    if (!parsed.success) return errorResponse(400, 'Invalid action', { message: '缺少或無效的 action' })
+    const body = parsed.data
+    const action = body.action
 
     const supabase = createServerClient()
     const { data: room, error: roomError } = await supabase
@@ -78,8 +77,8 @@ export async function POST(
     }
 
     if (action === 'vote') {
-      const playerId = typeof body.playerId === 'string' ? body.playerId.trim() : ''
-      const option = typeof body.option === 'string' ? stripHtml(body.option).trim().slice(0, 64) : ''
+      const playerId = (body.playerId ?? '').trim()
+      const option = body.option != null ? stripHtml(String(body.option)).trim().slice(0, 64) : ''
       if (!playerId || option === '') return errorResponse(400, 'Missing playerId or option', { message: '缺少 playerId 或 option' })
       const { data: player } = await supabase
         .from('game_room_players')

@@ -3,14 +3,13 @@ import { queryVectors } from '@/lib/pinecone'
 import { getEmbedding } from '@/lib/embedding'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { RecommendPostBodySchema } from '@/lib/api-body-schemas'
 import { logApiError } from '@/lib/api-error-log'
 
 const NAMESPACE_WINES = 'wines'
-/** P3-38：namespace 白名單，僅允許 wines / knowledge */
-const ALLOWED_NAMESPACES = ['wines', 'knowledge'] as const
 
 /**
- * 76 依靈魂酒測 + 歷史對話從 Pinecone 找酒款；P1-15：限流 30/分/IP
+ * 76 依靈魂酒測 + 歷史對話從 Pinecone 找酒款；P1-15：限流 30/分/IP；SEC-003 Zod 校驗
  */
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +21,11 @@ export async function POST(request: NextRequest) {
       res.headers.set('X-RateLimit-Limit', '30')
       return res
     }
-    const body = (await request.json()) as import('@/types/api-bodies').RecommendPostBody
+    const raw = await request.json().catch(() => null)
+    if (raw === null) return errorResponse(400, 'INVALID_JSON', { message: '請求 body 必須為有效 JSON' })
+    const parsed = RecommendPostBodySchema.safeParse(raw)
+    if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: '請求參數格式錯誤' })
+    const body = parsed.data
 
     if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_API_URL) {
       return NextResponse.json(
@@ -31,12 +34,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (body.namespace != null && String(body.namespace).trim() !== '' && !ALLOWED_NAMESPACES.includes(String(body.namespace) as 'wines' | 'knowledge')) {
-      return NextResponse.json(
-        { error: 'Invalid namespace', message: '僅允許 wines 或 knowledge' },
-        { status: 400 }
-      )
-    }
     let vector: number[] | null = null
     let namespace = body.namespace
     let topK = Math.min(Math.max(1, body.topK ?? 5), 20)

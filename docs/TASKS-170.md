@@ -293,3 +293,4 @@
 | 2026-02-12 | **50 任務批次（三支柱）** | **用戶吸引力**：COPY-001/002、UX-010/022/019/011 確認；**課程深度**：COPY-005 learningObjectives（wine-101、whisky-101、white-wine）、LearnCourseContent 首屏展示、validate:lessons/content 通過、copy-audit COPY-005；**遊戲體驗**：GAME-014 TruthOrDare 完成/下一輪 confetti、copy-audit 抽檢項；TASKS-170、CHANGELOG 更新 |
 | 2026-02-11 | **Phase B：SEC/PERF 審計補註** | rls-audit-next、api-zod-audit 已勾選；performance-audit PERF-014 驗收項補勾與 Phase B 補註 |
 | 2026-02-11 | **Phase B：A11Y 抽檢 + E2E 穩化 + B4 文件** | A11Y-001/002/017 抽檢勾選（accessibility-audit-checklist）；E2E dismissAgeGate、FAQ/I18N 修正、playwright timeout、docs/e2e-critical-paths.md；COPY-011/012/013、GAME-018 文件註明（copy-batch4、game-batch5） |
+| 2026-02-11 | **TASKS-170 下一批（API Zod）** | SEC-003：script-murder、recommend、report、learn/notes、learn/certificate、subscription/promo 補 Zod（api-body-schemas + 各 route safeParse）；api-zod-audit 更新 |

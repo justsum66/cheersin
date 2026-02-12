@@ -1,5 +1,5 @@
 /**
- * P3-414：課程完成證書 — 查詢或建立證書
+ * P3-414：課程完成證書 — 查詢或建立證書；SEC-003 Zod 校驗
  * GET ?courseId=xxx → 該用戶該課程的證書（若有）
  * POST body { courseId } → 若課程已完成則建立證書並回傳
  */
@@ -7,6 +7,8 @@ import { NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { getCourse } from '@/lib/courses'
+import { errorResponse } from '@/lib/api-response'
+import { LearnCertificatePostBodySchema } from '@/lib/api-body-schemas'
 
 export async function GET(request: Request) {
   const user = await getCurrentUser()
@@ -27,14 +29,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const user = await getCurrentUser()
   if (!user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  let body: { courseId?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-  const courseId = typeof body.courseId === 'string' ? body.courseId.trim() : ''
-  if (!courseId) return NextResponse.json({ error: 'courseId required' }, { status: 400 })
+  const raw = await request.json().catch(() => null)
+  if (raw === null) return errorResponse(400, 'INVALID_JSON', { message: '請求 body 必須為有效 JSON' })
+  const parsed = LearnCertificatePostBodySchema.safeParse(raw)
+  if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: 'courseId 為必填' })
+  const courseId = parsed.data.courseId
   const course = getCourse(courseId)
   if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 })
   const totalChapters = course.chapters?.length ?? 0

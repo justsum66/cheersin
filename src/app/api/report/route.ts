@@ -5,14 +5,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { errorResponse } from '@/lib/api-response'
-import { isOneOf } from '@/lib/validators'
+import { ReportPostBodySchema } from '@/lib/api-body-schemas'
 import { stripHtml } from '@/lib/sanitize'
 import { logger } from '@/lib/logger'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
-const REPORT_TYPES = ['不當內容', '騷擾', '作弊或濫用', '其他'] as const
-/** P3-44：檢舉 API 每 IP 每分鐘最多 5 次 */
-
+/** P3-44：檢舉 API 每 IP 每分鐘最多 5 次；SEC-003 Zod 校驗 */
 export async function POST(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? request.headers.get('x-vercel-id') ?? undefined
   const start = Date.now()
@@ -24,10 +22,13 @@ export async function POST(request: NextRequest) {
         { status: 429, headers: { 'Retry-After': '60' } }
       )
     }
-    const body = (await request.json().catch(() => ({}))) as import('@/types/api-bodies').ReportPostBody
-    const type = isOneOf(body.type, REPORT_TYPES) ? body.type : '其他'
-    const description = stripHtml(typeof body.description === 'string' ? body.description.slice(0, 500) : '').trim()
-    const context = body.context && typeof body.context === 'object' ? body.context : {}
+    const raw = await request.json().catch(() => ({}))
+    const parsed = ReportPostBodySchema.safeParse(raw)
+    if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: '請求參數格式錯誤' })
+    const body = parsed.data
+    const type = body.type ?? '其他'
+    const description = stripHtml((body.description ?? '').slice(0, 500)).trim()
+    const context = body.context ?? {}
 
     if (process.env.NODE_ENV === 'production') {
       const supabase = createServerClientOptional()
