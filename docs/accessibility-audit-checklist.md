@@ -47,6 +47,27 @@
 
 - [ ] 關鍵頁（首頁、quiz、login、pricing、party-room、learn）E2E 執行 axe 無違規；可與 TEST-015 合一實作
 
+## A11Y-014：語言切換與 RTL 考量
+
+- [x] layout 已預留 `RTL_LOCALES`，未來若新增阿拉伯語等可設 `html[dir="rtl"]`（見 layout.tsx I18N-16 註解）
+
+## A11Y-015：錯誤邊界與載入狀態可讀
+
+- [x] ErrorFallback 具備 `role="alert"`、`aria-live="assertive"`、`aria-label`，螢幕閱讀器可朗讀
+- [ ] loading.tsx 等使用 `role="progressbar"`、`aria-label` 語意化
+
+## A11Y-016：清單與地標 role 正確
+
+- [ ] 導航為 `<nav>`、主內容為 `<main>`、列表為 `role="list"`/`listitem`；Lobby 遊戲列表已用 role="list"
+
+## A11Y-017：自訂控制項可鍵盤操作
+
+- [ ] 遊戲內自訂控制（滑桿、輪盤等）可 Tab 聚焦並以鍵盤操作；需逐元件抽檢
+
+## A11Y-018：無障礙聲明頁面更新
+
+- [x] `/accessibility` 頁面存在；可定期更新「已實作項目」與符合等級說明以與實作一致
+
 ---
 
-已實作：A11Y-004 表單 aria-invalid/role=alert（login、party-room、GamesPageClient 等）；A11Y-005 skip link（layout、learn layout，聚焦可見）；A11Y-009 prefers-reduced-motion（globals.css、Navigation、GameWrapper、InViewAnimate、PageTransition、ParticleBubbles 等）；A11Y-011 即時區域 aria-live（party-room、script-murder）。
+已實作：A11Y-004 表單 aria-invalid/role=alert；A11Y-005 skip link；A11Y-009 prefers-reduced-motion；A11Y-011 即時區域 aria-live；A11Y-014 RTL 預留；A11Y-015 ErrorFallback role=alert；A11Y-018 無障礙聲明頁。

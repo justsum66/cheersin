@@ -25,12 +25,14 @@
 - **命名**：組件與檔案命名請遵循 `docs/naming-conventions.md`。
 - **Commit**：建議使用 [Conventional Commits](https://www.conventionalcommits.org/)（如 `feat:`, `fix:`, `docs:`）。
 
-## 提交 PR 前
+## 提交 PR 前（TEST-019 檢查清單）
 
 1. 在功能分支上完成變更。
-2. 執行 `npm run lint` 與 `npm run test:run`（可選 `npm run test:e2e:chromium`）。
+2. 執行 `npm run lint` 與 `npm run test:run`（可選 `npm run test:e2e` 或 `npm run test:e2e:chromium`）。
 3. 確保 `npm run build` 通過。
 4. 填寫 PR 描述，並關聯相關 issue（若有）。
+
+CI 流程與本地一致：lint → unit → build → E2E（見 `.github/workflows/ci.yml`）。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
 
 ## 程式碼審查
 

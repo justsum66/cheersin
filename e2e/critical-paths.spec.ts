@@ -254,3 +254,30 @@ test.describe('關鍵路徑：訂閱流程', () => {
     ).toBeVisible({ timeout: 20000 })
   })
 })
+
+/** I18N-011：多語 E2E 抽樣 — 至少 en、zh-TW 各跑一輪關鍵路徑煙測 */
+test.describe('I18N-011：多語 E2E 抽樣', () => {
+  test('首頁於 zh-TW 語系可載入且導航可見', async ({ page }) => {
+    await page.goto('/')
+    await page.context().addCookies([
+      { name: 'cheersin_locale', value: 'zh-TW', path: '/', url: page.url() },
+    ])
+    await page.reload()
+    await page.waitForLoadState('domcontentloaded')
+    await dismissCookieBanner(page)
+    const nav = page.getByRole('navigation').first()
+    await expect(nav).toBeVisible({ timeout: 15000 })
+  })
+
+  test('首頁於 en 語系可載入且導航可見', async ({ page }) => {
+    await page.goto('/')
+    await page.context().addCookies([
+      { name: 'cheersin_locale', value: 'en', path: '/', url: page.url() },
+    ])
+    await page.reload()
+    await page.waitForLoadState('domcontentloaded')
+    await dismissCookieBanner(page)
+    const nav = page.getByRole('navigation').first()
+    await expect(nav).toBeVisible({ timeout: 15000 })
+  })
+})

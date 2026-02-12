@@ -35,6 +35,9 @@ export default function AccessibilityPage() {
             <li>按鈕與連結觸控區域 ≥44px、焦點環（:focus-visible）</li>
             <li>測驗進度條、彈窗具備適當 ARIA 屬性</li>
             <li>對比度與字級符合可讀性需求</li>
+            <li>動畫尊重 prefers-reduced-motion（globals.css、framer-motion 元件）</li>
+            <li>即時狀態變更使用 aria-live（派對房、劇本殺）</li>
+            <li>錯誤邊界 fallback 具 role=alert，可讀</li>
           </ul>
         </div>
         <div>

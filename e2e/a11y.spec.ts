@@ -6,12 +6,14 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
+/** TEST-015 / A11Y-013：關鍵頁 axe 無 critical；含 learn */
 const CRITICAL_PAGES = [
   { path: '/', name: '首頁' },
   { path: '/quiz', name: 'Quiz' },
   { path: '/login', name: '登入' },
   { path: '/pricing', name: '定價' },
   { path: '/games', name: 'Games Lobby' },
+  { path: '/learn', name: '品酒學院' },
 ]
 
 test.describe('axe 無障礙：關鍵頁面無 critical 違規', () => {

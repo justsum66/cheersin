@@ -11,7 +11,7 @@ const SLUG_LEN = 8
 export const SLUG_PATTERN = /^[a-z0-9]{1,20}$/
 const PASSWORD_HASH_HEX_LEN = 64
 
-/** A1-12：4 位數密碼 hash，供建立/加入房間驗證；固定 64 字元 hex */
+/** A1-12 / SEC-013：房間密碼僅存 hash，不明文；4 位數密碼 hash 供建立/加入房間驗證，固定 64 字元 hex */
 export function hashRoomPassword(password: string): string {
   return createHash('sha256').update(password, 'utf8').digest('hex')
 }

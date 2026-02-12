@@ -1,9 +1,8 @@
 /**
- * Phase 1 C4.2: 統一觸覺反饋 Hook
- * 提供標準化的震動模式，用於遊戲中的各種反饋場景
+ * Phase 1 C4.2 / GAME-010: 統一觸覺反饋 Hook，可開關（依 games-settings）
  */
-
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
+import { getHapticEnabled, setHapticEnabled } from '@/lib/games-settings'
 
 /** 預設震動模式（毫秒） */
 export const HAPTIC_PATTERNS: Record<string, number | number[]> = {
@@ -35,18 +34,30 @@ export function hasHapticSupport(): boolean {
 }
 
 /**
- * 統一觸覺反饋 Hook
- * @returns vibrate 函數，可傳入預設模式或自訂震動陣列
+ * 統一觸覺反饋 Hook；enabled 為 false 時不震動（GAME-010 可開關）
+ * @returns vibrate、enabled、setEnabled、hasSupport
  */
 export function useHaptic() {
   const lastVibrateRef = useRef<number>(0)
   const minIntervalMs = 50 // 防止過於頻繁的震動
+  const [enabled, setEnabledState] = useState(() =>
+    typeof window !== 'undefined' ? getHapticEnabled() : true
+  )
+  useEffect(() => {
+    setEnabledState(getHapticEnabled())
+  }, [])
+
+  const setEnabled = useCallback((value: boolean) => {
+    setEnabledState(value)
+    setHapticEnabled(value)
+  }, [])
 
   const vibrate = useCallback((
     typeOrPattern: HapticType | number | number[] = 'click',
     force = false
   ) => {
     if (!hasHapticSupport()) return false
+    if (!enabled) return false
 
     const now = Date.now()
     if (!force && now - lastVibrateRef.current < minIntervalMs) {
@@ -69,7 +80,7 @@ export function useHaptic() {
     } catch {
       return false
     }
-  }, [])
+  }, [enabled])
 
   /** 取消當前震動 */
   const cancel = useCallback(() => {
@@ -78,7 +89,7 @@ export function useHaptic() {
     }
   }, [])
 
-  return { vibrate, cancel, hasSupport: hasHapticSupport() }
+  return { vibrate, cancel, hasSupport: hasHapticSupport(), enabled, setEnabled }
 }
 
 export default useHaptic

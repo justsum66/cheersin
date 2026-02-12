@@ -269,3 +269,10 @@
 | 2026-02-12 | (續) | **Batch 4 (UX+COPY)**：UX-001 pricing/login loading.tsx；UX-005 globals 註解；docs/ux-copy-checklist.md |
 | 2026-02-12 | (續) | **Batch 5 (GAME+TEST)**：GAME-003 已有 Zod；docs/game-test-checklist.md；test:run 168 通過 |
 | 2026-02-12 | (續) | **Batch 6 (DEV)**：docs/dev-checklist.md；lint/tsc/build 通過；husky+CI 已有 |
+| 2026-02-12 | **Phase 2 續：70 任務** | **Batch 1 (SEC+PERF)**：SEC-006/011/013 docs/security-xss-sql-audit；PERF-011～017/019/020 docs/performance-audit |
+| 2026-02-12 | (續) | **Batch 2 (A11Y+I18N)**：A11Y-014 RTL 預留、015 ErrorFallback role=alert、016～018 檢查清單與聲明頁；I18N-011 多語 E2E 抽樣、012 i18n-guide |
+| 2026-02-12 | (續) | **Batch 3 (UX)**：UX-008～022 docs/ux-batch3-audit、rwd-breakpoints 三斷點 |
+| 2026-02-12 | (續) | **Batch 4 (COPY)**：COPY-004～015 docs/copy-batch4-audit |
+| 2026-02-12 | (續) | **Batch 5 (GAME)**：GAME-010 觸覺可開關 games-settings/useHaptic/SettingsModal；docs/game-batch5-audit |
+| 2026-02-12 | (續) | **Batch 6 (TEST)**：TEST-015 a11y 含 /learn；docs/test-batch6-audit、CONTRIBUTING 檢查清單 |
+| 2026-02-12 | (續) | **Batch 7 (DEV)**：DEV-013～018 docs/dev-batch7-audit、dev-checklist 擴充 |

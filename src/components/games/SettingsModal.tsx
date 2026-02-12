@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useHaptic } from '@/hooks/useHaptic'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, type FontSize } from '@/lib/games-settings'
 
@@ -13,6 +14,7 @@ interface SettingsModalProps {
 /** 101–103 遊戲頁設定：音效開關、音量滑桿、字級、減少動畫。存 localStorage。P3 無障礙：開啟時焦點移至關閉鈕。GAMES_500 #238：設定內音量與實際音效同步 — 需與 useGameSound/實際播放器綁定。 */
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const { enabled: soundEnabled, toggle: toggleSound, volume, setVolume, bgmEnabled, toggleBGM } = useGameSound()
+  const { enabled: hapticEnabled, setEnabled: setHapticEnabled } = useHaptic()
   const [fontSize, setFontSizeState] = useState<FontSize>('md')
   const [reduceMotion, setReduceMotionState] = useState(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -182,6 +184,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${reduceMotion ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
             >
               {reduceMotion ? '開' : '關'}
+            </button>
+          </section>
+          <section aria-labelledby="settings-haptic-label">
+            <p id="settings-haptic-label" className="text-white/70 text-sm mb-2">觸覺反饋（震動）</p>
+            <button
+              type="button"
+              onClick={() => setHapticEnabled(!hapticEnabled)}
+              className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${hapticEnabled ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
+            >
+              {hapticEnabled ? '開' : '關'}
             </button>
           </section>
         </div>

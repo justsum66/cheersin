@@ -1,9 +1,10 @@
 /**
- * 遊戲頁設定：字級、減少動畫。存 localStorage，供 Lobby/GameWrapper 讀取。
- * 音效開關由 useGameSound 管理。
+ * 遊戲頁設定：字級、減少動畫、觸覺反饋。存 localStorage，供 Lobby/GameWrapper 讀取。
+ * 音效開關由 useGameSound 管理。GAME-010：觸覺可開關。
  */
 const KEY_FONT_SIZE = 'cheersin-games-font-size'
 const KEY_REDUCE_MOTION = 'cheersin-games-reduce-motion'
+const KEY_HAPTIC_ENABLED = 'cheersin-games-haptic-enabled'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -36,6 +37,20 @@ export function setReduceMotion(value: boolean): void {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cheersin-games-reduce-motion-change'))
     }
+  } catch {
+    /* ignore */
+  }
+}
+
+/** GAME-010：觸覺反饋可開關，存 localStorage */
+export function getHapticEnabled(): boolean {
+  if (typeof window === 'undefined') return true
+  return localStorage.getItem(KEY_HAPTIC_ENABLED) !== '0'
+}
+
+export function setHapticEnabled(value: boolean): void {
+  try {
+    localStorage.setItem(KEY_HAPTIC_ENABLED, value ? '1' : '0')
   } catch {
     /* ignore */
   }

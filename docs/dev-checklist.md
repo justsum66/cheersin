@@ -13,3 +13,4 @@
 | DEV-010 | Sentry 不洩漏敏感資訊 | 已過濾則註明（SENTRY 過濾 PII/token）；見 Sentry 設定 |
 | DEV-011 | 建置與部署文件 | README 或 DEPLOYMENT；環境變數、建置步驟 |
 | DEV-012 | CHANGELOG 或版本註記可維護 | 有則更新；本批見 TASKS-170 Phase 2 續完成紀錄 |
+| DEV-013～018 | API 遷移、分支/PR、預覽變數、日誌、監控、災難復原 | 見 `docs/dev-batch7-audit.md`（多為文件或註明） |

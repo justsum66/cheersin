@@ -40,6 +40,16 @@
 - 語系由 cookie 持久化，切換時不變更 URL 路徑（無 locale prefix），故路徑一致。
 - 避免閃爍：I18nProvider 於 mounted 後才從 cookie 讀取 locale；LocaleSwitcher 使用 context 的 locale 即可。
 
+## I18N-011：多語 E2E 抽樣（至少 en + zh-TW）
+
+- **作法**：關鍵路徑 E2E（critical-paths、persona-flows）可依專案需求以不同 locale 執行；可於 playwright 設定 `projects` 或 test 內設定 cookie `cheersin_locale=en` 或 `zh-TW` 後跑同一流程，確保至少 en 與 zh-TW 各跑一輪。
+- **可選**：在 CI 中新增一 job 以 `zh-TW` 與 `en` 各跑 critical-paths。
+
+## I18N-012：i18n 貢獻與 key 命名文件
+
+- 本文件（i18n-guide.md）即為 key 命名與貢獻說明；新增 key 時請同步更新「如何新增 key」與命名空間列表。
+- 另見 `docs/i18n-key-naming.md` 審計規範。
+
 ## 相關檔案
 
 - `src/lib/i18n/config.ts` — 語系列表、defaultLocale、cookie key
