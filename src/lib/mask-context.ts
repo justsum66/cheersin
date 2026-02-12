@@ -1,11 +1,17 @@
 /**
  * P3-58 / SEC-015：敏感 key 不記錄明文，僅留前 4 字元或 [REDACTED]
  * 抽離自 api-error-log 以利 logger 與 api-error-log 共用，避免循環依賴（DEV-004）
+ * SEC-015：擴充 SENSITIVE_KEYS，涵蓋常見 API/支付/認證欄位
  */
 const SENSITIVE_KEYS = new Set([
   'password', 'token', 'apiKey', 'api_key', 'secret', 'authorization',
   'cookie', 'x-admin-secret', 'set-cookie', 'authorization',
   'jwt', 'access_token', 'refresh_token', 'accesstoken', 'refreshtoken',
+  'private_key', 'privatekey', 'credential', 'credentials',
+  'bearer', 'x-api-key', 'xapikey', 'client_secret', 'clientsecret',
+  'session_id', 'sessionid', 'session', 'paypal_client_secret', 'paypal_secret',
+  'stripe_key', 'stripe_secret', 'vapid', 'turnstile_secret',
+  'credit_card', 'card_number', 'cvv', 'cvc', 'ssn',
 ])
 
 function maskValue(key: string, value: unknown): unknown {

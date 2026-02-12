@@ -2,6 +2,7 @@
 
 import { getErrorMessage } from '@/lib/api-response'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 
 /** P1-124：系統為每個玩家分配的辨識色，用於頭像、聊天等處 */
 const PLAYER_COLORS = ['#EC4899', '#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4', '#A855F7'] as const
@@ -35,6 +36,7 @@ export interface GameRoomState {
 
 /** 取得房間與玩家；加入房間；輪詢更新玩家列表 */
 export function useGameRoom(slug: string | null) {
+  const { t } = useTranslation()
   const [roomId, setRoomId] = useState<string | null>(null)
   const [players, setPlayers] = useState<RoomPlayer[]>([])
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
@@ -58,7 +60,7 @@ export function useGameRoom(slug: string | null) {
       const res = await fetch(`/api/games/rooms/${encodeURIComponent(s)}`, { signal })
       if (res.status === 410) {
         permanentErrorSlugRef.current = s
-        setError('房間已過期')
+        setError(t('error.roomExpired'))
         setRoomId(null)
         setPlayers([])
         setHostId(null)
@@ -73,7 +75,7 @@ export function useGameRoom(slug: string | null) {
         const msg = getErrorMessage(data, `HTTP ${res.status}`)
         if (/過期|expired|not found|不存在/i.test(String(msg))) {
           permanentErrorSlugRef.current = s
-          setError('房間已過期')
+          setError(t('error.roomExpired'))
           setRoomId(null)
           setPlayers([])
           setHostId(null)
@@ -124,7 +126,7 @@ export function useGameRoom(slug: string | null) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (!slug) {
@@ -178,7 +180,7 @@ export function useGameRoom(slug: string | null) {
     async (displayName: string, password?: string, isSpectator?: boolean): Promise<{ ok: boolean; error?: string }> => {
       if (!slug) return { ok: false, error: 'No room' }
       const name = displayName.trim()
-      if (!name) return { ok: false, error: '請輸入暱稱' }
+      if (!name) return { ok: false, error: t('partyRoom.enterNickname') }
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), JOIN_TIMEOUT_MS)
       try {
@@ -210,7 +212,7 @@ export function useGameRoom(slug: string | null) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- roomId used in closure for join flow
-    [slug, roomId]
+    [slug, roomId, t]
   )
 
   /** 任務 12：建立房間可選傳 4 位數密碼、P0-004 匿名模式；可傳 password 字串或 { password, anonymousMode } */

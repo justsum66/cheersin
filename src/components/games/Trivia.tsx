@@ -369,7 +369,7 @@ export default function Trivia() {
                 />
             </div>
             <div className="mb-4 flex flex-wrap gap-2 items-center border-b border-white/10 pb-3">
-                <span className="text-primary-500 font-mono tracking-widest uppercase text-sm">第 {current + 1} / {QUESTIONS.length} 題</span>
+                <span className="text-primary-500 font-mono tracking-widest uppercase text-sm">{t('common.questionProgress', { current: current + 1, total: QUESTIONS.length })}</span>
                 <span className="text-white/40 text-sm" aria-label="難度">{DIFFICULTY_LABEL[QUESTIONS[current].difficulty]}</span>
                 <span className="text-white/50 text-sm ml-auto">得分：<AnimatedNumber value={score} className="tabular-nums" /></span>
                 {answerHistory.length > 0 && (

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { logger } from '@/lib/logger'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { Mic, RotateCcw, Trophy, Volume2 } from 'lucide-react'
 
 const VOICE_EFFECTS = [
@@ -18,6 +19,7 @@ const VOICE_EFFECTS = [
 ]
 
 export default function VoiceMod() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'recording' | 'playing' | 'voting' | 'results'>('setup')
@@ -249,7 +251,7 @@ export default function VoiceMod() {
           <div className="bg-black/30 backdrop-blur-lg border border-white/20 rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
               <div className="text-white">
-                <p className="text-sm">第 {round} 輪</p>
+                <p className="text-sm">{t('common.roundLabel', { n: round })}</p>
                 <p className="text-xl font-bold text-purple-400">猜聲音</p>
               </div>
               <div className="text-center">

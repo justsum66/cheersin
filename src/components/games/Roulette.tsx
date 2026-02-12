@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/contexts/I18nContext'
 import { fireFullscreenConfetti } from '@/lib/celebration'
 import { logger } from '@/lib/logger'
 import { useGamesPlayers, useGamesShake } from './GamesContext'
@@ -43,6 +44,7 @@ function normalizeDelta(deg: number): number {
 }
 
 export default function Roulette() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play: playSound } = useGameSound()
   const { registerShakeHandler, unregisterShakeHandler } = useGamesShake()
@@ -217,7 +219,7 @@ export default function Roulette() {
     setAddError('')
     const name = newPlayer.trim()
     if (!name) {
-      setAddError('請輸入暱稱')
+      setAddError(t('partyRoom.enterNickname'))
       return
     }
     if (name.length > MAX_NAME_LENGTH) {

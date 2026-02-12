@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wine, RotateCcw, Trophy, Sparkles, GlassWater } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -63,6 +64,7 @@ const COCKTAIL_RECIPES = [
 ]
 
 export default function CocktailMix() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -199,7 +201,7 @@ export default function CocktailMix() {
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2 text-amber-400">第 {round} 回合</h2>
+                <h2 className="text-2xl font-bold mb-2 text-amber-400">{t('common.turnLabel', { n: round })}</h2>
                 <p className="text-lg mb-4">目前玩家：{currentPlayer}</p>
                 <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-lg p-4">
                   <p className="text-xl font-bold text-center">{currentCocktail.name}</p>

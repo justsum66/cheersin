@@ -2,6 +2,11 @@
 
 對應計畫「下一批 70 任務」Batch 7 與「下一批任務實作計畫」Batch 5。
 
+## DEV-004：Console 清理（本批抽檢）
+
+- **審計結果**：`src/` 下已審計，無殘留 `console.log`/`error`/`warn`（僅 `src/lib/logger.ts` 實作內使用）；scripts 為建置/驗證用可保留。
+- **驗收**：已滿足；新程式請使用 `logger` 取代 console。
+
 ## DEV-013：重大 API 變更有遷移或版本說明
 
 - **作法**：重大 API 變更時，於 `api-docs/` 或 `docs/` 撰寫遷移說明或版本差異；OpenAPI 更新時註明 breaking changes。
@@ -21,16 +26,19 @@
 
 - **作法**：若使用自訂 logger，文件化等級（error/warn/info/debug）與輪轉策略；Vercel/serverless 多為集中式日誌，無輪轉則註明。
 - **驗收**：可選。
+- **現狀**：專案使用 `src/lib/logger`（error/warn/info/debug）；Vercel 為集中式日誌，無本機輪轉，依平台檢視。
 
 ## DEV-017：監控告警閾值文件
 
 - **作法**：Sentry、Uptime、Web Vitals 等閾值（如 LCP &lt; 2.5s、錯誤率 &lt; 1%）可於 docs 或 PERF/A11Y 審計文件註明。
 - **驗收**：可選。
+- **現狀**：LCP 2.5s 已於 WebVitalsReporter 與 performance-audit 註明；Sentry 閾值可選於專案設定或 docs 補筆。
 
 ## DEV-018：災難復原與備份要點
 
 - **作法**：資料庫備份頻率、RTO/RPO 目標、還原步驟可於 docs 簡要列出；Supabase 等 managed 服務依其 SLA。
 - **驗收**：可選。
+- **現狀**：Supabase 為 managed 服務，備份與還原依 Dashboard 與其 SLA；可選於 DEPLOYMENT 或 docs 補一筆「DB 備份依 Supabase 後台」。
 
 ## DEV-019：依賴固定與審計排程
 

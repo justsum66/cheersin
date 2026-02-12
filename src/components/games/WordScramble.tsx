@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -35,6 +36,7 @@ function shuffleWord(word: string): string {
 }
 
 export default function WordScramble() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -114,7 +116,7 @@ export default function WordScramble() {
             transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
             className="flex flex-col items-center gap-6"
           >
-            <h2 className="text-2xl font-bold text-white">第 {round} 回合</h2>
+            <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <p className="text-white/80">{currentPlayer} 的回合</p>
             <button
               onClick={startRound}

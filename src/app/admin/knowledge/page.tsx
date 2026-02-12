@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { getErrorMessage } from '@/lib/api-response'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Pencil, Trash2, BookOpen, Search } from 'lucide-react'
@@ -21,6 +22,7 @@ interface KnowledgeDoc {
 const API_BASE = '/api/admin/knowledge'
 
 export default function AdminKnowledgePage() {
+  const { t } = useTranslation()
   const [docs, setDocs] = useState<KnowledgeDoc[]>([])
   const [loading, setLoading] = useState(true)
   const [adminSecret, setAdminSecret] = useState('')
@@ -82,7 +84,7 @@ export default function AdminKnowledgePage() {
 
   const handleCreate = async () => {
     if (!form.title.trim() || !form.course_id.trim() || !form.chapter.trim() || !form.content.trim()) {
-      setError('請填寫所有欄位')
+      setError(t('admin.fillRequired'))
       return
     }
     setSubmitLoading(true)
@@ -97,7 +99,7 @@ export default function AdminKnowledgePage() {
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setForm({ title: '', course_id: '', chapter: '', content: '' })
       setShowForm(false)
-      setSyncSuccess('已新增並同步至 Pinecone')
+      setSyncSuccess(t('admin.syncSuccessAdd'))
       setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
@@ -110,7 +112,7 @@ export default function AdminKnowledgePage() {
   const handleUpdate = async () => {
     if (!editing) return
     if (!form.title.trim() || !form.course_id.trim() || !form.chapter.trim() || !form.content.trim()) {
-      setError('請填寫所有欄位')
+      setError(t('admin.fillRequired'))
       return
     }
     setSubmitLoading(true)
@@ -125,7 +127,7 @@ export default function AdminKnowledgePage() {
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       setEditing(null)
       setForm({ title: '', course_id: '', chapter: '', content: '' })
-      setSyncSuccess('已更新並同步至 Pinecone')
+      setSyncSuccess(t('admin.syncSuccessUpdate'))
       setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
@@ -136,13 +138,13 @@ export default function AdminKnowledgePage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('確定刪除此文檔？')) return
+    if (!confirm(t('admin.confirmDeleteDoc'))) return
     setError(null)
     try {
       const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE', headers: headers() })
       const data = await res.json()
       if (!res.ok) throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
-      setSyncSuccess('已刪除並自 Pinecone 移除')
+      setSyncSuccess(t('admin.syncSuccessDelete'))
       setTimeout(() => setSyncSuccess(null), 4000)
       await fetchDocs()
     } catch (e) {
@@ -164,21 +166,21 @@ export default function AdminKnowledgePage() {
             className="flex items-center gap-2 text-white/60 hover:text-white"
           >
             <ChevronLeft className="w-5 h-5" />
-            返回
+            {t('admin.back')}
           </Link>
           <h1 className="flex items-center gap-2 font-display font-bold text-xl">
             <BookOpen className="w-6 h-6 text-primary-500" />
-            知識庫管理
+            {t('admin.titleKnowledge')}
           </h1>
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm text-white/50 mb-1">Admin Secret（可選，未設時 dev 放行）</label>
+          <label className="block text-sm text-white/50 mb-1">{t('admin.adminSecretLabel')}</label>
           <input
             type="password"
             value={adminSecret}
             onChange={(e) => setAdminSecret(e.target.value)}
-            placeholder="與 .env ADMIN_SECRET 一致"
+            placeholder={t('admin.adminSecretPlaceholder')}
             className="w-full max-w-xs px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30"
           />
         </div>
@@ -207,9 +209,9 @@ export default function AdminKnowledgePage() {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜尋標題、course_id、章節"
+              placeholder={t('admin.searchPlaceholder')}
               className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30"
-              aria-label="關鍵字搜尋"
+              aria-label={t('admin.searchAria')}
             />
           </div>
           <div className="flex justify-end">
@@ -218,18 +220,18 @@ export default function AdminKnowledgePage() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500"
           >
             <Plus className="w-4 h-4" />
-            新增文檔
+            {t('admin.addDoc')}
           </button>
           </div>
         </div>
 
         {(showForm || editing) && (
           <div className="mb-6 p-6 rounded-xl bg-white/5 border border-white/10 space-y-4">
-            <h2 className="font-semibold">{editing ? '編輯文檔' : '新增文檔'}</h2>
+            <h2 className="font-semibold">{editing ? t('admin.editDoc') : t('admin.addDoc')}</h2>
             <input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder="標題"
+              placeholder={t('admin.placeholderTitle')}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
             />
             <input
@@ -241,13 +243,13 @@ export default function AdminKnowledgePage() {
             <input
               value={form.chapter}
               onChange={(e) => setForm((f) => ({ ...f, chapter: e.target.value }))}
-              placeholder="章節名稱"
+              placeholder={t('admin.placeholderChapter')}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
             />
             <textarea
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              placeholder="內容（Markdown 或純文字，將被向量化）"
+              placeholder={t('admin.placeholderContent')}
               rows={8}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 resize-y"
             />
@@ -257,22 +259,22 @@ export default function AdminKnowledgePage() {
                 disabled={submitLoading}
                 className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50"
               >
-                {submitLoading ? '處理中…' : editing ? '儲存' : '新增'}
+                {submitLoading ? t('admin.saving') : editing ? t('admin.save') : t('admin.add')}
               </button>
               <button
                 onClick={() => { setShowForm(false); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
                 className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
               >
-                取消
+                {t('admin.cancel')}
               </button>
             </div>
           </div>
         )}
 
         {docs.length === 0 ? (
-          <p className="text-white/50">尚無文檔。請先執行 npm run seed:pinecone 或在此新增。</p>
+          <p className="text-white/50">{t('admin.noDocs')}</p>
         ) : filteredDocs.length === 0 ? (
-          <p className="text-white/50">沒有符合「{searchQuery}」的結果。</p>
+          <p className="text-white/50">{t('admin.noSearchResult', { query: searchQuery })}</p>
         ) : (
           <ul className="space-y-3">
             {filteredDocs.map((doc) => (
@@ -288,14 +290,14 @@ export default function AdminKnowledgePage() {
                   <button
                     onClick={() => openEdit(doc)}
                     className="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white"
-                    title="編輯"
+                    title={t('admin.edit')}
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(doc.id)}
                     className="p-2 rounded-lg hover:bg-red-500/20 text-white/70 hover:text-red-400"
-                    title="刪除"
+                    title={t('admin.delete')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

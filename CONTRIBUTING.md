@@ -28,11 +28,12 @@
 ## 提交 PR 前（TEST-019 檢查清單）
 
 1. 在功能分支上完成變更。
-2. 執行 `npm run lint` 與 `npm run test:run`（可選 `npm run test:e2e` 或 `npm run test:e2e:chromium`）。
+2. 執行 `npm run lint` 與 `npm run test:run`（可選 `npm run test:e2e` 或 `npm run test:e2e:chromium`）。**E2E 可選**：提交前可跑 `npm run test:e2e` 關鍵路徑，CI 已包含。
 3. 確保 `npm run build` 通過。
-4. 填寫 PR 描述，並關聯相關 issue（若有）。
+4. （可選）執行 `npm run audit` 檢查依賴漏洞（SEC-014）；若有 high/critical 可先 `npm run audit:fix` 或於 PR 註明已知接受。
+5. 填寫 PR 描述，並關聯相關 issue（若有）。
 
-**CI 流程（TEST-018）**：與本地一致。`.github/workflows/ci.yml` 依序執行：lint → unit tests (`npm run test:run`) → build → E2E（Playwright chromium + 全專案）。本地重現：`npm run lint && npm run test:run && npm run build && npm run test:e2e`。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
+**CI 流程（TEST-018）**：與本地一致。`.github/workflows/ci.yml` 依序執行：lint → `npm run check:i18n:all` → unit tests → build → E2E。本地重現：`npm run lint && npm run check:i18n:all && npm run test:run && npm run build && npm run test:e2e`。**I18N-011**：關鍵路徑 E2E 已以 cookie `cheersin_locale=zh-TW` 與 `en` 各跑一輪（見 `e2e/critical-paths.spec.ts`）。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
 
 ## 程式碼審查
 

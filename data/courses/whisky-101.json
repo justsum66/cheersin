@@ -2,6 +2,12 @@
   "id": "whisky-101",
   "title": "威士忌基礎",
   "description": "探索威士忌的迷人魅力",
+  "learningObjectives": [
+    "認識威士忌原料、蒸餾與桶陳基本概念",
+    "區分蘇格蘭、波本、日本等產區風格",
+    "理解單一麥芽與調和威士忌差異",
+    "掌握品飲與選酒入門要點"
+  ],
   "duration": "35分鐘",
   "free": true,
   "chapters": [

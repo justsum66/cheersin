@@ -16,6 +16,7 @@ import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
 import { CoursePreviewModal } from '@/components/learn/CoursePreviewModal'
+import { useTranslation } from '@/contexts/I18nContext'
 
 /** 151–155：課程進度存於 localStorage，key 為 cheersin_learn_progress */
 const PROGRESS_KEY = 'cheersin_learn_progress'
@@ -513,6 +514,7 @@ const CERT_MAP: Record<string, string> = {
 }
 
 export default function LearnPage() {
+  const { t } = useTranslation()
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -1282,7 +1284,7 @@ export default function LearnPage() {
                     className="block p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary-500/30 text-white text-sm transition-all hover:shadow-md hover:-translate-y-0.5"
                   >
                     <span className="font-medium">{b.courseTitle ?? b.courseId}</span>
-                    <span className="text-white/50"> · 第{b.chapterId}章 {b.title}</span>
+                    <span className="text-white/50"> · {t('common.chapterLabel', { n: b.chapterId })} {b.title}</span>
                   </Link>
                 </motion.div>
               ))}

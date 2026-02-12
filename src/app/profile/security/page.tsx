@@ -10,8 +10,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Shield, LogOut, ChevronLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useTranslation } from '@/contexts/I18nContext'
 
 export default function ProfileSecurityPage() {
+  const { t } = useTranslation()
   const [session, setSession] = useState<{ email?: string; createdAt?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -34,7 +36,7 @@ export default function ProfileSecurityPage() {
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    toast.success('已登出')
+    toast.success(t('profile.loggedOut'))
     router.replace('/login')
   }
 

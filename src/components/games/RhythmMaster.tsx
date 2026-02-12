@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Music, RotateCcw, Trophy, Play } from 'lucide-react'
@@ -14,6 +15,7 @@ const RHYTHM_PATTERNS = [
 ]
 
 export default function RhythmMaster() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'demonstrating' | 'playing' | 'results'>('setup')
@@ -217,7 +219,7 @@ export default function RhythmMaster() {
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-black/30 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center">
           <h2 className="text-xl font-bold text-white mb-4">
-            第 {round} 輪 - {currentPlayer} 的回合
+            {t('common.roundLabel', { n: round })} - {t('common.turnOf', { name: typeof currentPlayer === 'object' && currentPlayer != null && 'displayName' in currentPlayer ? (currentPlayer as { displayName: string }).displayName : String(currentPlayer) })}
           </h2>
           
           {currentPattern && (

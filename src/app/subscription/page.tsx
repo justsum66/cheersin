@@ -56,7 +56,7 @@ export default function SubscriptionPage() {
       }
       /** E79 P2：429 時顯示「請稍後再試」，不重試過頻 */
       if (response.status === 429) {
-        toast.error('請求過於頻繁，請稍後再試。');
+        toast.error(t('subscription.rateLimit'));
         setLoading(false);
         return;
       }
@@ -78,7 +78,7 @@ export default function SubscriptionPage() {
           body: JSON.stringify({ name: 'subscription_error', value: 1, id: 'fetch_failed' }),
         }).catch(() => {});
       } catch { /* noop */ }
-      toast.error('無法載入方案，請稍後再試。', { duration: 5000 });
+      toast.error(t('subscription.loadPlansError'), { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ export default function SubscriptionPage() {
             try {
               const res = await fetch('/api/subscription/promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoCode }) });
               if (res.status === 429) {
-                toast.error('請稍後再試');
+                toast.error(t('subscription.retryLater'));
                 setPromoValid(false);
                 setPromoChecking(false);
                 return;
@@ -180,7 +180,7 @@ export default function SubscriptionPage() {
               else toast.error(getErrorMessage(data) || '優惠碼無效或已過期');
             } catch {
               setPromoValid(false);
-              toast.error('驗證失敗，請稍後再試');
+              toast.error(t('subscription.verifyError'));
             } finally {
               setPromoChecking(false);
             }

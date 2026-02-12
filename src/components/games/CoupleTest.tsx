@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, RotateCcw, Check, X } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -48,6 +49,7 @@ const COUPLE_QUESTIONS = [
 
 /** G2.9-G2.10：情侶默契測試 - 測試情侶間的了解程度 */
 export default function CoupleTest() {
+  const { t } = useTranslation()
   const { play } = useGameSound()
   const [player1Name, setPlayer1Name] = useState('')
   const [player2Name, setPlayer2Name] = useState('')
@@ -168,7 +170,7 @@ export default function CoupleTest() {
         </motion.div>
       ) : (
         <div className="flex flex-col items-center gap-6 w-full max-w-md">
-          <p className="text-white/50">第 {totalQuestions + 1} 題</p>
+          <p className="text-white/50">{t('common.questionOrdinal', { n: totalQuestions + 1 })}</p>
           <p className="text-white/70">
             <span className="text-pink-400 font-bold">{answererName}</span> 來回答：
           </p>

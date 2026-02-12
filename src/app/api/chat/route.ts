@@ -8,7 +8,8 @@ import {
   type SommelierUserContext,
   type VisionMessage,
 } from '@/lib/groq'
-import type { ChatPostBody } from '@/types/api-bodies'
+import { ChatPostBodySchema } from '@/lib/api-body-schemas'
+import { errorResponse } from '@/lib/api-response'
 import { chatWithNIM, chatWithNIMStream, hasNIM } from '@/lib/nim'
 import { chatWithOpenRouter } from '@/lib/openrouter'
 import { getEmbedding } from '@/lib/embedding'
@@ -246,11 +247,15 @@ function streamLine(obj: object): string {
   return JSON.stringify(obj) + '\n'
 }
 
-/** Chat API：速率限制（依 tier）、內容預檢、支援 stream、離線回覆 */
+/** Chat API：速率限制（依 tier）、內容預檢、支援 stream、離線回覆；SEC-003 Zod 校驗 */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as ChatPostBody
-    const { messages, userContext: rawContext, last5Turns, stream: useStream, imageBase64, subscriptionTier } = body
+    const raw = await request.json().catch(() => null)
+    const parsed = ChatPostBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return errorResponse(400, 'Invalid body', { message: '請提供有效的 messages 陣列' })
+    }
+    const { messages, userContext: rawContext, last5Turns, stream: useStream, imageBase64, subscriptionTier } = parsed.data
 
     /** P3-64：可選寫入 chat_history；與主流程並行取得 user，不阻塞回應 */
     const userPromise = getCurrentUser()

@@ -200,14 +200,14 @@ export default function ScriptMurderPage() {
       })
       const data = await res.json()
       if (data.error) {
-        setError(getErrorMessage(data, '建立房間失敗'))
+        setError(getErrorMessage(data, t('partyRoom.createFailed')))
         return
       }
       if (data.slug) {
         window.location.href = `/script-murder?room=${data.slug}`
       }
     } catch {
-      setError('建立房間失敗')
+      setError(t('partyRoom.createFailed'))
     } finally {
       setCreating(false)
     }

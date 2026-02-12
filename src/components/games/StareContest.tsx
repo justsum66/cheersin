@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -8,6 +9,7 @@ import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 
 export default function StareContest() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -69,7 +71,7 @@ export default function StareContest() {
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
           <motion.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
-            <h2 className="text-2xl font-bold text-white">第 {round} 回合</h2>
+            <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <div className="text-white/80">{player1} vs {player2}</div>
             <div className="text-6xl">👁️ 👁️</div>
             <button onClick={startContest} className="px-8 py-4 bg-primary-500 hover:bg-primary-600 rounded-2xl text-white font-bold text-xl transition-colors">開始對視！</button>

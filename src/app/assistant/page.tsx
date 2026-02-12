@@ -39,7 +39,7 @@ interface Message {
   wines?: WineCardDataFromAI[]
 }
 
-/** 133 對話歷史 localStorage key */
+/** 133 {t('assistant.history')} localStorage key */
 const CHAT_HISTORY_KEY = 'cheersin_assistant_history'
 const MAX_HISTORY_MESSAGES = 100
 /** B1 Task 42：送 API 的上下文訊息上限（避免 token 爆掉、回應變慢） */
@@ -198,11 +198,11 @@ export default function AssistantPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  /** AILog-09：使用者取消請求時標記，錯誤處理顯示「已取消」 */
+  /** AILog-09：使用者{t('common.cancel')}請求時標記，錯誤處理顯示「已{t('common.cancel')}」 */
   const userAbortedRef = useRef(false)
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
   const [shareLoading, setShareLoading] = useState(false)
-  /** C45 對話歷史側欄：左側滑出、日期分組、搜索過濾 */
+  /** C45 {t('assistant.history')}側欄：左側滑出、日期分組、搜索過濾 */
   const [showHistorySidebar, setShowHistorySidebar] = useState(false)
   const [historySearchQuery, setHistorySearchQuery] = useState('')
   /** C47 圖片上傳：拖拽狀態（相機圖標 + 拖拽上傳） */
@@ -238,7 +238,7 @@ export default function AssistantPage() {
   const dynamicSuggestions = lastAssistantMessage?.similarQuestions?.slice(0, 6) ?? []
 
   const historyLoadedRef = useRef(false)
-  /** 133 載入對話歷史（僅首次） */
+  /** 133 載入{t('assistant.history')}（僅首次） */
   useEffect(() => {
     if (historyLoadedRef.current) return
     historyLoadedRef.current = true
@@ -246,7 +246,7 @@ export default function AssistantPage() {
     if (saved.length > 0) setMessages(saved)
   }, [])
 
-  /** 133 儲存對話歷史（防抖） */
+  /** 133 儲存{t('assistant.history')}（防抖） */
   useEffect(() => {
     if (messages.length === 0 || !historyLoadedRef.current) return
     const t = setTimeout(() => saveHistory(messages), 500)
@@ -287,7 +287,7 @@ export default function AssistantPage() {
 
   /** B1-46 酒標辨識：可傳 imageBase64，API 會走 Vision 並回傳 JSON（非串流） */
   const sendMessage = async (content: string, imageBase64?: string) => {
-    const textContent = (content ?? '').trim() || (imageBase64 ? '請辨識這張酒標或圖片中的酒款。' : '')
+    const textContent = (content ?? '').trim() || (imageBase64 ? t('assistant.identifyWinePrompt') : '')
     if (!textContent && !imageBase64) return
     if (isLoading) return
     if (!canSend) {
@@ -459,11 +459,11 @@ export default function AssistantPage() {
           const errMsg = userCancelled
             ? t('assistant.cancelled')
             : is429
-              ? '請求太頻繁，請 1 分鐘後再試。'
+              ? t('assistant.rateLimit1Min')
               : isAbort
-                ? (maxAttempts > 1 ? '回覆逾時，已自動重試仍失敗。請稍後再試。' : '回覆逾時（超過 30 秒），請稍後再試。')
+                ? (maxAttempts > 1 ? t('assistant.replyTimeoutRetry') : t('assistant.replyTimeout'))
                 : isNetwork
-                  ? '連線不穩或網路中斷，請檢查網路後再試。'
+                  ? t('assistant.networkError')
                   : msg || t('assistant.errorFallback')
           if (userCancelled) toast(t('assistant.cancelled'), { icon: '⏹' })
           else { announceError(errMsg); toast.error(errMsg, { duration: 5000 }) }
@@ -506,9 +506,9 @@ export default function AssistantPage() {
       const list = raw ? (JSON.parse(raw) as { messageId: string; text?: string }[]) : []
       list.push({ messageId, text: comment })
       localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(list.slice(-100)))
-      toast.success('感謝回饋')
+      toast.success(t('assistant.feedbackThanks'))
     } catch {
-      toast.error('無法儲存回饋')
+      toast.error(t('assistant.feedbackError'))
     }
     setFeedbackMessageId(null)
     setFeedbackText('')
@@ -645,12 +645,12 @@ export default function AssistantPage() {
   const getDateGroupLabel = (date: Date): string => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
-    const t = new Date(date)
-    t.setHours(0, 0, 0, 0)
-    const diff = Math.floor((d.getTime() - t.getTime()) / 86400000)
-    if (diff === 0) return '今天'
-    if (diff === 1) return '昨天'
-    if (diff < 7) return `${diff} 天前`
+    const dateObj = new Date(date)
+    dateObj.setHours(0, 0, 0, 0)
+    const diff = Math.floor((d.getTime() - dateObj.getTime()) / 86400000)
+    if (diff === 0) return t('assistant.today')
+    if (diff === 1) return t('assistant.yesterday')
+    if (diff < 7) return t('assistant.daysAgo', { n: diff })
     return date.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })
   }
 
@@ -667,7 +667,7 @@ export default function AssistantPage() {
     if (!file || !file.type.startsWith('image/')) return
     const MAX_BASE64_MB = 4
     if (file.size > MAX_BASE64_MB * 1024 * 1024) {
-      toast.error(`圖片請小於 ${MAX_BASE64_MB}MB`)
+      toast.error(t('assistant.maxSizeImage', { max: MAX_BASE64_MB }))
       if (imageInputRef.current) imageInputRef.current.value = ''
       return
     }
@@ -676,9 +676,9 @@ export default function AssistantPage() {
       const dataUrl = reader.result as string
       if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return
       const base64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : dataUrl
-      sendMessage(input.trim() || '請辨識這張酒標或圖片中的酒款。', base64)
+      sendMessage(input.trim() || t('assistant.identifyWinePrompt'), base64)
     }
-    reader.onerror = () => toast.error('讀取圖片失敗')
+    reader.onerror = () => toast.error(t('assistant.readImageError'))
     reader.readAsDataURL(file)
     if (imageInputRef.current) imageInputRef.current.value = ''
   }
@@ -719,7 +719,7 @@ export default function AssistantPage() {
     trackAssistantAction('export')
     const lines = messages.map((m) => {
       const time = m.timestamp.toLocaleString('zh-TW')
-      const who = m.role === 'user' ? '我' : 'AI 侍酒師'
+      const who = m.role === 'user' ? t('assistant.me') : t('assistant.aiSommelier')
       return `[${time}] ${who}：\n${m.content}`
     })
     const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' })
@@ -753,10 +753,10 @@ export default function AssistantPage() {
       a.download = `cheersin-對話截圖-${new Date().toISOString().slice(0, 10)}.png`
       a.click()
       URL.revokeObjectURL(url)
-      toast.success('已下載截圖')
+      toast.success(t('assistant.downloadScreenshotSuccess'))
     } catch (e) {
       logger.error('Screenshot failed', { err: e instanceof Error ? e.message : String(e) })
-      toast.error('下載截圖失敗')
+      toast.error(t('assistant.downloadScreenshotError'))
     } finally {
       setShareLoading(false)
     }
@@ -800,14 +800,14 @@ export default function AssistantPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col relative overflow-hidden bg-dark-950 safe-area-px page-container-mobile" role="main" aria-label="AI 侍酒師">
+    <main className="min-h-screen flex flex-col relative overflow-hidden bg-dark-950 safe-area-px page-container-mobile" role="main" aria-label={t('nav.assistant')}>
       {/* EXPERT_60 P1：額度用盡時固定橫幅 — 「今日 X 次已用完，升級無限暢聊」+ 按鈕直連 /pricing */}
       {!canSend && (
         <div className="sticky top-0 z-[60] w-full py-3 px-4 bg-primary-900/95 border-b border-primary-500/30 text-center flex flex-wrap items-center justify-center gap-3">
-          <span className="text-white font-medium">今日 {maxPerDay > 0 ? maxPerDay : 3} 次已用完，升級無限暢聊</span>
+          <span className="text-white font-medium">{t('assistant.todayLimitReached', { max: maxPerDay > 0 ? maxPerDay : 3 })}</span>
           <Link href="/pricing#faq" className="btn-primary text-sm py-2 px-4 min-h-[44px] inline-flex items-center gap-2">
             <Crown className="w-4 h-4" />
-            升級 Pro
+            {t('assistant.upgradePro')}
           </Link>
         </div>
       )}
@@ -823,11 +823,11 @@ export default function AssistantPage() {
         <div className="max-w-5xl xl:max-w-[1440px] mx-auto px-4 py-4">
           {soulWineDisplay && (
             <div className="flex flex-wrap items-center justify-center gap-2 mb-3 py-2 px-3 rounded-xl bg-primary-500/10 border border-primary-500/20 text-sm">
-              <span className="text-white/80">根據你的靈魂酒款</span>
+              <span className="text-white/80">{t('assistant.bySoulWine')}</span>
               <span className="text-primary-300 font-medium">{soulWineDisplay}</span>
-              <span className="text-white/60">為你推薦</span>
+              <span className="text-white/60">{t('assistant.recommendForYou')}</span>
               <Link href="/quiz" className="ml-2 text-primary-400 hover:text-primary-300 text-xs font-medium">
-                重新測驗
+                {t('assistant.retakeQuiz')}
               </Link>
             </div>
           )}
@@ -854,9 +854,9 @@ export default function AssistantPage() {
               </div>
               <div className="text-left">
                 <h1 className="font-display font-bold text-lg leading-tight tracking-wide">
-                  AI 侍酒師
+                  {t('nav.assistant')}
                 </h1>
-                <p className="text-xs text-white/40">隨時問酒、即時推薦</p>
+                <p className="text-xs text-white/40">{t('assistant.tagline')}</p>
               </div>
             </div>
 
@@ -867,13 +867,13 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => setLanguageDropdownOpen((v) => !v)}
                   className="flex items-center gap-1.5 min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-colors"
-                  title="語言"
+                  title={t('assistant.language')}
                   aria-expanded={languageDropdownOpen}
                   aria-haspopup="listbox"
-                  aria-label="選擇語言"
+                  aria-label={t('assistant.language')}
                 >
                   <Globe className="w-5 h-5" />
-                  <span className="text-sm font-medium">{language === 'zh-TW' ? '繁體中文' : 'English'}</span>
+                  <span className="text-sm font-medium">{language === 'zh-TW' ? t('assistant.zhTW') : t('assistant.en')}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
@@ -898,7 +898,7 @@ export default function AssistantPage() {
                             onClick={() => { setLanguage(loc); setLanguageDropdownOpen(false); }}
                             className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${language === loc ? 'bg-primary-500/20 text-primary-300' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
                           >
-                            {loc === 'zh-TW' ? '繁體中文' : 'English'}
+                            {loc === 'zh-TW' ? t('assistant.zhTW') : t('assistant.en')}
                           </button>
                         </li>
                       ))}
@@ -910,7 +910,7 @@ export default function AssistantPage() {
                 onClick={shareConversation}
                 disabled={messages.length === 0 || shareLoading}
                 className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white disabled:opacity-40 transition-colors"
-                title="分享對話"
+                title={t('assistant.shareConversation')}
               >
                 <Share2 className="w-5 h-5" />
               </button>
@@ -918,8 +918,8 @@ export default function AssistantPage() {
               <button
                 onClick={() => setPersonality((p) => (p === 'fun' ? 'pro' : 'fun'))}
                 className="flex items-center gap-2 min-h-[44px] px-4 rounded-xl text-sm font-medium border transition-colors"
-                title={personality === 'pro' ? '切換為新手友善模式' : '切換為專家模式（專業術語）'}
-                aria-label={personality === 'pro' ? '目前為專家模式，點擊切換為新手友善' : '目前為新手友善，點擊切換為專家模式'}
+                title={personality === 'pro' ? t('assistant.newbieMode') : t('assistant.expertMode')}
+                aria-label={personality === 'pro' ? t('assistant.expertMode') : t('assistant.newbieMode')}
                 aria-pressed={personality === 'pro'}
                 style={{
                   backgroundColor: personality === 'pro' ? 'rgba(139,0,0,0.25)' : 'rgba(255,255,255,0.05)',
@@ -928,12 +928,12 @@ export default function AssistantPage() {
                 }}
               >
                 <Zap className="w-4 h-4" />
-                {personality === 'fun' ? '新手友善' : '專家模式'}
+                {personality === 'fun' ? t('assistant.newbieMode') : t('assistant.expertMode')}
               </button>
               <button
                 onClick={() => setShowHistorySidebar((v) => !v)}
                 className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-                title="對話歷史"
+                title={t('assistant.history')}
                 aria-expanded={showHistorySidebar}
               >
                 <History className="w-5 h-5" />
@@ -942,7 +942,7 @@ export default function AssistantPage() {
                 onClick={exportConversation}
                 disabled={messages.length === 0}
                 className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white disabled:opacity-40 transition-colors"
-                title="匯出 TXT"
+                title={t('assistant.exportTxt')}
               >
                 <Download className="w-5 h-5" />
               </button>
@@ -950,7 +950,7 @@ export default function AssistantPage() {
                 onClick={downloadScreenshot}
                 disabled={messages.length === 0 || shareLoading}
                 className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white disabled:opacity-40 transition-colors"
-                title="下載截圖 PNG"
+                title={t('assistant.downloadScreenshot')}
               >
                 <Camera className="w-5 h-5" />
               </button>
@@ -959,7 +959,7 @@ export default function AssistantPage() {
         </div>
       </header>
 
-      {/* C45 對話歷史側欄：左側滑出、日期分組、搜索過濾 */}
+      {/* C45 {t('assistant.history')}側欄：左側滑出、日期分組、搜索過濾 */}
       <AnimatePresence>
         {showHistorySidebar && (
           <>
@@ -982,14 +982,14 @@ export default function AssistantPage() {
                 damping: 30,
                 mass: 1
               }}
-              aria-label="對話歷史"
+              aria-label={t('assistant.history')}
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
                 <h2 className="font-display font-bold text-white flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-primary-400" />
-                  對話歷史
+                  {t('assistant.history')}
                 </h2>
-                <ModalCloseButton onClick={() => setShowHistorySidebar(false)} aria-label="關閉" />
+                <ModalCloseButton onClick={() => setShowHistorySidebar(false)} aria-label={t('common.close')} />
               </div>
               <div className="p-3 border-b border-white/5">
                 <div className="relative">
@@ -998,14 +998,14 @@ export default function AssistantPage() {
                     type="search"
                     value={historySearchQuery}
                     onChange={(e) => setHistorySearchQuery(e.target.value)}
-                    placeholder="搜尋訊息..."
+                    placeholder={t('assistant.searchPlaceholder')}
                     className="input-glass pl-9 text-sm"
                   />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto p-2">
                 {messages.length === 0 ? (
-                  <p className="text-white/40 text-sm text-center py-8">尚無對話記錄</p>
+                  <p className="text-white/40 text-sm text-center py-8">{t('assistant.noHistory')}</p>
                 ) : (
                   (() => {
                     const q = historySearchQuery.trim().toLowerCase()
@@ -1016,7 +1016,7 @@ export default function AssistantPage() {
                       acc[label].push(m)
                       return acc
                     }, {})
-                    const order = ['今天', '昨天', '2 天前', '3 天前', '4 天前', '5 天前', '6 天前']
+                    const order = [t('assistant.today'), t('assistant.yesterday'), t('assistant.daysAgo', { n: 2 }), t('assistant.daysAgo', { n: 3 }), t('assistant.daysAgo', { n: 4 }), t('assistant.daysAgo', { n: 5 }), t('assistant.daysAgo', { n: 6 })]
                     const keys = Object.keys(byDate).sort((a, b) => {
                       const ai = order.indexOf(a)
                       const bi = order.indexOf(b)
@@ -1041,7 +1041,7 @@ export default function AssistantPage() {
                                       className="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-colors"
                                     >
                                       <span className={`text-xs font-medium ${m.role === 'user' ? 'text-primary-300' : 'text-white/70'}`}>
-                                        {m.role === 'user' ? '我' : 'AI'}
+                                        {m.role === 'user' ? t('assistant.me') : t('assistant.aiSommelier')}
                                       </span>
                                       <p className="text-white/80 text-sm truncate mt-0.5">{m.content || t('assistant.emptyReply')}</p>
                                       <p className="text-white/40 text-[10px] mt-1">{m.timestamp.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}</p>
@@ -1056,7 +1056,7 @@ export default function AssistantPage() {
                                         }}
                                         className="text-left px-3 py-1.5 rounded-lg text-[11px] text-primary-400 hover:bg-primary-500/10 border border-transparent hover:border-primary-500/20"
                                       >
-                                        從此重新開始
+                                        {t('assistant.restartFromHere')}
                                       </button>
                                     )}
                                   </li>
@@ -1075,9 +1075,9 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => { setShowHistorySidebar(false); requestClearChat(); }}
                   className="w-full py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors"
-                  title="清除所有對話（會跳出確認）"
+                  title={t('assistant.clearAll')}
                 >
-                  清除所有對話
+                  {t('assistant.clearAll')}
                 </button>
               </div>
             </motion.aside>
@@ -1109,15 +1109,15 @@ export default function AssistantPage() {
                   transition={{ delay: 0.3 }}
                   className="home-heading-2 font-display font-bold mb-4 text-balance"
                 >
-                  今天想探索哪種 <br />
-                  <span className="gradient-text">風味旅程？</span>
+                  {t('assistant.todayExplore')} <br />
+                  <span className="gradient-text">{t('assistant.flavorJourney')}</span>
                 </motion.h2>
 
                 <p className="home-body text-white/70 max-w-lg mx-auto mb-2">
                   搭載先進感官演算法。詢問餐酒搭配、產區知識，或個人化選酒建議。
                 </p>
                 <p className="home-text-muted text-sm max-w-md mx-auto">
-                  試試下方建議問題，或直接輸入你的問題
+                  {t('assistant.trySuggestions')}
                 </p>
               </div>
 
@@ -1128,8 +1128,8 @@ export default function AssistantPage() {
                 transition={{ delay: 0.45 }}
                 className="flex flex-wrap justify-center gap-2 mb-6"
               >
-                <span className="text-white/40 text-xs w-full text-center mb-1">場合</span>
-                {['約會', '聚餐', '獨酌'].map((occ) => (
+                <span className="text-white/40 text-xs w-full text-center mb-1">{t('assistant.occasion')}</span>
+                {[t('assistant.occasionDating'), t('assistant.occasionParty'), t('assistant.occasionSolo')].map((occ) => (
                   <button
                     key={occ}
                     type="button"
@@ -1139,8 +1139,8 @@ export default function AssistantPage() {
                     {occ}
                   </button>
                 ))}
-                <span className="text-white/40 text-xs w-full text-center mb-1 mt-3">預算（單瓶）</span>
-                {['500 以下', '500–1000', '1000+'].map((b) => (
+                <span className="text-white/40 text-xs w-full text-center mb-1 mt-3">{t('assistant.budget')}</span>
+                {[t('assistant.budgetUnder500'), t('assistant.budget500to1000'), t('assistant.budget1000Plus')].map((b) => (
                   <button
                     key={b}
                     type="button"
@@ -1152,10 +1152,10 @@ export default function AssistantPage() {
                 ))}
                 {(occasion || budget) && (
                   <p className="text-white/50 text-xs w-full text-center mt-2">
-                    已選：{[occasion, budget].filter(Boolean).join(' · ')}（推薦時會參考）
+                    {t('assistant.selectedFilters', { value: [occasion, budget].filter(Boolean).join(' · ') })}
                   </p>
                 )}
-                <span className="text-white/40 text-xs w-full text-center mb-1 mt-3">139 口味偏好</span>
+                <span className="text-white/40 text-xs w-full text-center mb-1 mt-3">{t('assistant.tastePreference')}</span>
                 <div className="flex flex-wrap justify-center gap-2">
                   {TASTE_OPTIONS.map((opt) => {
                     const isSelected = preferredWineTypes.includes(opt)
@@ -1173,7 +1173,7 @@ export default function AssistantPage() {
                 </div>
                 {preferredWineTypes.length > 0 && (
                   <p className="text-white/50 text-xs w-full text-center mt-2">
-                    偏好：{preferredWineTypes.join('、')}（推薦時會參考）
+                    {t('assistant.preferredFilters', { value: preferredWineTypes.join('、') })}
                   </p>
                 )}
               </motion.div>
@@ -1262,7 +1262,7 @@ export default function AssistantPage() {
                   className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-400 hover:text-primary-300 transition-colors mb-4"
                 >
                   <BookOpen className="w-4 h-4" />
-                  酒類知識 FAQ · 酒杯指南 · 醒酒建議（WSET/CMS/MW）
+                  {t('assistant.wineKnowledgeFaq')}
                 </Link>
               </motion.div>
               {/* Pro Hint */}
@@ -1277,7 +1277,7 @@ export default function AssistantPage() {
                   className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-secondary-400 hover:text-secondary-300 transition-colors"
                 >
                   <Crown className="w-4 h-4" />
-                  升級至 Pro 專業版
+                  {t('assistant.upgradeProTitle')}
                 </Link>
               </motion.div>
             </motion.div>
@@ -1290,7 +1290,7 @@ export default function AssistantPage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex overflow-x-auto gap-2 mb-6 pb-2 -mx-2 px-2 scrollbar-hide items-center"
             >
-              <span className="text-white/40 text-xs shrink-0 mr-1">根據上一則回覆</span>
+              <span className="text-white/40 text-xs shrink-0 mr-1">{t('assistant.fromLastReply')}</span>
               {dynamicSuggestions.map((q) => (
                 <button
                   key={q}
@@ -1405,10 +1405,10 @@ export default function AssistantPage() {
                     {/* 訊息底部右側：複製/朗讀/願望清單；回饋 👍👎 點擊後變色；48px 觸控 */}
                     {message.role === 'assistant' && (
                       <div className="flex items-center gap-2 mt-3 ml-auto flex-wrap justify-end">
-                        <button onClick={() => copyMessage(message.content)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors games-focus-ring flex items-center justify-center" title="複製">
+                        <button onClick={() => copyMessage(message.content)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors games-focus-ring flex items-center justify-center" title={t('assistant.copy')}>
                           <Copy className="w-4 h-4" />
                         </button>
-                        <button onClick={() => speakReply(message.content)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors games-focus-ring flex items-center justify-center" title="朗讀">
+                        <button onClick={() => speakReply(message.content)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors games-focus-ring flex items-center justify-center" title={t('assistant.speak')}>
                           <Volume2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => addToWishlist(message.content, message.id)} className="p-1.5 min-h-[48px] min-w-[48px] rounded-lg text-white/30 hover:text-primary-400 transition-colors games-focus-ring flex items-center justify-center" title={t('assistant.addToWishlist')}>
@@ -1425,18 +1425,18 @@ export default function AssistantPage() {
                     {/* 任務 55：👎 後可選填文字回饋 */}
                     {message.role === 'assistant' && feedbackMessageId === message.id && (
                       <div className="mt-3 p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-2 max-w-sm">
-                        <label className="text-xs text-white/60">請告訴我們如何改進（選填）</label>
+                        <label className="text-xs text-white/60">{t('assistant.improveHint')}</label>
                         <textarea
                           value={feedbackText}
                           onChange={(e) => setFeedbackText(e.target.value)}
-                          placeholder="例如：回覆不夠具體..."
+                          placeholder={t('assistant.placeholderFeedback')}
                           maxLength={500}
                           rows={2}
                           className="input-glass text-sm resize-none"
                         />
                         <div className="flex gap-2">
                           <button type="button" onClick={() => { setFeedbackMessageId(null); setFeedbackText(''); }} className="px-3 py-1.5 min-h-[48px] rounded-lg text-white/60 hover:text-white text-sm games-focus-ring">{t('assistant.skip')}</button>
-                          <button type="button" onClick={() => submitFeedback(message.id)} className="px-3 py-1.5 min-h-[48px] rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm games-focus-ring">送出</button>
+                          <button type="button" onClick={() => submitFeedback(message.id)} className="px-3 py-1.5 min-h-[48px] rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm games-focus-ring">{t('assistant.send')}</button>
                         </div>
                       </div>
                     )}
@@ -1464,7 +1464,7 @@ export default function AssistantPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-primary-400/80 to-secondary-400/80 animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-primary-400/60 to-secondary-400/60 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <span className="text-xs text-white/50">回覆中...</span>
+                  <span className="text-xs text-white/50">{t('assistant.repliesIn')}</span>
                 </div>
               </motion.div>
             )}
@@ -1481,7 +1481,7 @@ export default function AssistantPage() {
             type="file"
             accept="image/*"
             className="hidden"
-            aria-label="上傳圖片"
+            aria-label={t('assistant.uploadImage')}
             onChange={(e) => handleImageSelect(e.target.files?.[0] ?? null)}
           />
           <form
@@ -1500,15 +1500,15 @@ export default function AssistantPage() {
             <div className={`absolute inset-0 backdrop-blur-xl rounded-full border shadow-2xl transition-colors ${isDraggingImage ? 'bg-primary-500/20 border-primary-500/50' : 'bg-white/5 border-white/10'}`} />
 
             <div className="relative flex items-center pl-5 pr-2 py-2 gap-2">
-              <button type="button" className="p-2.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center games-focus-ring" title="知識庫">
+              <button type="button" className="p-2.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center games-focus-ring" title={t('assistant.knowledgeBase')}>
                 <BookOpen className="w-5 h-5" />
               </button>
               <button
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 className="p-2.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center games-focus-ring"
-                title="上傳圖片（酒標辨識）"
-                aria-label="上傳圖片"
+                title={t('assistant.uploadImage')}
+                aria-label={t('assistant.uploadImage')}
               >
                 <ImageIcon className="w-5 h-5" />
               </button>
@@ -1518,19 +1518,19 @@ export default function AssistantPage() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="詢問任何酒類、產區或搭配建議..."
+                placeholder={t('assistant.placeholder')}
                 className="flex-1 min-w-0 bg-transparent border-none outline-none text-white placeholder-white/40 px-2 py-3 min-h-[48px] font-medium text-[15px]"
                 disabled={isLoading}
-                title="Ctrl+Enter 送出"
+                title={t('assistant.ctrlEnter')}
               />
 
               <button
                 type="button"
                 onClick={isListening ? stopVoiceInput : startVoiceInput}
                 aria-pressed={isListening}
-                aria-label={isListening ? '錄音中，按一下停止' : '語音輸入'}
+                aria-label={isListening ? t('assistant.recordingStop') : t('assistant.voiceInput')}
                 className={`p-2.5 rounded-full transition-colors shrink-0 min-h-[48px] min-w-[48px] flex items-center justify-center games-focus-ring ${isListening ? 'bg-red-500/20 border border-red-500/50 text-red-400 animate-pulse' : 'hover:bg-white/10 text-white/50 hover:text-white'}`}
-                title={isListening ? '錄音中…' : '語音輸入'}
+                title={isListening ? t('assistant.recordingStop') : t('assistant.voiceInput')}
               >
                 {isListening ? <Square className="w-5 h-5" aria-hidden /> : <Mic className="w-5 h-5" aria-hidden />}
               </button>
@@ -1540,8 +1540,8 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => { userAbortedRef.current = true; abortRef.current?.abort() }}
                   className="min-h-[48px] min-w-[48px] flex items-center justify-center p-2.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 shrink-0 games-focus-ring"
-                  title="停止回覆"
-                  aria-label="停止回覆"
+                  title={t('assistant.stopReply')}
+                  aria-label={t('assistant.stopReply')}
                 >
                   <Square className="w-5 h-5" />
                 </button>
@@ -1553,7 +1553,7 @@ export default function AssistantPage() {
                       ? 'bg-primary-500 text-white shadow-[0_0_20px_rgba(139,0,0,0.4)] hover:scale-105'
                       : 'bg-white/10 text-white/30 cursor-not-allowed'
                     }`}
-                  title={!canSend ? '今日額度已用完，升級可解鎖更多' : '送出'}
+                  title={!canSend ? t('assistant.upgradeUnlock') : t('assistant.sendAria')}
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -1561,30 +1561,30 @@ export default function AssistantPage() {
             </div>
           </form>
 
-          <p className="text-center text-[10px] text-white/30 mt-1.5" aria-hidden>Ctrl+Enter 送出</p>
+          <p className="text-center text-[10px] text-white/30 mt-1.5" aria-hidden>{t('assistant.ctrlEnter')}</p>
           {/* 輸入長度提示 */}
           {input.length > 0 && (
             <p className={`text-center text-xs mt-2 ${input.length > 1800 ? 'text-orange-400' : 'text-white/40'}`}>
-              {input.length}/2000 字元
-              {input.length > 2000 && <span className="text-red-400 ml-1">（已超過上限）</span>}
+              {input.length}/2000 {t('assistant.charCount')}
+              {input.length > 2000 && <span className="text-red-400 ml-1">（{t('assistant.overLimit')}）</span>}
             </p>
           )}
           {maxPerDay >= 0 && (
             <p className="text-center text-xs text-white/40 mt-2">
-              今日已用 {usedToday}/{maxPerDay} 次
+              {t('assistant.usedToday', { used: usedToday, max: maxPerDay })}
               {!canSend && (
                 <button type="button" onClick={() => setShowUpgradeModal(true)} className="ml-2 text-primary-400 hover:underline">
-                  升級解鎖
+                  {t('assistant.upgradeUnlock')}
                 </button>
               )}
             </p>
           )}
           <p className="text-center text-[10px] text-white/20 mt-3 font-mono">
-            AI 侍酒師可能會犯錯，重要資訊請查證。
+            {t('assistant.disclaimer')}
           </p>
           {/* 150 酒精健康提醒 */}
           <p className="text-center text-[10px] text-white/30 mt-2">
-            飲酒過量有害健康，請勿酒駕。未滿 18 歲禁止飲酒。
+            {t('assistant.alcoholDisclaimer')}
           </p>
         </div>
       </div>
@@ -1606,21 +1606,21 @@ export default function AssistantPage() {
               className="rounded-2xl bg-dark-800 border border-white/10 p-6 max-w-sm w-full shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-white font-medium mb-4">確定要清除所有對話嗎？此操作無法復原。</p>
+              <p className="text-white font-medium mb-4">{t('assistant.clearAllConfirm')}</p>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowClearConfirm(false)}
                   className="flex-1 py-2.5 min-h-[48px] rounded-xl bg-white/10 text-white hover:bg-white/20 games-focus-ring"
                 >
-                  取消
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={confirmClearChat}
                   className="flex-1 py-2.5 min-h-[48px] rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 games-focus-ring"
                 >
-                  確定清除
+                  {t('assistant.confirmClear')}
                 </button>
               </div>
             </motion.div>
@@ -1631,8 +1631,8 @@ export default function AssistantPage() {
       <UpgradeModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        title="今日 AI 額度已用完"
-        description="升級 Basic 或 Pro 可獲得更多每日對話次數，Pro 無限使用。"
+        title={t('assistant.limitReachedTitle')}
+        description={t('assistant.limitReachedDesc')}
         requiredTier="basic"
       />
     </main>

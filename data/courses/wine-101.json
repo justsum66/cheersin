@@ -2,6 +2,12 @@
   "id": "wine-basics",
   "title": "葡萄酒入門",
   "description": "從零開始認識葡萄酒的世界（整合 WSET 入門概念）",
+  "learningObjectives": [
+    "理解葡萄酒類型（紅、白、粉紅、氣泡）與釀造差異",
+    "認識主要葡萄品種與產區風格",
+    "掌握品酒四步驟與酒標解讀",
+    "了解適飲溫度與醒酒基本原則"
+  ],
   "duration": "45分鐘",
   "free": true,
   "chapters": [

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Music, RotateCcw, Trophy, Play, Pause } from 'lucide-react'
@@ -21,6 +22,7 @@ const DANCE_MOVES = [
 ]
 
 export default function DanceBattle() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'results'>('setup')
@@ -161,7 +163,7 @@ export default function DanceBattle() {
                 <p className="text-xl font-bold text-pink-400">{currentPlayer}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-white">第 {round} 輪</p>
+                <p className="text-2xl font-bold text-white">{t('common.roundLabel', { n: round })}</p>
                 <p className="text-sm text-white/60">共5輪</p>
               </div>
             </div>

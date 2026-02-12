@@ -33,11 +33,13 @@ export default function AccessibilityPage() {
             <li>跳至主內容（Skip link）</li>
             <li>表單標籤、錯誤訊息朗讀友善（aria-label、role=&quot;alert&quot;）</li>
             <li>按鈕與連結觸控區域 ≥44px、焦點環（:focus-visible）</li>
-            <li>測驗進度條、彈窗具備適當 ARIA 屬性</li>
-            <li>對比度與字級符合可讀性需求</li>
+            <li>測驗進度條、載入狀態（loading）具 role=progressbar/aria-label；彈窗 Esc 關閉與 focus trap</li>
+            <li>導航、主內容、列表語意（nav、main、role=&quot;list&quot;）</li>
+            <li>對比度與字級：以 WebAIM / Lighthouse 抽檢，見審計清單</li>
             <li>動畫尊重 prefers-reduced-motion（globals.css、framer-motion 元件）</li>
             <li>即時狀態變更使用 aria-live（派對房、劇本殺）</li>
             <li>錯誤邊界 fallback 具 role=alert，可讀</li>
+            <li>焦點順序、圖示按鈕 aria-label、自訂控制項鍵盤：抽檢清單見 docs/accessibility-audit-checklist</li>
           </ul>
         </div>
         <div>

@@ -12,6 +12,7 @@ import { getCurrentUser } from '@/lib/get-current-user';
 import { createServerClient } from '@/lib/supabase-server';
 import { errorResponse, serverErrorResponse } from '@/lib/api-response';
 import { isRateLimited, getClientIp } from '@/lib/rate-limit';
+import { SubscriptionPostBodySchema, MAX_SUBSCRIPTION_ID_LENGTH } from '@/lib/api-body-schemas';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
@@ -62,11 +63,7 @@ function ensurePayPalConfig(): void {
   }
 }
 
-/** BE-23：action 白名單，防無效請求 */
-const SUBSCRIPTION_ACTIONS = ['create-subscription', 'capture-subscription', 'cancel-subscription'] as const
-const MAX_SUBSCRIPTION_ID_LENGTH = 256
-
-/** SEC-001：訂閱 API 限流，未認證高頻回傳 429 */
+/** SEC-001：訂閱 API 限流，未認證高頻回傳 429；SEC-003 Zod 校驗 body */
 export async function POST(request: NextRequest) {
   const startMs = Date.now();
   const requestId = request.headers.get('x-request-id') ?? undefined;
@@ -79,16 +76,17 @@ export async function POST(request: NextRequest) {
   }
   try {
     ensurePayPalConfig()
-    let body: import('@/types/api-bodies').SubscriptionPostBody
+    let raw: unknown
     try {
-      body = (await request.json()) as import('@/types/api-bodies').SubscriptionPostBody
+      raw = await request.json()
     } catch {
       return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
     }
-    const { action, planType, subscriptionId } = body
-    if (!action || !SUBSCRIPTION_ACTIONS.includes(action as (typeof SUBSCRIPTION_ACTIONS)[number])) {
-      return errorResponse(400, 'Invalid action', { message: 'action 須為 create-subscription、capture-subscription 或 cancel-subscription' })
+    const parsed = SubscriptionPostBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return errorResponse(400, 'Invalid body', { message: 'action 須為 create-subscription、capture-subscription 或 cancel-subscription' })
     }
+    const { action, planType, subscriptionId } = parsed.data
 
     // P0-06：create / capture / cancel 須已登入
     const user = await getCurrentUser();

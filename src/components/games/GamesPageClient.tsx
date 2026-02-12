@@ -338,9 +338,9 @@ function GamesPageContent() {
     if (/password|密碼|wrong password/i.test(err)) return '密碼錯誤，請確認房間密碼'
     if (/full|滿|capacity/i.test(err)) return '房間已滿，請稍後再試'
     if (/expired|過期|not found|不存在/i.test(err)) return '房間不存在或已過期'
-    if (/請輸入暱稱|name/i.test(err)) return '請輸入暱稱'
+    if (/請輸入暱稱|name|enterNickname/i.test(err)) return t('partyRoom.enterNickname')
     return err
-  }, [])
+  }, [t])
 
   /** GAMES_500 #176：建立房間錯誤友善文案 */
   const mapCreateRoomError = useCallback((err: string) => {
@@ -354,7 +354,7 @@ function GamesPageContent() {
     setRoomJoinError(null)
     const name = roomJoinName.trim()
     if (!name) {
-      setRoomJoinError('請輸入暱稱')
+      setRoomJoinError(t('partyRoom.enterNickname'))
       return
     }
     const result = await joinRoom(name, roomJoinPassword || undefined, false)
@@ -374,7 +374,7 @@ function GamesPageContent() {
     } else {
       setRoomJoinError(mapRoomJoinError(result.error ?? '加入失敗'))
     }
-  }, [roomSlug, roomJoinName, roomJoinPassword, joinRoom, mapRoomJoinError])
+  }, [roomSlug, roomJoinName, roomJoinPassword, joinRoom, mapRoomJoinError, t])
 
   /** A1-13：以觀戰者身份加入房間（不參與遊戲，僅觀看）；GAMES_500 #141 觀戰者加入文案區分 */
   const handleJoinAsSpectator = useCallback(async () => {
@@ -382,7 +382,7 @@ function GamesPageContent() {
     setRoomJoinError(null)
     const name = roomJoinName.trim()
     if (!name) {
-      setRoomJoinError('請輸入暱稱')
+      setRoomJoinError(t('partyRoom.enterNickname'))
       return
     }
     const result = await joinRoom(name, roomJoinPassword || undefined, true)
@@ -402,7 +402,7 @@ function GamesPageContent() {
     } else {
       setRoomJoinError(mapRoomJoinError(result.error ?? '加入失敗'))
     }
-  }, [roomSlug, roomJoinName, roomJoinPassword, joinRoom, mapRoomJoinError])
+  }, [roomSlug, roomJoinName, roomJoinPassword, joinRoom, mapRoomJoinError, t])
 
   const handleCreateRoom = useCallback(async () => {
     setCreatingRoom(true)
@@ -445,7 +445,7 @@ function GamesPageContent() {
         }
         if (inviteUrl && typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
           navigator.clipboard.writeText(inviteUrl)
-          toast.success('新房間已建立，邀請連結已複製')
+          toast.success(t('gamesRoom.roomCreatedCopy'))
         }
       } catch {
         /* ignore */
@@ -453,7 +453,7 @@ function GamesPageContent() {
     }
     if (typeof window !== 'undefined') sessionStorage.setItem(ROOM_HOST_KEY, newSlug)
     router.replace(`/games?room=${newSlug}&game=${activeGame ?? ''}`)
-  }, [createRoom, roomCreatePassword, roomAnonymousMode, activeGame, router, joinedDisplayName, joinedAsSpectator])
+  }, [createRoom, roomCreatePassword, roomAnonymousMode, activeGame, router, joinedDisplayName, joinedAsSpectator, t])
 
   const selectedGame = activeGame ? getGameMeta(activeGame) : undefined
 
@@ -764,7 +764,7 @@ function GamesPageContent() {
                       aria-label="加入房間表單"
                     >
                       <div className="flex gap-2">
-                        <label htmlFor="room-join-name" className="sr-only">加入房間暱稱（必填，最多 20 字）</label>
+                        <label htmlFor="room-join-name" className="sr-only">{t('games.roomJoinNameLabel')}</label>
                         <input
                           id="room-join-name"
                           type="text"
@@ -774,7 +774,7 @@ function GamesPageContent() {
                           maxLength={20}
                           required
                           aria-required="true"
-                          aria-label="加入房間暱稱（最多 20 字）"
+                          aria-label={t('games.roomJoinNameLabel')}
                           className="flex-1 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30"
                         />
                         <button
@@ -1514,7 +1514,7 @@ function GamesPageContent() {
                       onClick={() => {
                         try {
                           navigator.clipboard.writeText(createInvite.inviteUrl)
-                          toast.success('連結已複製')
+                          toast.success(t('common.copied'))
                           setInviteCopyJustDone(true)
                           if (inviteCopyTimeoutRef.current) clearTimeout(inviteCopyTimeoutRef.current)
                           inviteCopyTimeoutRef.current = setTimeout(() => {
@@ -1522,13 +1522,13 @@ function GamesPageContent() {
                             setInviteCopyJustDone(false)
                           }, INVITE_COPY_FEEDBACK_MS)
                         } catch {
-                          toast.error('複製失敗，請手動選取連結複製')
+                          toast.error(t('gamesRoom.copyFailed'))
                         }
                       }}
-                      aria-label={inviteCopyJustDone ? '已複製邀請連結' : '複製邀請連結'}
+                      aria-label={inviteCopyJustDone ? t('gamesRoom.inviteCopiedAria') : t('gamesRoom.inviteCopyAria')}
                       className="min-h-[48px] min-w-[120px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] transition-colors"
                     >
-                      {inviteCopyJustDone ? '已複製' : '複製連結'}
+                      {inviteCopyJustDone ? t('common.copied') : t('gamesRoom.copyLink')}
                     </button>
                     </div>
                   </div>
@@ -1536,7 +1536,7 @@ function GamesPageContent() {
                     <div className="flex justify-center mb-4">
                       <Image
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(createInvite.inviteUrl)}`}
-                        alt="邀請 QR 碼"
+                        alt={t('gamesRoom.inviteQR')}
                         width={200}
                         height={200}
                         className="rounded-xl border border-white/10"

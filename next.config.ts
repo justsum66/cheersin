@@ -8,6 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'tr
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /** PERF-015：Next.js Link 預設對 viewport 內連結 prefetch；關鍵 CTA 使用 Link 即可享有預載 */
   /** 多 lockfile 時明確指定 app 根目錄，消除 workspace root 推測警告 */
   outputFileTracingRoot: path.join(process.cwd()),
   /* webpack watchOptions.ignored 僅支援字串 glob，不可用 function */
@@ -123,7 +124,7 @@ const nextConfig: NextConfig = {
     ]
   },
   /* P3-72：靜態資源 Cache-Control — 圖片/字體/_next/static max-age=1 年 */
-  /* SEC-01～04 / SEC-007：全站安全標頭與 CSP 覆蓋；CSP 可設 CSP_REPORT_ONLY=false 強制執行 */
+  /* SEC-01～04 / SEC-007：全站安全標頭與 CSP 覆蓋。正式環境請設 CSP_REPORT_ONLY=false 以強制 CSP，詳見 docs/security-headers.md */
   async headers() {
     /** P0-019 / SEC-18：CSP 防 XSS。預設 report-only；正式上線設 CSP_REPORT_ONLY=false 強制執行。 */
     const cspReportOnly = process.env.CSP_REPORT_ONLY !== 'false'

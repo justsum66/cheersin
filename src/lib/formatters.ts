@@ -2,8 +2,27 @@
  * G193 / I18N-004 日期/數字/貨幣格式化
  * 統一 locale 與格式；可選 locale 參數（預設 zh-TW），客戶端從 useTranslation().locale 傳入
  */
+import { messages } from '@/lib/i18n/messages'
 
 const DEFAULT_LOCALE = 'zh-TW'
+
+function getMessage(locale: string, key: string, params?: Record<string, string | number>): string {
+  const msg = messages[locale as keyof typeof messages] as Record<string, unknown> | undefined
+  const fallback = messages['zh-TW'] as Record<string, unknown>
+  const raw = (msg && getByPath(msg, key)) ?? getByPath(fallback, key) ?? key
+  const str = typeof raw === 'string' ? raw : String(raw)
+  if (!params) return str
+  return Object.entries(params).reduce((s, [k, v]) => s.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v)), str)
+}
+
+function getByPath(obj: Record<string, unknown>, path: string): string | undefined {
+  let cur: unknown = obj
+  for (const k of path.split('.')) {
+    if (cur == null || typeof cur !== 'object') return undefined
+    cur = (cur as Record<string, unknown>)[k]
+  }
+  return typeof cur === 'string' ? cur : undefined
+}
 
 /** 日期：YYYY/MM/DD */
 export function formatDate(date: Date | string | number, locale: string = DEFAULT_LOCALE): string {
@@ -29,7 +48,7 @@ export function formatDateTime(date: Date | string | number, locale: string = DE
   })
 }
 
-/** 相對時間：剛剛、N 分鐘前、N 天前（結尾日期依 locale）；相對文案目前為繁中，可擴充 i18n */
+/** I18N-004：相對時間依 locale 取 common.justNow / minutesAgo / hoursAgo / daysAgo */
 export function formatRelative(date: Date | string | number, locale: string = DEFAULT_LOCALE): string {
   const d = typeof date === 'object' && 'getTime' in date ? date : new Date(date)
   const now = Date.now()
@@ -37,10 +56,10 @@ export function formatRelative(date: Date | string | number, locale: string = DE
   const diffM = Math.floor(diffMs / 60000)
   const diffH = Math.floor(diffMs / 3600000)
   const diffD = Math.floor(diffMs / 86400000)
-  if (diffM < 1) return '剛剛'
-  if (diffM < 60) return `${diffM} 分鐘前`
-  if (diffH < 24) return `${diffH} 小時前`
-  if (diffD < 7) return `${diffD} 天前`
+  if (diffM < 1) return getMessage(locale, 'common.justNow')
+  if (diffM < 60) return getMessage(locale, 'common.minutesAgo', { n: diffM })
+  if (diffH < 24) return getMessage(locale, 'common.hoursAgo', { n: diffH })
+  if (diffD < 7) return getMessage(locale, 'common.daysAgo', { n: diffD })
   return formatDate(d, locale)
 }
 

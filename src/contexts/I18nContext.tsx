@@ -68,11 +68,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const msg = messages[locale] as Record<string, unknown>
       const fallbackMsg = messages[defaultLocale] as Record<string, unknown>
       const enMsg = messages['en'] as Record<string, unknown>
+      /** I18N-003：缺 key 時不顯示 key 名，回傳空字串 */
       const raw =
         getByPath(msg, key) ??
         getByPath(fallbackMsg, key) ??
         (locale !== 'en' ? getByPath(enMsg, key) : undefined) ??
-        key
+        ''
       const resolved = typeof raw === 'string' ? raw : String(raw)
       return params && Object.keys(params).length > 0 ? interpolate(resolved, params) : resolved
     },

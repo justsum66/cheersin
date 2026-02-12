@@ -948,7 +948,7 @@ export default function QuizPage() {
               <div className="sticky top-0 z-30 -mx-4 px-4 py-3 mb-6 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/5 print:hidden">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-primary-500 font-mono text-sm tracking-widest uppercase">
-                    <span className="tabular-nums">第 {currentQuestion + 1}/{displayQuestions.length} 題</span>
+                    <span className="tabular-nums">{t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}</span>
                   </span>
                   {currentQuestion > 0 && (
                     <button
@@ -964,7 +964,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                 </div>
                 {/* Quiz 頁 20 項優化 #13：進度條 aria-valuetext；#19 列印隱藏 */}
                 {/* Phase 1 C1.2: 測驗進度條動畫增強 */}
-                <div className="h-1.5 md:h-2 w-full rounded-full bg-white/10 overflow-hidden min-h-[4px] print:hidden" role="progressbar" aria-valuenow={currentQuestion + 1} aria-valuemin={1} aria-valuemax={displayQuestions.length} aria-valuetext={`第 ${currentQuestion + 1} 題，共 ${displayQuestions.length} 題`} aria-label={`測驗進度：第 ${currentQuestion + 1} 題，共 ${displayQuestions.length} 題`}>
+                <div className="h-1.5 md:h-2 w-full rounded-full bg-white/10 overflow-hidden min-h-[4px] print:hidden" role="progressbar" aria-valuenow={currentQuestion + 1} aria-valuemin={1} aria-valuemax={displayQuestions.length} aria-valuetext={t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })} aria-label={t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}>
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 relative"
                     initial={false}
@@ -984,7 +984,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
               </div>
 
               {/* T040 P2：新題出現時 aria-live polite，動態內容可被朗讀 */}
-              <div className="mb-12 text-center" aria-live="polite" aria-atomic="true" aria-label={`第 ${currentQuestion + 1} 題`}>
+              <div className="mb-12 text-center" aria-live="polite" aria-atomic="true" aria-label={t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}>
                 <h2 id="quiz-question-text" className="text-3xl md:text-5xl font-bold text-white">{displayQuestions[currentQuestion].question}</h2>
                 {/* T027：最後一題前「再一題就完成」、最後一題「最後一題！」 */}
                 <p className="text-white/50 text-sm mt-2" aria-live="polite">
@@ -1009,7 +1009,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                     type="button"
                     role="radio"
                     aria-checked={answers[currentQuestion] === option.trait}
-                    aria-label={`第 ${currentQuestion + 1} 題，選項：${option.text}`}
+                    aria-label={`${t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}，選項：${option.text}`}
                     className={`glass-card-spotlight p-6 md:p-8 py-3 px-4 text-left group flex items-center gap-4 md:gap-6 min-h-[48px] rounded-xl border transition-all duration-200 border-white/10 hover:border-primary-500/40 hover:bg-white/5 active:scale-[0.98] games-focus-ring ${
                       answers[currentQuestion] === option.trait ? 'border-primary-500 bg-primary-500/10' : ''
                     }`}
@@ -1193,7 +1193,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                       const opt = q.options.find((o) => o.trait === trait)
                       return (
                         <li key={q.id} className="text-sm">
-                          <span className="text-white/50">第 {i + 1} 題：</span>
+                          <span className="text-white/50">{t('common.questionOrdinal', { n: i + 1 })}：</span>
                           <span className="text-white/80">「{opt?.text ?? trait}」</span>
                           <span className="text-white/40"> → {trait}</span>
                         </li>

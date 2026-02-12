@@ -132,6 +132,8 @@ npm install -g vercel
 vercel
 ```
 
+靜態資源由 Vercel Edge/CDN 提供；關鍵 API 的 Cache-Control 見 `docs/performance-audit.md`（PERF-019/PERF-008）。
+
 ### 手動部署
 ```bash
 # 建置生產版本

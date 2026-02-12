@@ -4,11 +4,11 @@ import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
 import { stripHtml } from '@/lib/sanitize'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { JoinRoomBodySchema } from '@/lib/api-body-schemas'
 
 const MAX_PLAYERS = 12
-const MAX_DISPLAY_NAME_LENGTH = 20
 
-/** POST: 加入房間（body: displayName, password?, isSpectator?）；T060 P1：rate limit 30/分/IP */
+/** POST: 加入房間（body: displayName, password?, isSpectator?）；T060 P1：rate limit 30/分/IP；SEC-003 Zod 校驗 */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -23,11 +23,15 @@ export async function POST(
     }
     const { slug } = await params
     if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
-    const body = (await request.json().catch(() => ({}))) as import('@/types/api-bodies').GamesRoomJoinPostBody
-    const rawName = typeof body.displayName === 'string' ? body.displayName.trim() : ''
-    const displayName = stripHtml(rawName).slice(0, MAX_DISPLAY_NAME_LENGTH)
+    const raw = await request.json().catch(() => ({}))
+    const parsed = JoinRoomBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return errorResponse(400, 'Invalid body', { message: '請輸入顯示名稱' })
+    }
+    const { displayName: rawName, isSpectator: isSpectatorRaw } = parsed.data
+    const displayName = stripHtml(rawName).slice(0, 20)
     if (!displayName) return errorResponse(400, 'displayName required', { message: '請輸入顯示名稱' })
-    const isSpectator = body.isSpectator === true
+    const isSpectator = isSpectatorRaw === true
     try {
       const supabase = createServerClient()
       const { data: room, error: roomError } = await supabase
@@ -38,7 +42,7 @@ export async function POST(
       if (roomError || !room) throw roomError || new Error('Room not found')
       const roomWithHash = room as { id: string; password_hash?: string | null; settings?: { max_players?: number } | null }
       if (roomWithHash.password_hash) {
-        const provided = typeof body.password === 'string' ? body.password.trim() : ''
+        const provided = typeof parsed.data.password === 'string' ? parsed.data.password.trim() : ''
         const hash = hashRoomPassword(provided)
         if (!secureComparePasswordHash(hash, roomWithHash.password_hash)) {
           return errorResponse(403, 'INVALID_PASSWORD', { message: '房間密碼錯誤' })

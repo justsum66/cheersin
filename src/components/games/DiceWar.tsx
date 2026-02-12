@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -10,6 +11,7 @@ import { useGameReduceMotion } from './GameWrapper'
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
 
 export default function DiceWar() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -99,7 +101,7 @@ export default function DiceWar() {
             transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
             className="flex flex-col items-center gap-6"
           >
-            <h2 className="text-2xl font-bold text-white">第 {round} 回合</h2>
+            <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <div className="text-white/80">{player1} vs {player2}</div>
             <button
               onClick={rollDice}

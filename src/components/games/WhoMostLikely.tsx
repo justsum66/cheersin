@@ -7,6 +7,7 @@ import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGameReduceMotion } from './GameWrapper'
 import { logger } from '@/lib/logger'
 import {
@@ -44,6 +45,7 @@ const CATEGORY_OPTIONS: { value: WhoMostLikelyCategory | 'all'; label: string }[
 
 /** 226–235：誰最可能遊戲：規則、題庫、指向、統計、229 分享、230 匿名、233 難度、234 表情 */
 export default function WhoMostLikely() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -257,7 +259,7 @@ export default function WhoMostLikely() {
           >
             {/* G3D-WhoMostLikely-01/03：題目卡 3D 浮起/陰影、題目區字級/行高/留白 */}
             <p className="text-white/50 text-sm mb-2 tabular-nums">
-              第 {currentIndex + 1} / {pool.length} 題
+              {t('common.questionProgress', { current: currentIndex + 1, total: pool.length })}
             </p>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8 px-2 sm:px-4 leading-relaxed games-question">
               {currentQuestion.text}

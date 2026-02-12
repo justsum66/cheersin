@@ -3,18 +3,19 @@
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Target, RotateCcw, Skull } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
-const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
-
 /** G2.5-G2.6：俄羅斯輪盤 - 經典六選一 */
 export default function RussianRoulette() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-  const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
+  const defaultPlayers = [1, 2, 3, 4].map((n) => t('games.playerN', { n }))
+  const players = contextPlayers.length >= 2 ? contextPlayers : defaultPlayers
 
   const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0)
   const [bulletPos, setBulletPos] = useState(-1)
@@ -80,20 +81,20 @@ export default function RussianRoulette() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
-      <GameRules rules={`經典俄羅斯輪盤！\n輪流扣板機，中彈的人喝酒！\n6個位置，1顆子彈。`} />
+      <GameRules rules={t('games.russianRouletteRules')} />
       
       <div className="flex items-center gap-2 mb-4">
         <Target className="w-6 h-6 text-red-400" />
-        <h2 className="text-xl font-bold text-white">俄羅斯輪盤</h2>
+        <h2 className="text-xl font-bold text-white">{t('games.russianRouletteTitle')}</h2>
       </div>
 
       {bulletPos < 0 ? (
         <motion.button whileTap={{ scale: 0.96 }} onClick={startGame} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
-          裝填子彈開始！
+          {t('games.russianRouletteLoadBullet')}
         </motion.button>
       ) : (
         <div className="flex flex-col items-center gap-6">
-          <p className="text-white/70">輪到 <span className="text-red-400 font-bold">{currentPlayer}</span></p>
+          <p className="text-white/70">{t('games.russianRouletteTurn')} <span className="text-red-400 font-bold">{currentPlayer}</span></p>
           
           {/* Revolver cylinder visualization */}
           <div className="relative w-40 h-40">
@@ -115,7 +116,7 @@ export default function RussianRoulette() {
               ))}
             </motion.div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/50 text-sm">第 {currentPos + 1}/6 發</span>
+              <span className="text-white/50 text-sm">{t('common.shotProgress', { current: currentPos + 1 })}</span>
             </div>
           </div>
 
@@ -128,7 +129,7 @@ export default function RussianRoulette() {
                 disabled={spinning}
                 className="px-8 py-4 rounded-xl bg-red-500 text-white font-bold text-lg games-focus-ring disabled:opacity-50"
               >
-                {spinning ? '...' : '扣板機！'}
+                {spinning ? '...' : t('games.russianRouletteTrigger')}
               </motion.button>
             ) : (
               <motion.div
@@ -140,16 +141,16 @@ export default function RussianRoulette() {
                 {result === 'boom' ? (
                   <>
                     <Skull className="w-16 h-16 text-red-500 mx-auto animate-bounce" />
-                    <p className="text-red-400 font-bold text-2xl mt-2">中彈！{currentPlayer} 喝！</p>
+                    <p className="text-red-400 font-bold text-2xl mt-2">{t('games.russianRouletteHit')}{currentPlayer} {t('games.russianRouletteDrink')}</p>
                   </>
                 ) : (
-                  <p className="text-emerald-400 font-bold text-2xl">安全！</p>
+                  <p className="text-emerald-400 font-bold text-2xl">{t('games.russianRouletteSafe')}</p>
                 )}
                 <div className="flex gap-3 mt-4 justify-center">
                   <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">
-                    {result === 'boom' ? '新一輪' : '下一位'}
+                    {result === 'boom' ? t('games.russianRouletteNextRound') : t('games.russianRouletteNextPlayer')}
                   </button>
-                  <CopyResultButton text={`俄羅斯輪盤：${currentPlayer} ${result === 'boom' ? '中彈喝酒' : '安全'}`} />
+                  <CopyResultButton text={`${t('games.russianRouletteTitle')}：${currentPlayer} ${result === 'boom' ? t('games.russianRouletteHit') + currentPlayer + ' ' + t('games.russianRouletteDrink') : t('games.russianRouletteSafe')}`} />
                 </div>
               </motion.div>
             )}

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, RotateCcw, Volume2 } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -32,6 +33,7 @@ const TELEPHONE_MESSAGES = [
 ]
 
 export default function Telephone() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'results'>('setup')
@@ -184,7 +186,7 @@ export default function Telephone() {
                   />
                 </div>
                 <p className="text-center text-white/80">
-                  第 {currentPlayerIndex + 1} / {players.length} 輪
+                  {t('common.roundProgress', { current: currentPlayerIndex + 1, total: players.length })}
                 </p>
               </div>
 

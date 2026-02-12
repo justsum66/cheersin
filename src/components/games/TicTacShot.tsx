@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Target, RotateCcw, Trophy, X, Circle } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -16,6 +17,7 @@ const WINNING_COMBINATIONS = [
 ]
 
 export default function TicTacShot() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -123,7 +125,7 @@ export default function TicTacShot() {
           <div className="flex justify-between items-center mb-4">
             <div className="text-left">
               <p className="text-sm text-white/60">回合</p>
-              <p className="text-xl font-bold text-purple-400">第 {round} 回合</p>
+              <p className="text-xl font-bold text-purple-400">{t('common.turnLabel', { n: round })}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-white/60">目前玩家</p>

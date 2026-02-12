@@ -86,9 +86,9 @@ export function ScriptMurderPlay({
             </div>
             <span
               className="text-white/50 text-sm tabular-nums ml-1 shrink-0"
-              aria-label={`第 ${currentIdx + 1} 章，共 ${totalCh} 章`}
+              aria-label={t('common.chapterProgress', { current: currentIdx + 1, total: totalCh })}
             >
-              第 {currentIdx + 1}/{totalCh} 章
+              {t('common.chapterProgress', { current: currentIdx + 1, total: totalCh })}
             </span>
           </div>
           <Link href="/script-murder" className="text-white/60 hover:text-white text-sm">

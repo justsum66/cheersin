@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { SLUG_PATTERN } from '@/lib/games-room'
+import { LeaveRoomBodySchema } from '@/lib/api-body-schemas'
 
 export async function POST(
   request: Request,
@@ -15,9 +16,12 @@ export async function POST(
   try {
     const { slug } = await params
     if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
-    const body = (await request.json().catch(() => ({}))) as { playerId?: string }
-    const playerId = typeof body.playerId === 'string' ? body.playerId.trim() : ''
-    if (!playerId) return errorResponse(400, 'playerId required', { message: '缺少玩家識別' })
+    const raw = await request.json().catch(() => ({}))
+    const parsed = LeaveRoomBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return errorResponse(400, 'Invalid body', { message: '缺少玩家識別' })
+    }
+    const { playerId } = parsed.data
     const supabase = createServerClient()
 
     const { data: room, error: roomError } = await supabase

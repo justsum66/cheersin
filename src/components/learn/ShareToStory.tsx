@@ -109,10 +109,12 @@ export function ShareToStory({
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-md w-full"
             >
-              {/* Close button */}
+              {/* Close button；A11Y-002：僅圖示按鈕需 aria-label */}
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
                 className="absolute -top-12 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80"
+                aria-label="關閉"
               >
                 <X className="w-5 h-5" />
               </button>

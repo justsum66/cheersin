@@ -29,6 +29,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: i18n keys check (TEST-008)
+        run: npm run check:i18n:all
+
       - name: Unit tests
         run: npm run test:run
       # P2-328：覆蓋率可選 — 安裝 @vitest/coverage-v8 後改為 vitest run --coverage 並上傳 artifact

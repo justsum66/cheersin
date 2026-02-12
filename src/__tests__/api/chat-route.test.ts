@@ -16,7 +16,8 @@ describe('POST /api/chat', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
-    expect(json).toHaveProperty('error', 'Invalid payload')
+    expect(json.success).toBe(false)
+    expect(json.error).toMatchObject({ code: 'Invalid body', message: expect.any(String) })
   })
 
   it('回傳 400 當 messages 非陣列', async () => {
@@ -28,6 +29,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
-    expect(json).toHaveProperty('error', 'Invalid payload')
+    expect(json.success).toBe(false)
+    expect(json.error).toMatchObject({ code: 'Invalid body', message: expect.any(String) })
   })
 })

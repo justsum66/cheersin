@@ -7,6 +7,7 @@ import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGameReduceMotion } from './GameWrapper'
 
 const STORY_STARTERS = [
@@ -28,6 +29,7 @@ const STORY_STARTERS = [
 ]
 
 export default function StoryChain() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -153,7 +155,7 @@ export default function StoryChain() {
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2 text-green-400">第 {round} 回合</h2>
+                <h2 className="text-2xl font-bold mb-2 text-green-400">{t('common.turnLabel', { n: round })}</h2>
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <p className="text-sm text-white/60">目前玩家</p>
@@ -205,7 +207,7 @@ export default function StoryChain() {
                 />
               </div>
               <p className="text-center text-white/80 mt-2">
-                第 {storyParts.length} / {players.length * 2} 段
+                {t('common.segmentsProgress', { current: storyParts.length, total: players.length * 2 })}
               </p>
             </motion.div>
           )}

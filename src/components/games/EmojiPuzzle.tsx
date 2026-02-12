@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { Smile, RotateCcw, Trophy, Clock } from 'lucide-react'
 
 const EMOJI_PUZZLES = [
@@ -24,6 +25,7 @@ const EMOJI_PUZZLES = [
 ]
 
 export default function EmojiPuzzle() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'results'>('setup')
@@ -172,7 +174,7 @@ export default function EmojiPuzzle() {
               />
             </div>
             <p className="text-center text-white/80">
-              第 {currentPuzzleIndex + 1} / {EMOJI_PUZZLES.length} 題
+              {t('common.questionProgress', { current: currentPuzzleIndex + 1, total: EMOJI_PUZZLES.length })}
             </p>
           </div>
 

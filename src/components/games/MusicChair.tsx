@@ -7,11 +7,13 @@ import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
 export default function MusicChair() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -132,7 +134,7 @@ export default function MusicChair() {
 
       {gamePhase === 'playing' && (
         <div className="text-center w-full max-w-md">
-          <p className="text-white/60 mb-2">第 {roundCount + 1} 輪</p>
+          <p className="text-white/60 mb-2">{t('common.roundLabel', { n: roundCount + 1 })}</p>
           <p className="text-white/50 text-sm mb-4">
             剩餘 {remainingPlayers.length} 人 / 位子 {remainingPlayers.length - 1} 個
           </p>

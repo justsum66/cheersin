@@ -19,8 +19,13 @@
 
 ## TEST-015：E2E a11y axe 通過關鍵頁
 
-- **狀態**：已實作。`e2e/a11y.spec.ts` 對首頁、Quiz、登入、定價、Games Lobby、learn 執行 axe，無 critical/serious。
-- **驗收**：與 A11Y-013 一致。
+- **狀態**：已實作。`e2e/a11y.spec.ts` 對首頁、Quiz、登入、定價、Games Lobby、learn 執行 `@axe-core/playwright`，無 critical 違規；首頁與 Quiz 另斷言無 serious。
+- **驗收**：與 A11Y-013 一致；執行 `npm run test:e2e -- e2e/a11y.spec.ts`。
+
+## TEST-005：TypeScript any 計畫
+
+- **狀態**：見 `docs/ts-any-plan.md`；CI 執行 `npm run build`（含 tsc），any 僅於註記或例外處。
+- **驗收**：逐步替換 any、型別明確。
 
 ## TEST-016：負載或簡單壓力測試
 

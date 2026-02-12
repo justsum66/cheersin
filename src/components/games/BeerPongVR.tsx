@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Target, RotateCcw, Trophy, Play } from 'lucide-react'
@@ -13,6 +14,7 @@ const CUPS_LAYOUT = [
 ]
 
 export default function BeerPongVR() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'results'>('setup')
@@ -147,7 +149,7 @@ export default function BeerPongVR() {
           <div className="bg-black/30 backdrop-blur-lg border border-white/20 rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
               <div className="text-white">
-                <p className="text-sm">第 {round} 回合</p>
+                <p className="text-sm">{t('common.turnLabel', { n: round })}</p>
                 <p className="text-xl font-bold text-blue-400">
                   {players[attackingTeam]} 隊進攻
                 </p>

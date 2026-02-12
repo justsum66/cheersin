@@ -3,12 +3,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Activity, RotateCcw, Check, X, Trophy } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
-
-const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 
 const COLORS = [
   { name: '紅色', color: 'bg-red-500', hex: '#ef4444' },
@@ -19,9 +18,11 @@ const COLORS = [
 
 /** G3.1-G3.2：反應大師 - 看顏色快速反應 */
 export default function ReactionMaster() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-  const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
+  const defaultPlayers = [1, 2].map((n) => t('games.playerN', { n }))
+  const players = contextPlayers.length >= 2 ? contextPlayers : defaultPlayers
 
   const [gameState, setGameState] = useState<'idle' | 'waiting' | 'show' | 'result'>('idle')
   const [targetColor, setTargetColor] = useState<typeof COLORS[0] | null>(null)
@@ -105,16 +106,16 @@ export default function ReactionMaster() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
-      <GameRules rules={`看到顏色後快速點擊對應按鈕！\n最快且正確的人獲勝！\n點錯或太早點直接輸！`} />
+      <GameRules rules={t('games.reactionMasterRules')} />
       
       <div className="flex items-center gap-2 mb-4">
         <Activity className="w-6 h-6 text-emerald-400" />
-        <h2 className="text-xl font-bold text-white">反應大師</h2>
+        <h2 className="text-xl font-bold text-white">{t('games.reactionMasterTitle')}</h2>
       </div>
 
       {gameState === 'idle' && (
         <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xl games-focus-ring">
-          第 {round + 1} 輪 - 開始！
+          {t('common.roundStart', { n: round + 1 })}
         </motion.button>
       )}
 
@@ -125,7 +126,7 @@ export default function ReactionMaster() {
             transition={{ duration: 1, repeat: Infinity }}
             className="w-32 h-32 rounded-full bg-white/10 border-4 border-white/30 flex items-center justify-center"
           >
-            <span className="text-white/50 text-xl">等待...</span>
+            <span className="text-white/50 text-xl">{t('games.reactionMasterWait')}</span>
           </motion.div>
           <div className="grid grid-cols-2 gap-2">
             {players.flatMap(p => COLORS.map((c, i) => (
@@ -177,20 +178,20 @@ export default function ReactionMaster() {
           {wrongPlayer ? (
             <>
               <X className="w-16 h-16 text-red-500 mx-auto mb-2" />
-              <p className="text-red-400 font-bold text-2xl">{wrongPlayer} {wrongPlayer === players[0] ? '太早' : '點錯'}了！</p>
-              <p className="text-white/50 mt-2">{wrongPlayer} 喝酒！</p>
+              <p className="text-red-400 font-bold text-2xl">{wrongPlayer} {wrongPlayer === players[0] ? t('games.reactionMasterTooEarly') : t('games.reactionMasterWrong')}！</p>
+              <p className="text-white/50 mt-2">{wrongPlayer} {t('games.reactionMasterDrink')}</p>
             </>
           ) : winner ? (
             <>
               <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-2" />
-              <p className="text-yellow-400 font-bold text-2xl">{winner[0]} 最快！</p>
+              <p className="text-yellow-400 font-bold text-2xl">{winner[0]} {t('games.reactionMasterFastest')}</p>
               <p className="text-white/50 mt-2">{winner[1]}ms</p>
-              <p className="text-red-400 mt-4">輸家喝酒！</p>
+              <p className="text-red-400 mt-4">{t('games.reactionMasterLoserDrink')}</p>
             </>
           ) : null}
           <div className="flex gap-3 mt-4 justify-center">
-            <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一輪</button>
-            <CopyResultButton text={wrongPlayer ? `反應大師：${wrongPlayer} 出錯喝酒` : `反應大師：${winner?.[0]} 最快 ${winner?.[1]}ms`} />
+            <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">{t('games.reactionMasterNextRound')}</button>
+            <CopyResultButton text={wrongPlayer ? `${t('games.reactionMasterTitle')}：${wrongPlayer} ${t('games.reactionMasterDrink')}` : `${t('games.reactionMasterTitle')}：${winner?.[0]} ${t('games.reactionMasterFastest')} ${winner?.[1]}ms`} />
           </div>
         </motion.div>
       )}

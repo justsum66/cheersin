@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { Smile, RotateCcw, Trophy, Eye } from 'lucide-react'
@@ -11,6 +12,7 @@ const EMOTIONS = [
 ]
 
 export default function PokerFace() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'voting' | 'results'>('setup')
@@ -177,7 +179,7 @@ export default function PokerFace() {
           <div className="bg-black/30 backdrop-blur-lg border border-white/20 rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
               <div className="text-white">
-                <p className="text-sm">第 {round} 輪</p>
+                <p className="text-sm">{t('common.roundLabel', { n: round })}</p>
                 <p className="text-xl font-bold text-indigo-400">{currentPlayer} 的回合</p>
               </div>
               <div className="text-center">

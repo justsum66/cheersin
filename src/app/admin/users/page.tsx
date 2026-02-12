@@ -5,6 +5,7 @@
  * 依 email 或 user id 查詢，顯示 profile 與訂閱紀錄；可更新訂閱階級。
  */
 import { useState, useCallback, useEffect } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { getErrorMessage } from '@/lib/api-response'
 import { Users, Search, Loader2, RefreshCw } from 'lucide-react'
 import { SUBSCRIPTION_TIERS, type SubscriptionTier } from '@/lib/subscription'
@@ -34,6 +35,7 @@ interface SubRow {
 }
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [queryDebounced, setQueryDebounced] = useState('')
   const [adminSecret, setAdminSecret] = useState('')
@@ -66,7 +68,7 @@ export default function AdminUsersPage() {
   const search = useCallback(async (qOverride?: string) => {
     const q = (qOverride ?? queryDebounced ?? query).toString().trim()
     if (!q) {
-      setError('請輸入 email 或 user id')
+      setError(t('admin.enterEmailOrUserId'))
       return
     }
     setLoading(true)
@@ -91,11 +93,11 @@ export default function AdminUsersPage() {
       setProfile(data.profile ?? null)
       setSubscriptions(data.subscriptions ?? [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : '查詢失敗')
+      setError(e instanceof Error ? e.message : t('admin.searchFailed'))
     } finally {
       setLoading(false)
     }
-  }, [query, queryDebounced, headers])
+  }, [query, queryDebounced, headers, t])
 
   const updateTier = useCallback(async (userId: string, subscription_tier: SubscriptionTier) => {
     setSavingTier(true)
@@ -110,25 +112,25 @@ export default function AdminUsersPage() {
       if (!res.ok) {
         throw new Error(getErrorMessage(data, `HTTP ${res.status}`))
       }
-      setTierMessage({ type: 'ok', text: '已更新訂閱階級' })
+      setTierMessage({ type: 'ok', text: t('admin.tierUpdated') })
       if (profile?.id === userId) {
         setProfile((p) => (p ? { ...p, subscription_tier } : null))
       }
     } catch (e) {
-      setTierMessage({ type: 'err', text: e instanceof Error ? e.message : '更新失敗' })
+      setTierMessage({ type: 'err', text: e instanceof Error ? e.message : t('admin.updateFailed') })
     } finally {
       setSavingTier(false)
     }
-  }, [headers, profile?.id])
+  }, [headers, profile?.id, t])
 
   if (forbidden) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Users className="w-6 h-6 text-primary-400" aria-hidden />
-          <h1 className="text-xl font-semibold text-white">用戶與訂閱管理</h1>
+          <h1 className="text-xl font-semibold text-white">{t('admin.titleUsers')}</h1>
         </div>
-        <AdminForbidden message="請提供正確的 Admin Secret 或於開發環境使用。" />
+        <AdminForbidden message={t('admin.forbiddenMessage')} />
       </div>
     )
   }
@@ -137,39 +139,39 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Users className="w-6 h-6 text-primary-400" aria-hidden />
-        <h1 className="text-xl font-semibold text-white">用戶與訂閱管理</h1>
+        <h1 className="text-xl font-semibold text-white">{t('admin.titleUsers')}</h1>
       </div>
 
       <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-4">
-        <label className="block text-sm text-white/80">管理員密鑰（可選，未設時 dev 放行）</label>
+        <label className="block text-sm text-white/80">{t('admin.adminSecretLabel')}</label>
         <input
           type="password"
           value={adminSecret}
           onChange={(e) => setAdminSecret(e.target.value)}
           placeholder="x-admin-secret"
           className="w-full max-w-md px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm min-h-[44px]"
-          aria-label="管理員密鑰"
+          aria-label={t('admin.adminSecretLabel')}
         />
-        <label className="block text-sm text-white/80">查詢（email 或 user id）</label>
+        <label className="block text-sm text-white/80">{t('admin.queryLabel')}</label>
         <div className="flex flex-wrap gap-2">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && search(query.trim())}
-            placeholder="user@example.com 或 uuid"
+            placeholder={t('admin.queryPlaceholder')}
             className="flex-1 min-w-[200px] px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm min-h-[44px]"
-            aria-label="查詢 email 或 user id"
+            aria-label={t('admin.queryPlaceholder')}
           />
           <button
             type="button"
             onClick={() => search(query.trim())}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium min-h-[44px] disabled:opacity-50"
-            aria-label="搜尋用戶"
+            aria-label={t('admin.searchAria')}
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : <Search className="w-4 h-4" aria-hidden />}
-            搜尋
+            {t('admin.searchButton')}
           </button>
         </div>
         {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
@@ -184,12 +186,12 @@ export default function AdminUsersPage() {
         <AdminSkeleton />
       ) : profile ? (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-4">
-          <h2 className="text-lg font-medium text-white">用戶資料</h2>
+          <h2 className="text-lg font-medium text-white">{t('admin.userProfile')}</h2>
           <dl className="grid gap-2 text-sm">
             <div><dt className="text-white/60">ID</dt><dd className="text-white font-mono break-all">{profile.id}</dd></div>
             <div><dt className="text-white/60">Email</dt><dd className="text-white">{profile.email ?? '—'}</dd></div>
-            <div><dt className="text-white/60">顯示名稱</dt><dd className="text-white">{profile.display_name ?? '—'}</dd></div>
-            <div><dt className="text-white/60">訂閱階級</dt>
+            <div><dt className="text-white/60">{t('admin.displayName')}</dt><dd className="text-white">{profile.display_name ?? '—'}</dd></div>
+            <div><dt className="text-white/60">{t('admin.subscriptionTier')}</dt>
               <dd className="flex items-center gap-2 flex-wrap">
                 <span className="text-white">{SUBSCRIPTION_TIERS[profile.subscription_tier as SubscriptionTier]?.label ?? profile.subscription_tier ?? '—'}</span>
                 {!savingTier ? (
@@ -197,18 +199,18 @@ export default function AdminUsersPage() {
                     value={profile.subscription_tier ?? 'free'}
                     onChange={(e) => updateTier(profile.id, e.target.value as SubscriptionTier)}
                     className="px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-sm min-h-[44px]"
-                    aria-label="變更訂閱階級"
+                    aria-label={t('admin.subscriptionTier')}
                   >
-                    {(['free', 'basic', 'premium'] as const).map((t) => (
-                      <option key={t} value={t}>{SUBSCRIPTION_TIERS[t].label}</option>
+                    {(['free', 'basic', 'premium'] as const).map((tier) => (
+                      <option key={tier} value={tier}>{SUBSCRIPTION_TIERS[tier].label}</option>
                     ))}
                   </select>
                 ) : (
-                  <span className="text-white/60 flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> 儲存中…</span>
+                  <span className="text-white/60 flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> {t('admin.savingTier')}</span>
                 )}
               </dd>
             </div>
-            <div><dt className="text-white/60">建立時間</dt><dd className="text-white/80">{profile.created_at ? new Date(profile.created_at).toLocaleString() : '—'}</dd></div>
+            <div><dt className="text-white/60">{t('admin.createdAt')}</dt><dd className="text-white/80">{profile.created_at ? new Date(profile.created_at).toLocaleString() : '—'}</dd></div>
           </dl>
         </div>
       ) : null}
@@ -223,7 +225,7 @@ export default function AdminUsersPage() {
         })
         return (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-3">
-          <h2 className="text-lg font-medium text-white">訂閱紀錄</h2>
+          <h2 className="text-lg font-medium text-white">{t('admin.subscriptions')}</h2>
           {/* P1-175：長表格固定表頭，滾動時仍可見列名 */}
           <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
             <table className="w-full text-sm text-left">
@@ -237,7 +239,7 @@ export default function AdminUsersPage() {
                       role="columnheader"
                       aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : undefined}
                     >
-                      {key === 'plan_type' ? '方案' : key === 'status' ? '狀態' : key === 'paypal_subscription_id' ? 'PayPal ID' : key === 'start_date' ? '開始' : key === 'end_date' ? '結束' : '自動續訂'}
+                      {key === 'plan_type' ? t('admin.planType') : key === 'status' ? t('admin.status') : key === 'paypal_subscription_id' ? t('admin.paypalId') : key === 'start_date' ? t('admin.startDate') : key === 'end_date' ? t('admin.endDate') : t('admin.autoRenew')}
                     </th>
                   ))}
                 </tr>
@@ -262,13 +264,13 @@ export default function AdminUsersPage() {
 
       {profile && subscriptions.length === 0 && (
         <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-          <h2 className="text-lg font-medium text-white mb-2">訂閱紀錄</h2>
-          <p className="text-white/60 text-sm">尚無訂閱紀錄</p>
+          <h2 className="text-lg font-medium text-white mb-2">{t('admin.subscriptions')}</h2>
+          <p className="text-white/60 text-sm">{t('admin.noSubscriptions')}</p>
         </div>
       )}
 
       {!loading && query.trim() && !profile && !error && (
-        <p className="text-white/60 text-sm">找不到符合的用戶</p>
+        <p className="text-white/60 text-sm">{t('admin.noUserFound')}</p>
       )}
     </div>
   )

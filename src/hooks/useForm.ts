@@ -19,14 +19,16 @@ export interface FormField {
   touched: boolean
 }
 
+/** I18N-009：可選，用於多語驗證訊息；未傳則使用 fallback 中文 */
 export interface UseFormOptions<T extends string> {
   initialValues: Record<T, string>
   validations: Partial<Record<T, FieldValidation>>
   onSubmit: (values: Record<T, string>) => void | Promise<void>
+  getMessage?: (key: string, params?: Record<string, string | number>) => string
 }
 
 export function useForm<T extends string>(options: UseFormOptions<T>) {
-  const { initialValues, validations, onSubmit } = options
+  const { initialValues, validations, onSubmit, getMessage } = options
 
   const [fields, setFields] = useState<Record<T, FormField>>(() => {
     const initial = {} as Record<T, FormField>
@@ -42,25 +44,25 @@ export function useForm<T extends string>(options: UseFormOptions<T>) {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 驗證單一欄位
+  // 驗證單一欄位；I18N-009：有 getMessage 時回傳多語，否則 fallback
   const validateField = useCallback((name: T, value: string): string | null => {
     const validation = validations[name]
     if (!validation) return null
 
     if (validation.required && !value.trim()) {
-      return '此欄位為必填'
+      return getMessage ? getMessage('validation.required') : '此欄位為必填'
     }
 
     if (validation.minLength && value.length < validation.minLength) {
-      return `至少需要 ${validation.minLength} 個字元`
+      return getMessage ? getMessage('validation.minLength', { n: validation.minLength }) : `至少需要 ${validation.minLength} 個字元`
     }
 
     if (validation.maxLength && value.length > validation.maxLength) {
-      return `最多 ${validation.maxLength} 個字元`
+      return getMessage ? getMessage('validation.maxLength', { n: validation.maxLength }) : `最多 ${validation.maxLength} 個字元`
     }
 
     if (validation.pattern && !validation.pattern.test(value)) {
-      return '格式不正確'
+      return getMessage ? getMessage('validation.pattern') : '格式不正確'
     }
 
     if (validation.custom) {
@@ -68,7 +70,7 @@ export function useForm<T extends string>(options: UseFormOptions<T>) {
     }
 
     return null
-  }, [validations])
+  }, [validations, getMessage])
 
   // 處理輸入變更
   const handleChange = useCallback((name: T) => {

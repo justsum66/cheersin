@@ -273,7 +273,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   value={emailValue}
                   onChange={(e) => { setEmailValue(e.target.value); setLoginError(null) }}
-                  onFocus={() => setEmailFocus(true)}
+                  onFocus={(e) => { setEmailFocus(true); (e.target as HTMLInputElement)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }) }}
                   onBlur={() => { setEmailFocus(false); setEmailTouched(true) }}
                   placeholder=" "
                   title={t('login.emailFormatHint')}
@@ -303,7 +303,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={passwordValue}
                   onChange={(e) => { setPasswordValue(e.target.value); setLoginError(null) }}
-                  onFocus={() => setPasswordFocus(true)}
+                  onFocus={(e) => { setPasswordFocus(true); (e.target as HTMLInputElement)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }) }}
                   onBlur={() => setPasswordFocus(false)}
                   placeholder=" "
                   className="w-full pl-12 pr-12 py-4 bg-transparent border-none outline-none text-white placeholder-transparent rounded-xl min-h-[48px]"

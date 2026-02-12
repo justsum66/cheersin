@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { SLUG_PATTERN } from '@/lib/games-room'
+import { GamesRoomsPatchBodySchema } from '@/lib/api-body-schemas'
 
 /** GET: 依 slug 取得房間與玩家名單；Supabase 失敗時 dev 用 in-memory fallback；P3-59：slug 格式驗證 */
 export async function GET(
@@ -88,7 +89,12 @@ export async function PATCH(
   if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
   let body: { anonymousMode?: boolean; endRoom?: boolean }
   try {
-    body = (await request.json()) as { anonymousMode?: boolean; endRoom?: boolean }
+    const raw = await request.json().catch(() => ({}))
+    const parsed = GamesRoomsPatchBodySchema.safeParse(raw ?? {})
+    if (!parsed.success) {
+      return errorResponse(400, 'Invalid body', { message: '請提供有效的 JSON body' })
+    }
+    body = parsed.data
   } catch {
     return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
   }

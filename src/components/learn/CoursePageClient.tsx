@@ -11,17 +11,19 @@ interface CoursePageClientProps {
   free: boolean
   title: string
   description: string
+  learningObjectives?: string[]
   duration: string
   chapters: Chapter[]
 }
 
-export function CoursePageClient({ courseId, free, title, description, duration, chapters }: CoursePageClientProps) {
+export function CoursePageClient({ courseId, free, title, description, learningObjectives, duration, chapters }: CoursePageClientProps) {
   return (
     <CourseProTrialGate courseId={courseId} free={free}>
       <LearnCourseContent
         courseId={courseId}
         title={title}
         description={description}
+        learningObjectives={learningObjectives}
         duration={duration}
         free={free}
         chapters={chapters}

@@ -3,13 +3,13 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Circle, RefreshCw, Target, Trophy } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 
-const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 const TARGETS = [
   { id: 1, points: 3, size: 40, color: 'bg-red-500', name: '紅心' },
   { id: 2, points: 2, size: 60, color: 'bg-yellow-500', name: '黃區' },
@@ -18,10 +18,12 @@ const TARGETS = [
 ]
 
 export default function BottleCap() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
-  const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
+  const defaultPlayers = [1, 2, 3].map((n) => t('games.playerN', { n }))
+  const players = contextPlayers.length >= 2 ? contextPlayers : defaultPlayers
 
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [gamePhase, setGamePhase] = useState<'ready' | 'aiming' | 'result'>('ready')
@@ -99,30 +101,30 @@ export default function BottleCap() {
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="瓶蓋彈射">
       <GameRules
-        rules="瞄準目標彈射瓶蓋！\n紅心 3 分、黃區 2 分、綠區 1 分！\n脫靶喝酒！"
+        rules={t('games.bottleCapRules')}
         rulesKey="bottle-cap.rules"
       />
 
       <Target className="w-12 h-12 text-amber-400 mb-4" />
-      <p className="text-white/50 text-sm mb-2">第 {roundCount + 1} 輪</p>
+      <p className="text-white/50 text-sm mb-2">{t('common.roundLabel', { n: roundCount + 1 })}</p>
 
       {gamePhase === 'ready' && (
         <div className="text-center w-full max-w-md">
-          <p className="text-white/60 mb-2">輪到</p>
+          <p className="text-white/60 mb-2">{t('games.bottleCapTurn')}</p>
           <p className="text-2xl font-bold text-amber-400 mb-6">{currentPlayer}</p>
           <button
             type="button"
             onClick={startAiming}
             className="btn-primary px-8 py-3 text-lg games-focus-ring bg-gradient-to-r from-amber-500 to-orange-500"
           >
-            準備彈射！
+            {t('games.bottleCapReady')}
           </button>
         </div>
       )}
 
       {gamePhase === 'aiming' && (
         <div className="text-center w-full max-w-md">
-          <p className="text-white/60 mb-4">{currentPlayer} 瞄準中...</p>
+          <p className="text-white/60 mb-4">{currentPlayer} {t('games.bottleCapAiming')}</p>
 
           {/* 靶子 */}
           <div 
@@ -157,7 +159,7 @@ export default function BottleCap() {
             whileTap={{ scale: 0.9 }}
             className="px-12 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xl games-focus-ring shadow-lg"
           >
-            彈射！🚀
+            {t('games.bottleCapShoot')} 🚀
           </motion.button>
         </div>
       )}
@@ -183,7 +185,7 @@ export default function BottleCap() {
                   <p className="text-green-400 font-bold mb-4">得 {shotResult.points} 分！</p>
                 )}
                 {shotResult.points === 0 && (
-                  <p className="text-amber-400 font-bold mb-4">安全！繼續加油！</p>
+                  <p className="text-amber-400 font-bold mb-4">{t('games.bottleCapSafe')}</p>
                 )}
               </>
             ) : (
@@ -196,18 +198,18 @@ export default function BottleCap() {
                 >
                   💨
                 </motion.p>
-                <p className="text-2xl font-bold text-red-400 mb-2">脫靶！</p>
-                <p className="text-red-400 font-bold mb-4">{currentPlayer} 喝一杯！</p>
+                <p className="text-2xl font-bold text-red-400 mb-2">{t('games.bottleCapMiss')}</p>
+                <p className="text-red-400 font-bold mb-4">{currentPlayer} {t('games.bottleCapDrink')}</p>
               </>
             )}
 
             <div className="flex gap-3 justify-center">
               <button type="button" onClick={nextPlayer} className="btn-primary px-6 py-2 games-focus-ring">
-                下一位
+                {t('games.bottleCapNext')}
               </button>
               <CopyResultButton
-                text={`瓶蓋彈射：\n${currentPlayer} 射中 ${shotResult.name}！${shotResult.points > 0 ? `得 ${shotResult.points} 分` : shotResult.points < 0 ? '喝酒！' : ''}`}
-                label="複製"
+                text={`${t('games.bottleCapTitle')}：\n${currentPlayer} ${shotResult.name}！${shotResult.points > 0 ? ` ${shotResult.points}` : shotResult.points < 0 ? t('games.bottleCapDrink') : ''}`}
+                label={t('common.copy')}
               />
             </div>
           </motion.div>

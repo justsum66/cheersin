@@ -2,6 +2,16 @@
 
 表單與 API 錯誤訊息多語對應方式。
 
+## I18N-004：日期與數字依 locale 格式化
+
+- **現狀**：`src/lib/formatters.ts` 已支援 `locale` 參數（formatDate、formatTime、formatDateTime、formatRelative、formatNumber、formatCurrency、formatPercent），預設 zh-TW；呼叫處可傳入 `useTranslation().locale`。
+- **驗收**：[x] formatters 已支援 locale；顯示處傳入當前語系即可。
+
+## 全站語系 key 覆蓋率
+
+- **驗收**：全站 6 語系（en、ja、ko、yue、zh-CN、zh-TW）key 覆蓋率以 `npm run check:i18n:all`（即 `check:i18n --full`）通過為準；參考語系為 zh-TW。
+- **補齊**：若某語系缺 key，可執行 `node scripts/merge-i18n-keys.mjs <locale>` 從 zh-TW 合併缺失 key，再依序翻譯。
+
 ## API 錯誤（apiErrors.*）
 
 - **用法**：`getDisplayErrorMessage(data, t, fallback)`（`@/lib/api-error-i18n`）會依 API 回傳的 `error.code` 取 `t(\`apiErrors.${code}\`)`。

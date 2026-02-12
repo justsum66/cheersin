@@ -6,6 +6,7 @@ import { ThumbsUp, ThumbsDown, Copy, Hand, EyeOff, Trophy } from 'lucide-react'
 import GameRules from './GameRules'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGameReduceMotion } from './GameWrapper'
 import { logger } from '@/lib/logger'
 import { getStatementsByCategory, CATEGORY_LABEL, type NeverHaveIEverCategory } from '@/lib/never-have-i-ever'
@@ -23,6 +24,7 @@ const CATEGORY_OPTIONS: { value: NeverHaveIEverCategory | 'all'; label: string }
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 
 export default function NeverHaveIEver() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -173,7 +175,7 @@ export default function NeverHaveIEver() {
             </div>
             {/* G3D-NeverHaveIEver-05/06：分類區標籤/開關排版；匿名/進度區數字與標籤排版 */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 w-full max-w-lg justify-center">
-              <p className="text-white/40 text-sm tabular-nums games-helper" aria-live="polite">第 {displayProgress} 題</p>
+              <p className="text-white/40 text-sm tabular-nums games-helper" aria-live="polite">{t('common.questionOrdinal', { n: displayProgress })}</p>
               <button
                 type="button"
                 onClick={() => setAnonymousMode((v) => !v)}

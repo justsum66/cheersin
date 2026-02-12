@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw, Trophy, ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -29,6 +30,7 @@ const COMMANDS = [
 ]
 
 export default function ReverseSay() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -154,7 +156,7 @@ export default function ReverseSay() {
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2 text-indigo-400">第 {round} 回合</h2>
+                <h2 className="text-2xl font-bold mb-2 text-indigo-400">{t('common.turnLabel', { n: round })}</h2>
                 <p className="text-lg mb-4">目前玩家：{currentPlayer}</p>
                 <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg p-6">
                   <p className="text-3xl font-bold text-center mb-4">

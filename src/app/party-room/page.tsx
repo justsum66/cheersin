@@ -138,7 +138,7 @@ export default function PartyRoomPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          setError(getDisplayErrorMessage(data, t, '建立房間失敗'))
+          setError(getDisplayErrorMessage(data, t, t('partyRoom.createFailed')))
           setCreating(false)
           return
         }
@@ -149,7 +149,7 @@ export default function PartyRoomPage() {
           window.history.replaceState(null, '', `/party-room?room=${slug}`)
         }
       })
-      .catch(() => setError('建立房間失敗'))
+      .catch(() => setError(t('partyRoom.createFailed')))
       .finally(() => setCreating(false))
   }, [selectedMaxPlayers, t])
 
@@ -402,6 +402,7 @@ export default function PartyRoomPage() {
             maxLength={20}
             value={joinDisplayName}
             onChange={(e) => setJoinDisplayName(e.target.value)}
+            onFocus={(e) => (e.target as HTMLInputElement)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })}
             placeholder={t('partyRoom.enterNamePlaceholder')}
             className="min-h-[48px] px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 games-focus-ring"
             disabled={joinLoading}

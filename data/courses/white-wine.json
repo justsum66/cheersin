@@ -2,6 +2,12 @@
   "id": "white-wine",
   "title": "白酒探索",
   "description": "深入認識白酒的品種、產區與風格，從清爽到飽滿一次掌握",
+  "learningObjectives": [
+    "理解白酒與紅酒的釀造差異",
+    "認識 Chardonnay、Sauvignon Blanc、Riesling 等主要白品種",
+    "掌握白酒適飲溫度與餐搭原則",
+    "能依場合與菜餚選擇合適白酒"
+  ],
   "duration": "35分鐘",
   "free": true,
   "chapters": [

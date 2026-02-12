@@ -7,6 +7,7 @@ import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
 import { stripHtml } from '@/lib/sanitize'
+import { GamesRoomsPostBodySchema } from '@/lib/api-body-schemas'
 
 const MAX_SLUG_ATTEMPTS = 5
 
@@ -94,29 +95,24 @@ export async function POST(request: Request) {
       { status: 429, headers: { 'Retry-After': '60' } }
     )
   }
-  /** BE-21 / PR-31：body 驗證 — 密碼、匿名、派對房、劇本殺 scriptId、maxPlayers；回傳統一格式 */
+  /** BE-21 / PR-31：body 驗證 — 密碼、匿名、派對房、劇本殺 scriptId、maxPlayers；SEC-003 Zod */
   let bodyPassword: string | undefined
   let anonymousMode = false
   let partyRoom = false
   let scriptId: string | undefined
   let bodyMaxPlayers: 4 | 8 | 12 | undefined
   try {
-    const body = (await request.json().catch(() => null)) as import('@/types/api-bodies').GamesRoomsPostBody | null
-    if (body && typeof body === 'object') {
-      if (typeof body.password === 'string' && /^\d{4}$/.test(body.password)) bodyPassword = body.password
-      if (body.anonymousMode === true) anonymousMode = true
-      if (body.partyRoom === true) partyRoom = true
-      if (body.partyRoom !== undefined && typeof body.partyRoom !== 'boolean') {
-        return errorResponse(400, 'INVALID_PARTY_ROOM', { message: 'partyRoom 須為布林值' })
-      }
-      if (body.maxPlayers !== undefined) {
-        if (body.maxPlayers !== 4 && body.maxPlayers !== 8 && body.maxPlayers !== 12) {
-          return errorResponse(400, 'INVALID_MAX_PLAYERS', { message: 'maxPlayers 僅可為 4、8 或 12' })
-        }
-        bodyMaxPlayers = body.maxPlayers
-      }
-      if (typeof body.scriptId === 'string' && body.scriptId.trim()) scriptId = stripHtml(body.scriptId.trim().slice(0, 64))
+    const raw = await request.json().catch(() => null)
+    const parsed = GamesRoomsPostBodySchema.safeParse(raw ?? {})
+    if (!parsed.success) {
+      return errorResponse(400, 'INVALID_JSON', { message: '請提供有效的 JSON body' })
     }
+    const body = parsed.data
+    if (body.password !== undefined) bodyPassword = body.password
+    if (body.anonymousMode === true) anonymousMode = true
+    if (body.partyRoom === true) partyRoom = true
+    if (body.maxPlayers !== undefined) bodyMaxPlayers = body.maxPlayers
+    if (body.scriptId !== undefined && body.scriptId.trim()) scriptId = stripHtml(body.scriptId.trim().slice(0, 64))
   } catch {
     return errorResponse(400, 'INVALID_JSON', { message: '請提供有效的 JSON body' })
   }
@@ -188,6 +184,7 @@ export async function POST(request: Request) {
       host_id?: string
       settings?: { anonymousMode?: boolean; max_players?: number; partyRoom?: boolean; scriptId?: string; scriptRoom?: boolean }
     } = { slug, expires_at: expiresAt }
+    /** SEC-013：房間密碼僅存 hash，不明文儲存 */
     if (bodyPassword) insertPayload.password_hash = hashRoomPassword(bodyPassword)
     if (user?.id) insertPayload.host_id = user.id
     if (Object.keys(settings).length > 0) insertPayload.settings = settings

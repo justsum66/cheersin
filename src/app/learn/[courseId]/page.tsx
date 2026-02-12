@@ -82,6 +82,7 @@ export default async function CoursePage({ params }: PageProps) {
         free={course.free}
         title={course.title}
         description={course.description}
+        learningObjectives={course.learningObjectives}
         duration={course.duration}
         chapters={course.chapters}
       />

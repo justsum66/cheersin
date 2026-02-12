@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useTranslation } from '@/contexts/I18nContext'
 import { Mic, RotateCcw, Trophy, Volume2 } from 'lucide-react'
 
 const SONGS = [
@@ -21,6 +22,7 @@ const SONGS = [
 ]
 
 export default function VocalWar() {
+  const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'voting' | 'results'>('setup')
@@ -183,7 +185,7 @@ export default function VocalWar() {
           <div className="bg-black/30 backdrop-blur-lg border border-white/20 rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
               <div className="text-white">
-                <p className="text-sm">第 {round} 輪</p>
+                <p className="text-sm">{t('common.roundLabel', { n: round })}</p>
                 <p className="text-xl font-bold text-red-400">{currentPlayer} 的回合</p>
               </div>
               <div className="text-center">

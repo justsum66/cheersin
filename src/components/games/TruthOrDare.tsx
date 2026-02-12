@@ -14,6 +14,8 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { logger } from '@/lib/logger'
 import { useGameReduceMotion, useGameStats } from './GameWrapper'
+import { useTranslation } from '@/contexts/I18nContext'
+import { fireFullscreenConfetti } from '@/lib/celebration'
 
 /** 難度：輕鬆 / 刺激 / 限制級 */
 const LEVEL_LABEL: Record<TruthDareLevel, string> = { mild: '輕鬆', spicy: '刺激', adult: '限制級' }
@@ -62,6 +64,7 @@ const LEVEL_FILTER_OPTIONS: { value: TruthDareLevel | 'all'; label: string }[] =
 ]
 
 export default function TruthOrDare() {
+  const { t } = useTranslation()
   const questionRef = useRef<HTMLHeadingElement>(null)
   const { play } = useGameSound()
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -237,6 +240,7 @@ export default function TruthOrDare() {
   }, [mode, pick, punishment, gameStats, players, skipCount, play, isSkipPending])
 
   const backToMenu = useCallback(() => {
+    if (!reducedMotion) fireFullscreenConfetti()
     setMode('menu')
     setContent('')
     setSkipCount(0)
@@ -244,13 +248,13 @@ export default function TruthOrDare() {
     setUsedDare(new Set())
     setSecondsLeft(null)
     gameStats?.setStats({ punishmentCount: 0, funFacts: [] })
-  }, [gameStats])
+  }, [gameStats, reducedMotion])
 
   const addCustom = useCallback(
     (type: 'truth' | 'dare') => {
       const text = type === 'truth' ? customInput.truth.trim() : customInput.dare.trim()
       if (!text) {
-        toast(type === 'truth' ? '請輸入真心話題目' : '請輸入大冒險題目')
+        toast(type === 'truth' ? t('games.enterTruthTopic') : t('games.enterDareTopic'))
         return
       }
       const item: TruthDareItem = { text, level: 'mild', stars: 3 }
@@ -262,7 +266,7 @@ export default function TruthOrDare() {
         setCustomInput((prev) => ({ ...prev, dare: '' }))
       }
     },
-    [customInput]
+    [customInput, t]
   )
 
   const removeCustom = useCallback((type: 'truth' | 'dare', index: number) => {

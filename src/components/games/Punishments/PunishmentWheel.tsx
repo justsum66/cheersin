@@ -217,10 +217,13 @@ export default function PunishmentWheel() {
           {triggerSuper && (
             <p className="text-red-400/90 text-sm mb-2">累積失敗達標，可觸發超級懲罰！</p>
           )}
+          {/* A11Y-017：可 Tab 聚焦，Enter/Space 觸發轉盤 */}
           <button
             type="button"
             className="btn-primary min-h-[48px] min-w-[48px] px-8 py-3 rounded-xl games-focus-ring"
             onClick={spin}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); spin() } }}
+            aria-label="轉動懲罰轉盤"
           >
             轉動轉盤
           </button>

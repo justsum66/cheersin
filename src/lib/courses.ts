@@ -24,6 +24,8 @@ export interface CourseData {
   id: string
   title: string
   description: string
+  /** COPY-005：學習目標，供首屏或課程卡展示 */
+  learningObjectives?: string[]
   duration: string
   free: boolean
   chapters: Chapter[]

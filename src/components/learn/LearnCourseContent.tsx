@@ -44,6 +44,7 @@ import { InteractiveCocktailMap } from '@/components/learn/InteractiveCocktailMa
 import { CocktailRecommendationDatabase } from '@/components/learn/CocktailRecommendationDatabase'
 import { SeasonalCocktailGuide } from '@/components/learn/SeasonalCocktailGuide'
 import toast from 'react-hot-toast'
+import { useTranslation } from '@/contexts/I18nContext'
 import { COPY_TOAST_PROGRESS_SAVED } from '@/config/copy.config'
 import { getReadingListForCourse } from '@/config/learn-reading-list'
 import { getCommonMistakes } from '@/config/learn-common-mistakes'
@@ -112,6 +113,8 @@ interface LearnCourseContentProps {
   courseId: string
   title: string
   description: string
+  /** COPY-005：學習目標，首屏展示 */
+  learningObjectives?: string[]
   duration: string
   free: boolean
   chapters: Chapter[]
@@ -153,10 +156,12 @@ export function LearnCourseContent({
   courseId,
   title,
   description,
+  learningObjectives,
   duration,
   free,
   chapters,
 }: LearnCourseContentProps) {
+  const { t } = useTranslation()
   const total = chapters.length
   const { play } = useGameSound()
   /** P2.D4.3 專注閱讀模式：隱藏側邊欄 */
@@ -249,7 +254,7 @@ export function LearnCourseContent({
     /* L73：課程完成率 100% 時解鎖徽章；P2.B3.2 技能解鎖動畫 */
     if (nextCompleted >= total && total > 0) {
       unlockBadge('course-complete')
-      toast.success('解鎖成就：完成一門課程', { duration: 3000 })
+      toast.success(t('learn.achievementUnlock'), { duration: 3000 })
     }
     const prevMin = getLearnMinutes()
     addLearnMinutes(5)
@@ -461,7 +466,7 @@ export function LearnCourseContent({
               type="button"
               onClick={() => {
                 const url = typeof window !== 'undefined' ? `${window.location.origin}/learn/${courseId}` : ''
-                navigator.clipboard?.writeText(url).then(() => toast.success('已複製課程連結，可分享給好友'))
+                navigator.clipboard?.writeText(url).then(() => toast.success(t('learn.linkCopied')))
               }}
               className="min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring bg-white/5 text-white/60 hover:text-white"
               title="推薦課程給好友"
@@ -504,10 +509,10 @@ export function LearnCourseContent({
                     isCurrent ? 'bg-primary-500/10 border-l-2 border-primary-500 text-white ring-2 ring-primary-500/30' : 'bg-white/5 hover:bg-white/10 text-white/70 border border-transparent border-l-2 border-l-transparent'
                   }`}
                   aria-current={isCurrent ? 'location' : undefined}
-                  aria-label={isChCompleted ? `第${ch.id}章（已完成）` : `第${ch.id}章`}
+                  aria-label={isChCompleted ? `${t('common.chapterLabel', { n: ch.id })}（已完成）` : t('common.chapterLabel', { n: ch.id })}
                 >
                   {isChCompleted && <Check className="w-4 h-4 text-primary-400 shrink-0" aria-hidden />}
-                  第{ch.id}章
+                  {t('common.chapterLabel', { n: ch.id })}
                 </a>
               )
             })}
@@ -519,7 +524,14 @@ export function LearnCourseContent({
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white mb-2 leading-tight games-heading">{title}</h1>
               <p className="text-white/60 text-sm md:text-base mb-1 leading-relaxed games-body max-w-2xl">{description}</p>
-              <p className="text-white/40 text-xs">快捷鍵：J / ↓ 下一章 · K / ↑ 上一章</p>
+              {learningObjectives && learningObjectives.length > 0 && (
+                <ul className="text-white/50 text-sm mt-3 space-y-1 list-disc list-inside games-body max-w-2xl" aria-label="本課學習目標">
+                  {learningObjectives.map((obj, i) => (
+                    <li key={i}>{obj}</li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-white/40 text-xs mt-2">快捷鍵：J / ↓ 下一章 · K / ↑ 上一章</p>
             </div>
             <div className="flex items-center gap-2">
               {/* Phase 2 D4.2: 字體大小調整控制項 */}
@@ -618,7 +630,7 @@ export function LearnCourseContent({
                 ref={(el) => { if (el) chapterRefs.current.set(ch.id, el) }}
                 id={`ch-${ch.id}`}
                 role="region"
-                aria-label={`第 ${ch.id} 章：${ch.title}`}
+                aria-label={`${t('common.chapterLabel', { n: ch.id })}：${ch.title}`}
                 tabIndex={0}
                 onContextMenu={(e) => { e.preventDefault(); showChSummary(e.clientX, e.clientY) }}
                 onTouchStart={() => { longPressTimer.current = setTimeout(() => showChSummary(), 600) }}
@@ -636,7 +648,7 @@ export function LearnCourseContent({
               >
                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                   <h2 className="text-lg md:text-xl font-semibold text-white leading-snug games-heading" id={`ch-${ch.id}-title`}>
-                    第 {ch.id} 章：{ch.title}
+                    {t('common.chapterLabel', { n: ch.id })}：{ch.title}
                   </h2>
                   <div className="flex items-center gap-2">
                     <span className="text-white/40 text-sm">{ch.duration}</span>
@@ -1792,7 +1804,7 @@ export function LearnCourseContent({
               style={!isCenter ? { left: Math.min(summaryTooltip.x, typeof window !== 'undefined' ? window.innerWidth - 320 : 999), top: Math.max(80, summaryTooltip.y) } : undefined}
               role="tooltip"
             >
-              <p className="font-medium text-primary-300 mb-1">第 {ch.id} 章：{ch.title}</p>
+              <p className="font-medium text-primary-300 mb-1">{t('common.chapterLabel', { n: ch.id })}：{ch.title}</p>
               <p className="text-white/80 text-xs">{s || '（無摘要）'}</p>
             </div>
           )
@@ -1826,7 +1838,7 @@ export function LearnCourseContent({
           {/* 章節指示器 */}
           <div className="flex items-center gap-2">
             <span className="text-white/60 text-sm">
-              第 {activeChapterId ?? 1} / {total} 章
+              {t('common.chapterProgress', { current: activeChapterId ?? 1, total })}
             </span>
             <div className="w-20 h-1.5 rounded-full bg-white/10 overflow-hidden">
               <motion.div

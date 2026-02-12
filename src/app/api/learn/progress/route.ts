@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { getCourse, getCourseIds } from '@/lib/courses'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { LearnProgressPostBodySchema } from '@/lib/api-body-schemas'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,16 +52,18 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await getCurrentUser()
   if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
-  let body: { courseId?: string; chapterId?: number }
+  let courseId: string
+  let chapterId: number
   try {
-    body = (await request.json()) as { courseId?: string; chapterId?: number }
+    const raw = await request.json().catch(() => null)
+    const parsed = LearnProgressPostBodySchema.safeParse(raw ?? {})
+    if (!parsed.success) {
+      return errorResponse(400, 'Bad request', { message: 'courseId 與 chapterId 為必填且有效' })
+    }
+    courseId = parsed.data.courseId
+    chapterId = parsed.data.chapterId
   } catch {
     return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON' })
-  }
-  const courseId = typeof body.courseId === 'string' ? body.courseId.trim() : ''
-  const chapterId = typeof body.chapterId === 'number' ? Math.floor(body.chapterId) : NaN
-  if (!courseId || Number.isNaN(chapterId) || chapterId < 0) {
-    return errorResponse(400, 'Bad request', { message: 'courseId 與 chapterId 為必填且有效' })
   }
   try {
     const supabase = createServerClient()

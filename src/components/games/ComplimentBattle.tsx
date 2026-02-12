@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Send, RotateCcw, Trophy, Star } from 'lucide-react'
+import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -33,6 +34,7 @@ const COMPLIMENTS = [
 ]
 
 export default function ComplimentBattle() {
+  const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
@@ -250,7 +252,7 @@ export default function ComplimentBattle() {
                 />
               </div>
               <p className="text-center text-white/80 mt-2">
-                第 {currentVoter + 1} / {players.length} 票
+                {t('common.votesProgress', { current: currentVoter + 1, total: players.length })}
               </p>
             </motion.div>
           )}
