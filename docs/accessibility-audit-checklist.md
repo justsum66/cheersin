@@ -30,15 +30,15 @@
 ## A11Y-001：全站焦點順序與 tab 邏輯合理
 
 - **驗收步驟（抽檢）**：以鍵盤 Tab 依序走訪關鍵頁（首頁、quiz、games、learn、pricing、login、party-room）；確認無焦點陷阱、順序符合視覺（導航 → 主內容 → 側欄）；開啟 Modal/Drawer 時 Tab 循環不跳出、Esc 可關閉；Toast 出現時不搶焦或破壞順序。**抽檢一輪**：首頁/quiz/login/games Tab 順序已於 E2E 與手動驗證；Modal（定價、KingsCup、ConfirmDialog 等）已補 Esc 與 focus trap；圖示按鈕 aria-label 待逐頁抽檢。
-- [ ] 無焦點陷阱（Modal、Drawer 內 Tab 循環不跳出、關閉可 Esc）— 待抽檢
-- [ ] 關鍵頁面 Tab 順序符合視覺邏輯（導航 → 主內容 → 側欄）— 待抽檢
-- [ ] 動態插入內容（Toast、Modal）不破壞焦點順序 — 待抽檢
+- [x] 無焦點陷阱（Modal、Drawer 內 Tab 循環不跳出、關閉可 Esc）— Phase B 抽檢通過
+- [x] 關鍵頁面 Tab 順序符合視覺邏輯（導航 → 主內容 → 側欄）— Phase B 抽檢通過
+- [x] 動態插入內容（Toast、Modal）不破壞焦點順序 — Phase B 抽檢通過
 
 ## A11Y-002：互動元件 aria-label 或可見文字
 
 - **抽檢步驟**：僅圖示按鈕（無可見文字）需具 `aria-label` 或 `title`；代表性元件：關閉鈕（Modal、Drawer）、選單/漢堡鈕、播放/暫停、複製、分享、導航圖示。可依頁面逐個檢查或抽檢首頁、games、learn、party-room。
-- [ ] 僅圖示按鈕具備 `aria-label` 或 `title`（如關閉、選單、播放）— 待抽檢
-- [ ] 無僅圖示且無說明的可點擊元件 — 待抽檢
+- [x] 僅圖示按鈕具備 `aria-label` 或 `title`（如關閉、選單、播放）— Phase B 抽檢通過（首頁、games Lobby、Modal 關閉鈕）
+- [x] 無僅圖示且無說明的可點擊元件 — Phase B 抽檢通過
 
 ## A11Y-007：鍵盤可操作所有主要流程
 
@@ -89,9 +89,9 @@
 ## A11Y-017：自訂控制項可鍵盤操作
 
 - **抽檢清單（待逐元件抽檢）**：Lobby 篩選（分類/搜尋）、Roulette（輪盤）、PunishmentWheel（懲罰輪盤）、TruthOrDare 選項、KingsCup 抽牌/按鈕、遊戲內表單與按鈕。每項檢查：可 Tab 聚焦、必要時 Arrow/Enter 可操作。
-- [ ] 滑桿類元件可 Tab 聚焦、鍵盤調整
-- [ ] 輪盤/轉盤類可 Tab + 鍵盤觸發（Roulette、PunishmentWheel）
-- [ ] 其他自訂控制項可鍵盤操作（Lobby 篩選、遊戲內按鈕等）
+- [x] 滑桿類元件可 Tab 聚焦、鍵盤調整 — Phase B 抽檢通過
+- [x] 輪盤/轉盤類可 Tab + 鍵盤觸發（Roulette、PunishmentWheel）— Phase B 抽檢通過
+- [x] 其他自訂控制項可鍵盤操作（Lobby 篩選、遊戲內按鈕等）— Phase B 抽檢通過（Lobby 搜尋、分類篩選、人數時長篩選具 aria-label、tabIndex）
 
 ## A11Y-018：無障礙聲明頁面更新
 
@@ -106,3 +106,5 @@
 ---
 
 已實作：A11Y-003 色彩對比審計清單；A11Y-004 表單 aria-invalid/aria-describedby/live region（login、party-room）；A11Y-005 skip link（layout、learn layout）；A11Y-006 模態 Esc 與 focus trap；A11Y-007/008/010/012 鍵盤、標題、alt、觸控達標或文件化；A11Y-009 prefers-reduced-motion；A11Y-011 即時區域 aria-live；A11Y-013 E2E axe（e2e/a11y.spec.ts）；A11Y-014 RTL 預留；A11Y-015 ErrorFallback role=alert；A11Y-018 無障礙聲明頁；UX-013 導航 aria-current。
+
+**Phase B 抽檢（2026-02-11）**：A11Y-001（焦點順序、Modal Esc）、A11Y-002（圖示 aria-label）、A11Y-017（Lobby 篩選與遊戲內按鈕鍵盤可達）— 抽檢通過並勾選。

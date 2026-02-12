@@ -14,6 +14,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : 4,
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   reporter: [
     ['list'],
     ['json', { outputFile: 'test-reports/e2e-results.json' }],

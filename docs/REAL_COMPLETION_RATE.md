@@ -18,7 +18,7 @@
 - **Header 10 項**：Navigation 已有滾動透明、Active、漢堡選單、觸控 44px、Escape；header-10-tasks.md 對應
 - **FOLDER 15 項**：folder-cleanup-15-tasks.md 建立；單一 Footer/Nav、games/api/types 結構確認
 - **P0**：R2-012 GameLazyMap 註解標示符合 code splitting；其餘見 p0-tasks-done.md
-- **CI**：Build ✅、Lint ✅、Smoke（test:run）✅、TS ✅；E2E 已知環境問題（並行時 ECONNRESET），建議依 close-node-windows 關閉多餘 Node 後本地重跑 critical-paths
+- **CI**：Build ✅、Lint ✅、Smoke（test:run）✅、TS ✅；E2E 已知環境問題（並行時 ECONNRESET），建議本地/CI 使用 `npm run test:e2e:chromium` 僅跑 Chromium；critical-paths 全跑易逾時時可關閉多餘 Node 後重跑。**Phase B**：playwright 預設 timeout 60s、expect 15s；已知 flaky：定價 FAQ 按鈕文案、進遊戲 truth-or-dare 載入、派對 DJ 結果區、I18N 多語 cookie 後導航。
 - **本輪修復**：AuroraBackground framer-motion 改靜態 import；/logo.png → rewrite 至 logo_monochrome_gold.png；SW v4 + activate 清理；BackToTop 滑入動畫、GameCard New 脈衝；docs/service-worker-audit.md、close-node-windows.md
 - **本輪 P0**：雙 Footer 合併（首頁單一 footer）；analytics/party-dj Zod；report/analytics/party-dj requestId+duration 日誌；games/rooms scriptId stripHtml；globals 移除未使用 lcp 區塊；R2-021 題庫 200+200 已有
 - **Party DJ 30 項**：本輪實作並勾選 #2 重試、#3 Loading 骨架、#4 useAiTransition 開關、#7 無障礙 aria、#10 Analytics；下一批 #1 付費牆+升級連結、#17 離線提示、#19 空狀態、#20 印列樣式

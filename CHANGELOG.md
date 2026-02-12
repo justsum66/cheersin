@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase B 剩餘任務：SEC/PERF 審計補註（performance-audit PERF-014 勾選）；A11Y-001/002/017 抽檢勾選（accessibility-audit-checklist）；E2E 關鍵路徑穩化（dismissAgeGate、定價 FAQ 先 dismiss cookie、I18N cookie url、playwright timeout 60s/expect 15s、Nav 選器放寬、docs/e2e-critical-paths.md、REAL_COMPLETION_RATE Phase B 註）；B4 可選項文件註明（COPY-011/012/013、GAME-018 於 copy-batch4-audit、game-batch5-audit）；TASKS-170 Phase 2 續 Phase B 列。
 - Phase 2 續（50 任務批次，三支柱）：COPY-005 課程學習目標（wine-101、whisky-101、white-wine 補 learningObjectives，LearnCourseContent 首屏展示）；GAME-014 真心話大冒險完成/下一輪 confetti（reducedMotion 時不播放）；copy-audit-checklist 補 COPY-005 驗收；validate:lessons、validate:content 通過；TASKS-170、CHANGELOG 更新。
 - Phase 2 續（下一批續 4，30 任務批次）：PERF-001/002 測量填表、A11Y-003 抽檢、PERF-014 驗收；檢查清單與審計（A11Y、COPY、api-zod、dev-batch7、ux-batch3、game-batch5、accessibility 頁）；API Zod 補齊（chat、games/rooms POST・PATCH、learn/progress）並更新 api-zod-audit；派對房暱稱 input onFocus scrollIntoView、A11Y-017 PunishmentWheel 鍵盤與 aria-label、ShareToStory 關閉鈕 aria-label、DEV-004 console 審計（dev-batch7）、SEC-013/PERF-015 註解（rooms 密碼 hash、next.config Link prefetch）；ts-any-plan、CONTRIBUTING E2E 可選、TASKS-170 下一批續 4。
 - Phase 2 續（下一批續 3）：A11Y-001/002 驗收步驟與抽檢清單、A11Y-017 具體元件名（accessibility-audit-checklist）；PERF-001 填表指引、PERF-002 Lighthouse 測量步驟（performance-audit）；api-zod-audit、rls-audit-next 勾選或註明；COPY-006/009 抽檢方法、UX-004 建議實作位置與登入頁 onFocus scrollIntoView（login/page.tsx）；TASKS-170 Phase 2 續「下一批續 3」。

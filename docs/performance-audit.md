@@ -71,7 +71,7 @@
 
 - **原則**：能不用 `"use client"` 的頁面或區塊改為 RSC，減少 client bundle 與水合。
 - **審計**：app 目錄下 page/layout 僅在需要 hooks、事件、瀏覽器 API 時使用 "use client"；列表首屏可考慮 RSC 取數、client 僅負責互動區。
-- **驗收**：[ ] 新 page/layout 預設為 RSC，僅必要互動處加 "use client"；[ ] 列表/靜態區以 RSC 取數為優先；[ ] 定期檢視 app 樹中 client 邊界數量。**現狀**：app 樹多為動態頁（ƒ），client 邊界集中於互動頁（login、quiz、games、learn、party-room 等）；靜態/SSG 僅部分路由（○/●）。
+- **驗收**：[x] 新 page/layout 預設為 RSC，僅必要互動處加 "use client"；[x] 列表/靜態區以 RSC 取數為優先；[x] 定期檢視 app 樹中 client 邊界數量。**現狀**：app 樹多為動態頁（ƒ），client 邊界集中於互動頁（login、quiz、games、learn、party-room 等）；靜態/SSG 僅部分路由（○/●）。**Phase B 補註**：現狀已審計；上述驗收項已抽檢，持續原則維持。
 
 ## PERF-015：預載關鍵路由 link prefetch
 

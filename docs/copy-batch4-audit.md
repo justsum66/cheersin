@@ -25,17 +25,17 @@
 ## COPY-011：郵件與推播文案多語與品牌一致
 
 - **狀態**：可選。若有郵件/推播模板，需多語 key 與品牌聲調一致。
-- **驗收**：可選實作。
+- **驗收**：可選實作。**Phase B 補註**：待產品需求；Resend/郵件模板若有則補 messages key。
 
 ## COPY-012：法律頁（隱私、條款）與產品一致
 
-- **狀態**：`privacy`、`terms` 頁面存在；需定期審閱與產品功能一致（訂閱、資料收集、Cookie 等）。
-- **驗收**：定期審閱。
+- **狀態**：`privacy`、`terms` 頁面存在（`src/app/privacy`、`src/app/terms`）；需定期審閱與產品功能一致（訂閱、資料收集、Cookie 等）。
+- **驗收**：定期審閱。**Phase B 抽檢**：隱私/條款路由與 layout meta 已存在；Footer 或登入頁若有連結可抽檢可達。
 
 ## COPY-013：成就與徽章名稱與描述
 
 - **狀態**：`BADGE_LABELS` 於 `src/lib/gamification.ts`；`learn/badges` 頁面使用之。可將名稱改為 messages `learn.badges.*` 以支援多語。
-- **驗收**：可譯且一致；可選遷移至 messages。
+- **驗收**：可譯且一致；可選遷移至 messages。**Phase B 補註**：可選；若有 badges 功能再補 i18n。
 
 ## COPY-014：深度內容（葡萄酒/威士忌/調酒知識擴充）
 
