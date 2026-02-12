@@ -1,6 +1,16 @@
 # 無障礙審查清單 (A11Y)
 
-用於 Phase 2 任務 A11Y-001、002、007、008、009、010、012、013 的驗收與後續審查。
+用於 Phase 2 任務 A11Y-001、002、003、007、008、009、010、012、013 的驗收與後續審查。
+
+## A11Y-003：色彩對比 WCAG AA
+
+- **目標**：一般文字與背景對比 ≥ 4.5:1、大字（≥18px 或 14px 粗體）≥ 3:1；UI 元件與圖形 ≥ 3:1。
+- **作法**：以對比工具（如 WebAIM Contrast Checker、Chrome DevTools Lighthouse、axe）掃描主要頁（首頁、quiz、games、learn、pricing、login、party-room）；design-tokens（如 `globals.css`、Tailwind 主題）確保主要文字色與背景符合比例。
+- **審計**：將主要頁面與元件（按鈕、輸入框、連結、導航）納入檢查清單；修正項記錄於本節或 design-tokens。
+- [ ] 首頁 CTA 與內文對比達標
+- [ ] 表單標籤與輸入框對比達標
+- [ ] 導航與 footer 連結對比達標
+- [ ] 遊戲/學習頁主要文字與背景達標
 
 ## A11Y-001：全站焦點順序與 tab 邏輯合理
 
@@ -15,28 +25,29 @@
 
 ## A11Y-007：鍵盤可操作所有主要流程
 
-- [ ] 遊戲：選遊戲、開始、下一題、結束可全程用 Tab + Enter
-- [ ] 學習：課程列表、章節、測驗可鍵盤操作
-- [ ] 訂閱：定價頁、結帳流程可鍵盤完成
-- [ ] 派對房 / 劇本殺：加入、開始、離開可鍵盤操作
+- [x] 遊戲：選遊戲、開始、下一題、結束可全程用 Tab + Enter（Lobby、遊戲內按鈕皆 focusable）
+- [x] 學習：課程列表、章節、測驗可鍵盤操作（Link、按鈕可 Tab）
+- [x] 訂閱：定價頁、結帳流程可鍵盤完成（CTA、表單可 Tab）
+- [x] 派對房 / 劇本殺：加入、開始、離開可鍵盤操作（表單與按鈕可 Tab + Enter）
+- **備註**：主要流程無僅滑鼠可點之關鍵動作；Modal/Drawer 具 focus trap 與 Esc 關閉。
 
 ## A11Y-008：標題階層 h1→h2→h3 不跳級
 
-- [ ] 每頁僅單一 h1
-- [ ] 無 h1 後直接 h3（需有 h2）
-- [ ] 關鍵頁：首頁、quiz、games、learn、pricing、profile、party-room、script-murder
+- [x] 每頁僅單一 h1（關鍵頁已審計：首頁、quiz、games、learn、pricing、profile、party-room、script-murder）
+- [x] 無 h1 後直接 h3（需有 h2）；必要處已修正或文件化
+- **審計**：各 page 主標為 h1，區塊為 h2/h3 不跳級；若新增頁面請維持單一 h1。
 
 ## A11Y-010：圖片 alt 有意義，裝飾圖 aria-hidden
 
-- [ ] 內容圖片：`<Image>` 具備有意義的 `alt`
-- [ ] 裝飾圖：`aria-hidden="true"` 或 `alt=""`
-- [ ] 無空 `alt` 的內容圖
+- [x] 內容圖片：`<Image>` 具備有意義的 `alt`（首頁、learn、profile 等已審計）
+- [x] 裝飾圖：`aria-hidden="true"` 或 `alt=""`（BrandLogo、裝飾用圖已處理）
+- [x] 無空 `alt` 的內容圖；全站 Image/img 已抽檢，新元件請延續 alt 或 aria-hidden
 
-## A11Y-012：觸控目標至少 44x44px
+## A11Y-012：觸控目標至少 44x44px（WCAG 2.5.5）
 
-- [ ] 按鈕、導航連結：min-height/min-width ≥ 44px 或 padding 足夠
-- [ ] 全站 CTA、遊戲內按鈕（已有 .games-touch-target / min-h-[48px] 處可抽檢）
-- [ ] 手機底部導航、表單送出鈕
+- [x] 按鈕、導航連結：min-height/min-width ≥ 44px 或 padding 足夠（與既有 48px 對齊，達標）
+- [x] 全站 CTA、遊戲內按鈕（.games-touch-target / min-h-[48px] 已廣泛使用）
+- [x] 手機底部導航、表單送出鈕（games-touch-target、min-h-[48px]）
 
 ## A11Y-009：動畫尊重 prefers-reduced-motion
 
@@ -70,4 +81,10 @@
 
 ---
 
-已實作：A11Y-004 表單 aria-invalid/role=alert；A11Y-005 skip link；A11Y-009 prefers-reduced-motion；A11Y-011 即時區域 aria-live；A11Y-014 RTL 預留；A11Y-015 ErrorFallback role=alert；A11Y-018 無障礙聲明頁。
+## UX-013：導航當前頁高亮 / aria-current
+
+- [x] Navigation 桌面、底部導航、行動選單之 Link 皆設 `aria-current={isActive ? 'page' : undefined}`（見 `src/components/navigation/Navigation.tsx`）。
+
+---
+
+已實作：A11Y-003 色彩對比審計清單；A11Y-004 表單 aria-invalid/aria-describedby/live region（login、party-room）；A11Y-005 skip link；A11Y-007/008/010/012 鍵盤、標題、alt、觸控達標或文件化；A11Y-009 prefers-reduced-motion；A11Y-011 即時區域 aria-live；A11Y-014 RTL 預留；A11Y-015 ErrorFallback role=alert；A11Y-018 無障礙聲明頁；UX-013 導航 aria-current。

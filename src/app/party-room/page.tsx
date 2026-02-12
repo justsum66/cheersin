@@ -406,6 +406,8 @@ export default function PartyRoomPage() {
             className="min-h-[48px] px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 games-focus-ring"
             disabled={joinLoading}
             required
+            aria-invalid={!!joinError}
+            aria-describedby={joinError ? 'party-join-error' : undefined}
           />
           <label className="text-sm text-white/60" htmlFor="party-join-password">
             {t('partyRoom.roomPassword')}
@@ -419,8 +421,14 @@ export default function PartyRoomPage() {
             onChange={(e) => setJoinPassword(e.target.value)}
             className="min-h-[48px] px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 games-focus-ring"
             disabled={joinLoading}
+            aria-invalid={!!joinError}
+            aria-describedby={joinError ? 'party-join-error' : undefined}
           />
-          {joinError && <p className="text-red-400 text-sm" role="alert">{joinError}</p>}
+          {joinError && (
+            <p id="party-join-error" className="text-red-400 text-sm" role="alert" aria-live="assertive">
+              {joinError}
+            </p>
+          )}
           <motion.button
             type="submit"
             disabled={joinLoading || !joinDisplayName.trim()}

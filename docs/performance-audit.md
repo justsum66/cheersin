@@ -2,6 +2,29 @@
 
 本文件對應 TASKS-170 Phase 2 效能相關任務，供定期檢視與測量。
 
+## PERF-001：關鍵路徑 bundle < 200KB
+
+- **目標**：首頁與 games 等關鍵路徑 First Load JS < 200KB（單一路由）。
+- **測量**：執行 `npm run analyze`（即 `ANALYZE=true next build`），建置完成後檢視產出的 bundle 報告；或 `next build` 終端輸出中的「First Load JS」欄位。
+- **記錄**：將首頁（/）、/games、/learn、/quiz 等 First Load JS 記於下方，並標註測量日期。
+- **若超標**：規劃 dynamic import 拆 chunk、延遲載入非首屏元件、或將重型庫改為動態 import。
+
+| 路由 | First Load JS | 測量日期 |
+|------|----------------|----------|
+| / | （執行 `npm run analyze` 後填寫） | |
+| /games | （同上） | |
+
+## PERF-002：LCP / INP / CLS 達標
+
+- **目標**：LCP ≤ 2.5s、INP ≤ 200ms、CLS ≤ 0.1（Core Web Vitals 良好門檻）。
+- **測量**：Lighthouse（DevTools > Lighthouse）或實機 Web Vitals（WebVitalsReporter 上報至 /api/analytics）；可對關鍵頁（首頁、quiz、games、learn）跑 Lighthouse 並記錄。
+- **記錄**：結果寫入下方表格；若未達標則標註並規劃優化（圖片優先級、字體、layout shift 來源）。
+
+| 頁面 | LCP | INP | CLS | 測量日期 |
+|------|-----|-----|-----|----------|
+| 首頁 | （Lighthouse / Web Vitals） | | | |
+| /games | （同上） | | | |
+
 ## PERF-009：移除未使用 CSS 與 dead code
 
 - **Tailwind**：建置時 Tailwind 僅產出使用到的 class；可定期執行 `npm run build` 檢視 `/.next/static/css` 體積。

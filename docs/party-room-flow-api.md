@@ -24,8 +24,16 @@
 - 無派對房專用必填變數；依專案既有 Supabase、NEXT_PUBLIC_APP_URL 等即可。
 - 邀請連結為 `{origin}/party-room?room={slug}`。
 
+## GAME-011：派對房過期清理
+
+- **目標**：過期房間不殘留，避免列表與資料庫膨脹。
+- **實作**：Supabase Edge Function `cleanup-expired-rooms` 可定期執行（cron 或手動觸發），將 `expires_at < now()` 的房間標記或刪除；或於 API `GET /api/games/rooms?list=active` 僅回傳未過期房間（前端不顯示過期房）。
+- **部署**：`npm run supabase:functions:deploy` 部署 Edge Function；cron 排程依 Supabase 專案設定（如 pg_cron 或外部 cron 呼叫 function URL）。
+- **文件**：見 `docs/game-batch5-audit.md` GAME-011。
+
 ## 相關檔案
 
 - 頁面：`src/app/party-room/page.tsx`、`PartyRoomActive.tsx`、`PartyRoomLobby.tsx`、`PartyRoomEnded.tsx`
 - Hooks：`useGameRoom`、`usePartyRoomState`、`usePartyRoomRealtime`、`useCopyInvite`
 - 型別：`@/types/games`（RoomInfo、PartyState）、`@/lib/games/party-state-schema`（Zod）
+- 清理：Edge Function `supabase/functions/cleanup-expired-rooms`（若有）

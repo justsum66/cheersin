@@ -32,7 +32,7 @@
 3. 確保 `npm run build` 通過。
 4. 填寫 PR 描述，並關聯相關 issue（若有）。
 
-CI 流程與本地一致：lint → unit → build → E2E（見 `.github/workflows/ci.yml`）。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
+**CI 流程（TEST-018）**：與本地一致。`.github/workflows/ci.yml` 依序執行：lint → unit tests (`npm run test:run`) → build → E2E（Playwright chromium + 全專案）。本地重現：`npm run lint && npm run test:run && npm run build && npm run test:e2e`。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
 
 ## 程式碼審查
 

@@ -49,23 +49,28 @@
 
 ## GAME-011：派對房過期與清理（cleanup job）
 
-- **狀態**：需於 Supabase Edge Functions 或 cron 實作過期房清理；文件化或實作依專案排程。
-- **驗收**：過期房不殘留。
+- **狀態**：已文件化。`docs/party-room-flow-api.md` 已註明 GAME-011：可透過 Supabase Edge Function `cleanup-expired-rooms` 或 cron 清理過期房；`GET /api/games/rooms?list=active` 僅回傳未過期房間。
+- **驗收**：過期房不殘留；部署見 `npm run supabase:functions:deploy`。
 
 ## GAME-012：觀眾模式（若有）不破壞玩家狀態
 
 - **狀態**：可選。若實作觀眾模式，需區分 `game_room_players` 角色與 UI。
 - **驗收**：可選。
 
+## GAME-013：GameErrorBoundary 與重試引導 i18n
+
+- **狀態**：已實作。`GamesPageClient` 傳入 `title={t('gameError.title')}`、`desc={t('gameError.desc')}`、`retryLabel={t('gameError.retry')}`、`backLobbyLabel={t('gameError.backLobby')}`；GameErrorBoundary 具 role=alert、aria-describedby，螢幕閱讀器可讀。
+- **驗收**：錯誤邊界文案多語；重試與回大廳按鈕可操作。
+
 ## GAME-014：關鍵遊戲有完成/成功動畫或回饋
 
-- **狀態**：部分遊戲有慶祝、confetti（如 `fireFullscreenConfetti`）；可逐遊戲補齊結束動畫。
-- **驗收**：提升遊戲體驗。
+- **狀態**：部分遊戲有慶祝、confetti（如 `fireFullscreenConfetti`、canvas-confetti）；可逐遊戲補齊結束動畫或 Lottie。審計清單：truth-or-dare、roulette、never-have-i-ever 等有完成回饋；其餘可於遊戲元件內補 confetti 或簡短動畫。
+- **驗收**：提升遊戲體驗；文件化於本節。
 
 ## GAME-017：遊戲列表載入與篩選不卡頓
 
-- **狀態**：`GameLazyMap` 懶加載遊戲元件；列表可考慮虛擬滾動或分頁（PERF-006）。
-- **驗收**：100+ 項不一次 DOM 全渲染。
+- **狀態**：已實作。`GameLazyMap` 懶加載遊戲元件（非首屏遊戲動態 import）；Lobby 列表篩選與搜尋不一次渲染全部 DOM；可與 PERF-006 對齊，必要時加虛擬滾動或分頁。
+- **驗收**：100+ 項不一次 DOM 全渲染；關鍵路徑無卡頓。
 
 ## GAME-018：收藏/最近玩過持久化與同步
 
@@ -79,8 +84,8 @@
 
 ## GAME-020：派對房 E2E 涵蓋建立→加入→選遊戲
 
-- **狀態**：`e2e/persona-flows/party-room.spec.ts` 已涵蓋建立、加入、乾杯、複製；可擴充「房主選遊戲」流程。
-- **驗收**：E2E 通過。
+- **狀態**：已實作。`e2e/persona-flows/party-room.spec.ts` 涵蓋：建立房間、加入、乾杯、複製連結、**房主選遊戲**（真心話/轉盤/骰子）並見「目前」遊戲文案；選遊戲用例使用多語 selector（真心話|Truth or dare、轉盤|Roulette、骰子|Liar dice）。
+- **驗收**：E2E 通過；若 flake 可調整 timeout 或 selector 穩化。
 
 ## GAME-021：遊戲內分享（社交）不破壞狀態
 

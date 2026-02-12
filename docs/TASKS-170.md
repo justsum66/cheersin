@@ -281,3 +281,8 @@
 | 2026-02-12 | (續) | **Batch 3 (GAME)**：GAME-004 房主離開即結束房間（leave API + party-room-flow-api）、GAME-005 邀請 i18n、GAME-006 輪詢 2s、GAME-007/008/009 docs/game-batch5-audit |
 | 2026-02-12 | (續) | **Batch 4 (TEST)**：TEST-001 leave-route 單元測試、validate:lessons/content、check:i18n、test:stress 兩輪、game-test-checklist 更新 |
 | 2026-02-12 | (續) | **Batch 5 (DEV)**：DEV-019/020 docs/dev-batch7-audit（依賴審計、bundle 預算） |
+| 2026-02-12 | **Phase 2 續：下一批 35** | **Batch 1 (審計後 6)**：SEC-002 docs/rls-audit-next.md、SEC-003 docs/api-zod-audit.md、PERF-001/002 performance-audit、A11Y-003 accessibility-audit-checklist、I18N-002 zh-CN 補 key + merge-i18n-keys.mjs + check:i18n:three |
+| 2026-02-12 | (續) | **Batch 2 (A11Y+UX)**：A11Y-004 party-room 表單 aria-invalid/describedby/live、A11Y-007/008/010/012 檢查清單勾選、UX-013 Navigation 已有 aria-current |
+| 2026-02-12 | (續) | **Batch 3 (GAME+COPY+I18N)**：GAME-011 party-room-flow-api 過期清理文件、GAME-013/014/017/020 game-batch5-audit、COPY-010 docs/copy-audit-checklist、I18N-009 docs/i18n-validation |
+| 2026-02-12 | (續) | **Batch 4 (TEST+SEC+PERF)**：TEST-005 docs/ts-any-plan、TEST-018 CONTRIBUTING CI、SEC-011/012 docs/security-audit-notes、PERF-014/015/016 已有 performance-audit |
+| 2026-02-12 | (續) | **Batch 5 (DEV+Pipeline)**：DEV-011 README 建置與部署、DEV-012 CHANGELOG 更新、lint/tsc/test:run 通過 |

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 2 續（下一批 35）：審計文件（RLS、API Zod、PERF-001/002、A11Y-003、I18N-002）；A11Y-004/007/008/010/012、UX-013；GAME-011/013/014/017/020、COPY-010、I18N-009；TEST/SEC/PERF 文件；DEV-011/012；`docs/api-zod-audit.md`、`docs/security-audit-notes.md`、`docs/ts-any-plan.md`、`docs/copy-audit-checklist.md`、`docs/i18n-validation.md`；zh-CN 三語 key 補齊（`scripts/merge-i18n-keys.mjs`、`check:i18n:three`）。
 - P2-250: Code splitting strategy documentation (`docs/code-splitting.md`).
 - P2-261: Component and file naming conventions (`docs/naming-conventions.md`).
 - P2-265: This CHANGELOG; future releases should append under version headings.

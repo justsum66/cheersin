@@ -39,8 +39,14 @@ function getByPath(obj, pathKey) {
 }
 
 const fullCheck = process.argv.includes('--full')
+const localesArg = process.argv.find((a) => a.startsWith('--locales='))
+const localesFromEnv = process.env.LOCALES
+const restrictLocales = localesArg ? localesArg.split('=')[1].split(',').map((s) => s.trim()) : (localesFromEnv ? localesFromEnv.split(',').map((s) => s.trim()) : null)
 const files = fs.readdirSync(messagesDir).filter((f) => f.endsWith('.json'))
-const locales = files.map((f) => path.basename(f, '.json'))
+let locales = files.map((f) => path.basename(f, '.json'))
+if (restrictLocales && restrictLocales.length > 0) {
+  locales = locales.filter((loc) => restrictLocales.includes(loc))
+}
 
 const refPath = path.join(messagesDir, `${defaultLocale}.json`)
 const ref = JSON.parse(fs.readFileSync(refPath, 'utf8'))

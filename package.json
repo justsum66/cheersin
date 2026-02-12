@@ -26,6 +26,7 @@
     "validate:lessons": "node scripts/validate-course-lessons.js",
     "validate:content": "node scripts/validate-course-content.js",
     "check:i18n": "node scripts/check-i18n-keys.mjs",
+    "check:i18n:three": "node scripts/check-i18n-keys.mjs --full --locales=en,zh-TW,zh-CN",
     "learn:500-status": "node scripts/learn-500-status.js",
     "test": "vitest",
     "test:run": "vitest run",
