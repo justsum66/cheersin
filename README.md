@@ -111,9 +111,12 @@ npm run dev
 
 ### 常用指令
 ```bash
-npm run lint      # ESLint 檢查
-npm run build     # 生產建置
-npm run test:run  # 單次全量測試
+npm run validate-env  # 驗證環境變數（start 前自動執行）
+npm run lint         # ESLint 檢查
+npx tsc --noEmit     # TypeScript 型別檢查
+npm run build        # 生產建置
+npm run test:run     # 單次全量測試
+npm run test:stress  # 兩輪測試（壓力/穩定性）
 ```
 
 ## 🎯 部署

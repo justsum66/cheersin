@@ -319,24 +319,28 @@ export default function Navigation() {
             aria-label="導航選單"
           >
             <div className="flex flex-col items-center justify-center h-full gap-8" onClick={(e) => e.stopPropagation()}>
-              {NAV_ITEMS.map((item, index) => (
-                <motion.div
-                  key={item.href}
-                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.05 + index * 0.05 }}
-                >
-                  <Link
-                    ref={index === 0 ? mobileMenuFirstLinkRef : undefined}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-4 text-2xl font-display font-bold text-white games-focus-ring rounded-lg py-2 min-h-[48px]"
+              {NAV_ITEMS.map((item, index) => {
+                const isActive = pathname === item.href
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.05 + index * 0.05 }}
                   >
-                    <item.icon className="w-8 h-8 text-white/50" />
-                    {t(`nav.${item.navKey}`)}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      ref={index === 0 ? mobileMenuFirstLinkRef : undefined}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex items-center gap-4 text-2xl font-display font-bold games-focus-ring rounded-lg py-2 min-h-[48px] ${isActive ? 'text-primary-400' : 'text-white'}`}
+                    >
+                      <item.icon className={`w-8 h-8 ${isActive ? 'text-primary-400/80' : 'text-white/50'}`} />
+                      {t(`nav.${item.navKey}`)}
+                    </Link>
+                  </motion.div>
+                )
+              })}
 
               <div className="w-16 h-[1px] bg-white/10 my-4" aria-hidden />
 

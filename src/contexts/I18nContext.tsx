@@ -53,10 +53,18 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleCookie(next)
   }, [])
 
+  /** I18N-14 / I18N-003：缺 key 時依序 fallback → defaultLocale → en（ja/ko/yue 等）→ 最後回傳 key，不顯示 key 名 */
   const t = useCallback(
     (key: string): string => {
       const msg = messages[locale] as Record<string, unknown>
-      return getByPath(msg, key) ?? key
+      const fallbackMsg = messages[defaultLocale] as Record<string, unknown>
+      const enMsg = messages['en'] as Record<string, unknown>
+      return (
+        getByPath(msg, key) ??
+        getByPath(fallbackMsg, key) ??
+        (locale !== 'en' ? getByPath(enMsg, key) : undefined) ??
+        key
+      )
     },
     [locale]
   )
