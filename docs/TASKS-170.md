@@ -263,3 +263,9 @@
 | 2026-02-12 | (續) | **Batch 4 (I18N+UX)**：I18N-003/007 t() fallback + interpolate、I18N-005 apiErrors + getDisplayErrorMessage、I18N-008 layout meta 註解、UX-007/020 OfflineBanner i18n、meta/apiErrors/gameError/offlineMessage 多語 |
 | 2026-02-12 | (續) | **Batch 5 (COPY/GAME/TEST)**：COPY-003/006 not-found/error 友善+規則 modal 註解、GAME-013 GameErrorBoundary i18n 文案、TEST-008 check:i18n 關鍵命名空間、TEST-013 getErrorCode + api-response 註解 |
 | 2026-02-12 | (續) | **Batch 6 (DEV)**：DEV-004 mask-context 抽離、api-error-log/middleware 改 logger、DEV-008 prestart 已有、DEV-009 depcheck 已有 |
+| 2026-02-12 | **Phase 2 續：55 任務** | **Batch 1 (SEC)**：SEC-001 訂閱/上傳 API 限流 + docs/security-api-rate-limit.md；SEC-004 docs/security-localstorage-audit.md；SEC-005 middleware 註解；SEC-009 supabase.ts 註解 |
+| 2026-02-12 | (續) | **Batch 2 (PERF)**：PERF-005 query-client 註解；PERF-006 learn 每等級顯示更多 + games Lobby 分頁；PERF-007/012 globals、layout 註解；PERF-009/010 docs/performance-audit.md |
+| 2026-02-12 | (續) | **Batch 3 (A11Y+I18N)**：A11Y-001/002/009/013 accessibility-audit-checklist；I18N-001 登入全 t()、ERROR_CODE_KEYS；I18N-006/009/010 docs/i18n-guide |
+| 2026-02-12 | (續) | **Batch 4 (UX+COPY)**：UX-001 pricing/login loading.tsx；UX-005 globals 註解；docs/ux-copy-checklist.md |
+| 2026-02-12 | (續) | **Batch 5 (GAME+TEST)**：GAME-003 已有 Zod；docs/game-test-checklist.md；test:run 168 通過 |
+| 2026-02-12 | (續) | **Batch 6 (DEV)**：docs/dev-checklist.md；lint/tsc/build 通過；husky+CI 已有 |

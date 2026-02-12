@@ -82,7 +82,7 @@ export function middleware(request: NextRequest) {
     logApiRequest(requestId, request.method, pathname)
   }
 
-  /** P2-335：狀態變更的 API 需同源 Origin/Referer；webhook/auth 回調不驗證 */
+  /** P2-335 / SEC-005：狀態變更的 API（含支付/訂閱/join）需同源 Origin/Referer；webhook/auth 回調不驗證 */
   const isStateChange = isApi && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
   const skipCsrf = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/auth/')
   if (isStateChange && !skipCsrf && !isAllowedOrigin(request)) {

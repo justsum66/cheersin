@@ -81,10 +81,16 @@ export function getClientIp(headers: Headers): string {
  * @param context - 上下文（用於決定限流配置）
  * @returns 是否被限流
  */
+/** SEC-001：公開/高頻 API 限流 context；subscription/upload 從嚴 */
 export function isRateLimited(identifier: string, context: string): boolean {
   const config: RateLimitConfig = {
     windowMs: 60000, // 1 分鐘
-    max: context === 'create' ? 10 : context === 'join' || context === 'game_state' ? 30 : 60,
+    max:
+      context === 'create' ? 10
+      : context === 'join' || context === 'game_state' ? 30
+      : context === 'subscription' ? 20
+      : context === 'upload' ? 15
+      : 60,
   }
   const result = checkRateLimit(identifier, config)
   return !result.success

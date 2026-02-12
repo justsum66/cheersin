@@ -533,6 +533,9 @@ export default function LearnPage() {
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '')
   /** P2.D1.1 卡片/列表切換 */
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
+  /** PERF-006：長列表每等級預設顯示筆數，展開後顯示全部 */
+  const [expandedLevels, setExpandedLevels] = useState<Set<string>>(() => new Set())
+  const INITIAL_COURSES_PER_LEVEL = 8
   /** 32 搜尋防抖：useDeferredValue 延遲過濾，減少輸入時卡頓 */
   const deferredSearch = useDeferredValue(searchQuery)
   /** 161–165 遊戲化：等級徽章、排行榜、書籤 */
@@ -1730,6 +1733,9 @@ export default function LearnPage() {
           {(['beginner', 'intermediate', 'expert'] as const).map((level) => {
             const levelCourses = filteredCourses.filter((c) => c.level === level)
             if (levelCourses.length === 0) return null
+            const isExpanded = expandedLevels.has(level)
+            const visibleCourses = isExpanded ? levelCourses : levelCourses.slice(0, INITIAL_COURSES_PER_LEVEL)
+            const hasMore = levelCourses.length > INITIAL_COURSES_PER_LEVEL
             return (
               <section key={level} aria-labelledby={`section-${level}`} className="pt-10 md:pt-0 first:pt-0 scroll-mt-20">
                 <h2 id={`section-${level}`} className="text-lg md:text-xl font-semibold text-white mb-5 md:mb-6 flex items-center gap-3">
@@ -1737,7 +1743,7 @@ export default function LearnPage() {
                   <span>{LEVEL_LABELS[level]}（{levelCourses.length}）</span>
                 </h2>
                 <div className={viewMode === 'list' ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6'}>
-          {levelCourses.map((course, index) => {
+          {visibleCourses.map((course, index) => {
             const isProCourse = !course.free
             const hasAccess = canAccessPro || (isProCourse && tier === 'free' && proTrialAllowed)
             const isLocked = isProCourse && !hasAccess
@@ -1968,6 +1974,18 @@ export default function LearnPage() {
             )
           })}
                 </div>
+                {hasMore && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedLevels((s) => new Set(s).add(level))}
+                      className="min-h-[48px] px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring"
+                      aria-label={`顯示更多${LEVEL_LABELS[level]}課程，共 ${levelCourses.length - INITIAL_COURSES_PER_LEVEL} 門`}
+                    >
+                      顯示更多（{levelCourses.length - INITIAL_COURSES_PER_LEVEL} 門）
+                    </button>
+                  </div>
+                )}
               </section>
             )
           })}

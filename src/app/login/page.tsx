@@ -14,9 +14,9 @@ import { ERROR_FORM_HEADING } from '@/config/errors.config'
 import { COPY_TOAST_LOGIN_REDIRECT } from '@/config/copy.config'
 import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 
-const ERROR_MESSAGES: Record<string, string> = {
-  missing_code: '登入連結不完整，請重新寄送',
-  config: '服務未設定完成，請稍後再試',
+const ERROR_CODE_KEYS: Record<string, string> = {
+  missing_code: 'login.missingCode',
+  config: 'login.configError',
 }
 
 export default function LoginPage() {
@@ -41,7 +41,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const errorCode = searchParams.get('error')
   const errorMessage = errorCode
-    ? (ERROR_MESSAGES[errorCode] ?? (() => {
+    ? (ERROR_CODE_KEYS[errorCode] ? t(ERROR_CODE_KEYS[errorCode]) : (() => {
         try { return decodeURIComponent(errorCode) } catch { return errorCode }
       })())
     : null
@@ -121,7 +121,7 @@ export default function LoginPage() {
     const form = e.currentTarget
     const email = (form.elements.namedItem('email') as HTMLInputElement)?.value ?? ''
     if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
-      setLoginError('請完成真人驗證後再登入。')
+      setLoginError(t('login.captchaRequired'))
       return
     }
     if (turnstileToken) {
@@ -135,11 +135,11 @@ export default function LoginPage() {
         if (!verifyData.success) {
           setTurnstileToken(null)
           setTurnstileResetKey((k) => k + 1)
-          setLoginError('驗證失敗，請重新完成驗證後再試。')
+          setLoginError(t('login.captchaFailed'))
           return
         }
       } catch {
-        setLoginError('驗證服務暫時無法使用，請稍後再試。')
+        setLoginError(t('login.captchaUnavailable'))
         return
       }
     }
@@ -149,7 +149,7 @@ export default function LoginPage() {
         const limit = (await limitRes.json()) as { allowed?: boolean; resetAt?: number | null }
         if (limit.allowed === false && limit.resetAt) {
           const minutes = Math.ceil((limit.resetAt - Date.now()) / 60000)
-          setLoginError(`嘗試次數過多，請 ${minutes} 分鐘後再試。`)
+          setLoginError((t('login.rateLimitMinutes') ?? '').replace('{{minutes}}', String(minutes)))
           return
         }
       } catch {
@@ -169,7 +169,7 @@ export default function LoginPage() {
           setLoading(false)
           /** E08：錯誤訊息友善化 — 帳密錯誤不分開（避免 email 枚舉），引導使用魔法連結 */
           const msg = error.message === 'Invalid login credentials'
-            ? '電子郵件或密碼錯誤，請再試一次。若忘記密碼請使用下方「寄送登入連結」。'
+            ? (t('login.invalidCredentials') ?? '')
             : error.message
           setLoginError(msg)
           setTimeout(() => scrollToFirstError(formRef.current), 50)
@@ -181,7 +181,7 @@ export default function LoginPage() {
         setTimeout(() => router.push(nextPath), 400)
       }).catch((err) => {
         setLoading(false)
-        setLoginError(err instanceof Error ? err.message : '登入失敗，請稍後再試。')
+        setLoginError(err instanceof Error ? err.message : (t('login.errorGeneric') ?? ''))
       })
     } else {
       setLoading(true)
@@ -230,7 +230,7 @@ export default function LoginPage() {
   }, [supabase, nextPath, authCallbackUrl, router])
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden safe-area-px page-container-mobile" role="main" aria-label="登入">
+    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden safe-area-px page-container-mobile" role="main" aria-label={t('login.mainAria')}>
       <div className="absolute inset-0 pointer-events-none">
         <div className="aurora-bg" />
       </div>
@@ -276,11 +276,11 @@ export default function LoginPage() {
                   onFocus={() => setEmailFocus(true)}
                   onBlur={() => { setEmailFocus(false); setEmailTouched(true) }}
                   placeholder=" "
-                  title="請輸入有效的電子郵件，例如 example@domain.com"
+                  title={t('login.emailFormatHint')}
                   className="w-full pl-12 pr-4 py-4 bg-transparent border-none outline-none text-white placeholder-transparent rounded-xl min-h-[48px]"
                   required
                   aria-required="true"
-                  aria-label="Email（必填，例如 example@domain.com）"
+                  aria-label={t('login.emailAria')}
                   aria-invalid={!!(errorMessage || loginError || showEmailFormatError)}
                   aria-describedby={showEmailFormatError ? 'login-email-format-error' : (errorMessage || loginError) ? 'login-error-message' : undefined}
                 />
@@ -289,7 +289,7 @@ export default function LoginPage() {
                 </label>
               </div>
               {showEmailFormatError && (
-                <p id="login-email-format-error" className="field-error" role="alert">請輸入有效的電子郵件格式（例如 example@domain.com）</p>
+                <p id="login-email-format-error" className="field-error" role="alert">{t('login.emailFormatError')}</p>
               )}
             </div>
             {/* UX_LAYOUT_200 #88：密碼顯示/隱藏切換 */}
@@ -309,7 +309,7 @@ export default function LoginPage() {
                   className="w-full pl-12 pr-12 py-4 bg-transparent border-none outline-none text-white placeholder-transparent rounded-xl min-h-[48px]"
                   required
                   aria-required="true"
-                  aria-label="密碼（必填）"
+                  aria-label={t('login.passwordAria')}
                   aria-invalid={!!(errorMessage || loginError)}
                 />
                 <label htmlFor="login-password" className={`absolute left-12 transition-all duration-200 pointer-events-none ${passwordFocus || passwordValue ? 'top-2 text-xs text-primary-400' : 'top-1/2 -translate-y-1/2 text-sm text-white/50'}`}>
@@ -342,7 +342,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              aria-label="登入帳號"
+              aria-label={t('login.submitAria')}
               className={`btn-primary w-full min-h-[48px] min-w-[12rem] py-4 flex items-center justify-center gap-2 btn-icon-text-gap transition-opacity duration-200 games-focus-ring ${loading ? 'is-loading' : ''}`}
             >
               {loading ? (
@@ -416,13 +416,13 @@ export default function LoginPage() {
             <button
               type="button"
               disabled
-              title="LINE 登入即將推出"
+              title={t('login.lineComingSoon')}
               className="min-h-[48px] py-3 rounded-xl bg-white hover:bg-white/90 text-[#06C755] font-medium flex items-center justify-center gap-2 border border-white/20 shadow-sm cursor-not-allowed opacity-70 games-focus-ring"
-              aria-label="使用 LINE 登入（即將推出）"
+              aria-label={t('login.lineAria')}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" /></svg>
               <span className="hidden sm:inline">LINE</span>
-              <span className="text-[10px] text-white/50 sm:hidden">即將推出</span>
+              <span className="text-[10px] text-white/50 sm:hidden">{t('login.comingSoon')}</span>
             </button>
           </div>
 

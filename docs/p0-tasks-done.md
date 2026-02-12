@@ -100,3 +100,33 @@
 | R2-056 | ✅ 本輪完成 | 行動選單從左側滑入（Navigation 漢堡選單 x: -100%→0） |
 | R2-063 | ✅ 本輪完成 | 遊戲歷史時間線節點依次滑入（Timeline motion.li + delay） |
 | R2-070 | ✅ 本輪完成 | 導航通知鈴鐺 hasUnread 支援（NotificationPanel 傳入，搖晃動畫已有） |
+| R2-039 | ✅ 本輪完成 | 頁面切換過渡：loading.tsx motion 淡入 + 骨架屏 |
+| R2-060 | ✅ 已有 | 首頁統計 CountUp + IntersectionObserver 進入視窗觸發（CountUp.tsx） |
+| R2-064 | ✅ 已有 | 訂閱成功頁慶祝：fireFullscreenConfetti + motion 入場（subscription/success） |
+| R2-091 | ✅ 已有 | 全局 Tooltip 從觸發方向滑入（Tooltip.tsx initial/animate/exit） |
+| R2-111 | ✅ 本輪完成 | 首頁 FAQ 標題打字機：TypewriterText + HomeFAQAccordion「常見問題」 |
+| R2-115 | ✅ 已有 | 全局空狀態插圖浮動動畫（EmptyState.tsx animate y） |
+| R2-181 | ✅ 本輪完成 | 玩 3 局後升級提示：GamesPageClient 讀 GAMES_STATS、tier===free 時橫幅 + 升級連結 |
+| R2-052 | ✅ 已有 | 首頁 Hero 視差（HomePageClient scrollYProgress + useTransform heroY/logoY/titleY） |
+| R2-074 | ✅ 已有 | 首頁/定價頁用戶見證輪播（HomeTestimonialsCarousel、Pricing 每 6 秒自動切換） |
+| R2-087 | ✅ 已有 | Trivia 時間到警告（timeLeft≤5 紅脈動、紅字、紅色圓環） |
+| R2-041 | ✅ 本輪完成 | 懲罰輪盤旋轉使用 spring 過渡（PunishmentWheelModal transition type: spring） |
+| R2-062 | ✅ 本輪完成 | 個人資料頭像上傳預覽動畫（motion.div key=avatarUrl 淡入過渡） |
+| R2-076 | ✅ 本輪完成 | 個人資料成就區已解鎖項目 hover 金色光暈（motion.div whileHover boxShadow） |
+| R2-092 | ✅ 本輪完成 | 喝酒動畫組件（DrinkingAnimation.tsx 酒杯傾斜+液面，供懲罰/結果使用） |
+| R2-097 | ✅ 本輪完成 | 個人資料遊戲統計/學習進度 InView 入場動畫（InViewAnimate stagger） |
+| R2-104 | ✅ 本輪完成 | 懲罰排行榜名次入場動畫（PunishmentLeaderboard motion.li + delay） |
+| R2-113 | ✅ 本輪完成 | 品酒學院課程卡 hover 顯示「開始學習」+ 箭頭（桌面版 overlay 文案） |
+| R2-117 | ✅ 本輪完成 | 首頁品牌故事區（關於 Cheersin、InView 左右交錯入場） |
+| R2-125 | ✅ 本輪完成 | 首頁 CTA 區塊輕微浮動（motion.div y 循環，尊重 reducedMotion） |
+| R2-182 | ✅ 本輪完成 | 首次造訪定價頁優惠彈窗（localStorage 僅顯示一次、首月半價） |
+| R2-183 | ✅ 本輪完成 | 派對房免費房主顯示「解鎖 12 人上限」按鈕，引導至定價頁 |
+| R2-188 | ✅ 本輪完成 | 取消訂閱頁挽留優惠文案（下個月半價） |
+| R2-203 | ✅ 本輪完成 | 定價頁 ROI 計算器（每月聚會次數 → 節省金額試算） |
+| R2-210 | ✅ 本輪完成 | 訂閱管理：訂閱頁顯示當前方案、下次扣款日、變更/取消連結 |
+| R2-227 | ✅ 本輪完成 | 劇本殺免費用戶僅可玩 1 個劇本，其餘顯示升級解鎖 |
+| R2-081 | ✅ 本輪完成 | 劇本殺投票結果揭曉柱狀圖（ScriptMurderPlay 投票區 motion.div width 從 0 生長） |
+| R2-065 | ✅ 已有 | 遊戲中翻牌 3D 翻轉：國王遊戲 KingsCup 抽牌結果牌面 initial rotateY 180→0 |
+| R2-098 | ✅ 本輪完成 | 遊戲中文字打字機：SecretReveal 講述階段題目用 TypewriterText |
+| R2-128 | ✅ 本輪完成 | 倒酒視覺化：劇本殺懲罰執行後顯示 DrinkingAnimation |
+| R2-130 | ✅ 本輪完成 | 全員乾杯同步動畫：派對房乾杯註記依後端 API 補齊多機同步（目前 client state + confetti） |

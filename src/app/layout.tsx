@@ -30,7 +30,7 @@ import { getRootMeta } from '@/lib/i18n/server-meta'
 import { COOKIE_KEY } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
 
-/** 11 標題字體：Playfair Display 高級感 */
+/** 11 標題字體：Playfair Display 高級感；PERF-012：display: swap 避免 FOIT 阻塞 */
 const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-display',

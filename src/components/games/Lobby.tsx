@@ -215,6 +215,9 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   const categoryTabListRef = useRef<HTMLDivElement>(null)
   /** P1-118：遊戲規則快速預覽 Modal */
   const [rulesModal, setRulesModal] = useState<{ name: string; rules: string } | null>(null)
+  /** PERF-006：長列表分頁，預設顯示筆數，載入更多展開 */
+  const INITIAL_VISIBLE = 24
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE)
 
   /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
@@ -270,6 +273,9 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
     () => [...filteredGames].sort((a, b) => (favoriteIds.includes(b.id) ? 1 : 0) - (favoriteIds.includes(a.id) ? 1 : 0)),
     [filteredGames, favoriteIds]
   )
+  /** PERF-006：僅渲染可見筆數，減少初始 DOM */
+  const visibleGames = useMemo(() => sortedGames.slice(0, visibleCount), [sortedGames, visibleCount])
+  const hasMoreGames = sortedGames.length > visibleCount
 
   /** GAMES_500 #133：收藏樂觀更新，先更新 UI 再寫入 localStorage 減少閃爍 */
   const handleToggleFavorite = useCallback((gameId: string) => {
@@ -388,7 +394,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       let next = -1
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
-        next = Math.min(index + 1, sortedGames.length - 1)
+        next = Math.min(index + 1, visibleGames.length - 1)
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
         next = Math.max(index - 1, 0)
@@ -397,8 +403,13 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
         buttonRefs.current[next]?.focus()
       }
     },
-    [sortedGames.length]
+    [visibleGames.length]
   )
+
+  /** PERF-006：篩選/搜尋變更時重置可見筆數 */
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE)
+  }, [displayFilter, deferredQuery, playerCountFilter, durationFilter])
 
   /** GAMES_500 #72：區塊順序可 A/B；variant_b 時本週熱門置前 */
   const blockOrder: Array<'recent' | 'weekly' | 'recommended'> =
@@ -655,9 +666,9 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           )}
         </div>
       )}
-      {/* GAMES_500 #54 #66 #67 #69：列表 aria-busy(isPending)、grid 斷點、role list/listitem、篩選中 opacity；P3-50：未來若列表增長可考慮虛擬捲動或分頁 */}
+      {/* GAMES_500 #54 #66 #67 #69：列表 aria-busy(isPending)、grid 斷點、role list/listitem；PERF-006 分頁顯示 */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap ${isPending ? 'opacity-70 transition-opacity duration-200' : ''}`} role="list" aria-label="遊戲列表" aria-busy={isPending}>
-      {sortedGames.map((game, index) => (
+      {visibleGames.map((game, index) => (
         <PrefetchOnVisible key={game.id} gameId={game.id}>
           <GameCard
             game={{
@@ -680,6 +691,18 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
         </PrefetchOnVisible>
       ))}
       </div>
+      {hasMoreGames && (
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => Math.min(c + INITIAL_VISIBLE, sortedGames.length))}
+            className="min-h-[48px] px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring"
+            aria-label={t('games.loadMoreAria') ?? `載入更多遊戲（目前 ${visibleGames.length} / ${sortedGames.length}）`}
+          >
+            {t('games.loadMore') ?? `載入更多（${sortedGames.length - visibleCount}）`}
+          </button>
+        </div>
+      )}
 
       {/* Open Brewery DB 整合：隨機酒廠卡片 */}
       <div className="mt-6 max-w-sm">

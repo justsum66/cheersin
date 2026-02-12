@@ -1,5 +1,6 @@
 /**
  * R2-025：react-query 共用 QueryClient — 統一 staleTime、retry
+ * PERF-005：staleTime/gcTime 一致，refetchOnWindowFocus: false 避免過度 refetch
  */
 import { QueryClient } from '@tanstack/react-query'
 
