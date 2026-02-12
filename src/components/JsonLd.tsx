@@ -1,6 +1,9 @@
 /**
  * 195 JSON-LD 結構化資料：Organization + WebSite，供搜尋引擎
+ * SEC-006：使用 SafeJsonLdScript 統一 ld+json 輸出
  */
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
+
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
 export function JsonLd() {
@@ -25,10 +28,5 @@ export function JsonLd() {
       },
     ],
   }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  )
+  return <SafeJsonLdScript data={data} />
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
@@ -25,7 +26,7 @@ function LearnBreadcrumbJsonLd() {
       { '@type': 'ListItem', position: 2, name: '品酒學院', item: `${BASE}/learn` },
     ],
   }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  return <SafeJsonLdScript data={jsonLd} />
 }
 
 /** 97 鍵盤導覽：skip link 跳至主要內容 */

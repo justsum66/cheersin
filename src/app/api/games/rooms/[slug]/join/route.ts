@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
+import { stripHtml } from '@/lib/sanitize'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const MAX_PLAYERS = 12
@@ -23,11 +24,9 @@ export async function POST(
     const { slug } = await params
     if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
     const body = (await request.json().catch(() => ({}))) as import('@/types/api-bodies').GamesRoomJoinPostBody
-    const displayName = typeof body.displayName === 'string' ? body.displayName.trim() : ''
+    const rawName = typeof body.displayName === 'string' ? body.displayName.trim() : ''
+    const displayName = stripHtml(rawName).slice(0, MAX_DISPLAY_NAME_LENGTH)
     if (!displayName) return errorResponse(400, 'displayName required', { message: '請輸入顯示名稱' })
-    if (displayName.length > MAX_DISPLAY_NAME_LENGTH) {
-      return errorResponse(400, 'displayName too long', { message: `顯示名稱最多 ${MAX_DISPLAY_NAME_LENGTH} 字元` })
-    }
     const isSpectator = body.isSpectator === true
     try {
       const supabase = createServerClient()
@@ -42,7 +41,7 @@ export async function POST(
         const provided = typeof body.password === 'string' ? body.password.trim() : ''
         const hash = hashRoomPassword(provided)
         if (!secureComparePasswordHash(hash, roomWithHash.password_hash)) {
-          return errorResponse(403, 'Invalid password', { message: '房間密碼錯誤' })
+          return errorResponse(403, 'INVALID_PASSWORD', { message: '房間密碼錯誤' })
         }
       }
       const maxPlayersForRoom = typeof roomWithHash.settings?.max_players === 'number' ? roomWithHash.settings.max_players : MAX_PLAYERS
@@ -52,7 +51,7 @@ export async function POST(
         .eq('room_id', room.id)
       const nonSpectatorCount = (existingPlayers ?? []).filter((p) => !(p as { is_spectator?: boolean }).is_spectator).length
       if (!isSpectator && nonSpectatorCount >= maxPlayersForRoom) {
-        return errorResponse(400, 'Room full', { message: '房間已滿' })
+        return errorResponse(400, 'ROOM_FULL', { message: '房間已滿' })
       }
       const nextIndex = (existingPlayers ?? []).length
       const insertPayload: { room_id: string; display_name: string; order_index: number; is_spectator?: boolean } = {

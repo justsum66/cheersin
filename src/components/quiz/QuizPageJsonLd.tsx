@@ -1,6 +1,9 @@
 /**
  * Quiz 頁 20 項優化 #7：靈魂酒測頁結構化資料 WebPage + Quiz，供 SEO 與預覽
+ * SEC-006：使用 SafeJsonLdScript
  */
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
+
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
 export function QuizPageJsonLd() {
@@ -24,10 +27,5 @@ export function QuizPageJsonLd() {
       },
     ],
   }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  )
+  return <SafeJsonLdScript data={data} />
 }

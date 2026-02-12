@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
@@ -29,7 +30,7 @@ function GamesBreadcrumbJsonLd() {
       { '@type': 'ListItem', position: 2, name: '派對遊樂場', item: `${BASE}/games` },
     ],
   }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  return <SafeJsonLdScript data={jsonLd} />
 }
 
 /** P1-065：遊戲頁 VideoGame 結構化數據 — 供搜尋引擎富媒體 */
@@ -49,7 +50,7 @@ function GamesVideoGameJsonLd() {
       ],
     },
   }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  return <SafeJsonLdScript data={jsonLd} />
 }
 
 /** GAMES_500 #12：無 JS 時靜態 fallback 文案 */

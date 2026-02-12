@@ -61,6 +61,11 @@ export default function KingsCup() {
       first.focus()
     }
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showFourthKing) setShowFourthKing(false)
+        else if (showResetConfirm) setShowResetConfirm(false)
+        return
+      }
       if (e.key !== 'Tab' || focusable.length === 0) return
       const current = document.activeElement
       const idx = Array.from(focusable).indexOf(current as HTMLElement)

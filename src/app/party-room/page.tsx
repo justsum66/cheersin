@@ -202,7 +202,14 @@ export default function PartyRoomPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setJoinError(getErrorMessage(data, t('partyRoom.joinError')))
+        const code = (data as { error?: { code?: string } }).error?.code
+        const msg =
+          code === 'ROOM_FULL'
+            ? t('partyRoom.roomFull')
+            : code === 'INVALID_PASSWORD'
+              ? t('partyRoom.wrongPassword')
+              : getErrorMessage(data, t('partyRoom.joinError'))
+        setJoinError(msg)
         setJoinLoading(false)
         return
       }

@@ -94,6 +94,13 @@ export function PunishmentWheelModal({ playerIndex, playerName, onClose }: Punis
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
   }, [])
 
+  /** A11Y-006：Esc 關閉懲罰輪盤 */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   const handleDone = useCallback(() => {
     onClose()
   }, [onClose])
@@ -140,12 +147,13 @@ export function PunishmentWheelModal({ playerIndex, playerName, onClose }: Punis
         {phase === 'spin' && (
           <div className="w-full max-w-[240px] mx-auto aspect-square rounded-full border-4 border-white/20 overflow-hidden bg-white/5 relative">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[20px] border-l-transparent border-r-transparent border-t-white" aria-hidden />
+            {/* R2-041：轉盤旋轉使用 spring 過渡，減速更自然 */}
             <motion.div
               className="w-full h-full rounded-full"
               style={{ background: wheelGradient }}
               initial={{ rotate: 0 }}
               animate={{ rotate: rotationRef.current }}
-              transition={{ duration: reducedMotion ? 0.1 : SPIN_DURATION_MS / 1000, ease: 'easeOut' }}
+              transition={reducedMotion ? { duration: 0.1 } : { type: 'spring', stiffness: 25, damping: 22, mass: 1.2 }}
             />
           </div>
         )}

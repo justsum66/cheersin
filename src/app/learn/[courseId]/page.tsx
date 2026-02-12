@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { getCourse, getCourseIds } from '@/lib/courses'
 import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 import type { Metadata } from 'next'
 
 const CoursePageClient = dynamic(
@@ -63,7 +64,7 @@ function CourseBreadcrumbJsonLd({ courseId, title }: { courseId: string; title: 
       { '@type': 'ListItem', position: 3, name: title, item: `${BASE}/learn/${courseId}` },
     ],
   }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  return <SafeJsonLdScript data={jsonLd} />
 }
 
 export default async function CoursePage({ params }: PageProps) {

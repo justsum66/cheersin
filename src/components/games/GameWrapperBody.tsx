@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flag } from 'lucide-react'
 import Link from 'next/link'
@@ -84,6 +85,23 @@ export default function GameWrapperBody({
   onCountdownComplete,
   reducedMotion = false,
 }: GameWrapperBodyProps) {
+  /** A11Y-006：檢舉 / 暫停 / 試玩結束 Modal Esc 關閉 */
+  useEffect(() => {
+    if (!showReportModal && !isPaused && !showTrialEndModal) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (showReportModal) {
+        setShowReportModal(false)
+        setReportSubmitted(false)
+        setReportType('其他')
+        setReportDesc('')
+      } else if (isPaused) togglePause()
+      else if (showTrialEndModal) setShowTrialEndModal(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showReportModal, isPaused, showTrialEndModal, setShowReportModal, setReportSubmitted, setReportType, setReportDesc, togglePause, setShowTrialEndModal])
+
   return (
     <>
       {showCountdown && onCountdownComplete && (

@@ -23,6 +23,7 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import FeatureIcon from '@/components/ui/FeatureIcon'
+import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import {
   PRICING_PLANS_DISPLAY,
@@ -57,6 +58,10 @@ export default function PricingPage() {
   const [testimonialIndex, setTestimonialIndex] = useState(0)
   const [promoEndMs, setPromoEndMs] = useState<number>(0)
   const [promoRemaining, setPromoRemaining] = useState<number | null>(null)
+  /** R2-182：首次造訪定價頁顯示優惠彈窗（localStorage 僅顯示一次） */
+  const [showFirstVisitModal, setShowFirstVisitModal] = useState(false)
+  /** R2-203：ROI 計算器 — 每月聚會次數，估算相比實體桌遊節省 */
+  const [partyCountPerMonth, setPartyCountPerMonth] = useState<number>(2)
 
   /** R2-074：用戶見證輪播 — 每 6 秒自動切換，平滑過渡 */
   useEffect(() => {
@@ -69,6 +74,20 @@ export default function PricingPage() {
   useEffect(() => {
     setPromoEndMs(getPromoEndMs())
   }, [])
+
+  /** R2-182：首次造訪定價頁 — 讀取 localStorage，未見過則顯示優惠彈窗 */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const key = 'cheersin_pricing_first_visit_shown'
+    try {
+      if (!localStorage.getItem(key)) {
+        setShowFirstVisitModal(true)
+        localStorage.setItem(key, '1')
+      }
+    } catch {
+      setShowFirstVisitModal(false)
+    }
+  }, [])
   useEffect(() => {
     if (promoEndMs <= 0) return
     const tick = () => setPromoRemaining(Math.max(0, promoEndMs - Date.now()))
@@ -76,6 +95,14 @@ export default function PricingPage() {
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [promoEndMs])
+
+  /** A11Y-006：首次造訪優惠彈窗 Esc 關閉 */
+  useEffect(() => {
+    if (!showFirstVisitModal || !FIRST_MONTH_HALF_OFF) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowFirstVisitModal(false) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showFirstVisitModal])
 
   /** 年繳：買 10 送 2，總價 = 月價 × 10 */
   const yearlyTotal = (price: number) => price * YEARLY_MONTHS_PAID
@@ -104,7 +131,48 @@ export default function PricingPage() {
 
   return (
     <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile max-w-7xl mx-auto" role="main" aria-label="方案定價">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <SafeJsonLdScript data={faqJsonLd} />
+
+      {/* R2-182：首次造訪定價頁優惠彈窗 — 首月半價等，僅顯示一次；A11Y-006 Esc 關閉 */}
+      <AnimatePresence>
+        {showFirstVisitModal && FIRST_MONTH_HALF_OFF && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowFirstVisitModal(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="first-visit-modal-title"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-dark-900 border border-primary-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl shadow-primary-500/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 id="first-visit-modal-title" className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-primary-400" />
+                限時優惠
+              </h2>
+              <p className="text-white/80 text-sm mb-4">
+                首次訂閱享 <span className="text-primary-400 font-bold">首月半價</span>，方案下方即可選擇月繳或年繳。
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowFirstVisitModal(false)}
+                className="w-full min-h-[48px] rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold games-focus-ring"
+              >
+                查看方案
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* E81：限時優惠倒數與實際活動結束時間一致；R2-093 翻頁效果 */}
       {promoEndMs > 0 && promoRemaining != null && promoRemaining > 0 && (
         <div className="sticky top-0 z-50 w-full py-2.5 px-4 bg-red-700 text-white text-center text-sm font-medium shadow-lg" style={{ perspective: '200px' }}>
@@ -142,6 +210,27 @@ export default function PricingPage() {
             {t('pricing.subheading')}
           </p>
           <p className="text-white/50 text-xs mb-6" role="note">{t('pricing.disclaimer')}</p>
+
+          {/* R2-203：ROI 計算器 — 輸入每月聚會次數，顯示相比實體桌遊節省金額 */}
+          <div className="max-w-sm mx-auto mb-6 p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="節省試算">
+            <p className="text-white/70 text-sm font-medium mb-2">每月約幾次聚會？</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={partyCountPerMonth}
+                onChange={(e) => setPartyCountPerMonth(Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)))}
+                className="w-20 min-h-[44px] rounded-xl bg-white/10 border border-white/20 px-3 text-white text-center text-sm tabular-nums games-focus-ring"
+                aria-label="每月聚會次數"
+              />
+              <span className="text-white/60 text-sm">次</span>
+            </div>
+            <p className="text-white/50 text-xs mt-2">假設實體桌遊/外出每次攤提約 NT$500</p>
+            <p className="text-primary-400 font-semibold mt-1">
+              約可節省 NT${Math.max(0, 500 * partyCountPerMonth - 99).toLocaleString()}/月
+            </p>
+          </div>
 
           <div className="inline-flex p-1 rounded-2xl bg-white/5 border border-white/10 relative">
             <div

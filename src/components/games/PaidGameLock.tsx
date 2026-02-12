@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Crown, Sparkles, X } from 'lucide-react'
 import Link from 'next/link'
@@ -29,6 +29,14 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
   const requiredIndex = tierOrder.indexOf(requiredTier)
   const currentIndex = tierOrder.indexOf(tier)
   const hasAccess = currentIndex >= requiredIndex
+
+  /** A11Y-006：有 onClose 時 Esc 關閉付費牆 */
+  useEffect(() => {
+    if (hasAccess || !onClose) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [hasAccess, onClose])
 
   // 如果已有權限，不顯示鎖定
   if (hasAccess) return null

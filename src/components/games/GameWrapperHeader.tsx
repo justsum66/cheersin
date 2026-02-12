@@ -148,6 +148,21 @@ export default function GameWrapperHeader({
     passPhone.setTtsEnabled(getPassPhoneTts())
   }, [passPhone])
 
+  /** A11Y-006：離開 / 換遊戲確認框 Esc 關閉（等同取消） */
+  useEffect(() => {
+    if (!showExitConfirm && !(showSwitchConfirm && pendingSwitchGameId)) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (showExitConfirm) setShowExitConfirm(false)
+      else {
+        setShowSwitchConfirm?.(false)
+        setPendingSwitchGameId?.(null)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showExitConfirm, showSwitchConfirm, pendingSwitchGameId, setShowSwitchConfirm, setPendingSwitchGameId])
+
   const togglePassPhone = useCallback(() => {
     const next = !getPassPhoneEnabled()
     persistPassPhone(next)

@@ -1,6 +1,11 @@
 /**
  * P2-311：後端輸入清理 — 移除潛在惡意 HTML/腳本，防 XSS
  * 供 API 在寫入 DB 或回傳前清理用戶輸入
+ *
+ * SEC-006：dangerouslySetInnerHTML 政策
+ * - 僅允許 type="application/ld+json" 且內容為 JSON.stringify(結構化物件) 的用法。
+ * - 禁止將使用者輸入或 API 回傳的原始 HTML 寫入 dangerouslySetInnerHTML。
+ * - 結構化資料請使用 SafeJsonLdScript 元件或同等 pattern（僅 object → JSON.stringify）。
  */
 
 const BAD_TAGS = /<\/?(script|iframe|object|embed|form|input|button|textarea|style|link|meta|svg)[^>]*>/gi

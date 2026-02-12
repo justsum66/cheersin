@@ -246,3 +246,14 @@
 - **Phase 3**：其餘 P2 + P3。
 
 完成 Phase 1 後執行：`lint` → `tsc --noEmit` → `test:run` → `test:stress` → `build` → `test:e2e:critical` → 修正 Console 錯誤 → commit & push。
+
+---
+
+## Phase 2 續完成紀錄
+
+| 日期 | 任務 ID | 摘要 |
+|------|---------|------|
+| 2026-02-12 | I18N-004 | formatters 支援 locale 參數（formatDate/Time/DateTime/Relative/Number/Currency/Percent） |
+| 2026-02-12 | GAME-015, GAME-016 | 派對房 join API 回傳 code ROOM_FULL/INVALID_PASSWORD；messages 新增 roomFull、wrongPassword；前端依 code 顯示 i18n |
+| 2026-02-12 | SEC-006 | sanitize.ts 註明 ld+json 政策；新增 SafeJsonLdScript 並替換各處 ld+json |
+| 2026-02-12 | A11Y-006 | 定價首訪、KingsCup、GameWrapperBody、GameWrapperHeader、PunishmentWheelModal、PaidGameLock 等補齊 Esc 關閉 |
