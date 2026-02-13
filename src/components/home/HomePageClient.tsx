@@ -3,7 +3,7 @@
 import './home.css'
 import { memo, useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import { motion, useScroll, useTransform, useReducedMotion, type TargetAndTransition } from 'framer-motion'
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
 import { slideUp, fadeIn, staggerContainer } from '@/lib/animations'
@@ -20,6 +20,7 @@ import {
   Send,
   ChevronDown,
   Quote,
+  Smartphone,
 } from 'lucide-react'
 
 /** Code splitting：首屏外組件延後載入，縮小首頁 bundle */
@@ -27,6 +28,11 @@ const ResubscribeBanner = dynamic(() => import('@/components/ResubscribeBanner')
 const SpringDrag = dynamic(
   () => import('@/components/ui/SpringDrag').then((m) => ({ default: m.SpringDrag })),
   { ssr: false, loading: () => null }
+)
+/** R2-105：特色遊戲 3D 輪播 — lazy load 降低首頁 bundle */
+const HomeGamesCarousel3D = dynamic(
+  () => import('./HomeGamesCarousel3D').then((m) => ({ default: m.HomeGamesCarousel3D })),
+  { ssr: false, loading: () => <div className="py-10 min-h-[200px]" aria-hidden /> }
 )
 
 /** 任務 30 / HOME_30：多語預留；T018 P2：品牌感年輕、適合社交 — 用語一致「派對」「輕鬆」「一起」 */
@@ -63,6 +69,7 @@ import { HERO_SUBTITLE_VARIANTS, HERO_ANIMATION_DELAYS, HOME_TRUST_COPY, HOME_AV
 import { COPY_CTA_IMMEDIATE_QUIZ } from '@/config/copy.config'
 import toast from 'react-hot-toast'
 import { CountUp } from '@/components/ui/CountUp'
+import { HomePartnerMarquee } from '@/components/home/HomePartnerMarquee'
 
 interface HomePageClientProps {
   testimonials: ReactNode
@@ -376,6 +383,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             {BENTO_CARDS.map((card, i) => (
               <BentoCard
                 key={card.id}
+                cardId={card.id}
                 href={card.id === 'quiz' ? '/quiz' : card.id === 'games' ? '/games' : card.id === 'script-murder' ? '/script-murder' : card.id === 'assistant' ? '/assistant' : '/learn'}
                 icon={card.id === 'quiz' ? Sparkles : card.id === 'games' ? Gamepad2 : card.id === 'script-murder' ? BookOpen : card.id === 'assistant' ? MessageCircle : GraduationCap}
                 title={card.title}
@@ -389,24 +397,39 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         </div>
       </section>
 
+      {/* R2-105：特色遊戲 3D 輪播 — Bento 之後、品牌故事之前 */}
+      <HomeGamesCarousel3D />
+
       {/* R2-117：品牌故事區 — InView 左右交錯入場 */}
       <section className="py-10 md:py-14 border-t border-white/10 bg-white/[0.02]" aria-labelledby="home-story-heading">
         <h2 id="home-story-heading" className="sr-only">關於 Cheersin</h2>
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <InViewAnimate delay={0} y={24} amount={0.2} className="md:pr-4" reducedMotion={!!reducedMotion}>
+            <motion.div
+              className="md:pr-4"
+              initial={reducedMotion ? { x: 0, opacity: 1 } : { x: -32, opacity: 0 }}
+              whileInView={reducedMotion ? undefined : { x: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0, ease: [0.22, 1, 0.36, 1] }}
+            >
               <span className="text-primary-500 font-mono text-xs tracking-widest uppercase">關於我們</span>
               <h3 className="home-heading-2 text-white mt-2 mb-3">重新定義品酒體驗</h3>
               <p className="text-white/70 text-sm md:text-base leading-relaxed">
                 Cheersin 從靈魂酒測出發，結合派對遊戲、品酒學堂與 AI 侍酒師，讓每個人都能輕鬆找到自己的命定酒款，在聚會中創造專屬回憶。
               </p>
-            </InViewAnimate>
-            <InViewAnimate delay={0.1} y={24} amount={0.2} className="md:pl-4" reducedMotion={!!reducedMotion}>
+            </motion.div>
+            <motion.div
+              className="md:pl-4"
+              initial={reducedMotion ? { x: 0, opacity: 1 } : { x: 32, opacity: 0 }}
+              whileInView={reducedMotion ? undefined : { x: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="rounded-2xl bg-white/5 border border-white/10 p-6 text-center">
                 <p className="text-primary-400 font-semibold text-lg mb-1">派對 · 學習 · 諮詢</p>
                 <p className="text-white/50 text-sm">一站滿足探索、玩樂與進階需求</p>
               </div>
-            </InViewAnimate>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -493,6 +516,9 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         </div>
       </section>
 
+      {/* R2-095：合作夥伴 Logo 無限滾動 */}
+      <HomePartnerMarquee />
+
       {/* 單一 Footer（方案 A）：CTA + 訂閱 + 網站地圖 + 法律與支援 + 版權，僅一處 contentinfo */}
       <footer id="footer-cta-section" className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 px-4 relative overflow-hidden safe-area-pb print:py-6" role="contentinfo" aria-label="頁尾與網站地圖">
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a2e]/80 via-transparent to-transparent pointer-events-none" aria-hidden />
@@ -505,19 +531,29 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
           >
             <h2 id="home-cta-heading" className="home-heading-2 text-white mb-2">{HOME_COPY.ctaFooterTitle}</h2>
             <p className="home-text-muted home-body mb-6 text-balance">{HOME_COPY.ctaFooterDesc}</p>
-            <Link
-              href="/quiz"
-              className="inline-block mb-6 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
-              onClick={() => {
-                try {
-                  fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }) }).catch(() => { })
-                } catch { /* noop */ }
-              }}
-            >
-              <MagneticButton as="span" strength={0.15} className="btn-primary inline-flex px-8 py-4 min-h-[56px] games-touch-target rounded-2xl font-bold text-base hover:scale-105 transition-transform duration-300 cursor-pointer items-center justify-center gap-2 games-focus-ring">
-                <Sparkles className="w-5 h-5" /> {HOME_COPY.ctaFooterButton}
-              </MagneticButton>
-            </Link>
+            <div className="flex flex-col items-center gap-4 mb-6">
+              <Link
+                href="/quiz"
+                className="inline-block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
+                onClick={() => {
+                  try {
+                    fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }) }).catch(() => { })
+                  } catch { /* noop */ }
+                }}
+              >
+                <MagneticButton as="span" strength={0.15} className="btn-primary inline-flex px-8 py-4 min-h-[56px] games-touch-target rounded-2xl font-bold text-base hover:scale-105 transition-transform duration-300 cursor-pointer items-center justify-center gap-2 games-focus-ring">
+                  <Sparkles className="w-5 h-5" /> {HOME_COPY.ctaFooterButton}
+                </MagneticButton>
+              </Link>
+              <motion.div
+                className="opacity-70"
+                animate={reducedMotion ? undefined : { y: [0, -6, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                aria-hidden
+              >
+                <Smartphone className="w-10 h-10 text-white/70" />
+              </motion.div>
+            </div>
             <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">{FOOTER_DRINK_NOTE}</p>
           </motion.div>
           <form
@@ -549,11 +585,11 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               </label>
             </div>
           </form>
-          <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
-            {/* R2-086：社群圖標 hover 品牌色背景擴散 */}
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
-            <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
+          <div className="group flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
+            {/* R2-086：社群圖標 group-hover 品牌色擴散（ring 擴散 + scale） */}
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+            <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
           </div>
           <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
 
@@ -621,8 +657,18 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
   )
 }
 
+/** R2-080：各區塊圖標獨特入場動畫 */
+const BENTO_ICON_ANIMATIONS: Record<string, { initial: TargetAndTransition; animate: TargetAndTransition }> = {
+  quiz: { initial: { scale: 0, rotate: -10 }, animate: { scale: 1, rotate: 0 } },
+  games: { initial: { y: 20, rotateX: 15 }, animate: { y: 0, rotateX: 0 } },
+  'script-murder': { initial: { opacity: 0, x: -12 }, animate: { opacity: 1, x: 0 } },
+  assistant: { initial: { scale: 0.5, opacity: 0 }, animate: { scale: 1, opacity: 1 } },
+  learn: { initial: { y: -10, opacity: 0 }, animate: { y: 0, opacity: 1 } },
+}
+
 /** P1-048：Bento 卡片 hover 光暈追隨鼠標；任務 19：3D 傾角 */
-const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description, delay, badge, reducedMotion }: {
+const BentoCard = memo(function BentoCard({ cardId, href, icon: Icon, title, description, delay, badge, reducedMotion }: {
+  cardId: string
   href: string
   icon: LucideIcon
   title: string
@@ -633,6 +679,7 @@ const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [glow, setGlow] = useState<{ x: number; y: number } | null>(null)
+  const iconAnim = BENTO_ICON_ANIMATIONS[cardId] ?? { initial: { opacity: 0 }, animate: { opacity: 1 } }
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (reducedMotion) return
@@ -668,11 +715,17 @@ const BentoCard = memo(function BentoCard({ href, icon: Icon, title, description
               }}
             />
           )}
-          {/* R2-037：Bento 卡片 hover 時圖標旋轉 15deg、背景微亮 */}
+          {/* R2-037：Bento 卡片 hover 時圖標旋轉 15deg、背景微亮；R2-080：圖標獨特入場 */}
           <div className="flex items-start justify-between mb-2 md:mb-3 relative z-10">
-            <span className="inline-block transition-transform duration-200 group-hover:rotate-[15deg] group-hover:brightness-110">
+            <motion.span
+              className="inline-block transition-transform duration-200 group-hover:rotate-[15deg] group-hover:brightness-110"
+              initial={reducedMotion ? { opacity: 1, scale: 1 } : iconAnim.initial}
+              whileInView={reducedMotion ? undefined : iconAnim.animate}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.4, delay: delay + 0.1, ease: [0.22, 1, 0.36, 1] }}
+            >
               <FeatureIcon icon={Icon} size="md" color="primary" />
-            </span>
+            </motion.span>
             {badge && (
               <span className="home-badge">{badge}</span>
             )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { motion, useReducedMotion } from 'framer-motion'
 import { ChevronLeft, Award, Share2, Download, FileDown } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { getSommelierLevel } from '@/lib/gamification'
@@ -20,6 +21,7 @@ export default function CertificatePage() {
   const [editName, setEditName] = useState('')
   const [downloadLoading, setDownloadLoading] = useState(false)
   const certRef = useRef<HTMLDivElement>(null)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -182,7 +184,12 @@ export default function CertificatePage() {
         )}
 
         {hasAnyComplete && (
-          <div className="rounded-2xl bg-white/5 border border-primary-500/30 p-6 sm:p-8 text-center shadow-lg">
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-2xl bg-white/5 border border-primary-500/30 p-6 sm:p-8 text-center shadow-lg"
+          >
             <div ref={certRef} className="pb-6 border-b border-white/10 mb-6">
             <Award className="w-16 h-16 text-primary-400 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">恭喜完成</h2>
@@ -291,7 +298,7 @@ export default function CertificatePage() {
                 NFT 證書（即將推出）
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </main>

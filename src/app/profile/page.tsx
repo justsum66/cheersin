@@ -42,11 +42,13 @@ import PushSubscribe from '@/components/pwa/PushSubscribe'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUser } from '@/contexts/UserContext'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useSupabase } from '@/hooks/useSupabase'
 import { SUBSCRIPTION_TIERS, hasProBadge } from '@/lib/subscription'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
 import { getStreak } from '@/lib/gamification'
 import { useTranslation } from '@/contexts/I18nContext'
+import { LevelUpCelebration, STORAGE_KEY as LAST_KNOWN_LEVEL_KEY } from '@/components/profile/LevelUpCelebration'
 
 /** 211–215：學習進度 key */
 const LEARN_PROGRESS_KEY = 'cheersin_learn_progress'
@@ -150,6 +152,9 @@ export default function ProfilePage() {
     /** 任務 90：登出前確認 Dialog，避免誤觸；SM-65 focus 回觸發按鈕 */
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
     const logoutTriggerRef = useRef<HTMLButtonElement>(null)
+    /** R2-054：等級提升慶祝 overlay */
+    const [showLevelUpCelebration, setShowLevelUpCelebration] = useState<number | null>(null)
+    const prefersReducedMotion = usePrefersReducedMotion()
 
     /** P0-025：已登入時從 Supabase profiles 取得 xp、level、display_name */
     useEffect(() => {
@@ -183,6 +188,23 @@ export default function ProfilePage() {
             })
             .then(() => setProfileLoading(false), () => setProfileLoading(false))
     }, [user?.id, supabase])
+
+    /** R2-054：等級提升偵測 — 造訪時若 level > 上次儲存值則顯示慶祝 */
+    useEffect(() => {
+        if (profileLoading || typeof window === 'undefined') return
+        const currentLevel = profileData.level
+        try {
+            const stored = localStorage.getItem(LAST_KNOWN_LEVEL_KEY)
+            if (stored === null) {
+                localStorage.setItem(LAST_KNOWN_LEVEL_KEY, String(currentLevel))
+                return
+            }
+            const lastKnown = parseInt(stored, 10)
+            if (Number.isFinite(lastKnown) && currentLevel > lastKnown) {
+                setShowLevelUpCelebration(currentLevel)
+            }
+        } catch { /* ignore */ }
+    }, [profileLoading, profileData.level])
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -313,6 +335,16 @@ export default function ProfilePage() {
 
     return (
         <main className="min-h-screen pt-0 pb-16 px-4 overflow-hidden relative safe-area-px safe-area-pb page-container-mobile" role="main" aria-label={t('profile.mainAria')}>
+            <AnimatePresence>
+                {showLevelUpCelebration != null && (
+                    <LevelUpCelebration
+                        key="level-up"
+                        level={showLevelUpCelebration}
+                        onComplete={() => setShowLevelUpCelebration(null)}
+                        prefersReducedMotion={prefersReducedMotion}
+                    />
+                )}
+            </AnimatePresence>
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-900/10 to-transparent pointer-events-none" />
 
@@ -345,11 +377,18 @@ export default function ProfilePage() {
                         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
                     >
 
-                    {/* Sidebar / Identity Card */}
-                    <div className="lg:col-span-1 space-y-6">
+                    {/* Sidebar / Identity Card — R2-109：edit 時 stagger 微展開 */}
+                    <motion.div
+                        className="lg:col-span-1 space-y-6"
+                        variants={editMode ? { visible: { transition: { staggerChildren: 0.05 } }, hidden: {} } : { visible: {}, hidden: {} }}
+                        initial="hidden"
+                        animate="visible"
+                    >
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                            initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                            animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                            transition={editMode ? undefined : { duration: 0.25 }}
                             className="glass-card p-8 flex flex-col items-center text-center relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none" />
@@ -386,9 +425,11 @@ export default function ProfilePage() {
                             <p className="text-white/40 text-sm mb-6 truncate max-w-full" title={displayEmail}>{displayEmail}</p>
 
                             <div className="w-full bg-white/5 rounded-full h-2 mb-2 overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500"
-                                    style={{ width: `${profileData.nextLevel > 0 ? Math.min(100, (profileData.xp / profileData.nextLevel) * 100) : 0}%` }}
+                                <motion.div
+                                    className="h-full bg-gradient-to-r from-primary-500 to-secondary-500"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${profileData.nextLevel > 0 ? Math.min(100, (profileData.xp / profileData.nextLevel) * 100) : 0}%` }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
                                 />
                             </div>
                             <div className="flex justify-between w-full text-xs text-white/40 mb-8">
@@ -432,19 +473,21 @@ export default function ProfilePage() {
 
                         {/* E67 設定：圖標+標籤+右箭頭、觸控 48px；E68 訂閱狀態卡；E69 登出移到底部 */}
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
+                            variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                            initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                            animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                            transition={editMode ? undefined : { delay: 0.1 }}
                             className="glass p-2 space-y-1 rounded-2xl bg-white/5 border border-white/5"
                         >
                             <NavButton icon={User} label={t('profile.navProfile')} active showArrow />
                             <NavButton icon={Settings} label={t('profile.navSettings')} showArrow />
                         </motion.div>
-                        {/* P1：訂閱區塊 — 未訂閱主 CTA「升級方案」btn-primary，已訂閱「管理訂閱」btn-secondary、邊框區分 */}
+                        {/* P1：訂閱區塊 */}
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.12 }}
+                            variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                            initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                            animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                            transition={editMode ? undefined : { delay: 0.12 }}
                             className={`rounded-2xl p-4 ${tier === 'free' ? 'bg-white/5 border border-white/10' : 'bg-white/5 border border-primary-500/30'}`}
                         >
                             <h2 className="text-sm font-semibold text-white mb-2">{t('profile.subscriptionStatus')}</h2>
@@ -466,9 +509,10 @@ export default function ProfilePage() {
                         {/* 149 Pro 專屬客服：僅 Pro 會員顯示 */}
                         {tier === 'premium' && (
                             <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.15 }}
+                                variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                                initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                                animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                                transition={editMode ? undefined : { delay: 0.15 }}
                                 className="rounded-2xl bg-primary-500/10 border border-primary-500/30 p-4"
                             >
                                 <h2 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
@@ -486,11 +530,12 @@ export default function ProfilePage() {
                                 </a>
                             </motion.div>
                         )}
-                        {/* E94 P2：回饋／NPS 預留 — 可連 Typeform/Google Form 或 mailto */}
+                        {/* E94 P2：回饋／NPS 預留 */}
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.18 }}
+                            variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                            initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                            animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                            transition={editMode ? undefined : { delay: 0.18 }}
                             className="pt-2"
                         >
                             <a href={`mailto:hello@cheersin.app?subject=${encodeURIComponent(t('profile.feedbackSubject'))}`} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors min-h-[48px] min-w-[48px] inline-flex games-focus-ring rounded">
@@ -498,11 +543,12 @@ export default function ProfilePage() {
                                 {t('profile.feedback')}
                             </a>
                         </motion.div>
-                        {/* 任務 90：登出前確認 Dialog；E69 登出：頁面底部、紅色文字警示 */}
+                        {/* 任務 90：登出前確認 Dialog；E69 登出 */}
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 }}
+                            variants={editMode ? { hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0 } } : {}}
+                            initial={editMode ? undefined : { opacity: 0, x: -20 }}
+                            animate={editMode ? undefined : { opacity: 1, x: 0 }}
+                            transition={editMode ? undefined : { delay: 0.2 }}
                             className="pt-4"
                         >
                             <button
@@ -537,7 +583,7 @@ export default function ProfilePage() {
                                 onCancel={() => setShowLogoutConfirm(false)}
                             />
                         </motion.div>
-                    </div>
+                    </motion.div>
 
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
@@ -715,17 +761,17 @@ export default function ProfilePage() {
                                 {t('profile.achievements')}
                             </h2>
                             <div className="flex overflow-x-auto gap-4 pb-2 -mx-1 scrollbar-hide" role="list" aria-label={t('profile.achievements')}>
-                                {ACHIEVEMENT_KEYS.map((a) => (
+                                {ACHIEVEMENT_KEYS.map((a, idx) => (
                                     <motion.div
                                         key={a.id}
                                         role="listitem"
-                                        className={`shrink-0 flex items-center gap-3 p-3 min-h-[48px] rounded-xl border transition-shadow duration-300 games-focus-ring ${a.unlocked ? 'bg-white/5 border-white/20 hover:shadow-lg hover:border-white/30' : 'bg-white/[0.02] border-white/5 opacity-50'}`}
+                                        className={`shrink-0 flex items-center gap-3 p-3 min-h-[48px] rounded-xl border transition-shadow duration-300 games-focus-ring ${a.unlocked ? 'bg-white/5 border-white/20 hover:shadow-lg hover:border-white/30 ring-2 ring-primary-400/50 hover:ring-primary-400/70' : 'bg-white/[0.02] border-white/5 opacity-50'}`}
                                         title={t(a.labelKey)}
                                         tabIndex={0}
-                                        initial={false}
-                                        animate={a.unlocked ? { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0)' } : {}}
+                                        initial={prefersReducedMotion ? false : { scale: 0, rotate: -8 }}
+                                        animate={{ scale: 1, rotate: 0, ...(a.unlocked ? { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0)' } : {}) }}
                                         whileHover={a.unlocked ? { scale: 1.02, boxShadow: '0 4px 20px rgba(212, 175, 55, 0.15)' } : {}}
-                                        transition={{ duration: 0.2 }}
+                                        transition={{ duration: prefersReducedMotion ? 0 : 0.35, delay: prefersReducedMotion ? 0 : idx * 0.05 }}
                                     >
                                         <a.icon className={`w-6 h-6 shrink-0 ${a.unlocked ? 'text-primary-400' : 'text-white/30'}`} aria-hidden />
                                         <span className="text-sm text-white/80 whitespace-nowrap">{t(a.labelKey)}</span>
