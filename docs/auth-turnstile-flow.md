@@ -1,33 +1,23 @@
-# Turnstile 驗證流程（SEC-008）
+# SEC-008：Turnstile 驗證流程
 
-對應 TASKS-170 SEC-008：Turnstile 驗證失敗時不建立 session，登入流程文件化且實作一致。
+## 概述
 
-## 流程概述
+Cloudflare Turnstile 用於登入、忘記密碼等流程，防止機器人濫用。**驗證失敗時不建立 session**。
 
-1. **前端**（登入頁、忘記密碼頁）：若啟用 `NEXT_PUBLIC_TURNSTILE_SITE_KEY`，使用者須先完成 Turnstile 挑戰並取得 `token`。
-2. **前端**在送出登入／重設密碼前，先呼叫 **POST /api/auth/verify-turnstile**，body：`{ token: string }`。
-3. **後端**向 Cloudflare 驗證 token，回傳 `{ success: true }` 或 `{ success: false }`（或 400/500）。
-4. **僅當 `success === true`** 時，前端才繼續執行：
-   - **登入**：呼叫 `supabase.auth.signInWithPassword()`（會建立 session）。
-   - **忘記密碼**：呼叫 `supabase.auth.resetPasswordForEmail()`。
-5. 若驗證失敗（`success: false` 或 API 錯誤），前端 **return 不繼續**，故 **不會建立 session**，也不會發送重設密碼信。
+## 流程
 
-## 實作對照
+1. **前端**：使用者完成表單後，先呼叫 Turnstile widget 取得 `token`
+2. **驗證 API**：`POST /api/auth/verify-turnstile`，body `{ token: string }`
+3. **後端**：向 Cloudflare 驗證 token，回傳 `{ success: boolean }`
+4. **前端**：**僅在 `success === true` 時**才呼叫 `signInWithOtp`、`resetPasswordForEmail` 等建立 session 的 API
+5. **驗證失敗**：`success: false` 時，前端顯示錯誤，**不呼叫任何會建立 session 的 API**
 
-| 頁面 | Turnstile 失敗時行為 |
-|------|----------------------|
-| 登入 `src/app/login/page.tsx` | `verifyData.success` 為 false 時 `return`，不呼叫 `signInWithPassword` |
-| 忘記密碼 `src/app/auth/forgot-password/page.tsx` | `verifyData.success` 為 false 時 `return`，不呼叫 `resetPasswordForEmail` |
+## 實作位置
 
-## API
+- API：`src/app/api/auth/verify-turnstile/route.ts`
+- 登入：`src/app/login/page.tsx` — 先 `verify-turnstile`，成功後才 `signInWithOtp`
+- 忘記密碼：`src/app/auth/forgot-password/page.tsx` — 同上
 
-- **POST /api/auth/verify-turnstile**  
-  - Body：`{ token: string }`（SEC-003 已用 Zod 校驗）。  
-  - 回傳：`{ success: boolean }`。  
-  - 未設定 `TURNSTILE_SECRET_KEY` 時回傳 `{ success: true }`（開發環境可跳過驗證）。
+## 環境變數
 
-## 相關檔案
-
-- 後端：`src/app/api/auth/verify-turnstile/route.ts`
-- 登入：`src/app/login/page.tsx`
-- 忘記密碼：`src/app/auth/forgot-password/page.tsx`
+- `TURNSTILE_SECRET_KEY`：Cloudflare Turnstile Secret Key（未設時 API 回傳 `success: true` 以利開發）

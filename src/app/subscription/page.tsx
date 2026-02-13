@@ -139,10 +139,10 @@ export default function SubscriptionPage() {
             <p className="text-white/50 text-sm mt-1">下次扣款日：{currentSubscription.current_period_end}</p>
           )}
           <div className="flex flex-wrap gap-2 mt-3">
-            <Link href="/pricing" className="min-h-[40px] px-4 py-2 rounded-xl bg-primary-500/20 text-primary-300 text-sm font-medium games-focus-ring">
+            <Link href="/pricing" className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500/20 text-primary-300 text-sm font-medium games-focus-ring">
               變更方案
             </Link>
-            <Link href="/subscription/cancel" className="min-h-[40px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium games-focus-ring hover:bg-white/15">
+            <Link href="/subscription/cancel" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium games-focus-ring hover:bg-white/15">
               取消訂閱
             </Link>
           </div>
@@ -157,7 +157,7 @@ export default function SubscriptionPage() {
           onChange={(e) => { setPromoCode(e.target.value.trim().toUpperCase()); setPromoValid(null); }}
           placeholder="優惠碼（選填）"
           autoComplete="off"
-          className="flex-1 min-h-[44px] rounded-xl bg-white/5 border border-white/10 px-4 text-white placeholder-white/40 text-sm"
+          className="flex-1 min-h-[48px] rounded-xl bg-white/5 border border-white/10 px-4 text-white placeholder-white/40 text-sm"
           aria-label="優惠碼"
         />
         <button
@@ -188,18 +188,18 @@ export default function SubscriptionPage() {
           disabled={!promoCode || promoChecking}
           aria-busy={promoChecking}
           aria-label={promoChecking ? '驗證優惠碼中' : '套用優惠碼'}
-          className="min-h-[44px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium disabled:opacity-50"
+          className="min-h-[48px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium disabled:opacity-50"
         >
           {promoChecking ? '驗證中…' : '套用'}
         </button>
       </div>
 
-      {/* E12/E15：訂閱流程可見服務條款與退款；促銷說明（首月半價、年繳買10送2） */}
+      {/* E12/E15 / COPY-004：訂閱流程可見服務條款與退款；促銷說明；價值說明與 FAQ 導向 */}
       <p className="text-center text-white/50 text-sm mb-6">
         首月半價、年繳買 10 送 2 等促銷詳見{' '}
-        <Link href="/terms#refund" className="text-primary-400 hover:text-primary-300 underline">服務條款</Link>
+        <Link href="/terms#refund" className="text-primary-400 hover:text-primary-300 underline">{t('footer.terms')}</Link>
         {' '}與{' '}
-        <Link href="/pricing" className="text-primary-400 hover:text-primary-300 underline">定價頁</Link>。
+        <Link href="/pricing#faq" className="text-primary-400 hover:text-primary-300 underline">{t('pricing.faq')}</Link>。
       </p>
 
       {/* Plans */}
@@ -233,7 +233,7 @@ export default function SubscriptionPage() {
                 )}
 
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                  <h2 className="text-2xl font-bold text-white mb-2">{plan.name}</h2>
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-4xl font-bold text-white">NT${plan.price}</span>
                     <span className="text-gray-400">/{plan.interval}</span>

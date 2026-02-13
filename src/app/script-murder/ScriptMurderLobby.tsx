@@ -6,6 +6,7 @@
  */
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import { BookOpen, AlertCircle, Lock, ChevronLeft } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
@@ -42,10 +43,10 @@ export function ScriptMurderLobby({
           <ChevronLeft className="w-4 h-4" /> {t('scriptMurder.backToHome')}
         </Link>
         <div className="flex items-center gap-3 text-primary-400 mb-6">
-          <BookOpen className="w-10 h-10" aria-hidden />
+          <BookOpen className="w-10 h-10 shrink-0" aria-hidden />
           <h1 className="text-2xl font-bold text-white">{t('scriptMurder.title')}</h1>
         </div>
-        <p className="text-white/70 mb-8">{t('scriptMurder.description')}</p>
+        <p className="text-white/80 text-base mb-3">{t('scriptMurder.description')}</p>
         <p className="text-white/50 text-xs mb-8" role="doc-tip">{t('scriptMurder.onboardingSteps')}</p>
         {error && (
           <motion.div
@@ -57,24 +58,29 @@ export function ScriptMurderLobby({
             <span className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /> {error}
             </span>
-            {onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="sm:ml-auto min-h-[44px] px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 font-medium games-focus-ring"
-              >
-                {t('gamesError.retry')}
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="min-h-[48px] px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 font-medium games-focus-ring"
+                >
+                  {t('gamesError.retry')}
+                </button>
+              )}
+              <Link href="/" className="min-h-[48px] px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white/80 font-medium games-focus-ring inline-flex items-center">
+                {t('scriptMurder.backToHome')}
+              </Link>
+            </div>
           </motion.div>
         )}
         {loadingScripts ? (
           <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label={t('scriptMurder.loadingScriptsAria')}>
-            {[1, 2, 3].map((i) => (
+            {Array.from({ length: 6 }, (_, i) => (
               <SkeletonCard key={i} className="min-h-[120px]" />
             ))}
           </div>
-        ) : scripts.length === 0 ? (
+        ) : scripts.length === 0 && !error ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -83,12 +89,26 @@ export function ScriptMurderLobby({
           >
             <BookOpen className="w-14 h-14 text-white/20 mx-auto mb-4" aria-hidden />
             <p className="text-white/50 mb-4">{t('scriptMurder.noScripts')}</p>
-            <Link href="/games" className="text-primary-400 hover:text-primary-300 text-sm">
-              {t('scriptMurder.goToPartyGames')}
-            </Link>
+            <p className="text-white/40 text-xs mb-4">{t('scriptMurder.noScriptsHint')}</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500/80 hover:bg-primary-500 text-white font-medium games-focus-ring"
+                  aria-label={t('scriptMurder.reloadScripts')}
+                >
+                  {t('scriptMurder.reloadScripts')}
+                </button>
+              )}
+              <Link href="/games" className="text-primary-400 hover:text-primary-300 text-sm min-h-[48px] inline-flex items-center">
+                {t('scriptMurder.goToPartyGames')}
+              </Link>
+            </div>
           </motion.div>
-        ) : (
+        ) : scripts.length > 0 ? (
           <InViewAnimate y={30} amount={0.15}>
+            {/* SM-50 TODO: 若劇本數 >20 可考慮虛擬捲動或分頁以優化效能 */}
             <ul className="grid gap-4 sm:grid-cols-2" role="list">
               {scripts.map((s, idx) => {
                 const isLocked = idx >= freeScriptLimit
@@ -99,7 +119,7 @@ export function ScriptMurderLobby({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.08, duration: 0.3 }}
                       whileHover={!isLocked ? { scale: 1.02 } : undefined}
-                      className={`relative p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-h-[120px] ${isLocked ? 'bg-white/[0.02] border-white/5 opacity-80' : 'bg-white/5 border-white/10'}`}
+                      className={`relative p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-h-[120px] ${isLocked ? 'bg-white/[0.02] border-white/5 opacity-80' : 'bg-white/5 border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-black/20'}`}
                     >
                       {isLocked && (
                         <div
@@ -117,6 +137,13 @@ export function ScriptMurderLobby({
                             .replace('{{max}}', String(s.maxPlayers))
                             .replace('{{minDur}}', String(s.durationMin ?? 0))}
                         </p>
+                        {typeof s.chapterCount === 'number' && typeof s.roleCount === 'number' && (
+                          <p className="text-white/40 text-xs mt-0.5">
+                            {t('scriptMurder.chaptersAndRoles')
+                              ?.replace('{{chapters}}', String(s.chapterCount))
+                              ?.replace('{{roles}}', String(s.roleCount)) ?? `${s.chapterCount} 章 · ${s.roleCount} 角色`}
+                          </p>
+                        )}
                         {s.is18Plus && (
                           <span className="inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-300">
                             18+
@@ -126,6 +153,7 @@ export function ScriptMurderLobby({
                       {isLocked ? (
                         <Link
                           href="/pricing"
+                          onClick={() => toast(t('scriptMurder.upgradeUnlock'), { icon: '🔒', duration: 2500 })}
                           className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500/80 hover:bg-primary-500 text-white font-medium games-focus-ring shrink-0 inline-flex items-center justify-center gap-2"
                           aria-label={t('scriptMurder.upgradeUnlockAria')}
                         >
@@ -150,16 +178,19 @@ export function ScriptMurderLobby({
               })}
             </ul>
           </InViewAnimate>
-        )}
-        {scriptRooms.length > 0 && (
-          <div className="mt-8">
+        ) : null}
+        {(scriptRooms.length > 0 || (scripts.length > 0 && !loadingScripts)) && (
+          <div className="mt-8" role="region" aria-label={t('scriptMurder.existingRooms')}>
             <h2 className="text-lg font-semibold text-white mb-3">{t('scriptMurder.existingRooms')}</h2>
-            <ul className="space-y-2">
+            {scriptRooms.length === 0 ? (
+              <p className="text-white/50 text-sm py-4">{t('scriptMurder.noExistingRooms')}</p>
+            ) : (
+            <ul className="space-y-2" role="list">
               {scriptRooms.map((r) => (
                 <li key={r.slug}>
                   <Link
                     href={`/script-murder?room=${encodeURIComponent(r.slug)}`}
-                    className="block p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
+                    className="block p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/20"
                   >
                     <span className="font-medium">{r.scriptTitle ?? t('scriptMurder.roomFallbackTitle')}</span>
                     <span className="text-white/50 text-sm ml-2">
@@ -167,10 +198,12 @@ export function ScriptMurderLobby({
                         .replace('{{current}}', String(r.playerCount))
                         .replace('{{max}}', String(r.maxPlayers))}
                     </span>
+                    <span className="text-primary-400 text-sm ml-2">· {t('scriptMurder.joinButton')}</span>
                   </Link>
                 </li>
               ))}
             </ul>
+            )}
           </div>
         )}
         <div className="mt-8 flex gap-4">

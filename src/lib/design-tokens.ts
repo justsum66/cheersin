@@ -152,6 +152,9 @@ export const iconSize = {
   'icon-xl': '32px',
 } as const
 
+/** A11Y-012 / UX-003：觸控目標至少 48px，符合 WCAG 2.5.5 */
+export const touchTargetPx = 48
+
 /** 陰影：使用 primary/secondary 數值 139,0,0 與 212,175,55 */
 export const boxShadow = {
   'card-sm': '0 1px 3px 0 rgb(0 0 0 / 0.08)',

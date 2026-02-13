@@ -1,10 +1,12 @@
 'use client'
 
+import './home.css'
 import { memo, useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
+import { slideUp, fadeIn, staggerContainer } from '@/lib/animations'
 import type { LucideIcon } from 'lucide-react'
 import {
   Sparkles,
@@ -88,7 +90,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'hero_view', value: 1, id: `variant_${heroVariant}` }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
   }, [heroVariant])
   useEffect(() => {
@@ -230,15 +232,16 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
           <motion.div
             style={{ y: buttonsY }}
             className={`relative rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2 ${!reducedMotion ? 'hero-cta-bg-gradient' : ''}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.cta }}
+
+            variants={slideUp}
+            initial="hidden"
+            animate="visible"
           >
             {/* EXPERT_60 P0：單一主 CTA；次 CTA 改為文字連結；點擊送 analytics variant；AUDIT #38 主 CTA 為 Link 包內層 div 以套 btn-primary，語意為導向 /quiz 之 CTA */}
             {/* Phase 1 A2.3 + B2.1: 套用 text-balance 與 btn-press-scale */}
             <Link
               href="/quiz"
-              aria-label={t('common.cta')}
+              aria-label={t(heroVariant === 0 ? 'common.ctaVariant0' : 'common.ctaVariant1')}
               aria-describedby="hero-cta-hint"
               className="w-full sm:w-auto order-2 sm:order-1 rounded-2xl outline-none games-focus-ring transition-[box-shadow,transform] duration-200 hover:shadow-hero-glow"
               onClick={() => {
@@ -247,13 +250,13 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: 'hero_cta_quiz', value: 1, id: `variant_${heroVariant}` }),
-                  }).catch(() => {})
+                  }).catch(() => { })
                 } catch { /* noop */ }
               }}
             >
               <div className={`btn-primary btn-press-scale hero-cta-primary flex items-center justify-center gap-3 text-base md:text-lg group cursor-pointer games-touch-target ${!reducedMotion ? 'hero-cta-glow-pulse' : ''}`}>
                 <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" />
-                <span>{t('common.cta')}</span>
+                <span>{t(heroVariant === 0 ? 'common.ctaVariant0' : 'common.ctaVariant1')}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
               </div>
             </Link>
@@ -261,7 +264,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             <div className="order-1 sm:order-2 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link
                 href="/games"
-                className="text-white/60 hover:text-white/80 text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
+                className="text-white/60 hover:text-white/80 text-sm font-medium underline underline-offset-2 transition-colors min-h-[48px] flex items-center gap-1.5"
                 aria-label={t('nav.games')}
               >
                 <Gamepad2 className="w-4 h-4 shrink-0" aria-hidden />
@@ -269,7 +272,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               </Link>
               <Link
                 href="/assistant"
-                className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
+                className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[48px] flex items-center gap-1.5"
                 aria-label={t('nav.assistant')}
               >
                 <MessageCircle className="w-4 h-4 shrink-0" aria-hidden />
@@ -277,7 +280,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               </Link>
               <Link
                 href="/learn"
-                className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[44px] flex items-center gap-1.5"
+                className="text-white/70 hover:text-white text-sm font-medium underline underline-offset-2 transition-colors min-h-[48px] flex items-center gap-1.5"
                 aria-label={t('nav.learn')}
               >
                 <GraduationCap className="w-4 h-4 shrink-0" aria-hidden />
@@ -507,7 +510,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               className="inline-block mb-6 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
               onClick={() => {
                 try {
-                  fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }) }).catch(() => {})
+                  fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'footer_cta_quiz', value: 1 }) }).catch(() => { })
                 } catch { /* noop */ }
               }}
             >
@@ -517,42 +520,42 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             </Link>
             <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">{FOOTER_DRINK_NOTE}</p>
           </motion.div>
-            <form
-              id="footer-subscribe-form"
-              className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-6 home-footer-form opacity-90 text-sm"
-              aria-label="Email 訂閱表單"
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (subscribeSubmitting) return
-                setSubscribeSubmitting(true)
-                toast.success('已收到！我們會寄送新品與優惠給您。', { duration: 4000 })
-                setTimeout(() => setSubscribeSubmitting(false), 2000)
-              }}
-            >
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input type="email" placeholder="留下 Email，接收新品與優惠" className="input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]" aria-label="Email 訂閱" disabled={subscribeSubmitting} required />
-                <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
-                  <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
-                </button>
-              </div>
-              <div className="flex flex-col gap-2 text-left">
-                <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
-                  <input type="checkbox" name="consent_news" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="同意接收新品與優惠" required />
-                  同意接收新品與優惠
-                </label>
-                <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
-                  <input type="checkbox" name="consent_privacy" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="已讀隱私政策" required />
-                  已讀<Link href="/privacy" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">隱私政策</Link>
-                </label>
-              </div>
-            </form>
-            <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
-              {/* R2-086：社群圖標 hover 品牌色背景擴散 */}
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
-              <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
+          <form
+            id="footer-subscribe-form"
+            className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-6 home-footer-form opacity-90 text-sm"
+            aria-label="Email 訂閱表單"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (subscribeSubmitting) return
+              setSubscribeSubmitting(true)
+              toast.success('已收到！我們會寄送新品與優惠給您。', { duration: 4000 })
+              setTimeout(() => setSubscribeSubmitting(false), 2000)
+            }}
+          >
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input type="email" placeholder="留下 Email，接收新品與優惠" className="input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]" aria-label="Email 訂閱" disabled={subscribeSubmitting} required />
+              <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
+                <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
+              </button>
             </div>
-            <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
+            <div className="flex flex-col gap-2 text-left">
+              <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
+                <input type="checkbox" name="consent_news" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="同意接收新品與優惠" required />
+                同意接收新品與優惠
+              </label>
+              <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
+                <input type="checkbox" name="consent_privacy" className="rounded border-white/30 text-primary-500 focus:ring-primary-400" aria-label="已讀隱私政策" required />
+                已讀<Link href="/privacy" className="text-primary-400 hover:text-primary-300 underline underline-offset-1">隱私政策</Link>
+              </label>
+            </div>
+          </form>
+          <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
+            {/* R2-086：社群圖標 hover 品牌色背景擴散 */}
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-primary-500/30 text-white/70 hover:text-white transition-all duration-200 hover:scale-110" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+            <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
+          </div>
+          <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
 
           {/* 網站地圖（原 Footer 內容）：產品／體驗／公司／語系 */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">

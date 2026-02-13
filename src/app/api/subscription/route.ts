@@ -11,7 +11,7 @@ import { logApiError } from '@/lib/api-error-log';
 import { getCurrentUser } from '@/lib/get-current-user';
 import { createServerClient } from '@/lib/supabase-server';
 import { errorResponse, serverErrorResponse } from '@/lib/api-response';
-import { isRateLimited, getClientIp } from '@/lib/rate-limit';
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit';
 import { SubscriptionPostBodySchema, MAX_SUBSCRIPTION_ID_LENGTH } from '@/lib/api-body-schemas';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   const startMs = Date.now();
   const requestId = request.headers.get('x-request-id') ?? undefined;
   const ip = getClientIp(request.headers);
-  if (isRateLimited(ip, 'subscription')) {
+  if (await isRateLimitedAsync(ip, 'subscription')) {
     return NextResponse.json(
       { success: false, error: { code: 'RATE_LIMITED', message: '操作過於頻繁，請稍後再試' } },
       { status: 429, headers: { 'Retry-After': '60' } }
@@ -310,5 +310,9 @@ export async function GET() {
       }
     }
   }
-  return NextResponse.json({ plans, ...(subscription ? { subscription } : {}) })
+  /** PERF-008：方案列表可短快取；用戶訂閱資料需即時故整體 60s */
+  return NextResponse.json(
+    { plans, ...(subscription ? { subscription } : {}) },
+    { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
+  )
 }

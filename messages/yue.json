@@ -9,6 +9,8 @@
     "appName": "Cheersin",
     "tagline": "探索你嘅靈魂之酒",
     "cta": "開始測驗",
+    "ctaVariant0": "開始測驗",
+    "ctaVariant1": "30秒搵到你嘅命定酒款",
     "heroTitle1": "探索你嘅",
     "heroTitle2": "靈魂之酒",
     "loading": "載入中…",
@@ -172,6 +174,7 @@
     "comingSoon": "即將推出",
     "missingCode": "登入連結不完整，請重新寄送",
     "configError": "服務未設定完成，請稍後再試",
+    "benefitsHint": "登入後可同步學習進度、儲存收藏與訂閱方案。",
     "trustPrivacy": "我們重視您的隱私，登入資料僅用於提供服務。"
   },
   "quiz": {
@@ -277,6 +280,7 @@
   },
   "notFound": {
     "title": "搵唔到此頁面",
+    "hint": "唔使擔心，試下以下連結返到正軌",
     "back": "返回首頁",
     "popularLinks": "熱門連結"
   },
@@ -299,6 +303,8 @@
     "UNAUTHORIZED": "請重新登入。",
     "NOT_FOUND": "找不到。",
     "ROOM_NOT_FOUND": "房間不存在或已結束。",
+    "ROOM_FULL": "房間已滿，請稍後再試。",
+    "INVALID_PASSWORD": "房間密碼錯誤，請確認後再試。",
     "TURNSTILE_FAILED": "驗證失敗，請再試一次。"
   },
   "subscription": {
@@ -337,6 +343,9 @@
   "profile": {
     "stats": "數據",
     "history": "紀錄",
+    "historyEmpty": "尚無遊戲紀錄",
+    "historyEmptyDesc": "完成派對遊戲後，紀錄會顯示於此",
+    "historyEmptyAction": "去玩一局",
     "loginToView": "登入以查看個人資料",
     "loginToViewDesc": "登入後可查看等級、成就、願望酒單與學習進度。",
     "goLogin": "前往登入",
@@ -551,6 +560,8 @@
   "gamesRoom": {
     "create": "建立房間",
     "join": "加入房間",
+    "joinSuccess": "加入成功",
+    "roomCreated": "房間已建立",
     "roomCreatedCopy": "新房間已建立，邀請連結已複製",
     "copyFailed": "複製失敗，請手動選取連結複製",
     "roomExpired": "房間已過期",
@@ -620,7 +631,7 @@
     "description": "選擇劇本，建立房間，4–8 人秘密角色、投票、懲罰。",
     "createRoom": "建立房間",
     "creating": "建立中…",
-    "noScripts": "尚無劇本，敬請期待。",
+    "noScripts": "尚無劇本，敬請期待。", "noScriptsHint": "若為新環境，首次載入會自動建立 8 支劇本，請按「重新載入」再試。", "reloadScripts": "重新載入",
     "upgradeUnlock": "升級解鎖",
     "copyInvite": "複製邀請連結",
     "copied": "已複製",
@@ -661,14 +672,16 @@
     "joining": "加入中…",
     "backToHome": "返回首頁",
     "goToPartyGames": "先去派對遊樂場",
-    "playersAndDuration": "{{min}}–{{max}} 人 · 約 {{minDur}} 分鐘",
+    "playersAndDuration": "{{min}}–{{max}} 人 · 約 {{minDur}} 分鐘", "chaptersAndRoles": "{{chapters}} 章 · {{roles}} 角色",
     "roomFallbackTitle": "劇本殺房",
     "playersCount": "{{current}}/{{max}} 人",
     "errorLoadScripts": "無法載入劇本列表",
+    "connectionError": "無法連線至資料庫，請檢查網路或稍後再試",
     "loading": "載入中…",
     "roomFull": "房間已滿",
     "noPlayersYet": "尚無玩家",
     "roomExpired": "已過期",
+    "roomValidUntil": "房間有效至",
     "createRoomAria": "建立 {{title}} 房間",
     "upgradeUnlockAria": "升級解鎖全部劇本",
     "loadingScriptsAria": "載入劇本中",

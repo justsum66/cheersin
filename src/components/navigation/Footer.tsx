@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { useTranslation } from '@/contexts/I18nContext'
 import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher'
 
+/** A11Y-012 / UX-003：觸控目標 ≥48px */
 const LINK_CLASS =
-  'text-white/60 hover:text-white text-sm transition-colors min-h-[44px] min-w-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded'
+  'text-white/60 hover:text-white text-sm transition-colors min-h-[48px] min-w-[48px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded'
 
 export function Footer() {
   const year = new Date().getFullYear()

@@ -359,6 +359,7 @@ function GamesPageContent() {
     }
     const result = await joinRoom(name, roomJoinPassword || undefined, false)
     if (result.ok) {
+      toast.success(t('gamesRoom.joinSuccess'), { duration: 2000 })
       try {
         const raw = localStorage.getItem(ROOM_JOINED_KEY)
         const obj = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {}
@@ -387,6 +388,7 @@ function GamesPageContent() {
     }
     const result = await joinRoom(name, roomJoinPassword || undefined, true)
     if (result.ok) {
+      toast.success(t('gamesRoom.joinSuccess'), { duration: 2000 })
       try {
         const raw = localStorage.getItem(ROOM_JOINED_KEY)
         const obj = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {}
@@ -414,10 +416,11 @@ function GamesPageContent() {
       setCreateRoomError(mapCreateRoomError(result.error))
       return
     }
+    toast.success(t('gamesRoom.roomCreated'), { duration: 2000 })
     if (typeof document !== 'undefined') inviteSavedFocusRef.current = document.activeElement as HTMLElement | null
     setCreateInvite({ slug: result.slug, inviteUrl: result.inviteUrl })
     if (typeof window !== 'undefined') sessionStorage.setItem(ROOM_HOST_KEY, result.slug)
-  }, [createRoom, roomCreatePassword, roomCreateAnonymous, mapCreateRoomError])
+  }, [createRoom, roomCreatePassword, roomCreateAnonymous, mapCreateRoomError, t])
 
   /** T057 P1-144：再玩一局（新房間）— 建立新房間、自動加入、複製邀請連結、導向；沿用當前匿名設定 */
   const handlePlayAgain = useCallback(async () => {
@@ -664,14 +667,14 @@ function GamesPageContent() {
                         }
                         setShowTutorial(false)
                       }}
-                      className="min-h-[44px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
+                      className="min-h-[48px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
                     >
                       知道了
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowTutorial(false)}
-                      className="min-h-[44px] px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
+                      className="min-h-[48px] px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
                       aria-label="跳過教學"
                     >
                       跳過
@@ -775,6 +778,8 @@ function GamesPageContent() {
                           required
                           aria-required="true"
                           aria-label={t('games.roomJoinNameLabel')}
+                          aria-invalid={!!roomJoinError}
+                          aria-describedby={roomJoinError ? 'room-join-error' : undefined}
                           className="flex-1 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30"
                         />
                         <button
@@ -815,7 +820,9 @@ function GamesPageContent() {
                           placeholder="房間密碼（若房主有設定）"
                           maxLength={4}
                           aria-label="房間密碼（若房主有設定）"
-                          className="min-h-[44px] w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                          aria-invalid={!!roomJoinError}
+                          aria-describedby={roomJoinError ? 'room-join-error' : undefined}
+                          className="min-h-[48px] w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
                         />
                         <button
                           type="button"
@@ -827,7 +834,7 @@ function GamesPageContent() {
                         </button>
                       </div>
                     </form>
-                    {roomJoinError && <p className="text-red-400 text-sm mt-2">{roomJoinError}</p>}
+                    {roomJoinError && <p id="room-join-error" className="text-red-400 text-sm mt-2" role="alert" aria-live="assertive">{roomJoinError}</p>}
                   </div>
                 )}
 
@@ -886,7 +893,7 @@ function GamesPageContent() {
                         placeholder="4 位數密碼（選填）"
                         maxLength={4}
                         aria-label="建立房間密碼（選填）"
-                        className="w-full min-h-[44px] bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                        className="w-full min-h-[48px] bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
                       />
                       <button
                         type="button"
@@ -902,7 +909,7 @@ function GamesPageContent() {
                         {/^(\d)\1{3}$/.test(roomCreatePassword) ? '強度：弱（建議避免同一數字）' : /^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(roomCreatePassword) ? '強度：中（連續數字）' : '強度：佳'}
                       </p>
                     )}
-                    <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer min-h-[44px]">
+                    <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer min-h-[48px]">
                       <input
                         type="checkbox"
                         checked={roomCreateAnonymous}
@@ -946,7 +953,7 @@ function GamesPageContent() {
                           router.replace('/games')
                         }
                       }}
-                      className="min-h-[44px] px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm"
+                      className="min-h-[48px] px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm"
                       aria-label="離開房間（會清除本機加入狀態）"
                     >
                       離開房間
@@ -994,14 +1001,14 @@ function GamesPageContent() {
                     <button
                       type="button"
                       onClick={() => { clearLastSession(); setLastSession(null); setShowRestoreBanner(false); }}
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
+                      className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
                     >
                       不用
                     </button>
                     <button
                       type="button"
                       onClick={() => { savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0; setActiveGame(lastSession.gameId); setShowRestoreBanner(false); }}
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium"
+                      className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium"
                     >
                       恢復
                     </button>
@@ -1014,7 +1021,7 @@ function GamesPageContent() {
                 <div className="mb-4 flex justify-center">
                   <Link
                     href="/pricing"
-                    className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring"
+                    className="inline-flex items-center gap-2 min-h-[48px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring"
                     aria-label="一鍵解鎖全部 Pro 遊戲"
                   >
                     <Crown className="w-4 h-4" aria-hidden />
@@ -1031,14 +1038,14 @@ function GamesPageContent() {
                   <div className="flex items-center gap-2">
                     <Link
                       href="/pricing"
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring"
+                      className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring"
                     >
                       升級
                     </Link>
                     <button
                       type="button"
                       onClick={() => setUpgradePromptDismissed(true)}
-                      className="min-h-[44px] px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 text-sm games-focus-ring"
+                      className="min-h-[48px] px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 text-sm games-focus-ring"
                       aria-label="關閉"
                     >
                       <X className="w-4 h-4" aria-hidden />
@@ -1369,7 +1376,7 @@ function GamesPageContent() {
                           </span>
                           <button
                             onClick={() => removePlayer(i)}
-                            className="p-1 hover:bg-red-500/20 rounded text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                            className="p-1 hover:bg-red-500/20 rounded text-red-400 min-w-[48px] min-h-[48px] flex items-center justify-center"
                             aria-label={`移除 ${player}`}
                           >
                             <X className="w-4 h-4" />
@@ -1440,7 +1447,7 @@ function GamesPageContent() {
                   } catch { /* noop */ }
                   setGameIdToRate(null)
                 }}
-                className="w-full min-h-[44px] rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
+                className="w-full min-h-[48px] rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
               >
                 略過
               </button>
@@ -1506,7 +1513,7 @@ function GamesPageContent() {
                       readOnly
                       value={createInvite.inviteUrl}
                       aria-label="邀請連結"
-                      className="flex-1 min-w-0 min-h-[44px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm"
+                      className="flex-1 min-w-0 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm"
                     />
                     <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
                     <button

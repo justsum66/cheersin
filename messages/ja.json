@@ -9,6 +9,8 @@
     "appName": "Cheersin",
     "tagline": "あなたのソウルワインを見つける",
     "cta": "診断を始める",
+    "ctaVariant0": "診断を始める",
+    "ctaVariant1": "30秒で命のワインを発見",
     "heroTitle1": "あなたの",
     "heroTitle2": "ソウルワインを見つける",
     "loading": "読み込み中…",
@@ -172,6 +174,7 @@
     "comingSoon": "即將推出",
     "missingCode": "登入連結不完整，請重新寄送",
     "configError": "服務未設定完成，請稍後再試",
+    "benefitsHint": "ログイン後、学習進度・お気に入り・サブスクを同期できます。",
     "trustPrivacy": "我們重視您的隱私，登入資料僅用於提供服務。"
   },
   "quiz": {
@@ -277,6 +280,7 @@
   },
   "notFound": {
     "title": "ページが見つかりません",
+    "hint": "ご心配なく。以下のリンクからお戻りください",
     "back": "ホームに戻る",
     "popularLinks": "人気リンク"
   },
@@ -299,6 +303,8 @@
     "UNAUTHORIZED": "再ログインしてください。",
     "NOT_FOUND": "見つかりません。",
     "ROOM_NOT_FOUND": "ルームが存在しないか終了しました。",
+    "ROOM_FULL": "満室です。しばらくしてからお試しください。",
+    "INVALID_PASSWORD": "ルームパスワードが違います。確認して再試行してください。",
     "TURNSTILE_FAILED": "認証に失敗しました。再試行してください。"
   },
   "subscription": {
@@ -337,6 +343,9 @@
   "profile": {
     "stats": "データ",
     "history": "履歴",
+    "historyEmpty": "ゲーム履歴はまだありません",
+    "historyEmptyDesc": "完了したゲームがここに表示されます",
+    "historyEmptyAction": "ゲームをする",
     "loginToView": "登入以查看個人資料",
     "loginToViewDesc": "登入後可查看等級、成就、願望酒單與學習進度。",
     "goLogin": "前往登入",
@@ -551,6 +560,8 @@
   "gamesRoom": {
     "create": "ルームを作成",
     "join": "参加",
+    "joinSuccess": "参加しました",
+    "roomCreated": "ルームを作成しました",
     "roomCreatedCopy": "新房間已建立，邀請連結已複製",
     "copyFailed": "複製失敗，請手動選取連結複製",
     "roomExpired": "房間已過期",
@@ -620,7 +631,7 @@
     "description": "Pick a script, create a room, 4–8 players, secret roles, votes, punishments.",
     "createRoom": "Create room",
     "creating": "Creating…",
-    "noScripts": "No scripts yet.",
+    "noScripts": "No scripts yet.", "noScriptsHint": "初回読み込みで8本のシナリオを自動作成することがあります。「再読み込み」を押して再試行してください。", "reloadScripts": "再読み込み",
     "upgradeUnlock": "Upgrade to unlock",
     "copyInvite": "Copy invite",
     "copied": "Copied",
@@ -661,14 +672,16 @@
     "joining": "参加中…",
     "backToHome": "ホームに戻る",
     "goToPartyGames": "パーティーゲームへ",
-    "playersAndDuration": "{{min}}–{{max}}人 · 約{{minDur}}分",
+    "playersAndDuration": "{{min}}–{{max}}人 · 約{{minDur}}分", "chaptersAndRoles": "{{chapters}}章 · {{roles}}役",
     "roomFallbackTitle": "脚本ルーム",
     "playersCount": "{{current}}/{{max}}人",
     "errorLoadScripts": "脚本リストを読み込めません",
+    "connectionError": "データベースに接続できません。ネットワークを確認するか、後でもう一度お試しください",
     "loading": "読み込み中…",
     "roomFull": "満室です",
     "noPlayersYet": "まだ参加者はいません",
     "roomExpired": "期限切れ",
+    "roomValidUntil": "有効期限",
     "createRoomAria": "{{title}}のルームを作成",
     "upgradeUnlockAria": "アップグレードで全脚本を解除",
     "loadingScriptsAria": "脚本を読み込み中",

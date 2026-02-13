@@ -9,6 +9,8 @@
     "appName": "Cheersin",
     "tagline": "당신의 소울 와인을 찾아보세요",
     "cta": "테스트 시작",
+    "ctaVariant0": "테스트 시작",
+    "ctaVariant1": "30초에 나의 와인 찾기",
     "heroTitle1": "당신의",
     "heroTitle2": "소울 와인을 찾아보세요",
     "loading": "로딩 중…",
@@ -172,6 +174,7 @@
     "comingSoon": "即將推出",
     "missingCode": "登入連結不完整，請重新寄送",
     "configError": "服務未設定完成，請稍後再試",
+    "benefitsHint": "로그인 후 학습 진행, 즐겨찾기, 구독을 동기화할 수 있습니다.",
     "trustPrivacy": "我們重視您的隱私，登入資料僅用於提供服務。"
   },
   "quiz": {
@@ -277,6 +280,7 @@
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",
+    "hint": "걱정 마세요. 아래 링크로 돌아가 보세요",
     "back": "홈으로",
     "popularLinks": "인기 링크"
   },
@@ -299,6 +303,8 @@
     "UNAUTHORIZED": "다시 로그인해 주세요.",
     "NOT_FOUND": "찾을 수 없습니다.",
     "ROOM_NOT_FOUND": "방이 없거나 종료되었습니다.",
+    "ROOM_FULL": "방이 가득 찼습니다. 잠시 후 다시 시도해 주세요.",
+    "INVALID_PASSWORD": "방 비밀번호가 틀렸습니다. 확인 후 다시 시도해 주세요.",
     "TURNSTILE_FAILED": "인증에 실패했습니다. 다시 시도해 주세요."
   },
   "subscription": {
@@ -337,6 +343,9 @@
   "profile": {
     "stats": "통계",
     "history": "기록",
+    "historyEmpty": "게임 기록 없음",
+    "historyEmptyDesc": "완료한 게임이 여기에 표시됩니다",
+    "historyEmptyAction": "게임하기",
     "loginToView": "登入以查看個人資料",
     "loginToViewDesc": "登入後可查看等級、成就、願望酒單與學習進度。",
     "goLogin": "前往登入",
@@ -551,6 +560,8 @@
   "gamesRoom": {
     "create": "방 만들기",
     "join": "참가",
+    "joinSuccess": "참가했습니다",
+    "roomCreated": "방이 생성되었습니다",
     "roomCreatedCopy": "新房間已建立，邀請連結已複製",
     "copyFailed": "複製失敗，請手動選取連結複製",
     "roomExpired": "房間已過期",
@@ -620,7 +631,7 @@
     "description": "Pick a script, create a room, 4–8 players, secret roles, votes, punishments.",
     "createRoom": "Create room",
     "creating": "Creating…",
-    "noScripts": "No scripts yet.",
+    "noScripts": "No scripts yet.", "noScriptsHint": "첫 로드 시 8개 스크립트가 자동으로 생성될 수 있습니다. '다시 로드'를 눌러 보세요.", "reloadScripts": "다시 로드",
     "upgradeUnlock": "Upgrade to unlock",
     "copyInvite": "Copy invite",
     "copied": "Copied",
@@ -661,14 +672,16 @@
     "joining": "참가 중…",
     "backToHome": "홈으로",
     "goToPartyGames": "파티 게임으로",
-    "playersAndDuration": "{{min}}–{{max}}명 · 약 {{minDur}}분",
+    "playersAndDuration": "{{min}}–{{max}}명 · 약 {{minDur}}분", "chaptersAndRoles": "{{chapters}}챕터 · {{roles}}역할",
     "roomFallbackTitle": "스크립트 방",
     "playersCount": "{{current}}/{{max}}명",
     "errorLoadScripts": "스크립트 목록을 불러올 수 없습니다",
+    "connectionError": "데이터베이스에 연결할 수 없습니다. 네트워크를 확인하거나 나중에 다시 시도하세요",
     "loading": "로딩 중…",
     "roomFull": "방이 가득 찼습니다",
     "noPlayersYet": "아직 참가자가 없습니다",
     "roomExpired": "만료됨",
+    "roomValidUntil": "유효 기간",
     "createRoomAria": "{{title}} 방 만들기",
     "upgradeUnlockAria": "업그레이드하여 모든 스크립트 잠금 해제",
     "loadingScriptsAria": "스크립트 로딩 중",

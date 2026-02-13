@@ -1,5 +1,6 @@
 'use client'
 
+import { getDisplayErrorMessage } from '@/lib/api-error-i18n'
 import { getErrorMessage } from '@/lib/api-response'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -196,7 +197,7 @@ export function useGameRoom(slug: string | null) {
         })
         clearTimeout(timeoutId)
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) return { ok: false, error: getErrorMessage(data, `HTTP ${res.status}`) }
+        if (!res.ok) return { ok: false, error: getDisplayErrorMessage(data, t, `HTTP ${res.status}`) }
         const raw = (data as { players?: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }[] }).players ?? []
         setPlayers(raw.map((p) => ({
           ...p,
