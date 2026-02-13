@@ -2,9 +2,10 @@
 
 import { createContext, useContext } from 'react'
 import { motion } from 'framer-motion'
+import { scaleIn } from '@/lib/animations'
 import { GameSessionProvider } from './GameSessionProvider'
-import { GameStateProvider } from './GameStateProvider'
-import { GameTimerProvider } from './GameTimerProvider'
+// import { GameStateProvider } from './GameStateProvider' // Removed
+// import { GameTimerProvider } from './GameTimerProvider' // Removed
 import { GameSoundProvider } from './GameSoundProvider'
 import { useGameWrapperLogic } from './useGameWrapperLogic'
 import GameWrapperHeader from './GameWrapperHeader'
@@ -18,18 +19,10 @@ export function useGameRulesContext() {
   return useContext(GameRulesContext)
 }
 
-/** R2-001：以下 context 已遷至 GameStateProvider / GameTimerProvider，此處僅 re-export 以相容既有 import */
-export {
-  useGameProgress,
-  useGameStats,
-  useGameReplay,
-  useGameSpectator,
-  useGameTrial,
-  type GameStatsSnapshot,
-  type ReplayEvent,
-  REPLAY_UI_DISPLAY_COUNT,
-} from './GameStateProvider'
-export { useGamePause } from './GameTimerProvider'
+/** R2-001：Contexts have been migrated to useGameStore. 
+ *  Removed re-exports of legacy contexts. 
+ *  Components should use useGameStore directly.
+ */
 
 /** 任務 19：遊戲快捷鍵，子元件可註冊 Space 下一題 / 1-9 選項 */
 export const GameHotkeyContext = createContext<{
@@ -52,78 +45,70 @@ export type { SwitchGameItem, GameWrapperProps } from './GameWrapperTypes'
 export default function GameWrapper(props: GameWrapperProps) {
   const logic = useGameWrapperLogic(props)
 
+  /* R2-001: Deep Refactor - Removed GameStateProvider & GameTimerProvider */
+  /* Logic now uses useGameStore directly */
+
   return (
     <GameSessionProvider players={props.players ?? []}>
       <GameRulesContext.Provider value={{ setRulesContent: logic.setRulesContent }}>
-        <GameStateProvider
-          isSpectator={props.isSpectator ?? false}
-          isGuestTrial={props.isGuestTrial ?? false}
-          trialRoundsLeft={logic.trialRoundsLeft}
-          onTrialRoundEnd={logic.onTrialRoundEnd}
-          currentGameId={logic.currentGameId ?? null}
-          gameHasStarted={logic.gameHasStarted}
-          setGameHasStarted={logic.setGameHasStarted}
-        >
-          <GameTimerProvider isPaused={logic.isPausedState} setPaused={logic.setIsPaused}>
-            <GameSoundProvider>
-              <GameReduceMotionContext.Provider value={logic.reducedMotion}>
-                <GameHotkeyContext.Provider value={{ registerSpace: logic.registerSpace, registerDigit: logic.registerDigit }}>
-                  <motion.div
-                    ref={logic.wrapperRef}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className={`relative w-full max-w-6xl mx-auto glass-card overflow-hidden flex flex-col ${logic.isFullscreen ? 'min-h-[100dvh]' : 'min-h-[min(600px,80vh)]'}`}
-                  >
-                    {logic.titleAnnouncement && (
-                      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{logic.titleAnnouncement}</div>
-                    )}
-                    <GameWrapperHeader {...logic.headerProps} />
-                    <GameWrapperBody
-                      showReportModal={logic.showReportModal}
-                      setShowReportModal={logic.setShowReportModal}
-                      reportContext={logic.reportContext}
-                      reportSubmitted={logic.reportSubmitted}
-                      setReportSubmitted={logic.setReportSubmitted}
-                      reportType={logic.reportType}
-                      reportDesc={logic.reportDesc}
-                      reportSending={logic.reportSending}
-                      setReportSending={logic.setReportSending}
-                      setReportType={logic.setReportType}
-                      setReportDesc={logic.setReportDesc}
-                      showTrialEndModal={logic.showTrialEndModal}
-                      setShowTrialEndModal={logic.setShowTrialEndModal}
-                      onExit={logic.onExit}
-                      rulesContent={logic.rulesContent}
-                      showRulesModal={logic.showRulesModal}
-                      closeRulesModal={logic.closeRulesModal}
-                      rulesModalRef={logic.rulesModalRef}
-                      isPaused={logic.isPaused}
-                      togglePause={logic.togglePause}
-                      contentScale={logic.contentScale}
-                      multiTouchActiveRef={logic.multiTouchActiveRef}
-                      multiTouchClearTimerRef={logic.multiTouchClearTimerRef}
-                      handleTouchStart={logic.handleTouchStart}
-                      handleTouchEnd={logic.handleTouchEnd}
-                      handleTouchMove={logic.handleTouchMove}
-                      handleTouchStartPinch={logic.handleTouchStartPinch}
-                      handleTouchEndPinch={logic.handleTouchEndPinch}
-                      handleTouchStartThree={logic.handleTouchStartThree}
-                      handleTouchMoveThree={logic.handleTouchMoveThree}
-                      handleTouchEndThree={logic.handleTouchEndThree}
-                      showCountdown={logic.showCountdown}
-                      onCountdownComplete={logic.onCountdownComplete}
-                      reducedMotion={logic.reducedMotion}
-                    >
-                      {logic.children}
-                    </GameWrapperBody>
-                  </motion.div>
-                  <PassPhoneMode />
-                </GameHotkeyContext.Provider>
-              </GameReduceMotionContext.Provider>
-            </GameSoundProvider>
-          </GameTimerProvider>
-        </GameStateProvider>
+        <GameSoundProvider>
+          <GameReduceMotionContext.Provider value={logic.reducedMotion}>
+            <GameHotkeyContext.Provider value={{ registerSpace: logic.registerSpace, registerDigit: logic.registerDigit }}>
+              <motion.div
+                ref={logic.wrapperRef}
+                variants={scaleIn}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className={`relative w-full max-w-6xl mx-auto glass-card overflow-hidden flex flex-col ${logic.isFullscreen ? 'min-h-[100dvh]' : 'min-h-[min(600px,80vh)]'}`}
+              >
+                {logic.titleAnnouncement && (
+                  <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{logic.titleAnnouncement}</div>
+                )}
+                <GameWrapperHeader {...logic.headerProps} />
+                <GameWrapperBody
+                  showReportModal={logic.showReportModal}
+                  setShowReportModal={logic.setShowReportModal}
+                  reportContext={logic.reportContext}
+                  reportSubmitted={logic.reportSubmitted}
+                  setReportSubmitted={logic.setReportSubmitted}
+                  reportType={logic.reportType}
+                  reportDesc={logic.reportDesc}
+                  reportSending={logic.reportSending}
+                  setReportSending={logic.setReportSending}
+                  setReportType={logic.setReportType}
+                  setReportDesc={logic.setReportDesc}
+                  showTrialEndModal={logic.showTrialEndModal}
+                  setShowTrialEndModal={logic.setShowTrialEndModal}
+                  onExit={logic.onExit}
+                  rulesContent={logic.rulesContent}
+                  showRulesModal={logic.showRulesModal}
+                  closeRulesModal={logic.closeRulesModal}
+                  rulesModalRef={logic.rulesModalRef}
+                  isPaused={logic.isPaused}
+                  togglePause={logic.togglePause}
+                  contentScale={logic.contentScale}
+                  multiTouchActiveRef={logic.multiTouchActiveRef}
+                  multiTouchClearTimerRef={logic.multiTouchClearTimerRef}
+                  handleTouchStart={logic.handleTouchStart}
+                  handleTouchEnd={logic.handleTouchEnd}
+                  handleTouchMove={logic.handleTouchMove}
+                  handleTouchStartPinch={logic.handleTouchStartPinch}
+                  handleTouchEndPinch={logic.handleTouchEndPinch}
+                  handleTouchStartThree={logic.handleTouchStartThree}
+                  handleTouchMoveThree={logic.handleTouchMoveThree}
+                  handleTouchEndThree={logic.handleTouchEndThree}
+                  showCountdown={logic.showCountdown}
+                  onCountdownComplete={logic.onCountdownComplete}
+                  reducedMotion={logic.reducedMotion}
+                >
+                  {logic.children}
+                </GameWrapperBody>
+              </motion.div>
+              <PassPhoneMode />
+            </GameHotkeyContext.Provider>
+          </GameReduceMotionContext.Provider>
+        </GameSoundProvider>
       </GameRulesContext.Provider>
     </GameSessionProvider>
   )

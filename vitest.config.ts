@@ -10,6 +10,7 @@ export default defineConfig({
     globals: false,
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // TEST-014：覆蓋率目標可選 — 安裝 @vitest/coverage-v8 後啟用 coverage 區塊
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },

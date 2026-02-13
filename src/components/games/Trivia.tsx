@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Award, Loader2 } from 'lucide-react'
+import { Check, X, Award, Loader2, Zap, HelpCircle } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useTriviaQuestions } from '@/hooks/useTriviaQuestions'
@@ -116,6 +116,15 @@ export default function Trivia() {
   const nextQuestionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const restartRef = useRef<HTMLButtonElement>(null)
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([])
+  // G3-022: Combo floating text
+  const [showCombo, setShowCombo] = useState(false)
+  const comboTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // G3-024: 50/50 lifeline
+  const [fiftyFiftyUsed, setFiftyFiftyUsed] = useState(false)
+  const [hiddenOptions, setHiddenOptions] = useState<number[]>([])
+  // G3-025: Review mode - track all answered questions
+  const [allAnswers, setAllAnswers] = useState<{ q: string; options: string[]; correct: number; picked: number | null; isCorrect: boolean }[]>([])
+  const [showFullReview, setShowFullReview] = useState(false)
 
   const clearTimer = () => {
     if (timerIntervalRef.current) {
@@ -139,8 +148,14 @@ export default function Trivia() {
       })
     }, 1000)
     return clearTimer
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- QUESTIONS constant; isAnswered omitted to run once per question
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- QUESTIONS constant; isAnswered omitted to run once per question
   }, [current, showResult, timerEnabled, timerSeconds])
+
+  // G3-021: Heartbeat sound when timer < 5s
+  useEffect(() => {
+    if (!timerEnabled || timeLeft == null || timeLeft > 5 || timeLeft <= 0 || isAnswered) return
+    play('countdown')
+  }, [timeLeft, timerEnabled, isAnswered, play])
 
   const timeoutFiredRef = useRef(false)
   useEffect(() => {
@@ -200,14 +215,26 @@ export default function Trivia() {
         setStreak((s) => {
           const next = s + 1
           setMaxStreak((m) => Math.max(m, next))
+          // G3-022: Show combo text on streaks >= 2
+          if (next >= 2) {
+            setShowCombo(true)
+            if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current)
+            comboTimeoutRef.current = setTimeout(() => {
+              comboTimeoutRef.current = null
+              setShowCombo(false)
+            }, 1200)
+          }
           return next
         })
       } else {
         play('wrong')
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
         setStreak(0)
+        setShowCombo(false)
         setWrongAnswers((prev) => [...prev, { q: q.q, correct: q.a[q.correct], picked: q.a[index] }])
       }
+      // G3-025: Track all answers for review
+      setAllAnswers((prev) => [...prev, { q: q.q, options: q.a, correct: q.correct, picked: index, isCorrect: correct }])
       if (nextQuestionTimeoutRef.current) clearTimeout(nextQuestionTimeoutRef.current)
       nextQuestionTimeoutRef.current = setTimeout(() => {
         nextQuestionTimeoutRef.current = null
@@ -215,6 +242,7 @@ export default function Trivia() {
           setCurrent(current + 1)
           setSelected(null)
           setIsAnswered(false)
+          setHiddenOptions([]) // G3-024: Reset 50/50 for next question
         } else {
           setShowResult(true)
         }
@@ -274,204 +302,309 @@ export default function Trivia() {
     setStreak(0)
     setMaxStreak(0)
     setTimeLeft(null)
+    setFiftyFiftyUsed(false)
+    setHiddenOptions([])
+    setAllAnswers([])
+    setShowFullReview(false)
+    setShowCombo(false)
     setTimeout(() => restartRef.current?.focus(), 100)
   }
 
-    if (showResult) {
-        const lowScore = QUESTIONS.length ? score <= Math.min(2, Math.ceil(QUESTIONS.length * 0.25)) : false
-        return (
-            <motion.div
-                className="flex flex-col items-center justify-center h-full text-center"
-                data-testid="trivia-result"
-                initial={lowScore ? { opacity: 1 } : {}}
-                animate={lowScore ? { x: [0, -8, 8, -6, 6, 0], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 60px 20px rgba(239,68,68,0.15)', '0 0 0 0 rgba(239,68,68,0)'] } : {}}
-                transition={lowScore ? { duration: 0.6, ease: 'easeOut' } : {}}
-            >
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-8 shadow-glow"
-                >
-                    <Award className="w-16 h-16 text-white" />
-                </motion.div>
-
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">測驗完成！</h2>
-                <div className="text-5xl md:text-6xl font-display font-bold gradient-text mb-6 tabular-nums">
-                    <AnimatedNumber value={score} /> / {QUESTIONS.length}
-                </div>
-
-                <p className="text-white/50 mb-4 text-lg md:text-xl">
-                    {score === QUESTIONS.length ? '你是真正的酒神！' : score > 2 ? '不錯喔，略懂略懂。' : '再多喝幾杯練習一下吧！'}
-                </p>
-                <p className="text-white/60 text-sm mb-1">答對率 {QUESTIONS.length ? Math.round((score / QUESTIONS.length) * 100) : 0}% · 本局最高連續答對 {maxStreak} 題</p>
-                {wrongAnswers.length > 0 && (
-                    <div className="w-full max-w-md text-left mb-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                        <h3 className="text-white font-bold text-sm mb-2">錯題複習</h3>
-                        <ul className="space-y-2 text-sm">
-                            {wrongAnswers.map((item, i) => (
-                                <li key={i} className="text-white/80">
-                                    <span className="text-white/50 block">{item.q}</span>
-                                    <span className="text-red-400/90">你選：{item.picked}</span>
-                                    <span className="text-green-400/90 ml-2">正確：{item.correct}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-                <CopyResultButton
-                  text={`酒神隨堂考 得分：${score}/${QUESTIONS.length}（答對率 ${QUESTIONS.length ? Math.round((score / QUESTIONS.length) * 100) : 0}%）${score === QUESTIONS.length ? ' 你是真正的酒神！' : score > 2 ? ' 不錯喔，略懂略懂。' : ' 再多喝幾杯練習一下吧！'}`}
-                  label="分享成績"
-                  className="mb-4"
-                />
-                <p className="text-white/40 text-sm mb-2">下次出題難度</p>
-                <div className="flex gap-2 mb-6" role="group" aria-label="出題難度">
-                    {FILTER_OPTIONS.map(({ value, label }) => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => setDifficultyFilter(value)}
-                            aria-pressed={difficultyFilter === value}
-                            className={`min-h-[48px] min-w-[48px] px-3 py-1 rounded-lg text-xs font-medium transition-colors ${difficultyFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
-                <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label={t('games.playAgain')} data-testid="trivia-restart">
-                    {t('games.playAgain')}
-                </button>
-            </motion.div>
-        )
-    }
-
+  if (showResult) {
+    const lowScore = QUESTIONS.length ? score <= Math.min(2, Math.ceil(QUESTIONS.length * 0.25)) : false
     return (
-        <div className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 safe-area-px" role="main" aria-label="知識問答">
-            <GameRules rules={`答對不喝、答錯請喝。\n快捷鍵：1–4 選擇選項。`} />
-            {/* 進度條；R2-120 多輪進度指示器：圓點 + 進度條 */}
-            <div className="mb-2 flex items-center gap-1.5 flex-wrap">
-                {QUESTIONS.map((_, i) => (
-                    <motion.span
-                        key={i}
-                        className={`shrink-0 w-2 h-2 rounded-full ${i < current ? 'bg-primary-500' : i === current ? 'bg-primary-400' : 'bg-white/20'}`}
-                        initial={false}
-                        animate={{ scale: i === current ? 1.2 : 1, opacity: i <= current ? 1 : 0.5 }}
-                        transition={{ duration: 0.2 }}
-                        aria-hidden
-                    />
-                ))}
-            </div>
-            <div className="mb-4 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-                <motion.div
-                    className="h-full bg-primary-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }}
-                    transition={{ duration: 0.3 }}
-                />
-            </div>
-            <div className="mb-4 flex flex-wrap gap-2 items-center border-b border-white/10 pb-3">
-                <span className="text-primary-500 font-mono tracking-widest uppercase text-sm">{t('common.questionProgress', { current: current + 1, total: QUESTIONS.length })}</span>
-                <span className="text-white/40 text-sm" aria-label="難度">{DIFFICULTY_LABEL[QUESTIONS[current].difficulty]}</span>
-                <span className="text-white/50 text-sm ml-auto">得分：<AnimatedNumber value={score} className="tabular-nums" /></span>
-                {answerHistory.length > 0 && (
-                  <span className="text-white/40 text-xs ml-2" role="status" aria-live="polite">本局最近：{answerHistory.map((o) => (o === 'correct' ? '✓' : '✗')).join(' ')}</span>
-                )}
-            </div>
-            <div className="flex flex-wrap gap-2 mb-2 items-center">
-                <span className="text-white/50 text-xs mr-1">出題難度</span>
-                {FILTER_OPTIONS.map(({ value, label }) => (
-                    <button key={value} type="button" onClick={() => setDifficultyFilter(value)} aria-pressed={difficultyFilter === value}
-                        className={`min-h-[48px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring ${difficultyFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}>
-                        {label}
-                    </button>
-                ))}
-                <label className="flex items-center gap-1.5 ml-2 text-white/60 text-xs">
-                    <input type="checkbox" checked={timerEnabled} onChange={(e) => { setTimerEnabled(e.target.checked); clearTimer(); }} className="rounded" />
-                    倒數
-                </label>
-                {timerEnabled && TIMER_OPTIONS.map((sec) => (
-                    <button key={sec} type="button" onClick={() => setTimerSeconds(sec)} aria-pressed={timerSeconds === sec}
-                        className={`min-h-[48px] min-w-[48px] px-2 py-0.5 rounded text-xs games-focus-ring ${timerSeconds === sec ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}>{sec}秒</button>
-                ))}
-            </div>
-            {timerEnabled && timeLeft != null && !isAnswered && (
-                <motion.div
-                  className="flex items-center gap-3 mb-2"
-                  role="timer"
-                  aria-live="polite"
-                  aria-label={`剩餘 ${timeLeft} 秒`}
-                  animate={timeLeft <= 5 ? { boxShadow: ['0 0 0 0 rgba(248,113,113,0)', '0 0 0 8px rgba(248,113,113,0.25)', '0 0 0 0 rgba(248,113,113,0)'] } : {}}
-                  transition={timeLeft <= 5 ? { repeat: Infinity, duration: 1.2 } : {}}
-                >
-                  <span className="relative w-10 h-10 shrink-0">
-                    <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
-                      <path
-                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.1)"
-                        strokeWidth="3"
-                      />
-                      <motion.path
-                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                        fill="none"
-                        stroke={timeLeft <= 5 ? 'rgb(248,113,113)' : 'rgb(168,85,247)'}
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeDasharray="97.3"
-                        animate={{ strokeDashoffset: 97.3 * (1 - timeLeft / (timerSeconds ?? 15)) }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </svg>
-                  </span>
-                  <p className={`text-sm font-mono tabular-nums ${timeLeft <= 5 ? 'text-red-400 font-semibold' : 'text-primary-400'}`}>剩餘 {timeLeft} 秒</p>
-                </motion.div>
-            )}
-            <h2 className="text-lg md:text-2xl font-bold text-white mb-6 leading-relaxed" id="trivia-question">
-                {QUESTIONS[current].q}
-            </h2>
+      <motion.div
+        className="flex flex-col items-center justify-center h-full text-center"
+        data-testid="trivia-result"
+        initial={lowScore ? { opacity: 1 } : {}}
+        animate={lowScore ? { x: [0, -8, 8, -6, 6, 0], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 60px 20px rgba(239,68,68,0.15)', '0 0 0 0 rgba(239,68,68,0)'] } : {}}
+        transition={lowScore ? { duration: 0.6, ease: 'easeOut' } : {}}
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-8 shadow-glow"
+        >
+          <Award className="w-16 h-16 text-white" />
+        </motion.div>
 
-            {isAnswered && (
-              <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-                {selected === QUESTIONS[current].correct ? '答對' : '答錯'}
-              </p>
-            )}
-            <div className="grid grid-cols-1 gap-3" role="group" aria-labelledby="trivia-question">
-                {QUESTIONS[current].a.map((opt, i) => (
-                    <motion.button
-                        key={i}
-                        ref={(el) => { optionRefs.current[i] = el }}
-                        type="button"
-                        onClick={() => handleAnswer(i)}
-                        disabled={isAnswered || submittingIndex != null}
-                        aria-label={submittingIndex === i ? '提交中' : `選項 ${i + 1}：${opt}`}
-                        initial={false}
-                        animate={isAnswered && selected === i ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } } : {}}
-                        className={`p-4 md:p-5 rounded-xl text-left text-base md:text-lg font-medium transition-colors games-focus-ring flex items-center justify-between border min-h-[48px] ${isAnswered && i === QUESTIONS[current].correct
-                                ? 'bg-green-500/20 border-green-500 text-green-400'
-                                : isAnswered && selected === i && i !== QUESTIONS[current].correct
-                                    ? 'bg-red-500/20 border-red-500 text-red-400'
-                                    : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
-                            }`}
-                    >
-                        <span><span className="text-white/50 mr-2">{i + 1}.</span>{opt}</span>
-                        {submittingIndex === i && (
-                          <span className="flex-shrink-0" aria-hidden>
-                            <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
-                          </span>
-                        )}
-                        {isAnswered && submittingIndex === null && i === QUESTIONS[current].correct && (
-                          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
-                            <Check className="w-5 h-5 md:w-6 md:h-6" />
-                          </motion.span>
-                        )}
-                        {isAnswered && selected === i && i !== QUESTIONS[current].correct && (
-                          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
-                            <X className="w-5 h-5 md:w-6 md:h-6" />
-                          </motion.span>
-                        )}
-                    </motion.button>
-                ))}
-            </div>
-            <p className="text-white/30 text-xs mt-4">快捷鍵：1–4 選擇選項</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">測驗完成！</h2>
+        <div className="text-5xl md:text-6xl font-display font-bold gradient-text mb-6 tabular-nums">
+          <AnimatedNumber value={score} /> / {QUESTIONS.length}
         </div>
+
+        <p className="text-white/50 mb-4 text-lg md:text-xl">
+          {score === QUESTIONS.length ? '你是真正的酒神！' : score > 2 ? '不錯喔，略懂略懂。' : '再多喝幾杯練習一下吧！'}
+        </p>
+        <p className="text-white/60 text-sm mb-1">答對率 {QUESTIONS.length ? Math.round((score / QUESTIONS.length) * 100) : 0}% · 本局最高連續答對 {maxStreak} 題</p>
+        {wrongAnswers.length > 0 && (
+          <div className="w-full max-w-md text-left mb-4 p-4 rounded-xl bg-white/5 border border-white/10">
+            <h3 className="text-white font-bold text-sm mb-2">錯題複習</h3>
+            <ul className="space-y-2 text-sm">
+              {wrongAnswers.map((item, i) => (
+                <li key={i} className="text-white/80">
+                  <span className="text-white/50 block">{item.q}</span>
+                  <span className="text-red-400/90">你選：{item.picked}</span>
+                  <span className="text-green-400/90 ml-2">正確：{item.correct}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* G3-025: Full review mode toggle */}
+        <button
+          type="button"
+          onClick={() => setShowFullReview((v) => !v)}
+          className="text-primary-400 hover:text-primary-300 text-sm underline mb-4 games-focus-ring"
+        >
+          {showFullReview ? '收起完整複習' : '📋 查看完整複習'}
+        </button>
+        <AnimatePresence>
+          {showFullReview && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="w-full max-w-md text-left mb-4 p-4 rounded-xl bg-white/5 border border-white/10 overflow-hidden"
+            >
+              <h3 className="text-white font-bold text-sm mb-3">全部題目複習</h3>
+              <ul className="space-y-3 text-sm">
+                {allAnswers.map((item, i) => (
+                  <li key={i} className={`p-3 rounded-lg border ${item.isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                    <p className="text-white/80 font-medium mb-1">{i + 1}. {item.q}</p>
+                    <div className="grid grid-cols-2 gap-1 text-xs">
+                      {item.options.map((opt, j) => (
+                        <span
+                          key={j}
+                          className={`px-2 py-1 rounded ${j === item.correct
+                            ? 'bg-green-500/20 text-green-400 font-bold'
+                            : j === item.picked && !item.isCorrect
+                              ? 'bg-red-500/20 text-red-400'
+                              : 'text-white/40'
+                            }`}
+                        >
+                          {opt} {j === item.correct ? '✓' : j === item.picked && !item.isCorrect ? '✗' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <CopyResultButton
+          text={`酒神隨堂考 得分：${score}/${QUESTIONS.length}（答對率 ${QUESTIONS.length ? Math.round((score / QUESTIONS.length) * 100) : 0}%）${score === QUESTIONS.length ? ' 你是真正的酒神！' : score > 2 ? ' 不錯喔，略懂略懂。' : ' 再多喝幾杯練習一下吧！'}`}
+          label="分享成績"
+          className="mb-4"
+        />
+        <p className="text-white/40 text-sm mb-2">下次出題難度</p>
+        <div className="flex gap-2 mb-6" role="group" aria-label="出題難度">
+          {FILTER_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setDifficultyFilter(value)}
+              aria-pressed={difficultyFilter === value}
+              className={`min-h-[48px] min-w-[48px] px-3 py-1 rounded-lg text-xs font-medium transition-colors ${difficultyFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label={t('games.playAgain')} data-testid="trivia-restart">
+          {t('games.playAgain')}
+        </button>
+      </motion.div>
     )
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 safe-area-px" role="main" aria-label="知識問答">
+      <GameRules rules={`答對不喝、答錯請喝。\n快捷鍵：1–4 選擇選項。`} />
+      {/* 進度條；R2-120 多輪進度指示器：圓點 + 進度條 */}
+      <div className="mb-2 flex items-center gap-1.5 flex-wrap">
+        {QUESTIONS.map((_, i) => (
+          <motion.span
+            key={i}
+            className={`shrink-0 w-2 h-2 rounded-full ${i < current ? 'bg-primary-500' : i === current ? 'bg-primary-400' : 'bg-white/20'}`}
+            initial={false}
+            animate={{ scale: i === current ? 1.2 : 1, opacity: i <= current ? 1 : 0.5 }}
+            transition={{ duration: 0.2 }}
+            aria-hidden
+          />
+        ))}
+      </div>
+      <div className="mb-4 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+        <motion.div
+          className="h-full bg-primary-500 rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
+      <div className="mb-4 flex flex-wrap gap-2 items-center border-b border-white/10 pb-3">
+        <span className="text-primary-500 font-mono tracking-widest uppercase text-sm">{t('common.questionProgress', { current: current + 1, total: QUESTIONS.length })}</span>
+        <span className="text-white/40 text-sm" aria-label="難度">{DIFFICULTY_LABEL[QUESTIONS[current].difficulty]}</span>
+        <span className="text-white/50 text-sm ml-auto">得分：<AnimatedNumber value={score} className="tabular-nums" /></span>
+        {streak >= 2 && (
+          <span className="text-amber-400 text-xs font-bold ml-1">🔥 x{streak}</span>
+        )}
+        {answerHistory.length > 0 && (
+          <span className="text-white/40 text-xs ml-2" role="status" aria-live="polite">本局最近：{answerHistory.map((o) => (o === 'correct' ? '✓' : '✗')).join(' ')}</span>
+        )}
+      </div>
+      {/* G3-024: 50/50 Lifeline */}
+      <div className="flex flex-wrap gap-2 mb-2 items-center">
+        <span className="text-white/50 text-xs mr-1">出題難度</span>
+        {FILTER_OPTIONS.map(({ value, label }) => (
+          <button key={value} type="button" onClick={() => setDifficultyFilter(value)} aria-pressed={difficultyFilter === value}
+            className={`min-h-[48px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring ${difficultyFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}>
+            {label}
+          </button>
+        ))}
+        <label className="flex items-center gap-1.5 ml-2 text-white/60 text-xs">
+          <input type="checkbox" checked={timerEnabled} onChange={(e) => { setTimerEnabled(e.target.checked); clearTimer(); }} className="rounded" />
+          倒數
+        </label>
+        {timerEnabled && TIMER_OPTIONS.map((sec) => (
+          <button key={sec} type="button" onClick={() => setTimerSeconds(sec)} aria-pressed={timerSeconds === sec}
+            className={`min-h-[48px] min-w-[48px] px-2 py-0.5 rounded text-xs games-focus-ring ${timerSeconds === sec ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}>{sec}秒</button>
+        ))}
+        {/* G3-024: 50/50 lifeline button */}
+        {!fiftyFiftyUsed && !isAnswered && (
+          <button
+            type="button"
+            onClick={() => {
+              const q = QUESTIONS[current]
+              if (!q || fiftyFiftyUsed) return
+              setFiftyFiftyUsed(true)
+              // Remove 2 wrong answers
+              const wrongIndices = q.a.map((_, i) => i).filter((i) => i !== q.correct)
+              const shuffled = wrongIndices.sort(() => Math.random() - 0.5)
+              setHiddenOptions(shuffled.slice(0, 2))
+              play('click')
+            }}
+            className="min-h-[48px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30 flex items-center gap-1"
+            aria-label="50/50 移除兩個錯誤答案"
+          >
+            <HelpCircle className="w-3 h-3" /> 50/50
+          </button>
+        )}
+        {fiftyFiftyUsed && (
+          <span className="text-white/30 text-xs ml-1">50/50 已用</span>
+        )}
+      </div>
+      {timerEnabled && timeLeft != null && !isAnswered && (
+        <motion.div
+          className="flex items-center gap-3 mb-2"
+          role="timer"
+          aria-live="polite"
+          aria-label={`剩餘 ${timeLeft} 秒`}
+          animate={timeLeft <= 5 ? {
+            boxShadow: ['0 0 0 0 rgba(248,113,113,0)', '0 0 0 8px rgba(248,113,113,0.25)', '0 0 0 0 rgba(248,113,113,0)'],
+          } : {}}
+          transition={timeLeft <= 5 ? { repeat: Infinity, duration: 1.2 } : {}}
+        >
+          {/* G3-021: Heartbeat pulsation on timer circle */}
+          <motion.span
+            className="relative w-10 h-10 shrink-0"
+            animate={timeLeft <= 5 ? { scale: [1, 1.15, 1] } : {}}
+            transition={timeLeft <= 5 ? { repeat: Infinity, duration: 0.6, ease: 'easeInOut' } : {}}
+          >
+            <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
+              <path
+                d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                fill="none"
+                stroke="rgba(255,255,255,0.1)"
+                strokeWidth="3"
+              />
+              <motion.path
+                d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                fill="none"
+                stroke={timeLeft <= 5 ? 'rgb(248,113,113)' : 'rgb(168,85,247)'}
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="97.3"
+                animate={{ strokeDashoffset: 97.3 * (1 - timeLeft / (timerSeconds ?? 15)) }}
+                transition={{ duration: 0.3 }}
+              />
+            </svg>
+          </motion.span>
+          <p className={`text-sm font-mono tabular-nums ${timeLeft <= 5 ? 'text-red-400 font-semibold' : 'text-primary-400'}`}>剩餘 {timeLeft} 秒</p>
+        </motion.div>
+      )}
+      <h2 className="text-lg md:text-2xl font-bold text-white mb-6 leading-relaxed" id="trivia-question">
+        {QUESTIONS[current].q}
+        {/* G3-023: Category tag – show difficulty badge */}
+        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full inline-block align-middle ${QUESTIONS[current].difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
+          QUESTIONS[current].difficulty === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+            'bg-green-500/20 text-green-400'
+          }`}>{DIFFICULTY_LABEL[QUESTIONS[current].difficulty]}</span>
+      </h2>
+      {/* G3-022: Combo streak floating text */}
+      <AnimatePresence>
+        {showCombo && streak >= 2 && (
+          <motion.div
+            key={`combo-${streak}`}
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: -10, scale: 1.2 }}
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="text-center mb-2"
+          >
+            <span className="text-amber-400 font-black text-2xl drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+              <Zap className="w-5 h-5 inline mr-1" />Combo x{streak}!
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isAnswered && (
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {selected === QUESTIONS[current].correct ? '答對' : '答錯'}
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-3" role="group" aria-labelledby="trivia-question">
+        {QUESTIONS[current].a.map((opt, i) => (
+          <motion.button
+            key={i}
+            ref={(el) => { optionRefs.current[i] = el }}
+            type="button"
+            onClick={() => handleAnswer(i)}
+            disabled={isAnswered || submittingIndex != null || hiddenOptions.includes(i)}
+            aria-label={submittingIndex === i ? '提交中' : `選項 ${i + 1}：${opt}`}
+            initial={false}
+            animate={isAnswered && selected === i ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } } : {}}
+            className={`p-4 md:p-5 rounded-xl text-left text-base md:text-lg font-medium transition-colors games-focus-ring flex items-center justify-between border min-h-[48px] ${hiddenOptions.includes(i)
+              ? 'opacity-20 pointer-events-none bg-white/5 border-white/5 text-white/30'
+              : isAnswered && i === QUESTIONS[current].correct
+                ? 'bg-green-500/20 border-green-500 text-green-400'
+                : isAnswered && selected === i && i !== QUESTIONS[current].correct
+                  ? 'bg-red-500/20 border-red-500 text-red-400'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
+              }`}
+          >
+            <span><span className="text-white/50 mr-2">{i + 1}.</span>{opt}</span>
+            {submittingIndex === i && (
+              <span className="flex-shrink-0" aria-hidden>
+                <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
+              </span>
+            )}
+            {isAnswered && submittingIndex === null && i === QUESTIONS[current].correct && (
+              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+                <Check className="w-5 h-5 md:w-6 md:h-6" />
+              </motion.span>
+            )}
+            {isAnswered && selected === i && i !== QUESTIONS[current].correct && (
+              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+                <X className="w-5 h-5 md:w-6 md:h-6" />
+              </motion.span>
+            )}
+          </motion.button>
+        ))}
+      </div>
+      <p className="text-white/30 text-xs mt-4">快捷鍵：1–4 選擇選項</p>
+    </div>
+  )
 }

@@ -1,9 +1,9 @@
 import { Skeleton, SkeletonText } from '@/components/ui/Skeleton'
 
-/** AI 侍酒師頁：載入時佔位（對話列 + 氣泡骨架） */
+/** AI 侍酒師頁：載入時佔位（對話列 + 氣泡骨架）；UX-007 與設計系統一致 */
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-dark-950 pt-4 px-4 pb-32 relative overflow-hidden">
+    <div className="min-h-screen pt-4 px-4 pb-32 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%)' }}>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary-500/5 rounded-full blur-[80px]" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-secondary-500/5 rounded-full blur-[80px]" />

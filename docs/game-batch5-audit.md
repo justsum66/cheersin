@@ -79,8 +79,8 @@
 
 ## GAME-019：劇本殺劇本列表與預覽
 
-- **狀態**：可選；API/UI 待補。script-murder 劇本列表與預覽可於 API 與 UI 補齊；目前列表已有，預覽可選實作。
-- **驗收**：可選。
+- **狀態**：已實作。script-murder 劇本已擴充至 8 支完整劇本（seed migrations 1～8）；`GET /api/scripts` 回傳 `chapterCount`、`roleCount`；ScriptMurderLobby 卡片顯示章節數/角色數（chaptersAndRoles i18n）；大廳 loading 骨架 8 張、免費方案前 4 支可玩。
+- **驗收**：列表顯示 8 支、可建房、可進入房間並載入劇本與角色（GAME-009）；預覽可選延伸。
 
 ## GAME-020：派對房 E2E 涵蓋建立→加入→選遊戲
 

@@ -19,7 +19,6 @@ import LiarDice from '../LiarDice'
 import NameTrain from '../NameTrain'
 import HotPotato from '../HotPotato'
 import SevenTap from '../SevenTap'
-import SpinBottle from '../SpinBottle'
 import DareDice from '../DareDice'
 import RhythmGuess from '../RhythmGuess'
 import ToastRelay from '../ToastRelay'
@@ -147,21 +146,6 @@ describe('Games key path smoke', () => {
     for (let i = 0; i < 7; i++) fireEvent.click(tapBtn)
     await waitFor(() => {
       expect(screen.getByTestId('seven-tap-result')).toBeInTheDocument()
-    }, { timeout: 2000 })
-  }, 8000)
-
-  it('SpinBottle renders and spin button exists', () => {
-    render(wrap(SpinBottle))
-    const spin = screen.getByRole('button', { name: /轉瓶/ })
-    expect(spin).toBeInTheDocument()
-    expect(spin).not.toBeDisabled()
-  })
-
-  it('SpinBottle shows result area after spin', async () => {
-    render(wrap(SpinBottle))
-    fireEvent.click(screen.getByTestId('spin-bottle-spin'))
-    await waitFor(() => {
-      expect(screen.getByTestId('spin-bottle-result')).toBeInTheDocument()
     }, { timeout: 2000 })
   }, 8000)
 

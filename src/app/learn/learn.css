@@ -1,0 +1,30 @@
+/**
+ * R2-002 Phase 3: 學習專用樣式，由 globals.css 遷移
+ * 課程標籤 badge，由 learn layout 引入
+ */
+
+.learn-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.learn-badge-primary {
+  background: rgba(139, 0, 0, 0.9);
+  color: white;
+  border-color: rgba(139, 0, 0, 0.5);
+}
+
+.learn-badge-amber {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.learn-badge-green {
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+  border-color: rgba(34, 197, 94, 0.5);
+}

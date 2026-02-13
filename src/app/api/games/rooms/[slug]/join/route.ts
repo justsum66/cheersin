@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
-import { stripHtml } from '@/lib/sanitize'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { sanitizeUserInput } from '@/lib/sanitize'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { JoinRoomBodySchema } from '@/lib/api-body-schemas'
 
 const MAX_PLAYERS = 12
@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const ip = getClientIp(request.headers)
-    if (isRateLimited(ip, 'join')) {
+    if (await isRateLimitedAsync(ip, 'join')) {
       return NextResponse.json(
         { error: '操作過於頻繁，請稍後再試', retryAfter: 60 },
         { status: 429, headers: { 'Retry-After': '60' } }
@@ -29,7 +29,7 @@ export async function POST(
       return errorResponse(400, 'Invalid body', { message: '請輸入顯示名稱' })
     }
     const { displayName: rawName, isSpectator: isSpectatorRaw } = parsed.data
-    const displayName = stripHtml(rawName).slice(0, 20)
+    const displayName = sanitizeUserInput(rawName, 20)
     if (!displayName) return errorResponse(400, 'displayName required', { message: '請輸入顯示名稱' })
     const isSpectator = isSpectatorRaw === true
     try {

@@ -1,33 +1,55 @@
 /**
- * G197 / P2-24：日誌工具封裝，結構化 context 供生產環境篩選與告警
+ * G197 / P2-24 / R2-027：結構化日誌 — 使用 pino
  * P3-58：context 傳入前經 maskSensitiveContext，不記錄 password、token 等敏感欄位
- * P3-57：context 可含 requestId，由 route 從 request.headers.get('x-request-id') 傳入
+ * P3-57：context 可含 requestId、userId、durationMs，供日誌聚合與追蹤
  */
-
+import pino from 'pino'
 import { maskSensitiveContext } from './mask-context'
 
 const isDev = process.env.NODE_ENV === 'development'
 
+const pinoLogger = pino({
+  level: isDev ? 'debug' : 'info',
+  base: undefined,
+  timestamp: pino.stdTimeFunctions.isoTime,
+  ...(isDev && {
+    transport: {
+      target: 'pino-pretty',
+      options: { colorize: true, translateTime: 'SYS:standard' },
+    },
+  }),
+})
+
 export type LogContext = Record<string, unknown>
 
-function formatStructured(level: string, message: string, context?: LogContext): string {
-  const safe = context && Object.keys(context).length > 0 ? maskSensitiveContext(context) : undefined
-  if (!safe || Object.keys(safe).length === 0) return JSON.stringify({ level, message, ts: new Date().toISOString() })
-  return JSON.stringify({ level, message, ...safe, ts: new Date().toISOString() })
+function toBindings(context?: LogContext): Record<string, unknown> {
+  if (!context || Object.keys(context).length === 0) return {}
+  const safe = maskSensitiveContext(context)
+  for (const v of Object.values(context)) {
+    if (v instanceof Error && v.stack) {
+      safe.stack = v.stack
+      break
+    }
+  }
+  return safe
 }
 
-/** P0-020：關鍵路徑（創建房間、支付等）在生產環境也輸出 info，供日誌聚合與追蹤 */
+/** R2-027：結構化日誌，支援 requestId、userId、durationMs、錯誤堆疊 */
 export const logger = {
   debug: (message: string, context?: LogContext) => {
-    if (isDev) console.debug(formatStructured('debug', message, context))
+    pinoLogger.debug(toBindings(context), message)
   },
   info: (message: string, context?: LogContext) => {
-    console.info(formatStructured('info', message, context))
+    pinoLogger.info(toBindings(context), message)
   },
   warn: (message: string, context?: LogContext) => {
-    console.warn(formatStructured('warn', message, context))
+    pinoLogger.warn(toBindings(context), message)
   },
   error: (message: string, context?: LogContext) => {
-    console.error(formatStructured('error', message, context))
+    const bindings = toBindings(context)
+    if (context?.err instanceof Error && context.err.stack) {
+      bindings.stack = context.err.stack
+    }
+    pinoLogger.error(bindings, message)
   },
 }

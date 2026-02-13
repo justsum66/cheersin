@@ -20,6 +20,7 @@ import { parseWinesFromResponse, type WineCardDataFromAI } from '@/lib/wine-resp
 import { useApiLoading } from '@/contexts/ApiLoadingContext'
 import { useErrorAnnouncer } from '@/contexts/ErrorAnnouncerContext'
 import { useTranslation } from '@/contexts/I18nContext'
+import { formatDateTime } from '@/lib/formatters'
 import { useSubscription } from '@/hooks/useSubscription'
 import { canUseAICall, getMaxAICallsPerDay, getAiCallsUsedToday, incrementAiCallsUsedToday } from '@/lib/subscription'
 import { UpgradeModal } from '@/components/UpgradeModal'
@@ -718,7 +719,7 @@ export default function AssistantPage() {
     if (messages.length === 0) return
     trackAssistantAction('export')
     const lines = messages.map((m) => {
-      const time = m.timestamp.toLocaleString('zh-TW')
+      const time = formatDateTime(m.timestamp, locale)
       const who = m.role === 'user' ? t('assistant.me') : t('assistant.aiSommelier')
       return `[${time}] ${who}：\n${m.content}`
     })

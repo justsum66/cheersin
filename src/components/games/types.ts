@@ -27,7 +27,6 @@ export type GameId =
   | 'surface-tension'
   | 'countdown-toast'
   | 'random-picker'
-  | 'drink-or-safe'
   | 'number-race'
   | 'number-nunchi'
   | 'ultimate-code'

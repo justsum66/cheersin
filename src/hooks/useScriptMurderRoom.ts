@@ -5,6 +5,7 @@
  * DC-04：內部改用 useGameRoom，不再自實作 fetchRoom/join
  */
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from '@/contexts/I18nContext'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import type {
   ScriptMurderRoomInfo,
@@ -48,6 +49,7 @@ function toScriptMurderPlayers(
 }
 
 export function useScriptMurderRoom(roomSlug: string | null): UseScriptMurderRoomResult {
+  const { t } = useTranslation()
   const gameRoom = useGameRoom(roomSlug)
 
   const [scriptDetail, setScriptDetail] = useState<ScriptDetail | null>(null)
@@ -91,6 +93,11 @@ export function useScriptMurderRoom(roomSlug: string | null): UseScriptMurderRoo
     /* no-op：players 來自 useGameRoom */
   }, [])
 
+  /** SM-49：重新整理後若 myPlayerRowId 已在玩家列表中，視為已加入，單人測試連結才會顯示 */
+  useEffect(() => {
+    if (myPlayerRowId && players.some((p) => p.id === myPlayerRowId)) setJoined(true)
+  }, [myPlayerRowId, players])
+
   const error = localError ?? gameRoom.error
   const setError = setLocalError
 
@@ -106,7 +113,10 @@ export function useScriptMurderRoom(roomSlug: string | null): UseScriptMurderRoo
     async (name: string) => {
       const trimmed = name.trim()
       if (!roomSlug || !trimmed) return
-      if (trimmed.length < 2 || trimmed.length > 20) return
+      if (trimmed.length < 2 || trimmed.length > 20) {
+        setJoinError(t('scriptMurder.displayNameLengthError'))
+        return
+      }
       setJoinError(null)
       setJoinLoading(true)
       try {
@@ -122,7 +132,7 @@ export function useScriptMurderRoom(roomSlug: string | null): UseScriptMurderRoo
     },
     // gameRoom 為 object，依 gameRoom.join 即可
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [roomSlug, gameRoom.join]
+    [roomSlug, gameRoom.join, t]
   )
 
   /** 有 scriptId 時拉取劇本詳情（DC-04：保留劇本殺專用邏輯） */

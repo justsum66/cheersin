@@ -1,10 +1,13 @@
 'use client'
 
-/** R2-121：全局 Drawer — 底部滑入 + 遮罩、Escape 關閉、焦點鎖定 */
+/** R2-121 / A11Y-006：全局 Drawer — 底部滑入 + 遮罩、Escape 關閉、焦點鎖定、focus trap */
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
+
+const FOCUSABLE =
+  'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export interface DrawerProps {
   open: boolean
@@ -16,16 +19,45 @@ export interface DrawerProps {
 
 export function Drawer({ open, onClose, title, children, className = '' }: DrawerProps) {
   const prevFocus = useRef<HTMLElement | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
     prevFocus.current = document.activeElement as HTMLElement | null
+    const focusFirst = () => {
+      const first = contentRef.current?.querySelector<HTMLElement>(FOCUSABLE)
+      first?.focus()
+    }
+    const t = requestAnimationFrame(focusFirst)
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const container = contentRef.current
+      if (!container?.contains(document.activeElement)) return
+      const nodes = container.querySelectorAll<HTMLElement>(FOCUSABLE)
+      const list = Array.from(nodes).filter((el) => el.offsetParent != null)
+      if (list.length === 0) return
+      const first = list[0]
+      const last = list[list.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
+      cancelAnimationFrame(t)
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
       prevFocus.current?.focus?.()
@@ -57,6 +89,7 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
             aria-hidden
           />
           <motion.div
+            ref={contentRef}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}

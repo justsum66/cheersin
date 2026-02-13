@@ -603,6 +603,7 @@
     "unlock12Players": "解锁 12 人上限",
     "unlock12PlayersAria": "升级解锁 12 人房间",
     "onboardingSteps": "建立房間 → 分享邀請連結 → 人齊後房主選遊戲開始",
+    "creatingRoom": "正在建立派对房…",
     "roomEndedTitle": "房間已結束",
     "roomNotFoundTitle": "房間不存在",
     "roomEndedDesc": "本房間已到期，感謝一起玩！",
@@ -817,6 +818,7 @@
     "roleSeer": "预言家",
     "defaultPlayer": "玩家{{n}}"
   },
+  "truthOrDare": { "levelAll": "全部", "levelMild": "亲友", "levelSpicy": "辣味", "levelAdult": "限制级" },
   "admin": {
     "fillRequired": "請填寫所有欄位",
     "enterEmailOrUserId": "請輸入 email 或 user id",

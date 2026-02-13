@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { generateShortSlug, hashRoomPassword } from '@/lib/games-room'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
 import { stripHtml } from '@/lib/sanitize'
@@ -89,7 +89,7 @@ function getBaseUrl(): string {
 /** POST: 建立遊戲房間，回傳 roomId、slug、inviteUrl；T060 P1：rate limit 10/分/IP */
 export async function POST(request: Request) {
   const ip = getClientIp(request.headers)
-  if (isRateLimited(ip, 'create')) {
+  if (await isRateLimitedAsync(ip, 'create')) {
     return NextResponse.json(
       { error: '操作過於頻繁，請稍後再試', retryAfter: 60 },
       { status: 429, headers: { 'Retry-After': '60' } }

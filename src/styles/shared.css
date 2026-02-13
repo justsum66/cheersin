@@ -1,0 +1,202 @@
+/**
+ * R2-002 Phase 5：全站共用 UI 樣式，由 globals.css 遷移
+ * 由根 layout 引入
+ */
+
+/* 101. Bento Grid 卡片佈局 */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.bento-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bento-card-hover:hover {
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-card-hover:hover {
+    transform: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+  }
+
+  .bento-span-2 {
+    grid-column: span 2;
+  }
+
+  .bento-span-row-2 {
+    grid-row: span 2;
+  }
+}
+
+/* 103. 3D 卡片效果 */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-3d:hover {
+  transform: rotateX(2deg) rotateY(-2deg) translateZ(8px);
+  transition: transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-3d:hover {
+    transform: none;
+  }
+}
+
+/* 104. Glassmorphism 2.0 */
+.glass-2 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* 107. Micro-interactions */
+.interact-scale {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.interact-scale:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.interact-scale:active {
+  transform: scale(0.98);
+}
+
+/* 121 大螢幕容器 */
+.container-2xl {
+  max-width: min(100%, 1440px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1536px) {
+  .container-2xl {
+    max-width: 1600px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container-2xl {
+    max-width: 1800px;
+  }
+}
+
+/* 123 鍵盤導航：裝飾用隱藏 */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* 22 分隔線 */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+}
+
+/* 圖標互動與發光 */
+.icon-interact {
+  transition: transform 0.2s;
+}
+
+.icon-interact:hover {
+  transform: scale(1.1);
+}
+
+.icon-glow {
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.4));
+}
+
+/* 116 滾動進度 */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgb(139 0 0), rgb(212 175 55));
+  z-index: 9999;
+  transform-origin: left;
+  width: 100%;
+  transition: transform 0.15s ease-out;
+}
+
+/* 進度條動畫 */
+.progress-bar-fill {
+  transition: width 0.3s ease-out;
+}
+
+/* Pro 用戶漸變邊框 */
+.pro-gradient-border {
+  position: relative;
+  border: 0;
+  background: linear-gradient(var(--background), var(--background)) padding-box,
+    linear-gradient(135deg, rgb(var(--primary)), rgb(var(--secondary)), rgb(var(--accent)), rgb(var(--primary))) border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+}
+
+.dark .pro-gradient-border {
+  background: linear-gradient(rgb(10 10 10), rgb(10 10 10)) padding-box,
+    linear-gradient(135deg, rgb(var(--primary)), rgb(var(--secondary)), rgb(var(--accent))) border-box;
+}
+
+/* 響應式字體 */
+.text-fluid-base {
+  font-size: clamp(0.9375rem, 0.875rem + 0.3vw, 1rem);
+}
+
+.text-fluid-lg {
+  font-size: clamp(1rem, 0.95rem + 0.4vw, 1.125rem);
+}
+
+.text-fluid-xl {
+  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
+}
+
+.text-fluid-2xl {
+  font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.5rem);
+}
+
+/* P1-178：暗色模式圖片適配 */
+.dark img.picture-dim,
+[data-theme="dark"] img.picture-dim,
+html.dark img:not([data-bright]) {
+  filter: brightness(0.9) contrast(1.05);
+}
+
+.dark img[data-bright="true"],
+[data-theme="dark"] img[data-bright="true"] {
+  filter: none;
+}
+
+/* P1-153：RTL 支持 */
+[dir="rtl"] .ms-2 {
+  margin-inline-start: 0.5rem;
+}
+
+[dir="rtl"] .me-2 {
+  margin-inline-end: 0.5rem;
+}
+
+[dir="rtl"] .text-left {
+  text-align: start;
+}
+
+[dir="rtl"] .text-right {
+  text-align: end;
+}

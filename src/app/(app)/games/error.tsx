@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
+import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
 import { logger } from '@/lib/logger'
 
-/** GAMES_500 #10：遊戲頁路由錯誤邊界專用文案 — 遊戲頁載入失敗時顯示；i18n Phase 3 t('gamesError.*') */
+/** GAMES_500 #10 / UX-007：遊戲頁錯誤邊界 — 使用 PageErrorContent 與設計系統一致 */
 export default function GamesError({
   error,
   reset,
@@ -19,36 +19,13 @@ export default function GamesError({
   }, [error])
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 games-content"
-      style={{ background: 'linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%)' }}
-      role="alert"
-      aria-labelledby="games-error-title"
-      aria-describedby="games-error-desc"
-    >
-      <h1 id="games-error-title" className="text-xl font-bold text-white mb-2">
-        {t('gamesError.title')}
-      </h1>
-      <p id="games-error-desc" className="text-white/60 text-sm text-center max-w-md mb-6">
-        {t('gamesError.desc')}
-      </p>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="btn-primary min-h-[48px] px-6"
-          aria-label={t('gamesError.retry')}
-        >
-          {t('gamesError.retry')}
-        </button>
-        <Link
-          href="/games"
-          className="btn-ghost min-h-[48px] inline-flex items-center justify-center px-6"
-          aria-label={t('gamesError.backLobby')}
-        >
-          {t('gamesError.backLobby')}
-        </Link>
-      </div>
-    </div>
+    <PageErrorContent
+      title={t('gamesError.title')}
+      description={t('gamesError.desc')}
+      onRetry={reset}
+      retryLabel={t('gamesError.retry')}
+      className="games-content bg-[linear-gradient(180deg,#1a0a2e_0%,#0a0a0a_100%)]"
+      links={[{ href: '/games', label: t('gamesError.backLobby') }]}
+    />
   )
 }

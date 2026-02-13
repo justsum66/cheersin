@@ -8,7 +8,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getGameMeta } from '@/config/games.config'
 import { fireFullscreenConfetti } from '@/lib/celebration'
 import { useSubscription } from '@/hooks/useSubscription'
-import { useUserStore } from '@/stores/userStore'
+import { useUserStore } from '@/store/useUserStore'
+import { usePartyStore } from '@/store/usePartyStore'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/contexts/I18nContext'
 
 type Phase = { phase: string; durationMin: number; gameIds: string[]; transitionText: string }
@@ -43,6 +45,7 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
   showSave,
   saveLoading,
   onReorderPhases,
+  onStartParty,
 }: {
   plan: PlanResult
   linkCopied: boolean
@@ -58,6 +61,7 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
   saveLoading?: boolean
   /** #15 階段拖曳排序 */
   onReorderPhases?: (newPhases: Phase[]) => void
+  onStartParty?: (roomId: string, roomCode: string) => void
 }) {
   const captureRef = useRef<HTMLDivElement>(null)
   const [imageDownloading, setImageDownloading] = useState(false)
@@ -95,7 +99,7 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
     const [removed] = next.splice(fromIndex, 1)
     next.splice(toIndex, 0, removed)
     onReorderPhases(next)
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- onReorderPhases from parent is required in closure
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onReorderPhases from parent is required in closure
   }, [draggedIndex, onReorderPhases, plan])
   const handleDownloadImage = useCallback(async () => {
     const el = captureRef.current
@@ -124,70 +128,70 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
     <div className="w-full max-w-lg space-y-4 min-w-0 overflow-x-auto" role="region" aria-label={planTitle} data-testid="party-dj-plan-result">
       <div ref={captureRef} className="space-y-4 rounded-xl bg-dark-900/80 p-4">
         <h2 className="text-lg font-semibold text-white">{planTitle}（{plan.totalMin} {minutes}）</h2>
-      {plan.phases.map((p, i) => {
-        const gameNames = p.gameIds.map((id) => getGameMeta(id)?.name ?? id)
-        const phaseText = `${p.phase} ${p.durationMin}${minutes}：${gameNames.join('、')}\n"${p.transitionText}"`
-        const metaList = p.gameIds.map((id) => getGameMeta(id)).filter(Boolean)
-        const isExpanded = expandedPhase === i
-        return (
-          <div
-            key={i}
-            className={`rounded-xl bg-white/10 border border-white/20 p-4 text-left min-w-0 ${draggedIndex === i ? 'opacity-60' : ''}`}
-            draggable={!!onReorderPhases}
-            onDragStart={onReorderPhases ? handleDragStart(i) : undefined}
-            onDragOver={onReorderPhases ? handleDragOver : undefined}
-            onDrop={onReorderPhases ? handleDrop(i) : undefined}
-          >
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 text-primary-300 font-medium">
-                {onReorderPhases && (
-                  <span className="cursor-grab active:cursor-grabbing text-white/50" aria-label={reorderAria}>
-                    <GripVertical className="w-4 h-4" aria-hidden />
-                  </span>
-                )}
-                <span>{p.phase}</span>
-                <span className="text-white/60 text-sm">{p.durationMin} {minutes}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onCopyPhase(phaseText)}
-                className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs games-focus-ring print:hidden"
-                aria-label={copyPhaseAria}
-              >
-                <Copy className="w-4 h-4" aria-hidden />
-                {copyPhase}
-              </button>
-            </div>
-            <p className="mt-2 text-white/80 text-sm italic">&quot;{p.transitionText}&quot;</p>
-            {gameNames.length > 0 && (
-              <p className="mt-1 text-white/60 text-xs">{gamesLabel}：{gameNames.join('、')}</p>
-            )}
-            {metaList.length > 0 && (
-              <>
+        {plan.phases.map((p, i) => {
+          const gameNames = p.gameIds.map((id) => getGameMeta(id)?.name ?? id)
+          const phaseText = `${p.phase} ${p.durationMin}${minutes}：${gameNames.join('、')}\n"${p.transitionText}"`
+          const metaList = p.gameIds.map((id) => getGameMeta(id)).filter(Boolean)
+          const isExpanded = expandedPhase === i
+          return (
+            <div
+              key={i}
+              className={`rounded-xl bg-white/10 border border-white/20 p-4 text-left min-w-0 ${draggedIndex === i ? 'opacity-60' : ''}`}
+              draggable={!!onReorderPhases}
+              onDragStart={onReorderPhases ? handleDragStart(i) : undefined}
+              onDragOver={onReorderPhases ? handleDragOver : undefined}
+              onDrop={onReorderPhases ? handleDrop(i) : undefined}
+            >
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 text-primary-300 font-medium">
+                  {onReorderPhases && (
+                    <span className="cursor-grab active:cursor-grabbing text-white/50" aria-label={reorderAria}>
+                      <GripVertical className="w-4 h-4" aria-hidden />
+                    </span>
+                  )}
+                  <span>{p.phase}</span>
+                  <span className="text-white/60 text-sm">{p.durationMin} {minutes}</span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setExpandedPhase(isExpanded ? null : i)}
-                  className="mt-2 text-white/50 hover:text-white/80 text-xs games-focus-ring"
-                  aria-label={expandAria}
-                  aria-expanded={isExpanded}
+                  onClick={() => onCopyPhase(phaseText)}
+                  className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs games-focus-ring print:hidden"
+                  aria-label={copyPhaseAria}
                 >
-                  {isExpanded ? t('partyDj.collapsePhase') : t('partyDj.expandPhase')}
+                  <Copy className="w-4 h-4" aria-hidden />
+                  {copyPhase}
                 </button>
-                {isExpanded && (
-                  <ul className="mt-2 space-y-1 text-white/60 text-xs">
-                    {metaList.map((m, j) => (
-                      <li key={j}>
-                        <span className="font-medium text-white/80">{m?.name}</span>
-                        {m?.short_description && ` — ${m.short_description}`}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            )}
-          </div>
-        )
-      })}
+              </div>
+              <p className="mt-2 text-white/80 text-sm italic">&quot;{p.transitionText}&quot;</p>
+              {gameNames.length > 0 && (
+                <p className="mt-1 text-white/60 text-xs">{gamesLabel}：{gameNames.join('、')}</p>
+              )}
+              {metaList.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedPhase(isExpanded ? null : i)}
+                    className="mt-2 text-white/50 hover:text-white/80 text-xs games-focus-ring"
+                    aria-label={expandAria}
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? t('partyDj.collapsePhase') : t('partyDj.expandPhase')}
+                  </button>
+                  {isExpanded && (
+                    <ul className="mt-2 space-y-1 text-white/60 text-xs">
+                      {metaList.map((m, j) => (
+                        <li key={j}>
+                          <span className="font-medium text-white/80">{m?.name}</span>
+                          {m?.short_description && ` — ${m.short_description}`}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        })}
       </div>
       <div className="flex flex-wrap gap-3 print:hidden">
         <button type="button" onClick={handleDownloadImage} disabled={imageDownloading} className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium games-focus-ring border border-white/20 disabled:opacity-50" aria-label={downloadImageAria}>
@@ -207,11 +211,26 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
             {saveLoading ? t('partyDj.submitLoading') : savePlan}
           </button>
         )}
-        <Link ref={startPartyRef} href="/games" className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium games-focus-ring" tabIndex={0}>
+        <button
+          ref={startPartyRef as any}
+          type="button"
+          onClick={() => {
+            // Generate ID/Code and set store
+            const { v4 } = require('uuid')
+            const roomId = v4()
+            const roomCode = roomId.slice(0, 6).toUpperCase()
+            // We need to import usePartyStore to use it, but we are in a memo component.
+            // Best to pass a handler from parent or access store here if safe.
+            // Actually, parent 'PartyDJPage' has the store access logic usually? 
+            // Let's rely on 'onStartParty' prop which we will add to this component
+            onStartParty?.(roomId, roomCode)
+          }}
+          className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium games-focus-ring"
+        >
           <Play className="w-5 h-5" aria-hidden />
           {startParty}
           <ChevronRight className="w-4 h-4" aria-hidden />
-        </Link>
+        </button>
       </div>
     </div>
   )
@@ -220,6 +239,7 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
 export default function PartyDJPage() {
   const { t } = useTranslation()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { tier } = useSubscription()
   const isFree = tier !== 'basic' && tier !== 'premium'
   const maxDuration = isFree ? 30 : 240
@@ -243,9 +263,10 @@ export default function PartyDJPage() {
   const { data: savedPlansData } = useQuery({
     queryKey: ['party-dj', 'plans'],
     queryFn: async () => {
-      const res = await fetch('/api/party-dj/plans')
+      const res = await fetch('/api/v1/party-dj/plans')
       if (!res.ok) throw new Error('Failed to fetch plans')
-      return res.json() as Promise<{ plans: Array<{ id: string; payload: PlanResult; created_at: string }> }>
+      const json = await res.json()
+      return (json.data ?? json) as { plans: Array<{ id: string; payload: PlanResult; created_at: string }> }
     },
     enabled: !!user?.id,
   })
@@ -299,7 +320,7 @@ export default function PartyDJPage() {
     abortRef.current = controller
     const tid = setTimeout(() => setLongWait(true), LONG_WAIT_MS)
     try {
-      const res = await fetch('/api/party-dj/plan', {
+      const res = await fetch('/api/v1/party-dj/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -312,17 +333,18 @@ export default function PartyDJPage() {
         }),
         signal: controller.signal,
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(t('partyDj.errorFetch'))
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        setError(json.error?.message || t('partyDj.errorFetch'))
         return
       }
+      const data = json.data
       const result = { phases: data.phases, totalMin: data.totalMin }
       cacheRef.current = { key, data: result, ts: Date.now() }
       setPlan(result)
       fireFullscreenConfetti()
       try {
-        fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_plan_success', value: 1 }) }).catch(() => {})
+        fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_plan_success', value: 1 }) }).catch(() => { })
       } catch { /* noop */ }
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') setError(t('partyDj.errorGeneric'))
@@ -336,7 +358,7 @@ export default function PartyDJPage() {
 
   const handleRetry = () => {
     setError(null)
-    void handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+    void handleSubmit({ preventDefault: () => { } } as React.FormEvent)
   }
 
   const handleCopyPlanLink = () => {
@@ -360,7 +382,7 @@ export default function PartyDJPage() {
     if (!plan || !user?.id) return
     setSavePlanLoading(true)
     try {
-      const res = await fetch('/api/party-dj/plans', {
+      const res = await fetch('/api/v1/party-dj/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payload: plan }),
@@ -531,7 +553,7 @@ export default function PartyDJPage() {
           onShare={() => {
             if (!plan) return
             try {
-              fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_share', value: 1 }) }).catch(() => {})
+              fetch('/api/analytics', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'party_dj_share', value: 1 }) }).catch(() => { })
             } catch { /* noop */ }
             const text = [
               `🎉 Cheersin ${t('partyDj.planTitle')}（${plan.totalMin} ${t('partyDj.minutes')}）`,
@@ -547,6 +569,20 @@ export default function PartyDJPage() {
           }}
           startPartyRef={startPartyRef}
           onReorderPhases={(newPhases) => plan && setPlan({ ...plan, phases: newPhases })}
+          onStartParty={(roomId, roomCode) => {
+            if (plan) {
+              // Dynamic import to avoid SSR issues if any, or just use the hook context
+              // But we can't use hook inside callback easily if not defined.
+              // We need to access store in the component.
+              // Let's add usePartyStore to top component.
+              // See below for the added hook call.
+              usePartyStore.getState().setRoomInfo(roomId, roomCode, true)
+              usePartyStore.getState().setPartyPlan(plan)
+
+              // Navigate
+              router.push(`/room/${roomId}`)
+            }
+          }}
         />
       )}
 

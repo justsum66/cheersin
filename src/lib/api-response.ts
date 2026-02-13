@@ -2,13 +2,31 @@
  * P2-21 / P0-015 / TEST-013：API 錯誤回應格式統一
  * 一律回傳 { success: false, error: { code, message } }；前端可依 code 做 i18n 或測試斷言
  * P3-74：500 不暴露內部實作，僅回傳通用訊息；細節僅 log、不傳客戶端
+ * R2-019：serverErrorResponse 自動 log 至 logger，供日誌聚合
  */
 import { NextResponse } from 'next/server'
+import { logger } from './logger'
 
 /** 統一錯誤 body：僅 code + message，方便前端依 code 做 i18n 或分支 */
 export interface ErrorResponseBody {
   success: false
   error: { code: string; message: string }
+}
+
+export interface SuccessResponseBody<T = unknown> {
+  success: true
+  data: T
+}
+
+/**
+ * 回傳統一格式的成功 JSON 與 status (預設 200)
+ */
+export function successResponse<T>(data: T, status = 200): NextResponse {
+  const body: SuccessResponseBody<T> = {
+    success: true,
+    data,
+  }
+  return NextResponse.json(body, { status })
 }
 
 /**
@@ -29,8 +47,13 @@ export function errorResponse(
   return NextResponse.json(body, { status })
 }
 
-/** P3-74：500 時回傳通用訊息；生產環境不傳 error.message/stack，僅 log */
+/** P3-74 / R2-019：500 時回傳通用訊息；自動 log 錯誤供日誌聚合 */
 export function serverErrorResponse(caught?: unknown): NextResponse {
+  if (caught != null) {
+    const message = caught instanceof Error ? caught.message : String(caught)
+    const stack = caught instanceof Error ? caught.stack : undefined
+    logger.error('API serverErrorResponse', { message, stack: stack?.slice(0, 500) })
+  }
   const body: ErrorResponseBody = {
     success: false,
     error: { code: 'INTERNAL_ERROR', message: '請稍後再試' },

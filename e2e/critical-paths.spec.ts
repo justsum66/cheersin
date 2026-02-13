@@ -16,7 +16,7 @@ async function dismissCookieBanner(page: import('@playwright/test').Page) {
   } else if (await cookieReject.isVisible().catch(() => false)) {
     await cookieReject.click({ force: true })
   }
-  await cookieDialog.waitFor({ state: 'detached', timeout: 15000 }).catch(() => {})
+  await cookieDialog.waitFor({ state: 'detached', timeout: 15000 }).catch(() => { })
   await page.waitForTimeout(1000)
 }
 
@@ -26,7 +26,7 @@ async function dismissAgeGate(page: import('@playwright/test').Page) {
   const confirmBtn = page.getByRole('button', { name: /確認|已滿|我滿|同意|Yes|Confirm/ })
   if (await ageDialog.isVisible().catch(() => false) && await confirmBtn.isVisible().catch(() => false)) {
     await confirmBtn.click({ force: true })
-    await ageDialog.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
+    await ageDialog.waitFor({ state: 'detached', timeout: 5000 }).catch(() => { })
     await page.waitForTimeout(500)
   }
 }
@@ -38,7 +38,7 @@ test.describe('關鍵路徑：Nav Bar', () => {
     await page.goto('/')
     await expect(page).toHaveURL(/\//)
     await page.waitForLoadState('domcontentloaded')
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     await dismissCookieBanner(page)
     const nav = page.getByRole('navigation', { name: /主導航|Main navigation/i }).or(page.getByRole('navigation').first())
     await expect(nav).toBeVisible({ timeout: 15000 })
@@ -59,7 +59,7 @@ test.describe('關鍵路徑：Nav Bar', () => {
     await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(800)
     await dismissCookieBanner(page)
-    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 8000 }).catch(() => {})
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 8000 }).catch(() => { })
     const bottomNav = page.getByRole('navigation', { name: /底部導航|Bottom navigation/i }).or(page.locator('nav').filter({ has: page.locator('a[href="/quiz"]') }))
     await expect(bottomNav).toBeVisible({ timeout: 12000 })
     const quizLink = bottomNav.locator('a[href="/quiz"]')
@@ -131,7 +131,7 @@ test.describe('關鍵路徑：首頁 → Quiz 完成', () => {
       await option.click({ force: true })
       await page.waitForTimeout(400)
     }
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     const resultRegion = page.getByRole('region', { name: '測驗結果' })
     const resultHeading = page.getByRole('heading', { name: /靈魂之酒|測驗結果/ })
     await expect(resultRegion.or(resultHeading)).toBeVisible({ timeout: 45000 })
@@ -178,7 +178,7 @@ test.describe('關鍵路徑：進遊戲完成一局', () => {
     test.setTimeout(90000)
     await page.goto('/games?game=truth-or-dare', { waitUntil: 'domcontentloaded', timeout: 25000 })
     await expect(page).toHaveURL(/game=truth-or-dare/)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     await dismissAgeGate(page)
     await dismissCookieBanner(page)
     const choiceBtn = page.getByTestId('truth-or-dare-pick-truth').or(page.getByRole('button', { name: /選擇真心話|選擇大冒險/ }).first())
@@ -195,13 +195,25 @@ test.describe('關鍵路徑：派對 DJ', () => {
     test.setTimeout(120000)
     await page.goto('/party-dj', { waitUntil: 'domcontentloaded', timeout: 15000 })
     await expect(page).toHaveURL(/\/party-dj/)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     await dismissCookieBanner(page)
     const submitBtn = page.getByRole('button', { name: /生成派對流程|Generate party flow/ })
     await expect(submitBtn).toBeVisible({ timeout: 10000 })
     await submitBtn.click()
     const result = page.getByTestId('party-dj-plan-result').or(page.getByRole('region', { name: /派對流程|Party flow/ }))
     await expect(result).toBeVisible({ timeout: 60000 })
+
+    // R2-005 Integration: Start Party flow
+    const startBtn = page.getByRole('button', { name: /開始派對|Start Party/ })
+    await expect(startBtn).toBeVisible()
+    await startBtn.click()
+
+    // Verify navigation to Party Room (or Lobby if strictly no ID, but our code generates ID)
+    // The current implementation redirects to /party-room (which renders PartyRoomManager)
+    await expect(page).toHaveURL(/\/party-room/, { timeout: 15000 })
+
+    // Verify Party Room elements (e.g., "派對房間" heading)
+    await expect(page.getByText(/派對房間|Party Room/)).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -233,7 +245,7 @@ test.describe('關鍵路徑：訂閱流程', () => {
   test('取消訂閱頁可達', async ({ page }) => {
     await page.goto('/subscription/cancel', { waitUntil: 'domcontentloaded', timeout: 15000 })
     await expect(page).toHaveURL(/\/subscription\/cancel/)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     await expect(
       page.getByTestId('cancel-page-heading').or(page.getByRole('heading', { name: /訂閱已取消/ }))
     ).toBeVisible({ timeout: 20000 })
@@ -261,7 +273,7 @@ test.describe('關鍵路徑：訂閱流程', () => {
     await expect(page).toHaveURL(/\/subscription/)
     await page.goto('/subscription/cancel', { waitUntil: 'domcontentloaded', timeout: 15000 })
     await expect(page).toHaveURL(/\/subscription\/cancel/)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('networkidle').catch(() => { })
     await expect(
       page.getByTestId('cancel-page-heading').or(page.getByRole('heading', { name: /訂閱已取消/ }))
     ).toBeVisible({ timeout: 20000 })

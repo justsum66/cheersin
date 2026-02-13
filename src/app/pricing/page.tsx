@@ -304,7 +304,7 @@ export default function PricingPage() {
               )}
               <div className="mb-6">
                 <FeatureIcon icon={plan.icon} size="md" color={plan.color as 'white' | 'primary' | 'accent'} />
-                <h3 className="text-2xl font-bold text-white mt-4 mb-1">{plan.name}</h3>
+                <h2 className="text-2xl font-bold text-white mt-4 mb-1">{plan.name}</h2>
                 <p className="text-white/50 text-sm mb-2">{plan.subName}</p>
                 {plan.sceneLabel && (
                   <p className="text-primary-400/90 text-xs font-medium uppercase tracking-wider" aria-label="適用場景">{plan.sceneLabel}</p>

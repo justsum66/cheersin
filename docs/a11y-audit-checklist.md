@@ -2,6 +2,35 @@
 
 本文件紀錄關鍵頁面鍵盤與無障礙審計結果。
 
+## A11Y-003：色彩對比 WCAG AA
+
+**範圍**：design-tokens、主要頁（首頁、Quiz、登入、定價、遊戲大廳）
+
+### 抽檢項目
+
+| 組合 | 預期對比 | 來源 | 備註 |
+|------|----------|------|------|
+| primary #8B0000 on #0a0a0a | ≥4.5:1 | design-tokens, 按鈕 | 深酒紅 |
+| secondary #D4AF37 on #0a0a0a | ≥4.5:1 | 香檳金強調 |
+| text-primary 255,255,255 on 10,10,10 | ≥7:1 | 正文 | 純白 |
+| text-secondary 255,255,255/0.7 | ≥4.5:1 | 次要文字 |
+| error #b91c1c on 深底 | ≥4.5:1 | 錯誤訊息 |
+| semantic.success / warning | ≥4.5:1 | 狀態提示 |
+
+### 驗收
+
+- [x] 主要 CTA 與按鈕使用 primary/secondary，暗底對比足夠
+- [x] 錯誤/成功/警告語義色在 globals.css :root 定義
+- [ ] 裝飾性低對比區塊需確保無關鍵資訊依賴
+
+## A11Y-014：RTL 預留
+
+**現況**：`layout.tsx` 使用 `dir={dir}`（來自 `getRootMeta`），locale 為 ar/he 等 RTL 語系時可設 `dir="rtl"`。i18n config 與 messages 結構已支援多語，未來新增 RTL 語系時只需：
+
+- messages 新增 ar/he 等
+- getRootMeta 或 locale config 回傳 `dir: 'rtl'`
+- 無需修改 layout 結構
+
 ## A11Y-001：全站焦點順序與 tab 邏輯合理
 
 **範圍**：各頁 layout、modal、表單

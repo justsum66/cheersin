@@ -1,3 +1,4 @@
+import './quiz.css'
 import type { Metadata } from 'next'
 import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
 import { QuizPageJsonLd } from '@/components/quiz/QuizPageJsonLd'

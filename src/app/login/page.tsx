@@ -249,6 +249,7 @@ export default function LoginPage() {
             </Link>
             <h1 className="text-3xl font-display font-bold text-white mb-2">{t('login.welcomeBack')}</h1>
             <p className="text-white/50">{t('login.continueJourney')}</p>
+            <p className="text-white/40 text-sm mt-1" role="note">{t('login.benefitsHint')}</p>
             {nextPath !== '/profile' && (
               <p className="text-primary-400/90 text-sm mt-1" role="status">{t('login.redirectTo')}：{nextLabel}</p>
             )}
@@ -311,6 +312,7 @@ export default function LoginPage() {
                   aria-required="true"
                   aria-label={t('login.passwordAria')}
                   aria-invalid={!!(errorMessage || loginError)}
+                  aria-describedby={(errorMessage || loginError) ? 'login-error-message' : undefined}
                 />
                 <label htmlFor="login-password" className={`absolute left-12 transition-all duration-200 pointer-events-none ${passwordFocus || passwordValue ? 'top-2 text-xs text-primary-400' : 'top-1/2 -translate-y-1/2 text-sm text-white/50'}`}>
                   {t('login.password')} <span className="text-red-400" aria-hidden>*</span>
@@ -363,7 +365,7 @@ export default function LoginPage() {
           </p>
 
           <div className="mt-6 pt-6 border-t border-white/10" style={{ marginTop: 'var(--space-section, 1.5rem)' }}>
-            <h3 className="text-sm font-semibold text-white/90 mb-1" id="login-magic-heading">{t('login.magicHeading')}</h3>
+            <h2 className="text-sm font-semibold text-white/90 mb-1" id="login-magic-heading">{t('login.magicHeading')}</h2>
             <p className="text-sm text-white/70 mb-2">{t('login.magicDescription')}</p>
             {magicSent ? (
               <p className="text-primary-400 text-sm">{t('login.magicSent')}</p>

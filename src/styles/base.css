@@ -1,0 +1,442 @@
+/**
+ * R2-002 Phase 9：@layer base 由 globals.css 遷移
+ * 包含：html/body 重置、scrollbar、focus、typography、主題、high-contrast、skip-link
+ * 註：獨立檔不使用 @layer base（需與 @tailwind 同檔），改為一般樣式
+ */
+  /* 任務 95：主題切換時背景與文字過渡，不閃爍（預留深色/淺色切換） */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* P1-034：滾動條美化 — 纖細、主題色、hover 時更明顯 */
+  :root {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.5);
+  }
+
+  /* P1-038：焦點環 — 鍵盤導航時清晰可見 */
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* safe-area、page-container-mobile、scrollbar-hide、games-focus-ring 已遷至 tailwind plugin (R2-002 Phase 1) */
+
+  /* 任務 69：高對比模式 — prefers-contrast: more 時提高邊框與可讀性 */
+  @media (prefers-contrast: more) {
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost {
+      border-width: 2px;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .input-glass,
+    [class*="input-glass"] {
+      border-width: 2px;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    a:not([class*="btn-"]) {
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  /* 任務 70：reduced-motion 由組件處理 */
+  /* R2-009 RWD：320px–2560px 適配；overflow-x 防橫向捲動；錨點 #faq 等平滑捲動 */
+  html {
+    min-width: 320px;
+    max-width: 100vw;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen overflow-x-hidden antialiased;
+    font-family: var(--font-sans);
+    min-width: 320px;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--line-height-body);
+  }
+
+  /* UX_LAYOUT_200 #9：正文與小字體建議不小於 0.75rem；可讀性 */
+  p {
+    margin-bottom: 0.75em;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 0.75em 0;
+    padding-left: 1.5em;
+  }
+
+  li+li {
+    margin-top: 0.25em;
+  }
+
+  /* P1-026：字體層級 body/caption；h1–h6 見下方 */
+  .typography-body {
+    font-size: var(--text-base);
+    line-height: var(--line-height-body);
+  }
+
+  .typography-caption {
+    font-size: var(--text-xs);
+    color: rgb(255 255 255 / 0.5);
+  }
+
+  /* P1-096：引用塊 (Blockquote) 樣式 — 左側漸變、背景區分 */
+  blockquote {
+    margin: 1em 0;
+    padding: 0.75em 1em 0.75em 1.25em;
+    border-left: 4px solid transparent;
+    border-image: linear-gradient(180deg, rgb(var(--primary) / 0.8), rgb(var(--secondary) / 0.5)) 1;
+    font-style: italic;
+    color: rgb(var(--text-secondary));
+    background: rgb(255 255 255 / 0.03);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  html.light blockquote {
+    background: rgb(0 0 0 / 0.04);
+  }
+
+  /* 背景漸層：深紫 #1a0a2e → 黑 #0a0a0a；P3 主題切換 300ms 過渡 */
+  html:not(.light) body {
+    background: linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%);
+    @apply text-white;
+    transition: background-color 0.3s ease;
+  }
+
+  html.light body {
+    @apply bg-gray-50 text-gray-900;
+    transition: background-color 0.3s ease;
+  }
+
+  html.light .glass-card,
+  html.light .glass-heavy {
+    @apply bg-white/70 border-gray-200/50 backdrop-blur-xl;
+  }
+
+  html.light .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #7a0000, #b8942e, #6b0000);
+  }
+
+  html.light .glass-2 {
+    @apply bg-white/80 border-gray-200/60 backdrop-blur-xl;
+  }
+
+  /* P1-052：Logo 亮色主題時文字深色、保持可讀 */
+  html.light .brand-logo .font-display {
+    @apply text-gray-900;
+  }
+
+  html.light .brand-logo .text-primary-500 {
+    @apply text-[#8B0000];
+  }
+
+  html.light .brand-logo span.text-white\/40 {
+    @apply text-gray-500;
+  }
+
+  /* 125 字體大小調節全站：依 --text-scale 縮放根字級 */
+  html {
+    font-size: calc(100% * var(--text-scale, 1));
+  }
+
+  /* 124 高對比模式：邊框與文字對比加強 */
+  html.high-contrast body,
+  html[data-high-contrast="true"] body {
+    @apply text-white;
+  }
+
+  html.high-contrast .glass-card,
+  html.high-contrast .glass-heavy,
+  html[data-high-contrast="true"] .glass-card,
+  html[data-high-contrast="true"] .glass-heavy {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(10, 10, 20, 0.95);
+  }
+
+  html.high-contrast a,
+  html.high-contrast button,
+  html[data-high-contrast="true"] a,
+  html[data-high-contrast="true"] button {
+    text-decoration-thickness: 1px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* 21 品牌 Pattern：酒杯幾何，置於背景層；P3 透明度 0.04–0.06 不搶主內容 */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 12v6l-8 26h16l-8-26zm0 32c-3 0-6 2-6 5s3 5 6 5 6-2 6-5-3-5-6-5z' fill='rgba(212,175,55,0.04)'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+  }
+
+  /* Cinematic Noise Overlay；P3 z-index 不擋互動、pointer-events: none */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* P2 全站連結 hover 一致：underline、primary 色 */
+  a:not([class*="btn-"]):not(.skip-link) {
+    font-weight: 500;
+    @apply text-primary-400;
+  }
+
+  a:not([class*="btn-"]):not(.skip-link):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    @apply text-primary-300;
+  }
+
+  /* UX_LAYOUT_200 #5：副標題/正文對比 */
+  .text-muted-ux {
+    color: rgb(var(--text-muted));
+  }
+
+  /* UX_LAYOUT_200 #1 #4：字體層級使用 token；h1 小螢幕縮放 */
+  h1 {
+    font-size: clamp(1.75rem, 5vw + 1rem, var(--text-h1));
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--tracking-h1);
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--tracking-h2);
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    letter-spacing: var(--tracking-h3);
+  }
+
+  h4 {
+    font-size: var(--text-h4);
+  }
+
+  h5 {
+    font-size: var(--text-h5);
+  }
+
+  h6 {
+    font-size: var(--text-h6);
+  }
+
+  body {
+    font-size: var(--text-base);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-bold text-balance;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  /* UX_LAYOUT_200 #15：標題與下方內容間距 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+  }
+
+  /* 數字：Tabular Nums 對齊 */
+  .tabular-nums,
+  [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* UX_LAYOUT_200 #11：報價/金價等數字 — tabular-nums + 可選等寬/serif 風格 */
+  .text-price,
+  .text-numeric {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-price {
+    font-feature-settings: "tnum";
+  }
+
+  /* UX_LAYOUT_200 #14：代碼/code 字體與背景 */
+  code,
+  kbd {
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.25rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  kbd {
+    font-size: 0.85em;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  pre {
+    margin: 0.75em 0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-x: auto;
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  pre code {
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  /* P1-095：代碼塊 (Code Block) 樣式 — 左側品牌色條 */
+  pre[data-code-block] {
+    border-left: 4px solid rgb(var(--primary) / 0.6);
+    position: relative;
+  }
+
+  /* P1-032：表單基礎 — 與 .input-glass 並存；select/textarea 基礎圓角與邊框 */
+  select:not([class*="input-glass"]) {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-height: 44px;
+  }
+
+  textarea:not([class*="input-glass"]) {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-height: 88px;
+  }
+
+  /* Olivia/Cindy 低視力：prefers-contrast 時加強邊框與文字對比 */
+  @media (prefers-contrast: more) {
+    .glass-card,
+    .glass-card-spotlight,
+    .glass-heavy,
+    .glass-2 {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    button,
+    input,
+    [role="button"] {
+      border-width: 2px;
+    }
+  }
+
+  /* 126 減少動態效果：尊重 prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* 127 Focus 可見指示器：鍵盤聚焦時明顯邊框，滑鼠點擊不干擾 */
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(139 0 0);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* 128 Skip to content：平時隱藏，聚焦時顯示 */
+  .skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    z-index: 100;
+  }
+
+  /* T011 P2：觸控區域 ≥44px，銀髮/無障礙合規 */
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: auto;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.25rem;
+    margin: 0;
+    clip: auto;
+    background: rgb(139 0 0);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* 21 品牌 Pattern：酒杯幾何圖案背景 */
+  .brand-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 8v4l-6 20h12l-6-20zm0 24c-2 0-4 1.5-4 4s2 4 4 4 4-1.5 4-4-2-4-4-4z' fill='rgba(212,175,55,0.06)'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
+  }

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { getReduceMotion } from '@/lib/games-settings'
+import { useGameStore } from '@/store/useGameStore'
 import type { GameWrapperProps } from './GameWrapperTypes'
 
 const GAMES_PLAYED_KEY = 'cheersin_games_played'
@@ -35,12 +36,107 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     onToggleAnonymous,
   } = props
 
+  // Store Integration
+  const {
+    gameState,
+    setGameState,
+    setTrial,
+    trial,
+    decrementTrialRound,
+    resetGame
+  } = useGameStore()
+
+  // Derived from Store
+  const isPaused = gameState === 'paused'
+  const gameHasStarted = gameState !== 'lobby'
+  const trialRoundsLeft = trial.roundsLeft
+
+  // Sync Props to Store
+  useEffect(() => {
+    setTrial(isGuestTrial, trialRoundsMax)
+  }, [isGuestTrial, trialRoundsMax, setTrial])
+
+  // Initial Reset
+  useEffect(() => {
+    if (!currentGameId && !isSpectator) {
+      resetGame()
+    }
+  }, [currentGameId, isSpectator, resetGame])
+
+  // Local UI State
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [rulesContent, setRulesContent] = useState<string | null>(null)
   const [showRulesModal, setShowRulesModal] = useState(false)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
   const rulesModalRef = useRef<HTMLDivElement>(null)
 
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [showTrialEndModal, setShowTrialEndModal] = useState(false)
+
+  const [reportSubmitted, setReportSubmitted] = useState(false)
+  const [reportType, setReportType] = useState<string>('其他')
+  const [reportDesc, setReportDesc] = useState('')
+  const [reportSending, setReportSending] = useState(false)
+
+  const [contentScale, setContentScale] = useState(1)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [fullscreenUnsupported, setFullscreenUnsupported] = useState(false)
+  const [showCountdown, setShowCountdown] = useState(true)
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
+  const [pendingSwitchGameId, setPendingSwitchGameId] = useState<string | null>(null)
+  const [titleAnnouncement, setTitleAnnouncement] = useState('')
+
+  const systemReduced = useReducedMotion()
+  const [userReduceMotion, setUserReduceMotion] = useState(false)
+
+  // Reduced Motion Logic
+  useEffect(() => {
+    setUserReduceMotion(getReduceMotion())
+    const on = () => setUserReduceMotion(getReduceMotion())
+    window.addEventListener('cheersin-games-reduce-motion-change', on)
+    return () => window.removeEventListener('cheersin-games-reduce-motion-change', on)
+  }, [])
+  const reducedMotion = !!systemReduced || userReduceMotion
+
+  // Game/Audio Logic
+  const setIsPaused = useCallback((paused: boolean | ((p: boolean) => boolean)) => {
+    const next = typeof paused === 'function' ? paused(isPaused) : paused
+    setGameState(next ? 'paused' : 'playing')
+  }, [isPaused, setGameState])
+
+  const togglePause = useCallback(() => {
+    setGameState(gameState === 'paused' ? 'playing' : 'paused')
+  }, [gameState, setGameState])
+
+  const setGameHasStarted = useCallback((started: boolean) => {
+    setGameState(started ? 'playing' : 'lobby')
+  }, [setGameState])
+
+  const onTrialRoundEnd = useCallback(() => {
+    decrementTrialRound()
+  }, [decrementTrialRound])
+
+  // Watch trial end
+  useEffect(() => {
+    if (isGuestTrial && trialRoundsLeft <= 0 && gameHasStarted) {
+      setShowTrialEndModal(true)
+    }
+  }, [trialRoundsLeft, isGuestTrial, gameHasStarted])
+
+  // Countdown Logic matching Reduced Motion
+  useEffect(() => {
+    if (reducedMotion && showCountdown) {
+      setShowCountdown(false)
+      setGameHasStarted(true)
+    }
+  }, [reducedMotion, showCountdown, setGameHasStarted])
+
+  const onCountdownComplete = useCallback(() => {
+    setShowCountdown(false)
+    setGameHasStarted(true)
+  }, [setGameHasStarted])
+
+  // Rules Modal Accessibility
   useEffect(() => {
     if (!showRulesModal || !rulesModalRef.current) return
     const closeBtn = rulesModalRef.current.querySelector<HTMLButtonElement>('button[aria-label="關閉規則"]')
@@ -81,78 +177,24 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     setTimeout(() => rulesButtonRef.current?.focus(), 0)
   }, [])
 
-  const [showReportModal, setShowReportModal] = useState(false)
-  const [trialRoundsLeft, setTrialRoundsLeft] = useState(trialRoundsMax)
-  const [showTrialEndModal, setShowTrialEndModal] = useState(false)
-  const onTrialRoundEnd = useCallback(() => {
-    setTrialRoundsLeft((prev) => {
-      if (prev <= 1) {
-        setShowTrialEndModal(true)
-        return 0
-      }
-      return prev - 1
-    })
-  }, [])
-
-  const [reportSubmitted, setReportSubmitted] = useState(false)
-  const [reportType, setReportType] = useState<string>('其他')
-  const [reportDesc, setReportDesc] = useState('')
-  const [reportSending, setReportSending] = useState(false)
-  const [contentScale, setContentScale] = useState(1)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [fullscreenUnsupported, setFullscreenUnsupported] = useState(false)
-  const [isPaused, setIsPaused] = useState(false)
-  const [gameHasStarted, setGameHasStarted] = useState(false)
-  const [showCountdown, setShowCountdown] = useState(true)
-  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
-  const [pendingSwitchGameId, setPendingSwitchGameId] = useState<string | null>(null)
-  const systemReduced = useReducedMotion()
-  const [userReduceMotion, setUserReduceMotion] = useState(false)
   useEffect(() => {
-    setUserReduceMotion(getReduceMotion())
-    const on = () => setUserReduceMotion(getReduceMotion())
-    window.addEventListener('cheersin-games-reduce-motion-change', on)
-    return () => window.removeEventListener('cheersin-games-reduce-motion-change', on)
-  }, [])
-  const reducedMotion = !!systemReduced || userReduceMotion
+    if (!showRulesModal) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRulesModal() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showRulesModal, closeRulesModal])
 
-  /** R2-040：簡化動畫時跳過 3-2-1 倒數，直接開始 */
   useEffect(() => {
-    if (reducedMotion && showCountdown) {
-      setShowCountdown(false)
-      setGameHasStarted(true)
+    if (typeof document === 'undefined') return
+    if (showRulesModal) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = prev }
     }
-  }, [reducedMotion, showCountdown])
+  }, [showRulesModal])
 
-  const onCountdownComplete = useCallback(() => {
-    setShowCountdown(false)
-    setGameHasStarted(true)
-  }, [])
-
-  const contentScaleRef = useRef(1)
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pinchStartDistRef = useRef(0)
-  const pinchStartScaleRef = useRef(1)
-  const threeFingerStartXRef = useRef<number>(0)
-  const threeFingerCurrentXRef = useRef<number>(0)
-  const threeFingerTrackingRef = useRef(false)
+  // Fullscreen Logic
   const multiTouchActiveRef = useRef(false)
-  const multiTouchClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [titleAnnouncement, setTitleAnnouncement] = useState('')
-  contentScaleRef.current = contentScale
-
-  const handleSwitchGameClick = useCallback(
-    (gameId: string) => {
-      if (gameHasStarted) {
-        setPendingSwitchGameId(gameId)
-        setShowSwitchConfirm(true)
-      } else {
-        onSwitchGame?.(gameId)
-      }
-    },
-    [gameHasStarted, onSwitchGame]
-  )
-
   const handleToggleFullscreen = useCallback(() => {
     if (multiTouchActiveRef.current) return
     const el = wrapperRef.current
@@ -162,7 +204,7 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     const isInFullscreen = !!document.fullscreenElement || !!doc.webkitFullscreenElement
     if (isInFullscreen) {
       const exit = document.exitFullscreen ?? doc.webkitExitFullscreen
-      exit?.()?.then(() => { setIsFullscreen(false); setFullscreenUnsupported(false); }).catch(() => {})
+      exit?.()?.then(() => { setIsFullscreen(false); setFullscreenUnsupported(false); }).catch(() => { })
     } else {
       const request = el.requestFullscreen ?? elWithWebkit.webkitRequestFullscreen
       request?.call(el)
@@ -183,47 +225,38 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
   }, [])
 
   useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (isFullscreen) document.body.classList.add('fullscreen-hide-chrome')
+    return () => document.body.classList.remove('fullscreen-hide-chrome')
+  }, [isFullscreen])
+
+  // Title / Analytics
+  useEffect(() => {
     if (typeof window === 'undefined') return
     try {
       const raw = localStorage.getItem(GAMES_PLAYED_KEY)
       const n = raw ? Math.max(0, parseInt(raw, 10) || 0) : 0
       localStorage.setItem(GAMES_PLAYED_KEY, String(n + 1))
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }, [])
-
-  const handleTouchStart = useCallback(() => {}, [])
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current)
-      longPressTimerRef.current = null
-    }
-  }, [])
-
-  const spaceHandlerRef = useRef<(() => void) | null>(null)
-  const digitHandlersRef = useRef<Record<number, () => void>>({})
-  const registerSpace = useCallback((fn: () => void) => {
-    spaceHandlerRef.current = fn
-    return () => { spaceHandlerRef.current = null }
-  }, [])
-  const registerDigit = useCallback((digit: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9, fn: () => void) => {
-    digitHandlersRef.current[digit] = fn
-    return () => { delete digitHandlersRef.current[digit] }
-  }, [])
-  const togglePause = useCallback(() => setIsPaused((p) => !p), [])
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return
-    if (isFullscreen) document.body.classList.add('fullscreen-hide-chrome')
-    return () => document.body.classList.remove('fullscreen-hide-chrome')
-  }, [isFullscreen])
 
   useEffect(() => {
     if (typeof document !== 'undefined') document.title = `${title} | 派對遊樂場`
     setTitleAnnouncement(`頁面標題：${title} | 派對遊樂場`)
     return () => { if (typeof document !== 'undefined') document.title = GAMES_PAGE_TITLE }
   }, [title])
+
+  // Touch / Pinch Logic
+  const contentScaleRef = useRef(1)
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pinchStartDistRef = useRef(0)
+  const pinchStartScaleRef = useRef(1)
+  const threeFingerStartXRef = useRef<number>(0)
+  const threeFingerCurrentXRef = useRef<number>(0)
+  const threeFingerTrackingRef = useRef(false)
+  const multiTouchClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  contentScaleRef.current = contentScale
 
   useEffect(() => {
     const ref = multiTouchClearTimerRef
@@ -233,47 +266,18 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return
-    if (showRulesModal) {
-      const prev = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
-      return () => { document.body.style.overflow = prev }
-    }
-  }, [showRulesModal])
-
-  useEffect(() => {
-    if (!showRulesModal) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRulesModal() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [showRulesModal, closeRulesModal])
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement
-      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return
-      if (e.key === 'p' || e.key === 'P') {
-        e.preventDefault()
-        setIsPaused((p) => !p)
-        return
-      }
-      if (e.key === ' ') {
-        e.preventDefault()
-        spaceHandlerRef.current?.()
-        return
-      }
-      const d = e.key >= '1' && e.key <= '9' ? Number(e.key) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 : 0
-      if (d) digitHandlersRef.current[d]?.()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
-
   const getTouchDistance = (touches: React.TouchList | TouchList) => {
     if (touches.length < 2) return 0
     return Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY)
   }
+
+  const handleTouchStart = useCallback(() => { }, [])
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
+    }
+  }, [])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -330,6 +334,51 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
       onSwitchGame(switchGameList[idx - 1]!.id)
     }
   }, [switchGameList, onSwitchGame, currentGameId])
+
+  // Hotkeys
+  const spaceHandlerRef = useRef<(() => void) | null>(null)
+  const digitHandlersRef = useRef<Record<number, () => void>>({})
+  const registerSpace = useCallback((fn: () => void) => {
+    spaceHandlerRef.current = fn
+    return () => { spaceHandlerRef.current = null }
+  }, [])
+  const registerDigit = useCallback((digit: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9, fn: () => void) => {
+    digitHandlersRef.current[digit] = fn
+    return () => { delete digitHandlersRef.current[digit] }
+  }, [])
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault()
+        togglePause() // Use store toggle
+        return
+      }
+      if (e.key === ' ') {
+        e.preventDefault()
+        spaceHandlerRef.current?.()
+        return
+      }
+      const d = e.key >= '1' && e.key <= '9' ? Number(e.key) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 : 0
+      if (d) digitHandlersRef.current[d]?.()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [togglePause])
+
+  const handleSwitchGameClick = useCallback(
+    (gameId: string) => {
+      if (gameHasStarted) {
+        setPendingSwitchGameId(gameId)
+        setShowSwitchConfirm(true)
+      } else {
+        onSwitchGame?.(gameId)
+      }
+    },
+    [gameHasStarted, onSwitchGame]
+  )
 
   const headerProps = {
     title,

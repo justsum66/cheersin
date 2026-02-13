@@ -4,6 +4,7 @@ import { memo, useState, useEffect, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
+import { cardHover3D } from '@/lib/animations'
 import { ChevronRight, Users, Heart, Star, Share2, Crown, HelpCircle, type LucideIcon } from 'lucide-react'
 import FeatureIcon from '@/components/ui/FeatureIcon'
 import { Badge } from '@/components/ui/Badge'
@@ -150,206 +151,205 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
 
   return (
     <>
-    {/* Phase 1 C5.2: Lobby 遊戲卡片 hover 深度效果增強 - 微妙 3D 傾角 + 深度陰影 */}
-    {/* Phase 1 E3.3: virtual-scroll-card 優化長列表渲染性能 */}
-    <motion.div
-      ref={buttonRef}
-      role="listitem"
-      tabIndex={0}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
-      className={`virtual-scroll-card rounded-2xl glass-card-spotlight p-4 md:p-6 text-left group flex flex-col gap-4 relative overflow-hidden h-full min-h-[180px] transition-all duration-300 border shadow-glass-2 hover:shadow-glass-hover outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring ${colorHoverGlow[game.color] ?? ''}`}
-      style={{ transformStyle: 'preserve-3d' }}
-      title={game.rulesSummary ?? game.name}
-      onClick={() => onSelect(game.id)}
-      onContextMenu={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setContextMenu({ x: e.clientX, y: e.clientY })
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      {/* Phase 1 C5.2: Lobby 遊戲卡片 hover 深度效果增強 - 微妙 3D 傾角 + 深度陰影 */}
+      {/* Phase 1 E3.3: virtual-scroll-card 優化長列表渲染性能 */}
+      <motion.div
+        ref={buttonRef}
+        role="listitem"
+        tabIndex={0}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onFocus={() => setIsHovered(true)}
+        onBlur={() => setIsHovered(false)}
+        className={`virtual-scroll-card rounded-2xl glass-card-spotlight p-4 md:p-6 text-left group flex flex-col gap-4 relative overflow-hidden h-full min-h-[180px] transition-all duration-300 border shadow-glass-2 hover:shadow-glass-hover outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring ${colorHoverGlow[game.color] ?? ''}`}
+        style={{ transformStyle: 'preserve-3d' }}
+        title={game.rulesSummary ?? game.name}
+        onClick={() => onSelect(game.id)}
+        onContextMenu={(e) => {
           e.preventDefault()
-          onSelect(game.id)
-        } else {
-          onKeyDown(e, index)
-        }
-      }}
-      aria-label={`進入遊戲：${game.name}，${game.players}，開始`}
-      initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: reducedMotion ? 0 : 0.3 }}
-      whileHover={reducedMotion ? undefined : {
-        scale: 1.03,
-        rotateX: 2,
-        rotateY: -2,
-        z: 15,
-        transition: { duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }
-      }}
-      whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-    >
-      {/* P1-195：付費遊戲 Pro/皇冠角標 */}
-      {game.isPremium && (
-        <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-primary-500/90 to-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="Pro 方案解鎖">
-          <Crown className="w-3 h-3" /> Pro
-        </span>
-      )}
-      {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
-      {game.isNew && !game.isPremium && (
-        <span className="absolute top-2 right-2 z-10 animate-[pulse_2s_ease-in-out_infinite]">
-          <Badge variant="accent" size="sm">{t('games.new')}</Badge>
-        </span>
-      )}
-      {game.popular && !game.isNew && (
-        <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
-          {t('games.popular')}
-        </span>
-      )}
-      {/* GAMES_500 #110：免費試玩（accent）與 PRO 鎖定視覺區分 — 試玩用 accent，PRO 在 learn 課程卡 */}
-      {game.isGuestTrial && (
-        <span className="absolute top-10 right-2 inline-flex flex-col items-end gap-0.5 z-10" aria-label="可免費試玩，不需登入">
-          <span className="inline-flex px-2 py-0.5 rounded bg-accent-500/90 text-white text-[10px] font-bold tracking-wider shadow-md">免費試玩</span>
-          <span className="text-[9px] text-white/70">不需登入</span>
-        </span>
-      )}
-      {/* 任務 4：收藏心形，左上角，點擊不觸發進入遊戲（不可用 button 包 button，故外層改為 div） */}
-      {/* P1-173：收藏心形點擊時跳動動畫 — whileTap 放大 + 心形 keyframe */}
-      {game.onToggleFavorite != null && (
-        <motion.button
-          type="button"
-          onClick={handleHeartClick}
-          className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 hover:bg-white/10 transition-colors games-touch-target flex items-center justify-center games-focus-ring"
-          aria-label={game.isFavorite ? '移除收藏' : '加入收藏'}
-          whileTap={reducedMotion ? undefined : { scale: 1.2 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-        >
-          <motion.span
-            key={game.isFavorite ? 'on' : 'off'}
-            initial={reducedMotion ? false : { scale: 1 }}
-            animate={reducedMotion ? {} : game.isFavorite ? { scale: [1, 1.35, 1] } : { scale: 1 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="inline-block"
+          e.stopPropagation()
+          setContextMenu({ x: e.clientX, y: e.clientY })
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onSelect(game.id)
+          } else {
+            onKeyDown(e, index)
+          }
+        }}
+        aria-label={`進入遊戲：${game.name}，${game.players}，開始`}
+        initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: reducedMotion ? 0 : index * 0.05, duration: reducedMotion ? 0 : 0.3 }}
+        whileHover={reducedMotion ? undefined : {
+          scale: 1.03,
+          rotateX: 2,
+          rotateY: -2,
+          z: 15,
+          transition: { duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }
+        }}
+        whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+      >
+        {/* P1-195：付費遊戲 Pro/皇冠角標 */}
+        {game.isPremium && (
+          <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-primary-500/90 to-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="Pro 方案解鎖">
+            <Crown className="w-3 h-3" /> Pro
+          </span>
+        )}
+        {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
+        {game.isNew && !game.isPremium && (
+          <span className="absolute top-2 right-2 z-10 animate-[pulse_2s_ease-in-out_infinite]">
+            <Badge variant="accent" size="sm">{t('games.new')}</Badge>
+          </span>
+        )}
+        {game.popular && !game.isNew && (
+          <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
+            {t('games.popular')}
+          </span>
+        )}
+        {/* GAMES_500 #110：免費試玩（accent）與 PRO 鎖定視覺區分 — 試玩用 accent，PRO 在 learn 課程卡 */}
+        {game.isGuestTrial && (
+          <span className="absolute top-10 right-2 inline-flex flex-col items-end gap-0.5 z-10" aria-label="可免費試玩，不需登入">
+            <span className="inline-flex px-2 py-0.5 rounded bg-accent-500/90 text-white text-[10px] font-bold tracking-wider shadow-md">免費試玩</span>
+            <span className="text-[9px] text-white/70">不需登入</span>
+          </span>
+        )}
+        {/* 任務 4：收藏心形，左上角，點擊不觸發進入遊戲（不可用 button 包 button，故外層改為 div） */}
+        {/* P1-173：收藏心形點擊時跳動動畫 — whileTap 放大 + 心形 keyframe */}
+        {game.onToggleFavorite != null && (
+          <motion.button
+            type="button"
+            onClick={handleHeartClick}
+            className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 hover:bg-white/10 transition-colors games-touch-target flex items-center justify-center games-focus-ring"
+            aria-label={game.isFavorite ? '移除收藏' : '加入收藏'}
+            whileTap={reducedMotion ? undefined : { scale: 1.2 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
           >
-            <Heart className={`w-4 h-4 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
-          </motion.span>
-        </motion.button>
-      )}
-      {/* GAMES_500 #118 #129：icon 尺寸與 FeatureIcon 一致；間距 token */}
-      {/* Phase 1 C5.2: 圖示 hover 放大 + 右上箭頭淡入 */}
-      <div className="flex justify-between items-start btn-icon-text-gap">
-        <motion.div 
-          className="flex items-center gap-2"
-          whileHover={reducedMotion ? undefined : {
-            scale: 1.08,
-            transition: { duration: 0.2, ease: 'easeOut' }
-          }}
-        >
-          <FeatureIcon icon={game.icon} size="md" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
-        </motion.div>
-        <motion.div 
-          initial={{ opacity: 0, x: -5 }}
-          animate={{ opacity: 0 }}
-          whileHover={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.2 }}
-          className="-mr-2 -mt-2"
-        >
-          <div className="p-2 bg-white/10 rounded-full">
-            <ChevronRight className="w-4 h-4 text-white" />
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="z-10 mt-auto">
-        <h3 className="text-xl font-display font-bold text-white mb-2 group-hover:text-primary-400 transition-colors duration-200 truncate" title={game.name}>
-          {game.name}
-        </h3>
-        <p className={`text-white/50 text-sm mb-3 ${lineClampClass} min-h-[2.5rem]`}>{game.description}</p>
-        {/* P0-11：主 CTA 使用 btn-secondary、觸控區域 ≥44px */}
-        {/* Phase 1 B2.1: 按鈕增加 press scale 動畫 */}
-        <span className="inline-flex items-center gap-2 btn-secondary btn-press-scale min-h-[48px] min-w-[44px] py-2 px-4 text-sm font-semibold rounded-xl mt-2 w-fit">
-          <span>開始遊戲</span>
-          <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
-        </span>
-        <div className="flex flex-wrap gap-1.5 items-center mt-3">
-          {game.onShowRules != null && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); game.onShowRules?.({ id: game.id, name: game.name, rulesSummary: game.rulesSummary }); }}
-              className="games-touch-target inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-xs games-focus-ring"
-              aria-label="預覽遊戲規則"
+            <motion.span
+              key={game.isFavorite ? 'on' : 'off'}
+              initial={reducedMotion ? false : { scale: 1 }}
+              animate={reducedMotion ? {} : game.isFavorite ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="inline-block"
             >
-              <HelpCircle className="w-3.5 h-3.5" /> 規則
+              <Heart className={`w-4 h-4 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
+            </motion.span>
+          </motion.button>
+        )}
+        {/* GAMES_500 #118 #129：icon 尺寸與 FeatureIcon 一致；間距 token */}
+        {/* Phase 1 C5.2: 圖示 hover 放大 + 右上箭頭淡入 */}
+        <div className="flex justify-between items-start btn-icon-text-gap">
+          <motion.div
+            className="flex items-center gap-2"
+            whileHover={reducedMotion ? undefined : {
+              scale: 1.08,
+              transition: { duration: 0.2, ease: 'easeOut' }
+            }}
+          >
+            <FeatureIcon icon={game.icon} size="md" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: 0 }}
+            whileHover={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+            className="-mr-2 -mt-2"
+          >
+            <div className="p-2 bg-white/10 rounded-full">
+              <ChevronRight className="w-4 h-4 text-white" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="z-10 mt-auto">
+          <h3 className="text-xl font-display font-bold text-white mb-2 group-hover:text-primary-400 transition-colors duration-200 truncate" title={game.name}>
+            {game.name}
+          </h3>
+          <p className={`text-white/50 text-sm mb-3 ${lineClampClass} min-h-[2.5rem]`}>{game.description}</p>
+          {/* P0-11：主 CTA 使用 btn-secondary、觸控區域 ≥44px */}
+          {/* Phase 1 B2.1: 按鈕增加 press scale 動畫 */}
+          <span className="inline-flex items-center gap-2 btn-secondary btn-press-scale min-h-[48px] min-w-[44px] py-2 px-4 text-sm font-semibold rounded-xl mt-2 w-fit">
+            <span>開始遊戲</span>
+            <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
+          </span>
+          <div className="flex flex-wrap gap-1.5 items-center mt-3">
+            {game.onShowRules != null && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); game.onShowRules?.({ id: game.id, name: game.name, rulesSummary: game.rulesSummary }); }}
+                className="games-touch-target inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-xs games-focus-ring"
+                aria-label="預覽遊戲規則"
+              >
+                <HelpCircle className="w-3.5 h-3.5" /> 規則
+              </button>
+            )}
+            {game.category && displayLabel && (
+              <Badge variant="default" size="sm">{displayLabel}</Badge>
+            )}
+            {game.difficulty != null && (
+              <span
+                className={`inline-flex px-2 py-0.5 rounded text-[10px] ${game.difficulty === 'easy' ? 'bg-emerald-500/20 text-emerald-300' : game.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'
+                  }`}
+              >
+                {GAME_DIFFICULTY_LABELS[game.difficulty]}
+              </span>
+            )}
+            {game.estimatedMinutes != null && game.estimatedMinutes > 0 && (
+              <span className="inline-flex px-2 py-0.5 rounded bg-white/10 text-[10px] text-white/50 tabular-nums">
+                約 {game.estimatedMinutes} 分鐘
+              </span>
+            )}
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-mono uppercase tracking-widest ${game.color === 'primary' ? 'bg-primary-500/15 border-primary-500/30 text-primary-300' : game.color === 'secondary' ? 'bg-secondary-500/15 border-secondary-500/30 text-secondary-300' : game.color === 'accent' ? 'bg-accent-500/15 border-accent-500/30 text-accent-300' : 'bg-white/10 border-white/10 text-white/50'}`} data-i18n-key={GAMES_CARD_PLAYERS_I18N_KEY}>
+              <Users className="w-3.5 h-3.5 shrink-0" aria-hidden />
+              {game.players}
+            </span>
+            {game.twoPlayerFriendly && (
+              <Badge variant="secondary" size="sm" title="2 人即可玩">2 人可玩</Badge>
+            )}
+            <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
+          </div>
+        </div>
+        {/* P1-108：hover 顯示規則與評分覆蓋層（背面效果） */}
+        <AnimatePresence>
+          {showFlipOverlay && (
+            <motion.div
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0a0a1a]/95 backdrop-blur-sm border border-white/10"
+            >
+              {game.rulesSummary && <p className="text-white/90 text-sm leading-relaxed text-center mb-2 line-clamp-4">{game.rulesSummary}</p>}
+              <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+      {contextMenu && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed z-[9999] min-w-[160px] rounded-xl border border-white/10 bg-[#1a0a2e] shadow-xl py-1"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          role="menu"
+          aria-label="卡片選單"
+        >
+          {game.onToggleFavorite != null && (
+            <button type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={() => { game.onToggleFavorite?.(game.id); closeMenu() }}>
+              <Heart className={`w-4 h-4 shrink-0 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
+              {game.isFavorite ? '移除收藏' : '加入收藏'}
             </button>
           )}
-          {game.category && displayLabel && (
-            <Badge variant="default" size="sm">{displayLabel}</Badge>
-          )}
-          {game.difficulty != null && (
-            <span
-              className={`inline-flex px-2 py-0.5 rounded text-[10px] ${
-                game.difficulty === 'easy' ? 'bg-emerald-500/20 text-emerald-300' : game.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'
-              }`}
-            >
-              {GAME_DIFFICULTY_LABELS[game.difficulty]}
-            </span>
-          )}
-          {game.estimatedMinutes != null && game.estimatedMinutes > 0 && (
-            <span className="inline-flex px-2 py-0.5 rounded bg-white/10 text-[10px] text-white/50 tabular-nums">
-              約 {game.estimatedMinutes} 分鐘
-            </span>
-          )}
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-mono uppercase tracking-widest ${game.color === 'primary' ? 'bg-primary-500/15 border-primary-500/30 text-primary-300' : game.color === 'secondary' ? 'bg-secondary-500/15 border-secondary-500/30 text-secondary-300' : game.color === 'accent' ? 'bg-accent-500/15 border-accent-500/30 text-accent-300' : 'bg-white/10 border-white/10 text-white/50'}`} data-i18n-key={GAMES_CARD_PLAYERS_I18N_KEY}>
-            <Users className="w-3.5 h-3.5 shrink-0" aria-hidden />
-            {game.players}
-          </span>
-          {game.twoPlayerFriendly && (
-            <Badge variant="secondary" size="sm" title="2 人即可玩">2 人可玩</Badge>
-          )}
-          <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
-        </div>
-      </div>
-      {/* P1-108：hover 顯示規則與評分覆蓋層（背面效果） */}
-      <AnimatePresence>
-        {showFlipOverlay && (
-          <motion.div
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0a0a1a]/95 backdrop-blur-sm border border-white/10"
-          >
-            {game.rulesSummary && <p className="text-white/90 text-sm leading-relaxed text-center mb-2 line-clamp-4">{game.rulesSummary}</p>}
-            <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-    {contextMenu && typeof document !== 'undefined' && createPortal(
-      <div
-        className="fixed z-[9999] min-w-[160px] rounded-xl border border-white/10 bg-[#1a0a2e] shadow-xl py-1"
-        style={{ left: contextMenu.x, top: contextMenu.y }}
-        role="menu"
-        aria-label="卡片選單"
-      >
-        {game.onToggleFavorite != null && (
-          <button type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={() => { game.onToggleFavorite?.(game.id); closeMenu() }}>
-            <Heart className={`w-4 h-4 shrink-0 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
-            {game.isFavorite ? '移除收藏' : '加入收藏'}
+          {game.onRate != null && [1, 2, 3, 4, 5].map((star) => (
+            <button key={star} type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={() => { game.onRate?.(game.id, star); closeMenu() }}>
+              <Star className="w-4 h-4 shrink-0 text-secondary-400" /> 給 {star} 星
+            </button>
+          ))}
+          <button type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={handleShare}>
+            <Share2 className="w-4 h-4 shrink-0" /> 分享
           </button>
-        )}
-        {game.onRate != null && [1, 2, 3, 4, 5].map((star) => (
-          <button key={star} type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={() => { game.onRate?.(game.id, star); closeMenu() }}>
-            <Star className="w-4 h-4 shrink-0 text-secondary-400" /> 給 {star} 星
-          </button>
-        ))}
-        <button type="button" role="menuitem" className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 games-touch-target games-focus-ring" onClick={handleShare}>
-          <Share2 className="w-4 h-4 shrink-0" /> 分享
-        </button>
-      </div>,
-      document.body
-    )}
+        </div>,
+        document.body
+      )}
     </>
   )
 }

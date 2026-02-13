@@ -1,0 +1,14 @@
+/**
+ * R2-002 Phase 3: 靈魂酒測專用樣式，由 globals.css 遷移
+ * Intro/結果頁背景與首頁 Hero 漸層呼應
+ */
+
+.quiz-hero-echo {
+  background: linear-gradient(
+    180deg,
+    rgba(139, 0, 0, 0.04) 0%,
+    transparent 25%,
+    transparent 75%,
+    rgba(212, 175, 55, 0.03) 100%
+  );
+}

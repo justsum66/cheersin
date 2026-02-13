@@ -25,16 +25,19 @@ export interface PartyDjPlanResult {
 }
 
 async function postPartyDjPlan(body: PartyDjPlanBody): Promise<PartyDjPlanResult> {
-  const res = await fetch('/api/party-dj/plan', {
+  const res = await fetch('/api/v1/party-dj/plan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { message?: string }).message ?? 'Plan API failed')
+  const json = await res.json().catch(() => ({}))
+
+  if (!res.ok || !json.success) {
+    const msg = json.error?.message || json.message || 'Plan API failed'
+    throw new Error(msg)
   }
-  const data = await res.json()
+
+  const data = json.data
   return { phases: data.phases ?? [], totalMin: data.totalMin ?? 0 }
 }
 

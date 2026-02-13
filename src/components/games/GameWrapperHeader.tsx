@@ -32,16 +32,10 @@ import {
   getPassPhoneTts,
   setPassPhoneTts as persistTts,
 } from '@/lib/games-settings'
+import { useGameStore } from '@/store/useGameStore'
 import { usePassPhone } from './PassPhoneContext'
 import { usePunishment } from './Punishments/PunishmentContext'
-import {
-  useGameProgress,
-  useGameStats,
-  useGameReplay,
-  useGameTrial,
-  REPLAY_UI_DISPLAY_COUNT,
-} from './GameStateProvider'
-import { useGamePause } from './GameTimerProvider'
+// Removed legacy context imports
 import { useGameSound } from './GameSoundProvider'
 import type { SwitchGameItem } from './GameWrapperTypes'
 
@@ -111,19 +105,25 @@ export default function GameWrapperHeader({
   isHost = false,
   onToggleAnonymous,
 }: GameWrapperHeaderProps) {
+  /* R2-001: Deep Refactor - Use Store */
+  const { gameState, setGameState, stats, replayEvents, trial: trialState } = useGameStore()
+
   const passPhone = usePassPhone()
   const punishment = usePunishment()
-  const progress = useGameProgress()
-  const stats = useGameStats()
-  const replay = useGameReplay()
-  const pause = useGamePause()
-  const trial = useGameTrial()
-  const gameHasStarted = progress?.hasStarted ?? false
-  const gameStats = stats?.stats
-  const replayEvents = replay?.events ?? []
-  const isPaused = pause?.isPaused ?? false
-  const onTogglePause = pause ? () => pause.setPaused(!pause.isPaused) : undefined
-  const trialRoundsLeft = trial?.roundsLeft
+
+  // Store mappings
+  const gameHasStarted = gameState !== 'lobby'
+  const gameStats = stats
+  // const replayEvents = replayEvents // already destructured
+  // Pause logic: The store 'gameState' is the source of truth for paused.
+  const isPaused = gameState === 'paused'
+  const onTogglePause = () => setGameState(isPaused ? 'playing' : 'paused')
+
+  // Trial logic
+  // The store has `trial` object with roundsLeft.
+  const trialRoundsLeft = trialState.roundsLeft
+  const REPLAY_UI_DISPLAY_COUNT = 10
+
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const settingsRef = useRef<HTMLDivElement | null>(null)
@@ -188,7 +188,7 @@ export default function GameWrapperHeader({
   }, [passPhone])
 
   const passEnabled = passPhone?.enabled ?? false
-  const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useGameSound() ?? { enabled: true, setEnabled: () => {} }
+  const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useGameSound() ?? { enabled: true, setEnabled: () => { } }
 
   const handleShare = useCallback(() => {
     setShowSettingsMenu(false)
@@ -209,7 +209,7 @@ export default function GameWrapperHeader({
     const base = typeof window !== 'undefined' ? window.location.origin : ''
     const url = shareInviteUrl ?? `${base}/games`
     const text = shareInviteUrl ? `一起玩「${title}」！加入房間：${url}` : `一起玩「${title}」！${url}`
-    navigator.clipboard?.writeText(text).catch(() => {})
+    navigator.clipboard?.writeText(text).catch(() => { })
   }, [title, shareInviteUrl])
 
   return (
@@ -398,7 +398,7 @@ export default function GameWrapperHeader({
                       type="button"
                       onClick={() => {
                         const text = [...replayEvents].reverse().slice(0, REPLAY_UI_DISPLAY_COUNT).map((ev) => `${new Date(ev.ts).toLocaleTimeString('zh-TW')} ${ev.label}`).join('\n')
-                        navigator.clipboard?.writeText(text).then(() => {}).catch(() => {})
+                        navigator.clipboard?.writeText(text).then(() => { }).catch(() => { })
                       }}
                       className="mt-1 w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-white/70 hover:bg-white/10 min-h-[44px]"
                       aria-label="複製本局回放"

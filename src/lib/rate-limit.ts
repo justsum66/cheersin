@@ -95,3 +95,17 @@ export function isRateLimited(identifier: string, context: string): boolean {
   const result = checkRateLimit(identifier, config)
   return !result.success
 }
+
+/**
+ * R2-028：優先使用 Upstash Redis 限流，多實例一致；Redis 未設定時 fallback 至 in-memory
+ */
+export async function isRateLimitedAsync(identifier: string, context: string): Promise<boolean> {
+  try {
+    const { checkRateLimitUpstashApi } = await import('./rate-limit-upstash')
+    const result = await checkRateLimitUpstashApi(identifier, context)
+    if (result !== null) return !result.success
+  } catch {
+    /* fallback to in-memory */
+  }
+  return isRateLimited(identifier, context)
+}

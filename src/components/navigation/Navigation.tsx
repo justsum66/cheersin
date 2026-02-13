@@ -185,11 +185,11 @@ export default function Navigation() {
               </div>
             </div>
 
-            {/* N21/N22：桌面導航區 role="navigation"、N01 aria-current="page"；i18n t('nav.*') */}
+            {/* N21/N22 / UX-013：桌面導航 role="navigation"、aria-current="page"、巢狀路由高亮；i18n t('nav.*') */}
             <div className="hidden md:flex items-center nav-item-gap" role="navigation" aria-label="主導航連結">
               {NAV_ITEMS.map((item) => {
                 const label = t(`nav.${item.navKey}`)
-                const isActive = pathname === item.href
+                const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
                   <Link
                     key={item.href}
@@ -225,11 +225,12 @@ export default function Navigation() {
               })}
             </div>
 
-            {/* 右側：訂閱狀態、通知、個人 */}
+            {/* 右側：訂閱狀態、通知、個人；UX-013 當前頁 aria-current */}
             <div className="hidden md:flex items-center gap-4">
               <Link
                 href={tier === 'free' ? '/pricing' : '/subscription'}
                 aria-label={tier === 'free' ? '升級 Pro 方案' : '訂閱管理'}
+                aria-current={(pathname === '/pricing' || pathname === '/subscription') ? 'page' : undefined}
                 className="nav-cta-ux icon-interact icon-glow games-focus-ring rounded-lg flex items-center gap-2 text-xs font-bold uppercase tracking-wider games-touch-target justify-center"
               >
                 <motion.span
@@ -290,7 +291,7 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* N21：底部導航 z-index、N18 safe-area、N01 aria-current；UX-004 ref 供鍵盤彈起時 scrollIntoView */}
+      {/* N21 / UX-013：底部導航 z-index、safe-area、aria-current、巢狀路由高亮；UX-004 ref 供鍵盤彈起時 scrollIntoView */}
       <nav
         ref={bottomNavRef}
         className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#0a0a1a]/95 backdrop-blur-xl safe-area-pb print:hidden"
@@ -300,7 +301,7 @@ export default function Navigation() {
         <div className="flex items-stretch justify-around">
           {NAV_ITEMS.map((item) => {
             const label = t(`nav.${item.navKey}`)
-            const isActive = pathname === item.href
+            const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.href}
@@ -342,7 +343,7 @@ export default function Navigation() {
           >
             <div className="flex flex-col items-center justify-center h-full gap-8" onClick={(e) => e.stopPropagation()}>
               {NAV_ITEMS.map((item, index) => {
-                const isActive = pathname === item.href
+                const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
                   <motion.div
                     key={item.href}

@@ -24,9 +24,12 @@ export default function Error({
       description={t('error.description')}
       onRetry={reset}
       retryLabel={t('error.retry')}
+      className="min-h-screen bg-[linear-gradient(180deg,#1a0a2e_0%,#0a0a0a_100%)]"
       links={[
         { href: '/', label: t('notFound.back') },
         { href: '/quiz', label: t('nav.quiz') },
+        { href: '/games', label: t('nav.games') },
+        { href: '/assistant', label: t('nav.assistant') },
       ]}
       footer={
         <p className="text-white/50 text-xs">

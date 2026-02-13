@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
-import { useUserStore, type UserProfile } from '@/stores/userStore'
+import { useUserStore, type UserProfile } from '@/store/useUserStore'
 
 /**
  * F180 UserContext - 用戶資訊全局共享

@@ -1,3 +1,14 @@
+# UX-018：焦點可見 outline
+
+## 實作
+
+- **focus-visible**：全站互動元件（按鈕、連結、輸入框、Tab）使用 `focus-visible:ring-2 focus-visible:ring-primary-400` 或 `games-focus-ring`，僅鍵盤聚焦時顯示，滑鼠點擊不顯示
+- **styles**：`base.css`、`components.css` 定義 `:focus-visible`、`.btn-*:focus-visible`、`.nav-link-ux:focus-visible`、`.input-glass:focus-visible`
+- **games.css**：`.game-btn-focus:focus-visible`、`.game-main:focus-visible`
+- **驗收**：Tab 導覽時焦點環可見，滑鼠點擊無多餘 outline
+
+---
+
 # UX-004：手機底部導航不被鍵盤完全遮擋
 
 ## 實作

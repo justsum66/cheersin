@@ -1,35 +1,70 @@
-# SEC-004：localStorage 審計與敏感資料
+# SEC-004：localStorage 審計
 
-僅 non-sensitive 或可接受持久化之資料存 localStorage；敏感或個人對話建議 sessionStorage 或後端。
+## 儲存內容分類
 
-## 審計結果摘要
+### 1. 使用者偏好（非敏感）
 
-- **密碼 / Token**：未發現存於 localStorage。
-- **可能敏感**：助理聊天記錄（`assistant` 頁 CHAT_HISTORY_KEY）— 建議改 sessionStorage 或產品決策後註明。
-- **其餘**：遊戲統計、偏好、學習進度、UI 設定等，視為 non-sensitive，可保留 localStorage。
+| Key / 模組 | 用途 | 檔案 | 風險 |
+|------------|------|------|------|
+| games-settings | 字級、減少動畫、觸覺、傳手機 | lib/games-settings.ts | 低 |
+| FONT_SIZE_KEY | 字級 | FontSizeControl.tsx | 低 |
+| TUTORIAL_DONE_KEY | 教學完成 | GamesPageClient.tsx | 低 |
+| A2HS_DISMISS_KEY | 加到主畫面已關閉 | AddToHomeScreenBanner.tsx | 低 |
+| CookieConsentBanner STORAGE_KEY | Cookie 同意 | CookieConsentBanner.tsx | 低 |
+| useGameSound | 音效開關、音量、BGM | useGameSound.ts | 低 |
 
-## 依 key/用途分類
+### 2. 遊戲/學習進度（單機）
 
-| 用途 | 位置 | Key/常數 | 敏感？ | 備註 |
-|------|------|----------|--------|------|
-| 遊戲統計 | GamesPageClient, profile, gamification | GAMES_STATS, STORAGE_KEYS.GAMES_STATS, KEYS.POINTS 等 | 否 | |
-| 最近遊戲 | GamesPageClient | RECENT_GAMES_KEY | 否 | |
-| 教學完成 | GamesPageClient | TUTORIAL_DONE_KEY | 否 | |
-| 房間加入/玩家列表 | GamesPageClient | ROOM_JOINED_KEY, STORAGE_KEY | 否 | 僅房間 ID/列表 |
-| **助理聊天記錄** | assistant/page | CHAT_HISTORY_KEY | **可能** | 建議 sessionStorage 或註明 |
-| 偏好/測驗/願望清單 | assistant, quiz, profile | TASTE_PREFERENCES_KEY, QUIZ_*, WISHLIST_KEY | 否 | |
-| 訂閱取消時間 | subscription/cancel, subscription-retention | CANCELLED_AT_KEY | 否 | |
-| Cookie 同意 | CookieConsentBanner | STORAGE_KEY | 否 | |
-| 主題/字體/無障礙 | ThemeContext, FontSizeControl, games-settings | cheersin-theme, FONT_SIZE_KEY, KEY_* | 否 | |
-| 訂閱 tier/試用 | subscription.ts | STORAGE_KEY_TIER, STORAGE_KEY_AI_* 等 | 否 | 非密碼 |
-| 學習進度/書籤/筆記 | learn, LearnCourseContent, learn-* | PROGRESS_KEY, KEY, CERT_NAME_KEY | 否 | |
-| 遊戲設定/音效/收藏 | games-settings, useGameSound, games-favorites | KEY_*, STORAGE_*, FAVORITES_KEY | 否 | |
-| 登入相關 | login/page | （redirect 等） | 否 | 未存 token |
-| PWA A2HS | AddToHomeScreenBanner | A2HS_DISMISS_KEY | 否 | |
-| 錯題/最後 session | wrong-answers, games-last-session, games-weekly | 各 KEY | 否 | |
+| Key / 模組 | 用途 | 檔案 | 風險 |
+|------------|------|------|------|
+| STORAGE_KEYS.GAMES_STATS | 遊戲次數 | GamesPageClient.tsx | 低 |
+| RECENT_GAMES_KEY | 最近遊戲 | GamesPageClient.tsx | 低 |
+| ROOM_JOINED_KEY | 房間加入狀態 | GamesPageClient.tsx | 低 |
+| STORAGE_KEY (players) | 玩家名單 | GamesPageClient.tsx | 低 |
+| PROGRESS_KEY | 課程進度 | LearnCourseContent, learn/page | 低 |
+| gamification KEYS | 積分、連續天數、徽章等 | lib/gamification.ts | 低 |
+| WRONG_ANSWERS_KEY | 錯題本 | lib/wrong-answers.ts | 低 |
+| games-favorites / RATINGS | 收藏、評分 | lib/games-favorites.ts | 低 |
+| useGamePersistence | 遊戲存檔 | useGamePersistence.ts | 低 |
+| games-last-session | 最後遊戲 | lib/games-last-session.ts | 低 |
+| games-weekly | 每週數據 | lib/games-weekly.ts | 低 |
+
+### 3. 測驗/助理（含使用者產生內容）
+
+| Key | 用途 | 檔案 | 風險 |
+|-----|------|------|------|
+| quiz-last-result / QUIZ_* | 測驗結果、歷史 | quiz/page, HomePageClient, profile | 低，非 PII |
+| CHAT_HISTORY_KEY | 助理對話歷史 | assistant/page | 中，可能含個人敘述 |
+| TASTE_PREFERENCES_KEY | 口味偏好 | assistant/page | 低 |
+| QUIZ_RESULT_KEY | 靈魂酒測結果 | assistant/page | 低 |
+| WISHLIST_KEY | 願望清單 | assistant, profile, wishlist.ts | 低 |
+| cheersin_wishlist | 願望清單（舊 key） | profile | 低 |
+
+### 4. 訂閱/UTM（需注意）
+
+| Key | 用途 | 檔案 | 風險 |
+|-----|------|------|------|
+| CANCELLED_AT_KEY | 取消時間 | subscription/cancel, subscription-retention | 低 |
+| login UTM keys | UTM 參數 | login/page | 低，非敏感 |
+
+### 5. 自訂題目（TruthOrDare）
+
+| Key | 用途 | 檔案 | 風險 |
+|-----|------|------|------|
+| TruthOrDare STORAGE_KEY | 自訂真心話/大冒險 | TruthOrDare.tsx | 低 |
+
+## 安全檢查
+
+- [x] 無密碼、Token 存 localStorage
+- [x] 無信用卡等支付資訊
+- [x] 聊天歷史為使用者本地，未上傳未經同意
+- [x] 願望清單、偏好等為 UX 用途
+- [ ] 若未來儲存 email 或可識別資訊，需加密或改用 sessionStorage/HttpOnly cookie
 
 ## 建議
 
-1. **助理聊天記錄**：若產品定義為敏感，改為 `sessionStorage` 或僅記憶體；否則在隱私政策註明並保留現狀。
-2. 新增使用 localStorage 時，先評估是否為個人可識別/對話內容，敏感則用 sessionStorage 或後端。
-3. 本審計日期後之新增 key 請同步更新此表。
+1. 新 key 請經 `lib/constants.ts` 集中管理
+2. 敏感度提升時，考慮加密或移出 localStorage
+3. PWA 離線時 localStorage 仍可用，注意容量
+
+**更新日期**：2025-02-12

@@ -107,7 +107,7 @@ npm run dev
 ```
 
 5. **訪問應用**
-打開瀏覽器訪問 `http://localhost:3000`
+打開瀏覽器訪問 `http://localhost:3000`（改埠：`PORT=3099 npm run dev`）
 
 ### 常用指令
 ```bash
@@ -121,7 +121,7 @@ npm run test:stress  # 兩輪測試（壓力/穩定性）
 
 ## 🎯 建置與部署（DEV-011）
 
-新人可依下列步驟跑起專案：**快速開始**（上方）→ **建置** `npm run build` → **啟動** `npm start`。部署流程如下。
+新人可依下列步驟跑起專案：**快速開始**（上方）→ **建置** `npm run build` → **啟動** `npm start`。詳見 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
 ### Vercel 部署（推薦）
 ```bash
@@ -182,15 +182,18 @@ logger.error('遊戲錯誤', { error, gameId })
 ## 🔄 數據庫遷移
 
 ```bash
-# 創建新遷移
-npx supabase migration new add_new_feature
+# 首次或更換專案：需先 link（連結遠端 Supabase 專案）
+npm run supabase:link
+# 或：npx supabase link --project-ref wdegandlipgdvqhgmoai
 
-# 應用遷移
-npx supabase migration up
+# 推送 migrations 到遠端 DB
+npm run supabase:push
 
-# 回滾遷移
-npx supabase migration down
+# 一鍵：link + db push + functions deploy（需 .env.local 有 SUPABASE_DB_PASSWORD）
+npm run supabase:deploy
 ```
+
+若 `supabase:push` 報錯 `Cannot find project ref. Have you run supabase link?`，請先執行 `npm run supabase:link`。無 CLI 權限時，可到 Supabase Dashboard → SQL Editor 手動執行 `supabase/migrations/RUN_ALL_IN_DASHBOARD.sql`。
 
 ## 🤝 貢獻指南
 

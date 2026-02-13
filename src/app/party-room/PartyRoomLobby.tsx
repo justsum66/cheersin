@@ -27,7 +27,7 @@ export function PartyRoomLobby({ creating }: PartyRoomLobbyProps) {
       <div className="flex flex-col items-center gap-2">
         <div className="w-10 h-10 rounded-full border-2 border-primary-500/30 border-t-primary-500 animate-spin" aria-hidden />
         <p className="text-white/70">{t('common.loading')}</p>
-        <p className="text-white/50 text-xs">正在建立派對房…</p>
+        <p className="text-white/50 text-xs">{t('partyRoom.creatingRoom') ?? '正在建立派對房…'}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
         <SkeletonCard />

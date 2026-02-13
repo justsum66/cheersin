@@ -6,7 +6,7 @@
  */
 import { NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { randomUUID } from 'crypto'
 
 /** SEC-012：白名單 MIME，禁止執行檔與任意類型 */
@@ -17,7 +17,7 @@ const BUCKET = 'uploads'
 
 export async function POST(request: Request) {
   const ip = getClientIp(request.headers)
-  if (isRateLimited(ip, 'upload')) {
+  if (await isRateLimitedAsync(ip, 'upload')) {
     return NextResponse.json(
       { error: 'Too many uploads, please try again later' },
       { status: 429, headers: { 'Retry-After': '60' } }

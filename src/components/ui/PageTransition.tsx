@@ -1,13 +1,9 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import { useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
-// P001: Dynamic import for framer-motion to reduce initial bundle
-const MotionDiv = dynamic(
-  () => import('framer-motion').then((mod) => mod.motion.div),
-  { ssr: true } // Keep SSR for page transitions to avoid flash
-) as typeof import('framer-motion').motion.div
+/** 頁面過渡用 motion.div：直接 import 避免 next/dynamic 回傳 undefined 導致 webpack requireModule .call 崩潰（Next 15） */
+const MotionDiv = motion.div
 
 /** 頁面過渡動畫（111）：framer-motion layout 流暢切換；A-01 prefers-reduced-motion 時關閉動畫 */
 /** Phase 1 B1.1 & B1.3: 增強頁面轉場效果，不延遲導航 */

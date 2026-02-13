@@ -62,20 +62,22 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleCookie(next)
   }, [])
 
-  /** I18N-14 / I18N-003：缺 key 時依序 fallback → defaultLocale → en（ja/ko/yue 等）；I18N-007：可傳 params 做 {{key}} 替換 */
+  /** I18N-14 / I18N-003：ja/ko/yue 缺 key 時依序 fallback → defaultLocale → zh-CN → en；不顯示 key 名 */
   const t = useCallback(
     (key: string, params?: Record<string, string | number>): string => {
       const msg = messages[locale] as Record<string, unknown>
-      const fallbackMsg = messages[defaultLocale] as Record<string, unknown>
+      const zhTW = messages[defaultLocale] as Record<string, unknown>
+      const zhCN = messages['zh-CN'] as Record<string, unknown>
       const enMsg = messages['en'] as Record<string, unknown>
-      /** I18N-003：缺 key 時不顯示 key 名，回傳空字串 */
       const raw =
         getByPath(msg, key) ??
-        getByPath(fallbackMsg, key) ??
-        (locale !== 'en' ? getByPath(enMsg, key) : undefined) ??
+        getByPath(zhTW, key) ??
+        getByPath(zhCN, key) ??
+        getByPath(enMsg, key) ??
         ''
       const resolved = typeof raw === 'string' ? raw : String(raw)
-      return params && Object.keys(params).length > 0 ? interpolate(resolved, params) : resolved
+      const out = params && Object.keys(params).length > 0 ? interpolate(resolved, params) : resolved
+      return out || ''
     },
     [locale]
   )

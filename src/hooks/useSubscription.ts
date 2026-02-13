@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import type { SubscriptionTier } from '@/lib/subscription'
-import { useSubscriptionStore } from '@/stores/subscriptionStore'
+import { useSubscriptionStore } from '@/store/useSubscriptionStore'
 
 /**
  * 134 訂閱狀態檢查 hook：返回當前方案與到期日

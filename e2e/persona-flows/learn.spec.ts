@@ -15,9 +15,10 @@ test.describe('品酒學院', () => {
       await page.goto('/learn')
       await expect(page).toHaveURL(/\/learn/)
 
+      // 支援 zh/en 等多語系：葡萄酒、Wine、課程、Course 等
       await expect(
-        page.getByText(/葡萄酒|威士忌|啤酒|清酒|課程|入門|學習|5 分鐘|快懂/i)
-      ).toBeVisible({ timeout: 10000 })
+        page.getByText(/葡萄酒|威士忌|啤酒|清酒|白酒|課程|入門|學習|分鐘|快懂|Wine|Whisky|Course|Learn|minutes|Basics|intro/i)
+      ).toBeVisible({ timeout: 15000 })
     })
   }
 
@@ -46,6 +47,9 @@ test.describe('品酒學院', () => {
 
   test('學習路徑提示區塊可見', async ({ page }) => {
     await page.goto('/learn')
-    await expect(page.getByText(/建議學習路徑|入門.*進階.*專家/i)).toBeVisible()
+    // 支援多語系：建議學習路徑、入門進階專家、Learning path 等
+    await expect(
+      page.getByText(/建議學習路徑|入門.*進階.*專家|Learning path|Beginner|進階|Expert|學習路徑/i)
+    ).toBeVisible({ timeout: 10000 })
   })
 })

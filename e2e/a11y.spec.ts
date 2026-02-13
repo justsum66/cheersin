@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
-/** TEST-015 / A11Y-013：關鍵頁 axe 無 critical；含 learn */
+/** TEST-015 / A11Y-013：關鍵頁 axe 無 critical；含 learn、party-room、subscription */
 const CRITICAL_PAGES = [
   { path: '/', name: '首頁' },
   { path: '/quiz', name: 'Quiz' },
@@ -14,6 +14,8 @@ const CRITICAL_PAGES = [
   { path: '/pricing', name: '定價' },
   { path: '/games', name: 'Games Lobby' },
   { path: '/learn', name: '品酒學院' },
+  { path: '/party-room', name: '派對房' },
+  { path: '/subscription', name: '訂閱' },
 ]
 
 test.describe('axe 無障礙：關鍵頁面無 critical 違規', () => {

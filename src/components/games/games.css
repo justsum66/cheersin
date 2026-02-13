@@ -82,3 +82,134 @@
 .games-input {
   min-height: 48px;
 }
+
+/* R2-002 Phase 4：自 globals.css 遷入 — games-content、game-main、game-btn-* 等 */
+
+@media (min-width: 834px) and (orientation: landscape) {
+  .games-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* 遊戲頁字級設定（設定 modal 存 localStorage） */
+[data-games-font-size="sm"] .games-content {
+  font-size: 0.875rem;
+}
+
+[data-games-font-size="md"] .games-content {
+  font-size: 1rem;
+}
+
+[data-games-font-size="lg"] .games-content {
+  font-size: 1.125rem;
+}
+
+.games-content {
+  touch-action: manipulation;
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+}
+
+@media (display-mode: standalone) {
+  .games-content {
+    min-height: 100dvh;
+    padding-top: max(0.5rem, env(safe-area-inset-top, 0));
+  }
+}
+
+.games-content h1#games-page-title {
+  font-size: var(--text-h2);
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .games-content {
+    padding-top: 0.5rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0));
+    max-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .games-content .max-w-7xl {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .games-content {
+    font-size: clamp(1rem, 1.1rem, 1.25rem);
+  }
+
+  .games-content .text-sm {
+    font-size: clamp(0.875rem, 1rem, 1.125rem);
+  }
+
+  .games-content .text-xs {
+    font-size: clamp(0.75rem, 0.9rem, 1rem);
+  }
+}
+
+@media (display-mode: standalone) {
+  .games-content {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0) + 8px);
+    min-height: 100dvh;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .lobby-region .text-white\/50,
+  .lobby-region .text-white\/40 {
+    color: rgb(255 255 255 / 0.9);
+  }
+
+  .lobby-region .text-white\/30 {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .lobby-region [role="tablist"],
+  .lobby-region [role="region"] {
+    border-color: rgba(255, 255, 255, 0.35);
+    border-width: 1px;
+  }
+
+  .lobby-region .border-white\/10 {
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.game-btn-touch {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.game-btn-focus:focus-visible {
+  outline: 2px solid rgb(139 0 0);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+@media print {
+  .game-print-hidden {
+    display: none !important;
+  }
+
+  .games-content .rounded-3xl.glass-card-spotlight,
+  .games-content [role="tablist"],
+  .games-content [role="list"] {
+    display: none !important;
+  }
+}
+
+.game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.game-main {
+  outline: none;
+}
+
+.game-main:focus-visible {
+  outline: 2px solid rgb(139 0 0);
+  outline-offset: 2px;
+}

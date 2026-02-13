@@ -4,7 +4,7 @@
  * Phase 3：酒局劇本殺 — 選劇本、建立/加入房間、角色分配、章節/投票/懲罰、結束統計
  * SM-01/SM-02：拆成 ScriptMurderLobby、ScriptMurderRoom、ScriptMurderPlay、ScriptMurderEnded + useScriptMurderRoom、useScriptMurderState
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -87,8 +87,9 @@ export default function ScriptMurderPage() {
     () => toast.success(t('scriptMurder.copied') ?? '已複製邀請連結', { duration: 2000 }),
     () => toast.error(t('scriptMurder.copyFailed'))
   )
-  const isHost = !!room && !!user?.id && room.hostId === user.id
-  const freeScriptLimit = tier === 'free' ? 1 : Infinity
+  const isHost = !!room && (room.hostId === user?.id || (room.hostId == null && players[0] && myPlayerRowId === players[0].id))
+  /** 免費方案可玩前 4 支劇本，其餘需升級；8 劇本時為 4 免費 / 4 鎖定 */
+  const freeScriptLimit = tier === 'free' ? 4 : Infinity
 
   /** SM-03 / SM-49：離開房間，成功後清除 sessionStorage 與 myPlayerRowId 再導向大廳 */
   const handleLeave = useCallback(async () => {
@@ -113,6 +114,7 @@ export default function ScriptMurderPage() {
   }, [roomSlug, myPlayerRowId, router, t, setMyPlayerRowId])
 
   const fetchScripts = useCallback(async () => {
+    if (!roomSlug) setError(null)
     setLoadingScripts(true)
     try {
       const [scriptsRes, roomsRes] = await Promise.all([
@@ -121,6 +123,16 @@ export default function ScriptMurderPage() {
       ])
       const scriptsData = await scriptsRes.json()
       const roomsData = await roomsRes.json()
+      if (!scriptsRes.ok) {
+        setError(scriptsData?.message ?? t('scriptMurder.errorLoadScripts'))
+        return
+      }
+      /** API 連線失敗時回傳 200 + _fallback，顯示連線錯誤 */
+      const connectionError = t('scriptMurder.connectionError') ?? '無法連線至資料庫，請檢查網路或稍後再試'
+      if (scriptsData._fallback || roomsData._fallback) {
+        setError(connectionError)
+        return
+      }
       if (scriptsData.scripts) setScripts(scriptsData.scripts)
       if (roomsData.rooms)
         setScriptRooms(
@@ -143,7 +155,7 @@ export default function ScriptMurderPage() {
     } finally {
       setLoadingScripts(false)
     }
-  }, [setError, t])
+  }, [setError, t, roomSlug])
 
   useEffect(() => {
     if (!roomSlug) {
@@ -151,14 +163,21 @@ export default function ScriptMurderPage() {
     }
   }, [roomSlug, fetchScripts])
 
+  /** SM-48：ref 穩定 fetch 引用，refetch 只依賴 roomSlug，避免 polling/realtime 因 deps 變動多餘重訂閱 */
+  const fetchRef = useRef({ fetchRoom, fetchGameState })
+  fetchRef.current = { fetchRoom, fetchGameState }
   const refetchRoomAndState = useCallback(() => {
-    if (roomSlug) {
-      fetchRoom(roomSlug)
-      fetchGameState()
-    }
-  }, [roomSlug, fetchRoom, fetchGameState])
+    if (!roomSlug) return
+    fetchRef.current.fetchRoom(roomSlug)
+    fetchRef.current.fetchGameState()
+  }, [roomSlug])
   useScriptMurderRealtime(roomSlug || null, refetchRoomAndState)
-  usePolling(refetchRoomAndState, { intervalMs: 3000, enabled: !!roomSlug })
+  usePolling(refetchRoomAndState, { intervalMs: 5000, enabled: !!roomSlug })
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || roomSlug) return
+    document.title = `${t('scriptMurder.title')} | Cheersin`
+  }, [roomSlug, t])
 
   /** SM-49：從 sessionStorage 還原已加入的 player id */
   useEffect(() => {
@@ -189,6 +208,33 @@ export default function ScriptMurderPage() {
     if (rid) setMyRoleId(rid)
   }, [scriptState?.assignments, getPlayerId, myRoleId])
 
+  const stateReady = scriptState != null
+  const inLobby = stateReady && scriptState?.phase === 'lobby'
+  const inPlay = stateReady && scriptState?.phase === 'play'
+  const inEnded = stateReady && scriptState?.phase === 'ended'
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (!roomSlug) {
+      document.title = `${t('scriptMurder.title')} | Cheersin`
+      return
+    }
+    if (inEnded) {
+      document.title = `本局結束 | ${t('scriptMurder.title')} | Cheersin`
+      return
+    }
+    if (inPlay && scriptDetail) {
+      const ch = (scriptState?.chapterIndex ?? 0) + 1
+      const total = scriptDetail.chapters.length
+      document.title = `${scriptDetail.title} 第 ${ch}/${total} 章 | ${t('scriptMurder.title')} | Cheersin`
+      return
+    }
+    if (inLobby && scriptDetail) {
+      document.title = `${scriptDetail.title} 房間 | ${t('scriptMurder.title')} | Cheersin`
+      return
+    }
+    document.title = `${t('scriptMurder.title')} | Cheersin`
+  }, [roomSlug, inLobby, inPlay, inEnded, scriptDetail, scriptState?.chapterIndex, t])
+
   const createRoom = async (scriptId: string) => {
     setCreating(true)
     setError(null)
@@ -204,6 +250,7 @@ export default function ScriptMurderPage() {
         return
       }
       if (data.slug) {
+        toast.success(t('scriptMurder.roomCreated') ?? '房間已建立', { duration: 1500 })
         window.location.href = `/script-murder?room=${data.slug}`
       }
     } catch {
@@ -229,9 +276,15 @@ export default function ScriptMurderPage() {
   }
 
   if (!room) {
+    const showIncompleteHint = error && roomSlug.length > 0 && roomSlug.length < 8
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8 max-w-md mx-auto">
         {error && <p className="text-red-400 text-center">{error}</p>}
+        {showIncompleteHint && (
+          <p className="text-sm text-amber-200/90 text-center max-w-sm">
+            {t('scriptMurder.roomNotFoundIncomplete')}
+          </p>
+        )}
         <Link href="/script-murder" className="text-primary-400 hover:text-primary-300">
           {t('scriptMurder.returnList')}
         </Link>
@@ -249,11 +302,6 @@ export default function ScriptMurderPage() {
       </div>
     )
   }
-
-  const stateReady = scriptState != null
-  const inLobby = stateReady && scriptState.phase === 'lobby'
-  const inPlay = stateReady && scriptState.phase === 'play'
-  const inEnded = stateReady && scriptState.phase === 'ended'
 
   if (!stateReady && room.scriptId) {
     return (
@@ -315,6 +363,9 @@ export default function ScriptMurderPage() {
         setShowStartConfirm={setShowStartConfirm}
         onLeave={handleLeave}
         myPlayerRowId={myPlayerRowId}
+        allowSoloTest={searchParams.get('solo') === '1'}
+        soloTestHref={roomSlug ? `/script-murder?room=${encodeURIComponent(roomSlug)}&solo=1` : null}
+        isHost={isHost}
       />
     )
   }

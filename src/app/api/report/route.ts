@@ -8,7 +8,7 @@ import { errorResponse } from '@/lib/api-response'
 import { ReportPostBodySchema } from '@/lib/api-body-schemas'
 import { stripHtml } from '@/lib/sanitize'
 import { logger } from '@/lib/logger'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 /** P3-44：檢舉 API 每 IP 每分鐘最多 5 次；SEC-003 Zod 校驗 */
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   const start = Date.now()
   try {
     const ip = getClientIp(request.headers)
-    if (isRateLimited(ip, 'report')) {
+    if (await isRateLimitedAsync(ip, 'report')) {
       return NextResponse.json(
         { error: '操作過於頻繁，請稍後再試' },
         { status: 429, headers: { 'Retry-After': '60' } }

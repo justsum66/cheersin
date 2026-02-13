@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryVectors } from '@/lib/pinecone'
 import { getEmbedding } from '@/lib/embedding'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { RecommendPostBodySchema } from '@/lib/api-body-schemas'
 import { logApiError } from '@/lib/api-error-log'
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request.headers)
     /** WineRec-28：速率限制 30/分，429 時前端可提示 */
-    if (isRateLimited(ip, 'recommend')) {
+    if (await isRateLimitedAsync(ip, 'recommend')) {
       const res = errorResponse(429, 'RATE_LIMITED', { message: '操作過於頻繁，請 1 分鐘後再試（每分鐘最多 30 次）' })
       res.headers.set('Retry-After', '60')
       res.headers.set('X-RateLimit-Limit', '30')

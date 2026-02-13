@@ -3,7 +3,7 @@ import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton'
 /** 55 品酒學院載入骨架；151-155 與 Hero/Grid 對齊；29 CLS：固定尺寸避免 shift；L-318 safe-area、ARIA */
 export default function LearnLoading() {
   return (
-    <main className="min-h-screen px-4 pt-0 pb-8 opacity-100 transition-opacity duration-300 safe-area-px" role="progressbar" aria-label="品酒學院載入中">
+    <main className="min-h-screen px-4 pt-0 pb-8 opacity-100 transition-opacity duration-300 safe-area-px" role="progressbar" aria-label="品酒學院載入中" style={{ background: 'linear-gradient(180deg, #1a0a2e 0%, #0a0a0a 100%)' }}>
       <div className="max-w-4xl xl:max-w-[1440px] mx-auto px-2 md:px-4 space-y-6">
         <Skeleton className="h-10 w-24 rounded min-w-[96px]" />
         {/* Hero：主標、副標；29 固定高度減少 CLS */}

@@ -1,5 +1,6 @@
 'use client'
 
+import { MotionConfig } from 'framer-motion'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/query-client'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -20,8 +21,10 @@ function ApiLoadingOverlay() {
 }
 
 /** R2-025：react-query 統一 query 快取與重試 */
+/** A11Y-009：全站 framer-motion 尊重 prefers-reduced-motion */
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
+    <MotionConfig reducedMotion="user">
     <QueryClientProvider client={getQueryClient()}>
     <ThemeProvider>
       <I18nProvider>
@@ -41,5 +44,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
       </I18nProvider>
     </ThemeProvider>
     </QueryClientProvider>
+    </MotionConfig>
   )
 }

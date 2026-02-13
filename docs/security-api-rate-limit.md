@@ -1,30 +1,50 @@
-# SEC-001：公開 API 限流涵蓋
+# SEC-001：API Rate Limiting 覆蓋審計
 
-本文件列出對外/高頻 API 的 rate limiting 實作，確保未認證或高頻請求回傳 429 與 `Retry-After`。
+## 實作現況
 
-## 限流實作
+- **來源**：`src/lib/rate-limit.ts`、`src/lib/rate-limit-upstash.ts`
+- **策略**：Upstash Redis 優先，未設定時 fallback in-memory
+- **識別碼**：`getClientIp(headers)`（x-forwarded-for / x-real-ip）
+- **context 與限額**（`isRateLimited` / `isRateLimitedAsync`）：
+  - `create`：10/min（建立房間）
+  - `join` / `game_state`：30/min
+  - `subscription`：20/min
+  - `upload`：15/min
+  - 其他（含 `recommend`、`report`）：60/min
 
-- **引擎**：`src/lib/rate-limit.ts`（in-memory，單實例）；`src/lib/rate-limit-upstash.ts`（可選 Upstash）。
-- **識別**：`getClientIp(request.headers)`（x-forwarded-for / x-real-ip）。
+## 覆蓋清單
 
-## 已限流路由
+| Route | Rate Limit | Context | 備註 |
+|-------|------------|---------|------|
+| POST /api/games/rooms | ✅ | create | |
+| POST /api/games/rooms/[slug]/join | ✅ | join | |
+| GET /api/games/rooms/[slug]/game-state | ✅ | game_state | |
+| POST /api/subscription | ✅ | subscription | |
+| POST /api/upload | ✅ | upload | |
+| POST /api/recommend | ✅ | recommend | 60/min |
+| POST /api/report | ✅ | report | 60/min |
+| POST /api/chat | ✅ | 自訂（tier 依 subscription） | checkRateLimit/Upstash |
+| 其他 API | ❌ | 未套用 | 見下方建議 |
 
-| 路由 | 方法 | Context | 閾值（/分鐘） |
-|------|------|---------|----------------|
-| `/api/games/rooms` | POST | create | 10 |
-| `/api/games/rooms/[slug]/join` | POST | join | 30 |
-| `/api/games/rooms/[slug]/game-state` | POST | game_state | 30 |
-| `/api/report` | POST | （預設） | 60 |
-| `/api/recommend` | POST | （預設） | 60 |
-| `/api/chat` | POST | （Upstash） | 依 Upstash 設定 |
-| `/api/subscription` | POST | subscription | 20 |
-| `/api/upload` | POST | upload | 15 |
+## 未套用限流之敏感/高頻 API（建議優先）
 
-## 回應
+| Route | 建議 |
+|-------|------|
+| POST /api/auth/verify-turnstile | 登入相關，建議 10–20/min |
+| POST /api/auth/login-failure | 失敗次數追蹤，建議限流 |
+| POST /api/learn/progress | 可考慮 60/min |
+| POST /api/learn/notes | 可考慮 30/min |
+| POST /api/analytics | 可考慮 100/min |
+| POST /api/generate-invitation | 可考慮 20/min |
+| POST /api/trivia/questions | 可考慮 30/min |
+| POST /api/truth-or-dare-external | 可考慮 30/min |
 
-- 被限流時：`429` + `Retry-After: 60`（秒），body 含錯誤碼/訊息。
+## 檢查結果
 
-## 備註
+- [x] 遊戲房間 create/join/game-state 已限流
+- [x] subscription、upload 已限流
+- [x] chat 有 tier 化限流
+- [ ] auth verify-turnstile 未限流
+- [ ] 部分學習與遊戲相關 API 未限流
 
-- 需分散式限流時改用 Upstash（見 `rate-limit-upstash.ts`）。
-- 新增公開 POST API 時應在此表補上並在 route 內呼叫 `isRateLimited(ip, context)`。
+**更新日期**：2025-02-12

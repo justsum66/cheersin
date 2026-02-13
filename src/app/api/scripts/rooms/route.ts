@@ -1,17 +1,28 @@
 /**
  * Phase 3 5.1 #3：劇本殺房間列表
  * GET /api/scripts/rooms — 回傳劇本殺房（劇本摘要、當前人數、slug）
+ * 錯誤時回傳 200 + 空列表，避免頁面 500。
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { logger } from '@/lib/logger'
+
+/** fallback=true 表示因連線錯誤回傳空列表，供前端顯示連線錯誤 */
+function emptyRoomsResponse(limit: number, offset: number, fallback?: boolean) {
+  const body: { rooms: unknown[]; meta: { limit: number; offset: number; count: number }; _fallback?: boolean } = {
+    rooms: [],
+    meta: { limit, offset, count: 0 },
+  }
+  if (fallback) body._fallback = true
+  return NextResponse.json(body)
+}
 
 export async function GET(request: Request) {
-  try {
-    const url = new URL(request.url)
-    const limit = Math.min(30, Math.max(1, parseInt(url.searchParams.get('limit') ?? '20', 10) || 20))
-    const offset = Math.max(0, parseInt(url.searchParams.get('offset') ?? '0', 10) || 0)
+  const url = new URL(request.url)
+  const limit = Math.min(30, Math.max(1, parseInt(url.searchParams.get('limit') ?? '20', 10) || 20))
+  const offset = Math.max(0, parseInt(url.searchParams.get('offset') ?? '0', 10) || 0)
 
+  try {
     const supabase = createServerClient()
     const { data: rooms, error: roomsError } = await supabase
       .from('game_rooms')
@@ -21,7 +32,10 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
-    if (roomsError) return serverErrorResponse(roomsError)
+    if (roomsError) {
+      logger.warn('scripts/rooms query error', { err: roomsError })
+      return emptyRoomsResponse(limit, offset, true)
+    }
 
     const scriptRooms = rooms ?? []
     const scriptIds = [...new Set(scriptRooms.map((r) => (r.settings as { scriptId?: string })?.scriptId).filter(Boolean))] as string[]
@@ -73,6 +87,7 @@ export async function GET(request: Request) {
       meta: { limit, offset, count: list.length },
     })
   } catch (e) {
-    return serverErrorResponse(e)
+    logger.error('GET /api/scripts/rooms failed', { err: e })
+    return emptyRoomsResponse(limit, offset, true)
   }
 }

@@ -2,13 +2,15 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, ChevronRight, RotateCcw, Share2, Copy, Smile, Laugh, Heart, Zap } from 'lucide-react'
+import { Users, ChevronRight, RotateCcw, Share2, Copy, Smile, Laugh, Heart, Zap, Plus } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGameReduceMotion } from './GameWrapper'
+import { useGamePersistence } from '@/hooks/useGamePersistence'
+import toast from 'react-hot-toast'
 import { logger } from '@/lib/logger'
 import {
   getQuestionsByCategory,
@@ -62,6 +64,14 @@ export default function WhoMostLikely() {
   const [isNextPending, setIsNextPending] = useState(false)
   const startCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // G3-043: Smart shuffle - track used question IDs
+  const [usedQuestionIds, setUsedQuestionIds] = useGamePersistence<number[]>('wml_used', [])
+  // G3-044: Custom questions
+  const [customQuestions, setCustomQuestions] = useGamePersistence<string[]>('wml_custom', [])
+  const [showAddQuestion, setShowAddQuestion] = useState(false)
+  const [newQuestionText, setNewQuestionText] = useState('')
+  // G3-042: Spotlight
+  const [showSpotlight, setShowSpotlight] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -86,11 +96,20 @@ export default function WhoMostLikely() {
       startCooldownRef.current = null
       setIsStartPending(false)
     }, 400)
-    const shuffled = [...questions].sort(() => Math.random() - 0.5)
-    setPool(shuffled.length > 0 ? shuffled : questions)
+    // G3-043: Smart shuffle - prioritize unseen questions
+    const allItems = [...questions]
+    // G3-044: Merge custom questions
+    const customItems: WhoMostLikelyQuestion[] = customQuestions.map((text, i) => ({ id: 90000 + i, text, category: 'life' as WhoMostLikelyCategory, level: 'normal' }))
+    allItems.push(...customItems)
+    // Prioritize questions not seen in this session
+    const unseen = allItems.filter((q) => !usedQuestionIds.includes(q.id))
+    const source = unseen.length > 0 ? unseen : allItems
+    const shuffled = [...source].sort(() => Math.random() - 0.5)
+    setPool(shuffled.length > 0 ? shuffled : allItems)
     setCurrentIndex(0)
     setPointedIndex(null)
-  }, [questions, isStartPending])
+    setShowSpotlight(false)
+  }, [questions, isStartPending, customQuestions, usedQuestionIds])
 
   /** 指向某位玩家 */
   const handlePoint = useCallback((playerIndex: number) => {
@@ -100,7 +119,16 @@ export default function WhoMostLikely() {
       ...prev,
       [playerIndex]: (prev[playerIndex] ?? 0) + 1,
     }))
-  }, [play])
+    // G3-042: Spotlight effect
+    setShowSpotlight(true)
+    // G3-043: Track used question
+    if (currentQuestion) {
+      setUsedQuestionIds((prev) => {
+        if (prev.includes(currentQuestion.id)) return prev
+        return [...prev, currentQuestion.id].slice(-50) // Keep last 50
+      })
+    }
+  }, [play, currentQuestion, setUsedQuestionIds])
 
   const handleNext = useCallback(() => {
     if (isNextPending) return
@@ -112,15 +140,32 @@ export default function WhoMostLikely() {
     }, 400)
     setPointedIndex(null)
     setLastReaction(null)
+    setShowSpotlight(false)
     if (currentIndex + 1 < pool.length) {
       setCurrentIndex((i) => i + 1)
     } else {
-      const shuffled = [...questions].sort(() => Math.random() - 0.5)
-      setPool(shuffled.length > 0 ? shuffled : questions)
+      const allItems = [...questions]
+      const customItems: WhoMostLikelyQuestion[] = customQuestions.map((text, i) => ({ id: 90000 + i, text, category: 'life' as WhoMostLikelyCategory, level: 'normal' }))
+      allItems.push(...customItems)
+      const shuffled = [...allItems].sort(() => Math.random() - 0.5)
+      setPool(shuffled.length > 0 ? shuffled : allItems)
       setCurrentIndex(0)
       setPointedIndex(null)
     }
-  }, [currentIndex, pool.length, questions, isNextPending])
+  }, [currentIndex, pool.length, questions, isNextPending, customQuestions])
+
+  // G3-044: Add custom question
+  const addCustomQuestion = useCallback(() => {
+    const trimmed = newQuestionText.trim()
+    if (!trimmed || trimmed.length < 4) {
+      toast.error('題目至少需要 4 個字')
+      return
+    }
+    setCustomQuestions((prev) => [...prev, trimmed])
+    setNewQuestionText('')
+    setShowAddQuestion(false)
+    toast.success('已新增自訂題目')
+  }, [newQuestionText, setCustomQuestions])
 
   const handleCategoryChange = useCallback((value: WhoMostLikelyCategory | 'all') => {
     setCategoryFilter(value)
@@ -165,9 +210,8 @@ export default function WhoMostLikely() {
                 key={value}
                 type="button"
                 onClick={() => handleCategoryChange(value)}
-                className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${
-                  categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
+                className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
+                  }`}
               >
                 {label}
               </button>
@@ -215,9 +259,8 @@ export default function WhoMostLikely() {
             onClick={() => handleCategoryChange(value)}
             aria-pressed={categoryFilter === value}
             aria-label={label}
-            className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-xs font-medium games-focus-ring ${
-              categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
-            }`}
+            className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-xs font-medium games-focus-ring ${categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
           >
             {label}
           </button>
@@ -275,7 +318,9 @@ export default function WhoMostLikely() {
                       type="button"
                       onClick={() => handlePoint(i)}
                       className="min-h-[48px] min-w-[48px] px-4 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-primary-500/30 hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)] text-white font-medium border border-white/20 text-base md:text-lg games-focus-ring transition-shadow"
-                      whileTap={{ scale: 0.98 }}
+                      // G3-041: Voting avatar animation
+                      whileHover={{ scale: 1.05, y: -4 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       <span className="truncate max-w-[8rem] sm:max-w-none">{name}</span>
                     </motion.button>
@@ -283,60 +328,78 @@ export default function WhoMostLikely() {
                 </div>
               </>
             ) : (
-              <motion.div
-                initial={reducedMotion ? false : { scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 }}
-                className="mb-6 p-4 md:p-6 rounded-2xl bg-primary-500/20 border border-primary-500/30 w-full max-w-md shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
-                data-testid="who-most-likely-result"
-                role="status"
-                aria-live="polite"
-              >
-                {/* G3D-WhoMostLikely-04：結果區「被指最多」3D 強調動畫 */}
-                <p className="text-white/60 text-sm mb-1">大家指向</p>
-                <p className="text-xl md:text-2xl font-bold text-primary-300 tabular-nums games-result-text">{anonymousMode ? '有人被指最多' : players[pointedIndex]}</p>
-              </motion.div>
+              <>
+                {/* G3-042: Spotlight overlay */}
+                {showSpotlight && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="fixed inset-0 bg-black/60 z-30 pointer-events-none"
+                    exit={{ opacity: 0 }}
+                  />
+                )}
+                <motion.div
+                  initial={reducedMotion ? false : { scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 }}
+                  className={`mb-6 p-4 md:p-6 rounded-2xl bg-primary-500/20 border border-primary-500/30 w-full max-w-md shadow-[0_8px_24px_rgba(0,0,0,0.2)] ${showSpotlight ? 'relative z-40' : ''}`}
+                  data-testid="who-most-likely-result"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <p className="text-white/60 text-sm mb-1">大家指向</p>
+                  {/* G3-041: Avatar animation on result */}
+                  <motion.p
+                    className="text-xl md:text-2xl font-bold text-primary-300 tabular-nums games-result-text"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
+                  >
+                    {anonymousMode ? '有人被指最多' : players[pointedIndex]}
+                  </motion.p>
+                </motion.div>
+              </>
             )}
 
             {pointedIndex !== null && (
               <>
-              <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-3">
-                <CopyResultButton text={getShareText()} label="複製結果" className="games-focus-ring" />
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-3">
+                  <CopyResultButton text={getShareText()} label="複製結果" className="games-focus-ring" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const p = navigator.share?.({ title: '誰最可能', text: getShareText() })
+                      if (p) p.catch((err: unknown) => { logger.error('[WhoMostLikely] share failed', { err: err instanceof Error ? err.message : String(err) }) })
+                    }}
+                    className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white/90 text-sm font-medium inline-flex items-center gap-2 games-focus-ring"
+                  >
+                    <Share2 className="w-4 h-4 shrink-0" />
+                    <span>分享</span>
+                  </button>
+                  {EMOJI_REACTIONS.map(({ icon: Icon, label: l }) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setLastReaction(l)}
+                      className={`min-h-[48px] min-w-[48px] p-2 rounded-xl games-focus-ring ${lastReaction === l ? 'bg-primary-500/50' : 'bg-white/10'} hover:bg-white/20`}
+                      title={l}
+                      aria-label={l}
+                    >
+                      <Icon className="w-5 h-5 text-white shrink-0" />
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const p = navigator.share?.({ title: '誰最可能', text: getShareText() })
-                    if (p) p.catch((err: unknown) => { logger.error('[WhoMostLikely] share failed', { err: err instanceof Error ? err.message : String(err) }) })
-                  }}
-                  className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white/90 text-sm font-medium inline-flex items-center gap-2 games-focus-ring"
+                  onClick={handleNext}
+                  disabled={isNextPending}
+                  className="mt-4 min-h-[48px] px-6 sm:px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 hover:scale-[1.02] active:scale-[0.98] text-white font-bold inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg games-focus-ring transition-transform"
+                  data-testid="who-most-likely-next"
+                  aria-label="下一題"
                 >
-                  <Share2 className="w-4 h-4 shrink-0" />
-                  <span>分享</span>
+                  下一題
+                  <ChevronRight className="w-5 h-5 shrink-0" />
                 </button>
-                {EMOJI_REACTIONS.map(({ icon: Icon, label: l }) => (
-                  <button
-                    key={l}
-                    type="button"
-                    onClick={() => setLastReaction(l)}
-                    className={`min-h-[48px] min-w-[48px] p-2 rounded-xl games-focus-ring ${lastReaction === l ? 'bg-primary-500/50' : 'bg-white/10'} hover:bg-white/20`}
-                    title={l}
-                    aria-label={l}
-                  >
-                    <Icon className="w-5 h-5 text-white shrink-0" />
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={isNextPending}
-                className="mt-4 min-h-[48px] px-6 sm:px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 hover:scale-[1.02] active:scale-[0.98] text-white font-bold inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg games-focus-ring transition-transform"
-                data-testid="who-most-likely-next"
-                aria-label="下一題"
-              >
-                下一題
-                <ChevronRight className="w-5 h-5 shrink-0" />
-              </button>
               </>
             )}
           </motion.div>
@@ -372,6 +435,54 @@ export default function WhoMostLikely() {
         <RotateCcw className="w-4 h-4 shrink-0" />
         <span>重新洗牌</span>
       </button>
+      {/* G3-044: Add custom question button */}
+      <button
+        type="button"
+        onClick={() => setShowAddQuestion(true)}
+        className="mt-2 min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/60 text-sm inline-flex items-center gap-2 hover:bg-white/20 games-focus-ring"
+      >
+        <Plus className="w-4 h-4" />
+        新增自訂題目
+      </button>
+      {/* G3-044: Custom question modal */}
+      <AnimatePresence>
+        {showAddQuestion && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setShowAddQuestion(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-card p-6 rounded-2xl w-full max-w-md"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-primary-400" />
+                新增自訂題目
+              </h3>
+              <p className="text-white/60 text-sm mb-3">輸入「誰最可能…」後面的內容：</p>
+              <input
+                type="text"
+                value={newQuestionText}
+                onChange={(e) => setNewQuestionText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addCustomQuestion() }}
+                placeholder="例如：喝醉後打電話給前任"
+                className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:border-primary-500 focus:outline-none mb-4"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button type="button" onClick={addCustomQuestion} className="btn-primary flex-1 min-h-[48px]">新增</button>
+                <button type="button" onClick={() => setShowAddQuestion(false)} className="btn-secondary min-h-[48px]">關閉</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

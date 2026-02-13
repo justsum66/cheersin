@@ -15,7 +15,7 @@ import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const projectRef = 'etrqxhpbhimrkcyolbrr';
+const projectRef = 'wdegandlipgdvqhgmoai';
 
 function run(cmd, env = {}) {
   const fullEnv = { ...process.env, ...env };

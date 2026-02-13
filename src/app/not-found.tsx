@@ -17,7 +17,8 @@ export default function NotFound() {
       <h1 id="not-found-title" className="home-heading-2 font-display font-bold mb-2">
         <span className="gradient-text">404</span>
       </h1>
-      <p id="not-found-desc" className="home-text-muted mb-6">{t('notFound.title')}</p>
+      <p id="not-found-desc" className="home-text-muted mb-2">{t('notFound.title')}</p>
+      <p className="text-white/50 text-sm mb-6">{t('notFound.hint')}</p>
       <Link href="/" className="btn-primary mb-6">
         {t('notFound.back')}
       </Link>

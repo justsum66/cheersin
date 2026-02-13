@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { fireFullscreenConfetti, showFailureEffect } from '@/lib/celebration'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGamesPlayers } from './GamesContext'
-import { useGameReplay } from './GameWrapper'
+import { useGameStore } from '@/store/useGameStore'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -18,7 +18,7 @@ type RoundEntry = { from: number; to: number; outcome: RoundOutcome }
 export default function HighLow() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-  const replay = useGameReplay()
+  const { addReplayEvent } = useGameStore()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [current, setCurrent] = useState(() => Math.floor(Math.random() * 13) + 1)
   const [next, setNext] = useState<number | null>(null)
@@ -42,7 +42,7 @@ export default function HighLow() {
     if (nextCard === current) {
       setResult('wrong')
       setStreak(0)
-      replay?.addEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} 平手喝` })
+      addReplayEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} 平手喝` })
       showFailureEffect()
     } else {
       setStreak(newStreak)
@@ -59,11 +59,11 @@ export default function HighLow() {
       if (!correct && freePass) {
         setResult('freePass')
         setFreePass(false)
-        replay?.addEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} 免喝` })
+        addReplayEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} 免喝` })
       } else {
         setResult(correct ? 'correct' : 'wrong')
         const resultLabel = correct ? '猜對' : '猜錯'
-        replay?.addEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} ${resultLabel}` })
+        addReplayEvent({ type: 'highlow_guess', label: `比大小：${current}→${nextCard} ${resultLabel}` })
       }
     }
     const outcome: RoundOutcome = nextCard === current ? 'tie' : correct ? (newStreak >= 3 ? 'freePass' : 'correct') : (freePass ? 'freePass' : 'wrong')
@@ -174,9 +174,8 @@ export default function HighLow() {
             {result === 'correct' ? '猜對' : result === 'freePass' ? '免喝' : '猜錯喝'}
             {next !== null && `，正確數字 ${next}`}
           </span>
-          <p className={`font-bold text-xl ${
-            result === 'correct' ? 'text-green-400' : result === 'freePass' ? 'text-amber-400' : 'text-red-400'
-          }`}>
+          <p className={`font-bold text-xl ${result === 'correct' ? 'text-green-400' : result === 'freePass' ? 'text-amber-400' : 'text-red-400'
+            }`}>
             {result === 'correct' ? '對！' : result === 'freePass' ? '3連勝獎勵！本輪免喝' : '喝！'}
           </p>
           {(result === 'wrong' || result === 'freePass') && next !== null && (

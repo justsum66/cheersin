@@ -1,3 +1,4 @@
+import './learn.css'
 import type { Metadata } from 'next'
 import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
 import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'

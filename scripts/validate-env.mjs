@@ -82,6 +82,13 @@ for (const c of checks) {
   ok.push(`${c.key}: OK (${mask(val)}, ${val.length} chars)`)
 }
 
+// Warn if Supabase URL points to unreachable project (ENOTFOUND)
+const supabaseUrl = (env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim()
+if (supabaseUrl && supabaseUrl.includes('etrqxhpbhimrkcyolbrr')) {
+  console.warn('\n⚠️  WARNING: NEXT_PUBLIC_SUPABASE_URL points to etrqxhpbhimrkcyolbrr which may be unreachable.')
+  console.warn('   Use wdegandlipgdvqhgmoai: https://wdegandlipgdvqhgmoai.supabase.co')
+}
+
 if (errors.length) {
   console.error('Issues in .env.local:\n' + errors.map(e => '  - ' + e).join('\n'))
   process.exit(1)

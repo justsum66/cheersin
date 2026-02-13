@@ -30,3 +30,12 @@ export function stripHtml(html: string): string {
   if (typeof html !== 'string') return ''
   return html.replace(/<[^>]+>/g, '').trim()
 }
+
+/**
+ * R2-026：用戶輸入 XSS 清理 — 自訂題目、暱稱、遊戲房間名稱等
+ * 後端 API 在寫入 DB 或回傳前呼叫，移除 script、iframe、事件處理器
+ */
+export function sanitizeUserInput(input: string, maxLength = 500): string {
+  if (typeof input !== 'string') return ''
+  return stripHtml(input).slice(0, maxLength).trim()
+}

@@ -447,7 +447,7 @@ export default function ProfilePage() {
                             transition={{ delay: 0.12 }}
                             className={`rounded-2xl p-4 ${tier === 'free' ? 'bg-white/5 border border-white/10' : 'bg-white/5 border border-primary-500/30'}`}
                         >
-                            <h3 className="text-sm font-semibold text-white mb-2">{t('profile.subscriptionStatus')}</h3>
+                            <h2 className="text-sm font-semibold text-white mb-2">{t('profile.subscriptionStatus')}</h2>
                             <p className="text-white/80 text-sm">{tierLabel}</p>
                             <p className="text-white/50 text-xs mt-1">{tier === 'free' ? '—' : expiryLabel ?? t('profile.expiresByPlan')}</p>
                             {tier === 'free' ? (
@@ -471,10 +471,10 @@ export default function ProfilePage() {
                                 transition={{ delay: 0.15 }}
                                 className="rounded-2xl bg-primary-500/10 border border-primary-500/30 p-4"
                             >
-                                <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                                <h2 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
                                     <Crown className="w-4 h-4 text-primary-400" />
                                     {t('profile.proSupport')}
-                                </h3>
+                                </h2>
                                 <p className="text-white/60 text-xs mb-3">{t('profile.proSupportDesc')}</p>
                                 <a href="mailto:support@cheersin.app" className="flex items-center gap-2 text-sm text-primary-400 hover:text-primary-300 mb-2">
                                     <Mail className="w-4 h-4" />

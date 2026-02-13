@@ -3,7 +3,7 @@ import { logger } from './logger'
 import { CHAT_TIMEOUT_MS, GROQ_API_KEY, GROQ_CHAT_MODEL, GROQ_VISION_MODEL } from './env-config'
 import { getTaiwanWinesContext } from './taiwan-wines'
 
-const groq = new Groq({
+export const groq = new Groq({
   apiKey: GROQ_API_KEY || undefined,
   timeout: CHAT_TIMEOUT_MS,
 })
@@ -144,10 +144,10 @@ export async function chatWithSommelier(
   const text = completion.choices[0]?.message?.content || '抱歉，我暫時無法回答，請稍後再試。'
   const usage = completion.usage
     ? {
-        prompt_tokens: completion.usage.prompt_tokens ?? 0,
-        completion_tokens: completion.usage.completion_tokens ?? 0,
-        total_tokens: completion.usage.total_tokens ?? 0,
-      }
+      prompt_tokens: completion.usage.prompt_tokens ?? 0,
+      completion_tokens: completion.usage.completion_tokens ?? 0,
+      total_tokens: completion.usage.total_tokens ?? 0,
+    }
     : undefined
   return { text, usage }
 }
@@ -224,7 +224,7 @@ ${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
   })
 
   const content = completion.choices[0]?.message?.content || ''
-  
+
   try {
     // 嘗試解析 JSON
     const jsonMatch = content.match(/\{[\s\S]*\}/)

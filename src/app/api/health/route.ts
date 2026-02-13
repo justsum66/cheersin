@@ -20,7 +20,7 @@ interface ServiceStatus {
 function hintFor(name: string, message: string): string {
     const m = message.toLowerCase()
     if (name === 'Supabase') {
-        if (m.includes('fetch failed')) return 'Check NEXT_PUBLIC_SUPABASE_URL reachable; project may be paused (Supabase dashboard).'
+        if (m.includes('dns') || m.includes('enotfound') || m.includes('fetch failed')) return 'NEXT_PUBLIC_SUPABASE_URL unreachable. Use wdegandlipgdvqhgmoai.supabase.co; project may be paused (Dashboard → Restore).'
         if (m.includes('missing') || m.includes('env')) return 'Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local'
     }
     if (name === 'Groq AI') {

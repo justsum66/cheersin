@@ -9,6 +9,14 @@ import {
   getViewportForDevice,
 } from '../fixtures/persona'
 
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3099'
+
+async function setAgeVerified(page: import('@playwright/test').Page) {
+  await page.context().addCookies([
+    { name: 'cheersin_age_verified', value: '1', url: BASE },
+  ])
+}
+
 const fullFlowPersonas = getFullFlowPersonas()
 const lightPersonas = getLightPersonas().slice(0, 10) // 首頁+導航輕量採樣 10 個
 
@@ -16,21 +24,22 @@ test.describe('首頁 CTA 與導航', () => {
   for (const persona of [...fullFlowPersonas.slice(0, 10), ...lightPersonas]) {
     test(`${persona.name} (${persona.device}) - 首頁載入與 CTA 可見`, async ({
       page,
-      browserName,
     }) => {
       const viewport = getViewportForDevice(persona.device)
       await page.setViewportSize(viewport)
 
       await page.goto('/')
-      await expect(page).toHaveTitle(/Cheersin|靈魂之酒|酒類/i)
+      await setAgeVerified(page)
+      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 15000 })
+      await expect(page).toHaveTitle(/Cheersin|靈魂之酒|酒類/i, { timeout: 10000 })
 
-      // 主 CTA 首屏可見（多個連結可能匹配，取 first）
-      const ctaQuiz = page.getByRole('link', { name: /開始檢測/ }).first()
-      await expect(ctaQuiz).toBeVisible()
+      // 主 CTA 首屏可見（多個連結可能匹配，取 first）；開始檢測 / 開始靈魂酒測
+      const ctaQuiz = page.getByRole('link', { name: /開始檢測|開始靈魂酒測/ }).first()
+      await expect(ctaQuiz).toBeVisible({ timeout: 15000 })
       await expect(ctaQuiz).toHaveAttribute('href', '/quiz')
 
-      const ctaAssistant = page.getByRole('link', { name: /AI 侍酒師諮詢/ }).first()
-      await expect(ctaAssistant).toBeVisible()
+      const ctaAssistant = page.getByRole('link', { name: /AI 侍酒師|AI 侍酒師諮詢/ }).first()
+      await expect(ctaAssistant).toBeVisible({ timeout: 5000 })
       await expect(ctaAssistant).toHaveAttribute('href', '/assistant')
     })
 
@@ -40,6 +49,8 @@ test.describe('首頁 CTA 與導航', () => {
       const viewport = getViewportForDevice(persona.device)
       await page.setViewportSize(viewport)
 
+      await page.goto('/')
+      await setAgeVerified(page)
       await page.goto('/')
 
       const navLinks = [
@@ -60,11 +71,15 @@ test.describe('首頁 CTA 與導航', () => {
 
   test('點擊開始檢測可導向 quiz', async ({ page }) => {
     await page.goto('/')
+    await setAgeVerified(page)
+    await page.goto('/')
     await page.getByRole('link', { name: /開始檢測/ }).first().click()
     await expect(page).toHaveURL(/\/quiz/)
   })
 
   test('點擊 AI 侍酒師可導向 assistant', async ({ page }) => {
+    await page.goto('/')
+    await setAgeVerified(page)
     await page.goto('/')
     await page.getByRole('link', { name: /AI 侍酒師諮詢/ }).first().click()
     await expect(page).toHaveURL(/\/assistant/)

@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss'
 import { themeExtend } from './src/lib/design-tokens'
+import { safeAreaUtilities } from './src/lib/tailwind-plugins/safe-area-utilities'
 
 const config: Config = {
   content: [
@@ -80,7 +81,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [safeAreaUtilities],
 }
 
 export default config

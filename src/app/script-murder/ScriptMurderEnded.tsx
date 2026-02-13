@@ -32,27 +32,27 @@ export function ScriptMurderEnded({ scriptState, scriptDetail, roomSlug }: Scrip
           <h1 className="text-2xl font-bold text-white mb-2">{t('scriptMurder.gameEndTitle')}</h1>
           <p className="text-white/60 mb-6">{scriptDetail?.title}</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                <ListOrdered className="w-5 h-5 text-primary-400" aria-hidden />
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3" role="img" aria-label={`${t('scriptMurder.chaptersCompleted')} ${stats.chaptersCompleted}`}>
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center" aria-hidden>
+                <ListOrdered className="w-5 h-5 text-primary-400" />
               </div>
               <div>
                 <p className="text-white/50 text-xs">{t('scriptMurder.chaptersCompleted')}</p>
                 <p className="text-white font-semibold tabular-nums">{stats.chaptersCompleted}</p>
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                <Vote className="w-5 h-5 text-primary-400" aria-hidden />
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3" role="img" aria-label={`${t('scriptMurder.voteRounds')} ${stats.voteRounds}`}>
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center" aria-hidden>
+                <Vote className="w-5 h-5 text-primary-400" />
               </div>
               <div>
                 <p className="text-white/50 text-xs">{t('scriptMurder.voteRounds')}</p>
                 <p className="text-white font-semibold tabular-nums">{stats.voteRounds}</p>
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <Award className="w-5 h-5 text-amber-400" aria-hidden />
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3" role="img" aria-label={`${t('scriptMurder.punishmentCount')} ${stats.punishmentCount}`}>
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center" aria-hidden>
+                <Award className="w-5 h-5 text-amber-400" />
               </div>
               <div>
                 <p className="text-white/50 text-xs">{t('scriptMurder.punishmentCount')}</p>

@@ -180,6 +180,23 @@
 
 ---
 
+## Game Optimization (GAME-OPT) — 個別遊戲優化
+
+| ID | Title | Priority | File/Area | Acceptance |
+|----|-------|----------|-----------|------------|
+| GAME-OPT-001 | truth-or-dare：題庫分類（親友/辣味）與搜尋 | P2 | TruthOrDare.tsx, 題庫 | 分類可選、可搜尋 |
+| GAME-OPT-002 | roulette：自訂玩家名單拖曳排序與匯入 | P2 | Roulette.tsx | 拖曳排序、匯入名單 |
+| GAME-OPT-003 | number-bomb：自訂數字範圍與炸彈數量 | P2 | NumberBomb.tsx | 範圍/數量可調 |
+| GAME-OPT-004 | never-have-i-ever：題目難度分級（輕/中/辣） | P2 | NeverHaveIEver.tsx | 難度篩選 |
+| GAME-OPT-005 | kings-cup：抽牌規則與懲罰可自訂 | P2 | KingsCup.tsx | 規則/懲罰可訂 |
+| GAME-OPT-006 | hot-potato：倒數秒數可調整（3–15 秒） | P2 | HotPotato.tsx | 秒數可調 |
+| GAME-OPT-007 | 369-clap：支援自訂禁語數字（非僅 3/6/9） | P2 | ThreeSixNineClap.tsx | 禁語可自訂 |
+| GAME-OPT-008 | category-chain：新增分類選項（電影/明星/品牌） | P2 | CategoryChain.tsx | 分類擴充 |
+| GAME-OPT-009 | russian-roulette：動畫與音效強化緊張感 | P2 | RussianRoulette.tsx | 動畫/音效強化 |
+| GAME-OPT-010 | number-bomb：歷史紀錄（最近 5 局結果）顯示 | P2 | NumberBomb.tsx | 歷史可查看 |
+
+---
+
 ## Testing (25)
 
 | ID | Title | Priority | File/Area | Acceptance |
@@ -286,6 +303,7 @@
 | 2026-02-12 | (續) | **Batch 3 (GAME+COPY+I18N)**：GAME-011 party-room-flow-api 過期清理文件、GAME-013/014/017/020 game-batch5-audit、COPY-010 docs/copy-audit-checklist、I18N-009 docs/i18n-validation |
 | 2026-02-12 | (續) | **Batch 4 (TEST+SEC+PERF)**：TEST-005 docs/ts-any-plan、TEST-018 CONTRIBUTING CI、SEC-011/012 docs/security-audit-notes、PERF-014/015/016 已有 performance-audit |
 | 2026-02-12 | (續) | **Batch 5 (DEV+Pipeline)**：DEV-011 README 建置與部署、DEV-012 CHANGELOG 更新、lint/tsc/test:run 通過 |
+| 2026-02-12 | **Script-murder 8 劇本** | 劇本殺擴充至 8 支完整劇本（seed 第五～第八支 + 第四支可套用）；GET /api/scripts 回傳 chapterCount/roleCount；大廳卡片章節·角色數、skeleton 8、freeScriptLimit=4；GAME-019、game-batch5-audit、CHANGELOG 更新 |
 | 2026-02-12 | **下一批續** | **PERF**：PERF-003/008/013 註解與檢查清單（performance-audit.md）；**A11Y**：A11Y-005 skip link、A11Y-006 modal Esc、A11Y-013 E2E axe（accessibility-audit-checklist）；**COPY**：COPY-003/004 錯誤頁與訂閱 FAQ（copy-audit-checklist）；**GAME**：GAME-007/008 已於 game-batch5-audit；**TEST/DEV**：TEST-015、DEV-013 已於 test-batch6、dev-batch7 |
 | 2026-02-12 | **下一批續 2** | **A11Y**：A11Y-003 色彩對比工具/步驟、A11Y-009/015/016/017 檢查清單勾選或抽檢項（accessibility-audit-checklist）；**PERF**：PERF-014 驗收勾選、PERF-019/020 註明（performance-audit、README）；**UX**：UX-004 鍵盤遮擋現狀、UX-002 訂閱/join 失敗回饋勾選（ux-copy-checklist）；**COPY**：COPY-006/009（copy-audit-checklist）；**I18N**：I18N-006 課程/遊戲名稱可譯策略（i18n-guide）；**SEC/DEV**：SEC-010 .env 註解、DEV-014/015 dev-checklist 條目 |
 | 2026-02-12 | **下一批續 3** | **A11Y**：A11Y-001/002 驗收步驟與抽檢清單、A11Y-017 具體元件名（Lobby、Roulette、PunishmentWheel 等）（accessibility-audit-checklist）；**PERF**：PERF-001 填表指引、PERF-002 Lighthouse 測量步驟（performance-audit）；**審計**：api-zod-audit 關鍵路由勾選、rls-audit-next 現狀已滿足註明；**COPY/UX**：COPY-006/009 抽檢方法、UX-004 建議實作位置與登入頁 scrollIntoView 實作（ux-copy-checklist）；TASKS-170、CHANGELOG 更新 |
@@ -293,4 +311,6 @@
 | 2026-02-12 | **50 任務批次（三支柱）** | **用戶吸引力**：COPY-001/002、UX-010/022/019/011 確認；**課程深度**：COPY-005 learningObjectives（wine-101、whisky-101、white-wine）、LearnCourseContent 首屏展示、validate:lessons/content 通過、copy-audit COPY-005；**遊戲體驗**：GAME-014 TruthOrDare 完成/下一輪 confetti、copy-audit 抽檢項；TASKS-170、CHANGELOG 更新 |
 | 2026-02-11 | **Phase B：SEC/PERF 審計補註** | rls-audit-next、api-zod-audit 已勾選；performance-audit PERF-014 驗收項補勾與 Phase B 補註 |
 | 2026-02-11 | **Phase B：A11Y 抽檢 + E2E 穩化 + B4 文件** | A11Y-001/002/017 抽檢勾選（accessibility-audit-checklist）；E2E dismissAgeGate、FAQ/I18N 修正、playwright timeout、docs/e2e-critical-paths.md；COPY-011/012/013、GAME-018 文件註明（copy-batch4、game-batch5） |
+| 2026-02-12 | **P1：A11Y-004** | 表單錯誤 aria-invalid、aria-describedby、role=alert、aria-live：ScriptMurderRoom displayName 輸入；GamesPageClient 房間加入表單（暱稱、密碼）；login 密碼 aria-describedby |
+| 2026-02-12 | **P1：I18N-002 / TEST-008** | zh-CN scriptMurder 補齊 22 個 key（noExistingRooms、voteSection、voteChooseOne、voteTotal、waitHostNext、needMorePlayers、roomNotFoundIncomplete、soloTestLink、soloTestHint、waitHostStart、leaveConfirmTitle/Message、roomCreated、displayNameLengthError、npcNarration、diceRange、choiceNodeLabel、timerNodeLabel、timerSeconds、timerTimeout、timerSuccess、nodeWaitHost）；check:i18n:three 通過 |
 | 2026-02-11 | **TASKS-170 下一批（API Zod）** | SEC-003：script-murder、recommend、report、learn/notes、learn/certificate、subscription/promo 補 Zod（api-body-schemas + 各 route safeParse）；api-zod-audit 更新 |

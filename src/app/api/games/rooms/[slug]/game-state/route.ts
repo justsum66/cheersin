@@ -4,7 +4,7 @@
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { SLUG_PATTERN } from '@/lib/games-room'
@@ -68,7 +68,7 @@ export async function POST(
 ) {
   try {
     const ip = getClientIp(request.headers)
-    if (isRateLimited(ip, 'game_state')) {
+    if (await isRateLimitedAsync(ip, 'game_state')) {
       return NextResponse.json(
         { error: '操作過於頻繁，請稍後再試' },
         { status: 429, headers: { 'Retry-After': '60' } }

@@ -11,6 +11,32 @@ vi.mock('@/config/games.config', () => ({
   ],
 }))
 
+vi.mock('@/lib/groq', () => ({
+  groq: {
+    chat: {
+      completions: {
+        create: vi.fn().mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  phases: [
+                    { phase: 'Warm Up', durationMin: 15, gameIds: ['trivia'], transitionText: 'Let\'s go!' },
+                    { phase: 'Peak', durationMin: 30, gameIds: ['truth-or-dare'], transitionText: 'Time to get wild!' },
+                    { phase: 'Cool Down', durationMin: 15, gameIds: ['dice'], transitionText: 'Chill out.' },
+                    { phase: 'Finale', durationMin: 10, gameIds: ['most-likely-to'], transitionText: 'Last one!' },
+                  ],
+                  totalMin: 70,
+                }),
+              },
+            },
+          ],
+        }),
+      },
+    },
+  },
+}))
+
 describe('POST /api/party-dj/plan', () => {
   beforeEach(() => {
     vi.resetModules()

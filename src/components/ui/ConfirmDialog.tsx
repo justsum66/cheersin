@@ -1,8 +1,11 @@
 'use client'
 
-/** UX_LAYOUT_200 #115：危險操作二次確認 — 可重用確認對話框；A-09 模態框開關 transition 順暢；SM-65 關閉時 focus 回觸發按鈕 */
+/** UX_LAYOUT_200 #115 / A11Y-006：危險操作二次確認 — 可重用確認對話框；focus trap、Esc 關閉、關閉時 focus 回觸發按鈕 */
 import { useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+
+const FOCUSABLE =
+  'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export interface ConfirmDialogProps {
   open: boolean
@@ -29,10 +32,10 @@ export function ConfirmDialog({
   triggerRef,
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const returnFocus = useCallback(() => {
     if (triggerRef?.current) {
-      // SM-65：下一幀 focus，確保 dialog 已關閉
       requestAnimationFrame(() => triggerRef.current?.focus())
     }
   }, [triggerRef])
@@ -44,9 +47,26 @@ export function ConfirmDialog({
       if (e.key === 'Escape') {
         onCancel()
         returnFocus()
+        return
       }
-      if (e.key === 'Enter') {
-        void Promise.resolve(onConfirm()).finally(returnFocus)
+      if (e.key !== 'Tab') return
+      const container = contentRef.current
+      if (!container?.contains(document.activeElement)) return
+      const nodes = container.querySelectorAll<HTMLElement>(FOCUSABLE)
+      const list = Array.from(nodes).filter((el) => el.offsetParent != null)
+      if (list.length === 0) return
+      const first = list[0]
+      const last = list[list.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     }
     document.addEventListener('keydown', onKey)
@@ -71,6 +91,7 @@ export function ConfirmDialog({
         >
           {/* Phase 1 A3.2: 增強 Modal Spring 動畫 */}
           <motion.div
+            ref={contentRef}
             className="modal-padding modal-content-overflow w-full max-w-md rounded-2xl bg-[#1a0a2e] border border-white/10 shadow-xl"
             initial={{ opacity: 0, scale: 0.92, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

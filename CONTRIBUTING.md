@@ -35,6 +35,14 @@
 
 **CI 流程（TEST-018）**：與本地一致。`.github/workflows/ci.yml` 依序執行：lint → `npm run check:i18n:all` → unit tests → build → E2E。本地重現：`npm run lint && npm run check:i18n:all && npm run test:run && npm run build && npm run test:e2e`。**I18N-011**：關鍵路徑 E2E 已以 cookie `cheersin_locale=zh-TW` 與 `en` 各跑一輪（見 `e2e/critical-paths.spec.ts`）。訂閱/支付 E2E 可依環境使用 mock 或 staging（見 `docs/test-batch6-audit.md`）。
 
+## 分支策略（DEV-014）
+
+- **main**：生產就緒；CI 通過後部署。
+- **develop**（可選）：整合分支，合併功能分支後再 merge main。
+- **功能分支**：`feat/xxx`、`fix/xxx`、`docs/xxx`；自 main 或 develop 分出，PR 回目標分支。
+
+PR 前請確認目標分支正確；維護者合併後依 CI 部署。
+
 ## 程式碼審查
 
 - 維護者會對 PR 進行審查；請根據意見修改。

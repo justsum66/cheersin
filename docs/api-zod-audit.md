@@ -1,50 +1,49 @@
-# API Zod 校驗審計（SEC-003）
+# SEC-003：API Zod 審計
 
-對應 TASKS-170 SEC-003：所有 API 輸入使用 Zod 校驗，無 raw body 信任。本文件列出 POST/PATCH 等具 request body 之路由與校驗狀態。
+## 集中 Schema（api-body-schemas.ts）
 
-## 已使用 Zod 或等效 schema 的路由
+| Schema | 使用 Route | 狀態 |
+|--------|------------|------|
+| LeaveRoomBodySchema | POST /api/games/rooms/[slug]/leave | ✅ |
+| JoinRoomBodySchema | POST /api/games/rooms/[slug]/join | ✅ |
+| SubscriptionPostBodySchema | POST /api/subscription | ✅ |
+| VerifyTurnstileBodySchema | POST /api/auth/verify-turnstile | ✅ |
+| ChatPostBodySchema | POST /api/chat | ✅ |
+| GamesRoomsPostBodySchema | POST /api/games/rooms | ✅ |
+| GamesRoomsPatchBodySchema | PATCH /api/games/rooms/[slug] | ✅ |
+| LearnProgressPostBodySchema | POST /api/learn/progress | ✅ |
+| ScriptMurderPostBodySchema | POST /api/games/rooms/[slug]/script-murder | ✅ |
+| RecommendPostBodySchema | POST /api/recommend | ✅ |
+| ReportPostBodySchema | POST /api/report | ✅ |
+| LearnNotesPostBodySchema | POST /api/learn/notes | ✅ |
+| LearnCertificatePostBodySchema | POST /api/learn/certificate | ✅ |
+| SubscriptionPromoPostBodySchema | POST /api/subscription/promo | ✅ |
 
-| 路徑 | 校驗方式 |
-|------|----------|
-| /api/analytics | AnalyticsBodySchema.safeParse(raw) |
-| /api/party-dj/plans | PostBodySchema.safeParse(raw) |
-| /api/party-dj/plan | PlanBodySchema.safeParse(raw) |
-| /api/games/rooms/[slug]/game-state | parsePartyStatePayload(payload)（Zod 於 party-state-schema） |
+## 路由內建 Schema（未集中）
 
-## 已補 Zod 的路由（SEC-003 本批）
+| Route | Schema | 備註 |
+|-------|--------|------|
+| POST /api/party-dj/plan | PartyPlanSchema | 可考慮移至 api-body-schemas |
+| POST /api/v1/party-dj/plan | PartyPlanSchema | 同上 |
+| POST /api/party-dj/plans | PostBodySchema | 同上 |
+| POST /api/v1/party-dj/plans | PostBodySchema | 同上 |
+| POST /api/analytics | AnalyticsBodySchema | 同上 |
 
-| 路徑 | 校驗方式 |
-|------|----------|
-| /api/games/rooms/[slug]/leave | LeaveRoomBodySchema.safeParse(raw) |
-| /api/games/rooms/[slug]/join | JoinRoomBodySchema.safeParse(raw) |
-| /api/subscription | SubscriptionPostBodySchema.safeParse(raw) |
-| /api/auth/verify-turnstile | VerifyTurnstileBodySchema.safeParse(raw) |
-| /api/chat | ChatPostBodySchema.safeParse(raw) |
-| /api/games/rooms (POST) | GamesRoomsPostBodySchema.safeParse(raw ?? {}) |
-| /api/games/rooms/[slug] (PATCH) | GamesRoomsPatchBodySchema.safeParse(raw ?? {}) |
-| /api/learn/progress | LearnProgressPostBodySchema.safeParse(raw ?? {}) |
-| /api/games/rooms/[slug]/script-murder | ScriptMurderPostBodySchema.safeParse(raw) |
-| /api/recommend | RecommendPostBodySchema.safeParse(raw) |
-| /api/report | ReportPostBodySchema.safeParse(raw) |
-| /api/learn/notes | LearnNotesPostBodySchema.safeParse(raw) |
-| /api/learn/certificate | LearnCertificatePostBodySchema.safeParse(raw) |
-| /api/subscription/promo | SubscriptionPromoPostBodySchema.safeParse(raw) |
+## 無 Body 或無 Zod 驗證之 API
 
-Schema 定義於 `src/lib/api-body-schemas.ts`。
+| Route | 備註 |
+|-------|------|
+| GET 類 | 通常無 body，無需 Zod |
+| POST /api/health | 無需 |
+| POST /api/scripts/* | 待查 |
+| POST /api/trivia/questions | 待查 |
+| POST /api/truth-or-dare-external | 待查 |
+| POST /api/webhooks/* | 通常以簽章驗證，非 Zod |
 
-## 尚未使用 Zod 的路由（僅型別斷言或手動檢查）
+## 檢查結果
 
-以下路由使用 `request.json()` 後以 TypeScript 型別斷言或手動檢查，建議逐步補上 Zod schema.parse 或 safeParse。**優先級**：P3 = 其餘。
+- [x] 主要 POST 路由已使用 safeParse
+- [x] api-body-schemas 集中管理多數 schema
+- [ ] 少數 party-dj、analytics 為路由內建 schema，可選集中
 
-| 路徑 | 現狀 | 優先級 |
-|------|------|--------|
-| /api/admin/* | body 型別斷言 | P3 |
-| 其餘 auth、push-subscribe、notifications、generate-invitation、auto-tag、chat/feedback、login-failure、notify-security 等 | 多為型別斷言或 JSON.parse | P3 |
-
-## 驗收與下一步
-
-- [x] 關鍵路由（訂閱、join、leave、chat、game-state）已具 Zod 或等效：subscription、join、leave、verify-turnstile、chat、games/rooms POST/PATCH、learn/progress 見「已補 Zod」；game-state 見 parsePartyStatePayload。
-- [x] 其餘路由依優先級（P1 > P2 > P3）逐個補 schema.parse 或 safeParse，並回傳 400 + 統一錯誤格式；本批已完成 script-murder、recommend、report、learn/notes、learn/certificate、subscription/promo；尚未補見「尚未使用 Zod」表格（P3）。
-- [x] webhooks/paypal 使用 request.text() + JSON.parse 屬特例（簽章驗證後再 parse），可保留並註記於本文件。
-
-**關鍵檔案**：`src/app/api/**/route.ts`、`@/types/api-bodies`、`@/lib/games/party-state-schema`。
+**更新日期**：2025-02-12

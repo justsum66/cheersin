@@ -50,7 +50,7 @@ export default class ErrorBoundaryBlock extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
       return (
-        <div className="flex flex-col items-center justify-center min-h-[120px] p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[120px] p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-center" role="alert" aria-live="assertive">
           <AlertTriangle className="w-8 h-8 text-red-400 mb-2" />
           <p className="text-white/80 text-sm mb-2">
             {this.props.blockName ? `「${this.props.blockName}」` : '此區塊'}載入時發生錯誤

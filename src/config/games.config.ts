@@ -131,13 +131,13 @@ export const GAMES_META: GameMeta[] = [
   { id: 'up-down-stairs', name: '上下樓梯', description: '依樓層順序喊，喊錯或慢的人喝。', short_description: '依序喊樓層，錯或慢喝', icon: MoveVertical, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8, searchKeys: 'sxlt shangxialouti', rulesSummary: '依樓層順序喊，喊錯或慢喝。' },
   { id: 'countdown-toast', name: '倒數乾杯', description: '隨機 3～10 秒倒數，最接近 0 秒按的人喝。', short_description: '最接近 0 秒按的人喝', icon: Timer, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'dsgb daoshuganbei', twoPlayerFriendly: true, rulesSummary: '隨機倒數，最接近 0 秒按的人喝。' },
   { id: 'random-picker', name: '隨機選一位', description: '純數位抽籤，無實物。', short_description: '隨機抽一位', icon: Sparkles, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 3, searchKeys: 'sjxyw suijixuanywei', twoPlayerFriendly: true, rulesSummary: '隨機抽籤選出一位。' },
-  { id: 'drink-or-safe', name: '喝或安全', description: '抽一位＋喝或安全。', icon: CircleCheck, color: 'secondary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'haq hehuoanquan', twoPlayerFriendly: true },
+  // REMOVED: drink-or-safe (quality 2.5/10)
   { id: 'high-low', name: '比大小', description: '猜下一張比現在大還是小，猜錯喝。', icon: ArrowUpDown, color: 'secondary', players: '2-6 人', difficulty: 'easy', estimatedMinutes: 8, twoPlayerFriendly: true },
   { id: 'titanic', name: '浮杯', description: '輪流加一點，讓杯子沉的人喝。', icon: Ship, color: 'secondary', players: '2-6 人', difficulty: 'medium', estimatedMinutes: 10, twoPlayerFriendly: true },
-  { id: 'finger-guessing', name: '猜拳', description: '經典猜拳，輸的人喝。', icon: HandMetal, color: 'secondary', players: '2 人', difficulty: 'easy', estimatedMinutes: 3, twoPlayerFriendly: true },
+  // REMOVED: finger-guessing (quality 3.5/10, overlap: simple 2p only)
   { id: 'name-train', name: '名字接龍', description: '輪流喊下一個人名字，喊錯或慢喝。', icon: List, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 8 },
   { id: 'liar-dice', name: '吹牛骰子', description: '猜總點數低／中／高，猜錯喝。', icon: Coins, color: 'white', players: '2-6 人', difficulty: 'medium', estimatedMinutes: 10, twoPlayerFriendly: true },
-  { id: 'coin-flip', name: '拋硬幣', description: '猜正面或反面，猜錯喝。', icon: CircleDot, color: 'secondary', players: '1+ 人', difficulty: 'easy', estimatedMinutes: 3, twoPlayerFriendly: true },
+  // REMOVED: coin-flip (quality 3.5/10, overlap: dice)
   { id: 'who-is-undercover', name: '誰是臥底', description: '分配詞語、輪流描述、投票揭曉臥底。', icon: Eye, color: 'primary', players: '3-10 人', difficulty: 'hard', estimatedMinutes: 15 },
   { id: 'werewolf-lite', name: '狼人殺簡化版', description: '4-8 人快速酒桌版，狼人／村民／預言家。', icon: Moon, color: 'secondary', players: '4-8 人', difficulty: 'hard', estimatedMinutes: 20 },
   { id: 'heartbeat-challenge', name: '心跳大挑戰', description: '猜指定玩家心跳速度，最遠者喝。', icon: Activity, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 8, twoPlayerFriendly: true },
@@ -153,7 +153,7 @@ export const GAMES_META: GameMeta[] = [
   { id: 'blackjack', name: '21 點', description: '經典 21 點，莊家 17 停牌；爆牌或輸局喝一口（可自訂）。', icon: Coins, color: 'primary', players: '1+ 人', difficulty: 'medium', estimatedMinutes: 15, twoPlayerFriendly: true },
   { id: 'hot-potato', name: '熱土豆', description: '倒數傳手機，0 秒時拿著的人喝。', icon: Flame, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'rtd redoutou', twoPlayerFriendly: true, rulesSummary: '隨機倒數，傳給下一位；0 秒時持有者喝。' },
   { id: 'seven-tap', name: '七拍', description: '跟節奏點 7 下，脫拍的人喝。', icon: Music2, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'qp qipai', twoPlayerFriendly: true, rulesSummary: '7 秒內點滿 7 下即過關，未滿或超時喝。' },
-  { id: 'spin-bottle', name: '數位真心話瓶', description: '瓶口指到的人選真心話或大冒險。', icon: RotateCcw, color: 'secondary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'szxhb shuweizhenxinhuaping', twoPlayerFriendly: true, rulesSummary: '轉瓶指到誰，誰選真心話或大冒險。' },
+  // REMOVED: spin-bottle (quality 2.0/10)
   { id: 'dare-dice', name: '大冒險骰', description: '擲 1～6 對應懲罰等級，抽一題大冒險。', icon: Dices, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'dmx damaoxianshai', twoPlayerFriendly: true, rulesSummary: '擲骰決定等級，抽一題大冒險執行。' },
 
   { id: 'toast-relay', name: '乾杯接力', description: '輪流說一個詞接龍，卡住或重複喝。', icon: BookOpen, color: 'secondary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'gbjl ganbeijieli', twoPlayerFriendly: true, rulesSummary: '輪流接龍，卡住或重複喝。' },
@@ -188,8 +188,8 @@ export const GAMES_META: GameMeta[] = [
   { id: 'word-chain', name: '文字接龍', description: '用上一個詞的最後一個字接新詞！', icon: Link2, color: 'primary', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'wenzijielongd word chain', twoPlayerFriendly: true, rulesSummary: '文字接龍，接不出喝。' },
   { id: 'team-guess', name: '團隊猜謎', description: '兩隊輪流競賽！一人比劃其他人猜！', icon: Users, color: 'secondary', players: '4-10 人', difficulty: 'medium', estimatedMinutes: 20, searchKeys: 'tuandui caimi team guess charades', rulesSummary: '分隊比劃猜謎。' },
   { id: 'balance-game', name: '天秤遊戲', description: '猜哪邊比較重／多／大！', icon: Activity, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'tianping balance game', twoPlayerFriendly: true, rulesSummary: '猜哪邊比較重。' },
-  { id: 'fortune-draw', name: '命運抽籤', description: '抽取你的運勢籤！運勢決定懲罰！', icon: Sparkles, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'mingyun chouqian fortune draw', twoPlayerFriendly: true, rulesSummary: '抽運勢籤決定懲罰。' },
-  { id: 'truth-wheel', name: '真心話轉盤', description: '轉盤選出回答者，拒絕回答喝兩杯！', icon: RotateCcw, color: 'secondary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zhenxinhua zhuanpan truth wheel', rulesSummary: '轉盤選人回答真心話。' },
+  // REMOVED: fortune-draw (quality 4.0/10, overlap: lucky-draw)
+  // REMOVED: truth-wheel (quality 4.0/10, overlap: truth-or-dare)
 
   { id: 'photo-bomb', name: '照片炸彈', description: '擺出指定表情拍照，大家投票！', icon: Smile, color: 'secondary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'zhaopian zhadan photo bomb', rulesSummary: '擺表情拍照投票。' },
   // Phase 5 新遊戲
@@ -199,7 +199,7 @@ export const GAMES_META: GameMeta[] = [
   { id: 'quick-math', name: '快速心算', description: '限時心算挑戰！答錯喝酒！', icon: Calculator, color: 'secondary', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'kuaisu xinsuan quick math', twoPlayerFriendly: true, rulesSummary: '限時心算挑戰。' },
   { id: 'color-blind', name: '色盲測試', description: '看文字選顏色，考驗你的眼力！', icon: Palette, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'semang ceshi color blind', twoPlayerFriendly: true, rulesSummary: '看文字選正確顏色。' },
 
-  { id: 'finger-point', name: '手指快指', description: '看到方向快速指！最慢喝酒！', icon: HandMetal, color: 'secondary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'shouzhi kuaizhi finger point', rulesSummary: '看方向快指，最慢喝。' },
+  // REMOVED: finger-point (quality 4.0/10, overlap: reaction-master)
   { id: 'shot-roulette', name: 'Shot輪盤', description: '轉動輪盤決定命運！可能Shot、安全、或反轉！', icon: Target, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'shot lunpan roulette', twoPlayerFriendly: true, rulesSummary: '轉輪盤決定Shot命運。' },
   { id: 'music-chair', name: '搶位遊戲', description: '音樂停止搶位子！沒搶到喀淑！', icon: Music2, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 15, searchKeys: 'qiangwei youxi music chair', rulesSummary: '音樂停止搶位子。' },
   { id: 'bottle-cap', name: '瓶蓋彈射', description: '瞵準目標彈射瓶蓋！脫靶喝酒！', icon: Target, color: 'secondary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'pinggai danshe bottle cap', twoPlayerFriendly: true, rulesSummary: '彈瓶蓋射目標。' },
@@ -210,11 +210,11 @@ export const GAMES_META: GameMeta[] = [
   { id: 'dice-war', name: '骰子大戰', description: '雙方各擲兩顆骰子，點數大的獲勝！輸的喝酒！', icon: Dices, color: 'accent', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'touzi dazhan dice war', twoPlayerFriendly: true, rulesSummary: '擲骰子比大小。' },
   { id: 'price-guess', name: '價格猜猜', description: '猜物品價格！誤差超過30%要喝酒！', icon: DollarSign, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'jiage caicai price guess', twoPlayerFriendly: true, rulesSummary: '猜物品價格。' },
   { id: 'tongue-challenge', name: '口技挑戰', description: '唔出繞口令！其他玩家投票判定成功或失敗！', icon: Mic, color: 'accent', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'kouji tiaozhan tongue challenge', rulesSummary: '唔繞口令投票判定。' },
-  { id: 'imitate-me', name: '模仿我', description: '模仿指定對象！其他玩家投票評分！不及格喝酒！', icon: User, color: 'secondary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'mofang wo imitate me', rulesSummary: '模仿指定對象投票評分。' },
+  // REMOVED: imitate-me (quality 3.0/10)
 
   { id: 'lucky-draw', name: '幸運抽抽', description: '抽籤決定運勢！凶籤要喝酒！', icon: Clover, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'xingyun chouchou lucky draw', twoPlayerFriendly: true, rulesSummary: '抽運勢籤決定喝酒。' },
-  { id: 'time-freeze', name: '時間凍結', description: '不看畫面，心裡數秒後按停！越接近目標越高分！', icon: Clock, color: 'accent', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'shijian dongjie time freeze', twoPlayerFriendly: true, rulesSummary: '心裡數秒按停，比準確度。' },
-  { id: 'stare-contest', name: '竀眼大賽', description: '雙方對視！先眨眼的人輸，要喝酒！', icon: Eye, color: 'secondary', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'dengyan dasai stare contest', twoPlayerFriendly: true, rulesSummary: '對視比賽，先眨眼喝。' },
+  // REMOVED: time-freeze (quality 3.0/10)
+  // REMOVED: stare-contest (quality 2.5/10)
   { id: 'bluffing', name: '吹功大法', description: '吹噓自己的能力！其他人投票是否相信！被拆穿就喝酒！', icon: Star, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'chuigong dafa bluffing', rulesSummary: '吹噓能力，被質疑喝酒。' },
   // Phase 7 新遊戲
   { id: 'telephone', name: '傳話遊戲', description: '悄悄話傳遞，看看訊息會變成什麼樣子！', icon: MessageCircle, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'chuanhua youxi telephone message', rulesSummary: '悄悄話傳遞遊戲。' },
@@ -237,14 +237,13 @@ const GAME_CATEGORY_MAP = new Map<string, GameCategory>([
   ['truth-or-dare', 'party'], ['roulette', 'party'], ['trivia', 'guess'], ['dice', 'draw'],
   ['never-have-i-ever', 'party'], ['kings-cup', 'party'], ['baskin-robbins-31', 'guess'],
   ['up-down-stairs', 'guess'], ['countdown-toast', 'reaction'],
-  ['random-picker', 'draw'], ['drink-or-safe', 'draw'], ['high-low', 'guess'],
-  ['titanic', 'other'], ['finger-guessing', 'other'], ['name-train', 'party'], ['liar-dice', 'draw'],
-  ['coin-flip', 'draw'],
+  ['random-picker', 'draw'], ['high-low', 'guess'],
+  ['titanic', 'other'], ['name-train', 'party'], ['liar-dice', 'draw'],
   ['who-is-undercover', 'facetoface'], ['werewolf-lite', 'facetoface'], ['heartbeat-challenge', 'facetoface'],
   ['mimic-face', 'facetoface'], ['chemistry-test', 'facetoface'], ['charades', 'facetoface'],
   ['would-you-rather', 'facetoface'], ['punishment-wheel', 'other'], ['who-most-likely', 'party'],
   ['secret-reveal', 'party'], ['thirteen-cards', 'other'], ['blackjack', 'other'],
-  ['hot-potato', 'reaction'], ['seven-tap', 'reaction'], ['spin-bottle', 'party'], ['dare-dice', 'draw'],
+  ['hot-potato', 'reaction'], ['seven-tap', 'reaction'], ['dare-dice', 'draw'],
   ['toast-relay', 'party'], ['number-bomb', 'guess'], ['369-clap', 'reaction'], ['buzz-game', 'reaction'],
   ['category-chain', 'party'], ['two-truths-one-lie', 'facetoface'], ['spicy-truth-or-dare', 'adult'],
   ['spicy-never-have-i-ever', 'adult'], ['spicy-who-most-likely', 'adult'],
@@ -253,13 +252,13 @@ const GAME_CATEGORY_MAP = new Map<string, GameCategory>([
   ['secret-confession', 'party'], ['dare-cards', 'party'], ['mind-reading', 'facetoface'], ['spicy-dice', 'adult'],
   ['reaction-master', 'reaction'], ['drunk-truth', 'party'], ['late-night', 'party'],
   ['drinking-word', 'party'], ['guess-song', 'party'], ['photo-guess', 'party'], ['word-chain', 'party'],
-  ['team-guess', 'facetoface'], ['balance-game', 'guess'], ['fortune-draw', 'draw'], ['truth-wheel', 'party'],
+  ['team-guess', 'facetoface'], ['balance-game', 'guess'],
   ['photo-bomb', 'party'], ['draw-guess', 'party'], ['taboo', 'party'], ['spot-diff', 'reaction'],
-  ['quick-math', 'reaction'], ['color-blind', 'reaction'], ['finger-point', 'reaction'],
+  ['quick-math', 'reaction'], ['color-blind', 'reaction'],
   ['shot-roulette', 'party'], ['music-chair', 'party'], ['bottle-cap', 'party'],
   ['emotion-read', 'reaction'], ['fast-type', 'reaction'], ['dice-war', 'facetoface'], ['price-guess', 'guess'],
-  ['tongue-challenge', 'party'], ['imitate-me', 'party'], ['lucky-draw', 'draw'], ['time-freeze', 'reaction'],
-  ['stare-contest', 'facetoface'], ['bluffing', 'party'], ['telephone', 'party'], ['finish-lyric', 'party'],
+  ['tongue-challenge', 'party'], ['lucky-draw', 'draw'],
+  ['bluffing', 'party'], ['telephone', 'party'], ['finish-lyric', 'party'],
   ['tic-tac-shot', 'facetoface'], ['compliment-battle', 'party'], ['cocktail-mix', 'party'],
   ['reverse-say', 'reaction'], ['riddle-guess', 'party'], ['story-chain', 'party'],
   ['emoji-puzzle', 'party'], ['memory-match', 'party'], ['rhythm-master', 'party'],

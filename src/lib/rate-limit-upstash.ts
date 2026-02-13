@@ -79,3 +79,49 @@ export async function checkRateLimitUpstash(
 export function hasUpstashRedis(): boolean {
   return getRedis() !== null
 }
+
+/** R2-028：API 路由 context 對應的限流閾值（與 rate-limit.ts isRateLimited 一致） */
+const API_CONTEXT_CONFIG: Record<string, { max: number; windowSec: number }> = {
+  create: { max: 10, windowSec: 60 },
+  join: { max: 30, windowSec: 60 },
+  game_state: { max: 30, windowSec: 60 },
+  subscription: { max: 20, windowSec: 60 },
+  upload: { max: 15, windowSec: 60 },
+  report: { max: 10, windowSec: 60 },
+  recommend: { max: 30, windowSec: 60 },
+}
+
+const apiLimiters = new Map<string, Ratelimit>()
+
+function getLimiterForContext(context: string): Ratelimit | null {
+  const r = getRedis()
+  if (!r) return null
+  let limiter = apiLimiters.get(context)
+  if (limiter) return limiter
+  const config = API_CONTEXT_CONFIG[context] ?? { max: 60, windowSec: 60 }
+  limiter = new Ratelimit({
+    redis: r,
+    limiter: Ratelimit.slidingWindow(config.max, `${config.windowSec} s`),
+    prefix: `rl:api:${context}`,
+  })
+  apiLimiters.set(context, limiter)
+  return limiter
+}
+
+/**
+ * R2-028：API 路由使用 Upstash 限流，多實例一致
+ * Redis 未設定時回傳 null，呼叫端改走 in-memory
+ */
+export async function checkRateLimitUpstashApi(
+  identifier: string,
+  context: string
+): Promise<RateLimitResult | null> {
+  const limiter = getLimiterForContext(context)
+  if (!limiter) return null
+  try {
+    const res = await limiter.limit(identifier)
+    return { success: res.success, limit: res.limit, remaining: res.remaining, resetAt: res.reset }
+  } catch {
+    return null
+  }
+}

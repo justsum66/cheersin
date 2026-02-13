@@ -732,7 +732,7 @@ export function LearnCourseContent({
                     const parts = (ch.content || '').split(/\n\n+/).filter(Boolean)
                     const paras = parts.length > 0 ? parts : [(ch.content || '')]
                     return paras.map((para, pi) => (
-                      <p key={pi} className="text-white/80 text-sm md:text-base leading-loose whitespace-pre-line games-body max-w-full">
+                      <p key={pi} className="text-white/80 text-sm md:text-base leading-loose whitespace-pre-line games-body max-w-[65ch]">
                         {parseContentWithTerms(para).map((node, ni) =>
                           typeof node === 'string' ? (
                             node
