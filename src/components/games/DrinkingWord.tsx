@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { RefreshCw, Trophy } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -161,7 +161,7 @@ export default function DrinkingWord() {
 
           <AnimatePresence mode="wait">
             {currentChallenge && (
-              <motion.div
+              <m.div
                 key={currentChallenge.word}
                 initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -208,7 +208,7 @@ export default function DrinkingWord() {
                     </button>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

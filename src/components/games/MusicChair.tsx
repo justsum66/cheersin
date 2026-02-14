@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Music2, RefreshCw, Users, AlertTriangle } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -139,43 +140,43 @@ export default function MusicChair() {
             剩餘 {remainingPlayers.length} 人 / 位子 {remainingPlayers.length - 1} 個
           </p>
 
-          <motion.div
+          <m.div
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ duration: 0.5, repeat: Infinity }}
             className="text-8xl mb-4"
           >
             🎵
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 0.5, repeat: Infinity }}
             className="inline-block px-6 py-3 rounded-full bg-green-500/20 border border-green-500/50"
           >
             <span className="text-green-400 font-bold">音樂播放中...</span>
-          </motion.div>
+          </m.div>
 
           {countdown <= 5 && (
-            <motion.p
+            <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-amber-400 mt-4 text-sm"
             >
               ⚠️ 隨時會停止！
-            </motion.p>
+            </m.p>
           )}
         </div>
       )}
 
       {gamePhase === 'stopped' && (
         <div className="text-center w-full max-w-md">
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { scale: 0.5 }}
             animate={{ scale: 1 }}
             className="mb-4"
           >
             <AlertTriangle className="w-16 h-16 text-red-400 mx-auto" />
-          </motion.div>
+          </m.div>
           <p className="text-red-400 font-bold text-2xl mb-4">音樂停止！</p>
           <p className="text-white/60 mb-4">誰沒搶到位子？</p>
 
@@ -195,18 +196,19 @@ export default function MusicChair() {
       )}
 
       {eliminatedPlayer && gamePhase !== 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 text-center"
         >
           <p className="text-red-400 font-bold">{eliminatedPlayer} 淘汰！喝一杯！</p>
+          {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           <p className="text-white/50 text-sm mt-2">準備下一輪...</p>
-        </motion.div>
+        </m.div>
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -237,7 +239,7 @@ export default function MusicChair() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       <button

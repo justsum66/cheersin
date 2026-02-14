@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Hand, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
@@ -152,7 +152,7 @@ export default function ThreeSixNineClap() {
       </button>
 
       {/* 當前數字 */}
-      <motion.div
+      <m.div
         key={currentNumber}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -162,20 +162,20 @@ export default function ThreeSixNineClap() {
         aria-live="polite"
       >
         {currentNumber}
-      </motion.div>
+      </m.div>
 
       {/* 提示 */}
       {!loser && (
         <div className="mb-4 text-center">
           {shouldClap ? (
-            <motion.p
+            <m.p
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="text-red-400 font-bold text-lg flex items-center gap-2 justify-center"
             >
               <Hand className="w-5 h-5" />
               拍 {clapCount} 下！
-            </motion.p>
+            </m.p>
           ) : (
             <p className="text-white/50 text-lg">說數字！</p>
           )}
@@ -192,7 +192,7 @@ export default function ThreeSixNineClap() {
       {/* 拍手動畫 */}
       <AnimatePresence>
         {isClapping && (
-          <motion.div
+          <m.div
             key="clap"
             initial={{ scale: 0.5, opacity: 1 }}
             animate={{ scale: 1.5, opacity: 0 }}
@@ -202,13 +202,13 @@ export default function ThreeSixNineClap() {
             aria-hidden
           >
             <Hand className="w-32 h-32 text-yellow-400" />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* 輸家顯示 */}
       {loser && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center gap-4 mb-6"
@@ -231,13 +231,13 @@ export default function ThreeSixNineClap() {
             <RotateCcw className="w-5 h-5" />
             再玩一局
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {/* 操作按鈕 */}
       {!loser && (
         <div className="flex gap-4">
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={sayNumber}
@@ -249,9 +249,9 @@ export default function ThreeSixNineClap() {
             aria-label={`說 ${currentNumber}`}
           >
             {currentNumber}
-          </motion.button>
+          </m.button>
           
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={clap}
@@ -264,7 +264,7 @@ export default function ThreeSixNineClap() {
           >
             <Hand className="w-6 h-6" />
             拍手
-          </motion.button>
+          </m.button>
         </div>
       )}
 

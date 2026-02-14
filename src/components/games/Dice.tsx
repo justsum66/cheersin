@@ -1,15 +1,148 @@
-'use client'
-
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { scaleIn, slideUp, staggerContainer, buttonHover, buttonTap } from '@/lib/animations'
 import { fireFullscreenConfetti } from '@/lib/celebration'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
-import { useGamesShake } from './GamesContext'
+import { useGamesShake, useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
 import { useGameStore } from '@/store/useGameStore'
+import DareDice from './DareDice'
+import { Flame, RotateCcw, AlertTriangle, Dice6 } from 'lucide-react'
+
+// --- SpicyDice Implementation Start ---
+const SPICY_DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
+const BODY_PARTS = ['嘴唇', '脖子', '耳朵', '臉頰', '額頭', '手']
+const ACTIONS = ['親', '舔', '吹氣', '咬', '吸', '撫摸']
+const DURATION = ['3秒', '5秒', '10秒', '直到對方說停', '慢慢地', '溫柔地']
+
+function SpicyDice() {
+  const contextPlayers = useGamesPlayers()
+  const { play } = useGameSound()
+  const players = contextPlayers.length >= 2 ? contextPlayers.slice(0, 2) : SPICY_DEFAULT_PLAYERS
+
+  const [ageVerified, setAgeVerified] = useState(false)
+  const [rolling, setRolling] = useState(false)
+  const [result, setResult] = useState<{ bodyPart: string; action: string; duration: string } | null>(null)
+  const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0)
+
+  const currentPlayer = players[currentPlayerIdx]
+  const targetPlayer = players[(currentPlayerIdx + 1) % players.length]
+
+  const rollDice = useCallback(() => {
+    play('click')
+    setRolling(true)
+    setResult(null)
+
+    setTimeout(() => {
+      const bodyPart = BODY_PARTS[Math.floor(Math.random() * BODY_PARTS.length)]
+      const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)]
+      const duration = DURATION[Math.floor(Math.random() * DURATION.length)]
+      setResult({ bodyPart, action, duration })
+      setRolling(false)
+      play('correct')
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
+    }, 1000)
+  }, [play])
+
+  const nextTurn = useCallback(() => {
+    setCurrentPlayerIdx((currentPlayerIdx + 1) % players.length)
+    setResult(null)
+  }, [currentPlayerIdx, players.length])
+
+  const resetGame = useCallback(() => {
+    setCurrentPlayerIdx(0)
+    setResult(null)
+    setRolling(false)
+  }, [])
+
+  if (!ageVerified) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
+        <AlertTriangle className="w-16 h-16 text-red-400 mb-4" />
+        <h2 className="text-xl font-bold text-white mb-2">🔞 18+ 限制級內容</h2>
+        <p className="text-white/60 text-center mb-6">此遊戲包含成人親密內容<br />僅限成年情侶間使用<br />請確認您已年滿 18 歲</p>
+        <m.button
+          whileTap={{ scale: 0.96 }}
+          onClick={() => setAgeVerified(true)}
+          className="px-8 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold games-focus-ring"
+        >
+          我已年滿 18 歲，進入遊戲
+        </m.button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
+      <GameRules rules={`🔞 情侶專屬骰子！\n擲骰決定要對另一半做什麼。\n拒絕執行就喝酒！`} />
+
+      <div className="flex items-center gap-2 mb-4">
+        <Flame className="w-6 h-6 text-red-400" />
+        <h2 className="text-xl font-bold text-white">情趣骰子</h2>
+      </div>
+
+      <p className="text-white/70 mb-4">
+        <span className="text-pink-400 font-bold">{currentPlayer}</span> → <span className="text-red-400 font-bold">{targetPlayer}</span>
+      </p>
+
+      {!result && !rolling && (
+        <m.button
+          whileTap={{ scale: 0.96 }}
+          onClick={rollDice}
+          className="px-12 py-8 rounded-2xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold text-2xl games-focus-ring"
+        >
+          <Dice6 className="w-12 h-12 mx-auto mb-2" />
+          擲骰子！
+        </m.button>
+      )}
+
+      {rolling && (
+        <m.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 0.5, repeat: Infinity, ease: 'linear' }}
+          className="text-6xl"
+        >
+          🎲
+        </m.div>
+      )}
+
+      {result && (
+        <m.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center w-full max-w-sm"
+        >
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/30">
+            <p className="text-white/50 mb-2">動作</p>
+            <p className="text-pink-400 font-bold text-2xl mb-4">{result.action}</p>
+
+            <p className="text-white/50 mb-2">部位</p>
+            <p className="text-red-400 font-bold text-2xl mb-4">{result.bodyPart}</p>
+
+            <p className="text-white/50 mb-2">時長/方式</p>
+            <p className="text-white font-bold text-xl">{result.duration}</p>
+          </div>
+
+          <p className="text-white/50 mt-4 text-sm">
+            {currentPlayer} 要對 {targetPlayer} 的 {result.bodyPart} {result.action} {result.duration}
+          </p>
+
+          <div className="flex gap-3 mt-6 justify-center">
+            <button onClick={nextTurn} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">執行完畢，換人</button>
+            <CopyResultButton text={`情趣骰子：${currentPlayer} → ${targetPlayer}\n${result.action} ${result.bodyPart} ${result.duration}`} />
+          </div>
+        </m.div>
+      )}
+
+      <button onClick={resetGame} className="absolute bottom-4 right-4 p-2 rounded-full bg-white/10 text-white/50 games-focus-ring">
+        <RotateCcw className="w-5 h-5" />
+      </button>
+    </div>
+  )
+}
+// --- SpicyDice Implementation End ---
 
 const HISTORY_SIZE = 10
 /** 86 支援 1～6 顆骰子。87 骰子樣式。88 總和／各顆顯示模式 */
@@ -49,6 +182,17 @@ export default function Dice() {
   const [lastPredictionResult, setLastPredictionResult] = useState<'correct' | 'wrong' | null>(null)
   const predictionResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // const trial = useGameTrial() // Replaced
+
+  // Phase 2: Game Mode Consolidation
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'spicy') {
+    return <SpicyDice />
+  }
+
+  if (selectedMode === 'dare') {
+    return <DareDice />
+  }
 
   const roll = useCallback(() => {
     play('click')
@@ -149,7 +293,7 @@ export default function Dice() {
   }
 
   return (
-    <motion.div
+    <m.div
       className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px"
       role="main"
       aria-label="擲骰子"
@@ -158,12 +302,12 @@ export default function Dice() {
       animate="visible"
       exit="hidden"
     >
-      <motion.div variants={slideUp} className="w-full max-w-2xl text-center">
+      <m.div variants={slideUp} className="w-full max-w-2xl text-center">
         <GameRules rules={`擲 1～6 顆骰子，比點數總和或各顆單獨比大小。\n可約定：總和最小喝、最大喝、對子喝等。`} />
-      </motion.div>
-      <motion.div variants={slideUp} className="flex flex-wrap gap-2 mb-2" role="group" aria-label="骰子樣式">
+      </m.div>
+      <m.div variants={slideUp} className="flex flex-wrap gap-2 mb-2" role="group" aria-label="骰子樣式">
         {DICE_STYLE_OPTIONS.map((s) => (
-          <motion.button
+          <m.button
             key={s}
             type="button"
             onClick={() => setDiceStyle(s)}
@@ -174,11 +318,11 @@ export default function Dice() {
             className={`min-h-[48px] min-w-[48px] px-2.5 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 games-focus-ring ${diceStyle === s ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
           >
             {DICE_STYLE_LABEL[s]}
-          </motion.button>
+          </m.button>
         ))}
-      </motion.div>
-      <motion.div variants={slideUp} className="flex flex-wrap gap-2 mb-4" role="group" aria-label="顯示模式">
-        <motion.button
+      </m.div>
+      <m.div variants={slideUp} className="flex flex-wrap gap-2 mb-4" role="group" aria-label="顯示模式">
+        <m.button
           type="button"
           onClick={() => setDisplayMode('sum')}
           disabled={rolling}
@@ -188,8 +332,8 @@ export default function Dice() {
           className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 games-focus-ring ${displayMode === 'sum' ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
         >
           總和
-        </motion.button>
-        <motion.button
+        </m.button>
+        <m.button
           type="button"
           onClick={() => setDisplayMode('each')}
           disabled={rolling}
@@ -199,11 +343,11 @@ export default function Dice() {
           className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${displayMode === 'each' ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
         >
           各顆
-        </motion.button>
-      </motion.div>
-      <motion.div variants={slideUp} className="flex gap-3 mb-6" role="group" aria-label="選擇骰子數量">
+        </m.button>
+      </m.div>
+      <m.div variants={slideUp} className="flex gap-3 mb-6" role="group" aria-label="選擇骰子數量">
         {DICE_COUNT_OPTIONS.map((n) => (
-          <motion.button
+          <m.button
             key={n}
             type="button"
             onClick={() => changeDiceCount(n)}
@@ -216,12 +360,12 @@ export default function Dice() {
               }`}
           >
             {n} 顆
-          </motion.button>
+          </m.button>
         ))}
-      </motion.div>
-      <motion.div variants={scaleIn} className="flex gap-6 md:gap-12 mb-8 md:mb-12 perspective-1000" aria-label="骰子">
+      </m.div>
+      <m.div variants={scaleIn} className="flex gap-6 md:gap-12 mb-8 md:mb-12 perspective-1000" aria-label="骰子">
         {dices.map((val, i) => (
-          <motion.div
+          <m.div
             key={i}
             // G3-031: Enhanced 3D physics with spring bounce
             animate={rolling && !reducedMotion && !heldDice[i] ? {
@@ -249,9 +393,9 @@ export default function Dice() {
             aria-label={`骰子 ${i + 1}：${val} 點${heldDice[i] ? '（已鎖定）' : ''}`}
             aria-pressed={heldDice[i]}
             className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl border relative flex items-center justify-center cursor-pointer select-none transition-all ${heldDice[i] ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-black/50' : ''} ${diceStyle === 'standard' ? 'bg-gradient-to-br from-gray-100 to-gray-300 border-white/50 shadow-[0_0_40px_rgba(255,255,255,0.2)]' :
-                diceStyle === 'glass' ? 'bg-gradient-to-br from-amber-200 to-amber-600 border-amber-400/50 shadow-[0_0_40px_rgba(251,191,36,0.3)]' :
-                  diceStyle === 'neon' ? 'bg-gradient-to-br from-cyan-900 to-purple-900 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.4),0_0_80px_rgba(168,85,247,0.2)]' :
-                    'bg-gradient-to-br from-rose-200 to-pink-500 border-rose-400/50 shadow-[0_0_40px_rgba(244,114,182,0.3)]'
+              diceStyle === 'glass' ? 'bg-gradient-to-br from-amber-200 to-amber-600 border-amber-400/50 shadow-[0_0_40px_rgba(251,191,36,0.3)]' :
+                diceStyle === 'neon' ? 'bg-gradient-to-br from-cyan-900 to-purple-900 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.4),0_0_80px_rgba(168,85,247,0.2)]' :
+                  'bg-gradient-to-br from-rose-200 to-pink-500 border-rose-400/50 shadow-[0_0_40px_rgba(244,114,182,0.3)]'
               }`}
           >
             {diceStyle === 'emoji' ? (
@@ -280,9 +424,9 @@ export default function Dice() {
                 🔒
               </div>
             )}
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
 
       <div className="text-center" aria-live="polite" aria-atomic="true">
         <div ref={announceRef} className="sr-only" role="status">
@@ -290,7 +434,7 @@ export default function Dice() {
         </div>
         <AnimatePresence mode="wait">
           {!rolling && (
-            <motion.div
+            <m.div
               key="result"
               initial={reducedMotion ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -300,20 +444,20 @@ export default function Dice() {
               data-testid="dice-result"
             >
               {displayMode === 'sum' ? total : (diceCount === 1 ? dices[0] : dices.join(' · '))}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
         {/* G3-034: Prediction result */}
         <AnimatePresence>
           {lastPredictionResult && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               className={`text-lg font-bold mb-2 ${lastPredictionResult === 'correct' ? 'text-green-400' : 'text-red-400'}`}
             >
               {lastPredictionResult === 'correct' ? '🎯 預測正確！' : '❌ 預測錯誤'}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
         {/* G3-034: High/Low predict buttons */}
@@ -343,7 +487,7 @@ export default function Dice() {
           <p className="text-white/30 text-xs mb-2">💡 點擊骰子可鎖定，下次擲骰不會改變</p>
         )}
         {history.length > 0 && (
-          <motion.div variants={slideUp}>
+          <m.div variants={slideUp}>
             <p className="text-white/40 text-sm mb-2">最近：{history.join('、')}</p>
             {/* 90 骰子結果歷史統計 */}
             <p className="text-white/40 text-xs mb-2">
@@ -354,9 +498,9 @@ export default function Dice() {
               label="複製本局結果"
               className="mb-4"
             />
-          </motion.div>
+          </m.div>
         )}
-        <motion.button
+        <m.button
           whileHover={!rolling ? buttonHover : undefined}
           whileTap={!rolling ? buttonTap : undefined}
           type="button"
@@ -368,8 +512,8 @@ export default function Dice() {
           data-testid="dice-roll"
         >
           {rolling ? '擲骰中...' : '擲骰子'}
-        </motion.button>
+        </m.button>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

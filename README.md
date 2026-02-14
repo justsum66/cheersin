@@ -99,7 +99,9 @@ cp .env.example .env.local
 
 # 編輯 .env.local 並填入你的配置
 ```
-**關鍵環境變量：** `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`（後端）、`GROQ_API_KEY` 或 `OPENROUTER_API_KEY`（AI）、PayPal 相關（`PAYPAL_CLIENT_ID`、`PAYPAL_CLIENT_SECRET`、`PAYPAL_WEBHOOK_ID`）。詳見 [.env.example](.env.example)。
+**關鍵環境變量：** `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`（後端）、`GROQ_API_KEY`（Chat 主線，必填）、`OPENROUTER_API_KEY`（Embedding + Chat fallback，必填）、`NVIDIA_NIM_API_KEY`（Chat fallback，選填）。Chat 順序由 `CHAT_PRIMARY`、`CHAT_FALLBACK_ORDER` 控制（預設 groq → nim → openrouter）。PayPal 相關（`PAYPAL_CLIENT_ID`、`PAYPAL_CLIENT_SECRET`、`PAYPAL_WEBHOOK_ID`）。詳見 [.env.example](.env.example)。
+
+**後端 env 單一來源：** 所有 API、lib、scripts 應經 `src/lib/env-config.ts` 讀取環境變數，勿在 route/lib 直接使用 `process.env`（除 `NODE_ENV` 等框架用變數）。
 
 4. **啟動開發伺服器**
 ```bash
@@ -118,6 +120,14 @@ npm run build        # 生產建置
 npm run test:run     # 單次全量測試
 npm run test:stress  # 兩輪測試（壓力/穩定性）
 ```
+
+### 部署／整合前檢查
+建議在提交或部署前依序執行：
+1. `npm run validate-env` — 檢查 .env.local 必填與格式
+2. `npm run lint` — 程式碼風格
+3. `npx tsc --noEmit` — 型別檢查
+4. `npm run test:run` — 單元與整合測試
+5. `npm run build` — 生產建置
 
 ## 🎯 建置與部署（DEV-011）
 
@@ -194,6 +204,18 @@ npm run supabase:deploy
 ```
 
 若 `supabase:push` 報錯 `Cannot find project ref. Have you run supabase link?`，請先執行 `npm run supabase:link`。無 CLI 權限時，可到 Supabase Dashboard → SQL Editor 手動執行 `supabase/migrations/RUN_ALL_IN_DASHBOARD.sql`。
+
+## API 錯誤碼一覽
+
+API 錯誤回應格式為 `{ success: false, error: { code, message } }`。錯誤碼與使用者訊息以 **單一來源** 定義於 `src/lib/api-error-codes.ts`，供 route 與前端 i18n 對齊。
+
+| 領域 | 常數物件 | 用途 |
+|------|----------|------|
+| 遊戲房間 | `ROOM_ERROR` / `ROOM_MESSAGE` | `/api/games/rooms`、`/api/games/rooms/[slug]/*` |
+| 學習 | `LEARN_ERROR` / `LEARN_MESSAGE` | `/api/learn/*`（筆記、證書、討論、品酒筆記、進度） |
+| 管理後台 | `ADMIN_ERROR` / `ADMIN_MESSAGE` | `/api/admin/*`（knowledge、users、usage） |
+
+完整錯誤碼與訊息請見 [docs/api-error-codes.md](docs/api-error-codes.md)。
 
 ## 🤝 貢獻指南
 

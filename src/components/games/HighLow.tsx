@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { fireFullscreenConfetti, showFailureEffect } from '@/lib/celebration'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGamesPlayers } from './GamesContext'
 import { useGameStore } from '@/store/useGameStore'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 const ROUND_HISTORY_MAX = 5
@@ -18,6 +20,7 @@ type RoundEntry = { from: number; to: number; outcome: RoundOutcome }
 export default function HighLow() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const { addReplayEvent } = useGameStore()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [current, setCurrent] = useState(() => Math.floor(Math.random() * 13) + 1)
@@ -146,13 +149,13 @@ export default function HighLow() {
         </div>
       )}
       <p className="text-white/70 text-lg mb-4">輪到 {currentPlayer}</p>
-      <motion.div
+      <m.div
         className="min-w-[100px] min-h-[120px] rounded-xl border-2 border-white/30 bg-white/5 flex items-center justify-center mb-4 overflow-hidden"
         style={{ boxShadow: 'inset 0 0 20px rgba(255,255,255,0.05)' }}
         aria-live="polite"
       >
         <AnimatePresence mode="wait">
-          <motion.span
+          <m.span
             key={displayNum}
             initial={{ rotateY: isRevealing ? -90 : 0, opacity: isRevealing ? 0.5 : 1 }}
             animate={{ rotateY: 0, opacity: 1 }}
@@ -160,11 +163,11 @@ export default function HighLow() {
             className="text-4xl md:text-5xl font-mono font-bold text-primary-300"
           >
             {displayNum}
-          </motion.span>
+          </m.span>
         </AnimatePresence>
-      </motion.div>
+      </m.div>
       {result && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           className="mb-2 text-center"
@@ -178,10 +181,11 @@ export default function HighLow() {
             }`}>
             {result === 'correct' ? '對！' : result === 'freePass' ? '3連勝獎勵！本輪免喝' : '喝！'}
           </p>
+          {result === 'wrong' && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           {(result === 'wrong' || result === 'freePass') && next !== null && (
             <p className="text-white/60 text-sm mt-1">正確數字：{next}，與上一張差距 {Math.abs(next - current)}</p>
           )}
-        </motion.div>
+        </m.div>
       )}
       {(totalRounds > 0 || result) && (
         <CopyResultButton
@@ -203,22 +207,22 @@ export default function HighLow() {
         >
           <p className="text-white/40 text-xs">或上滑＝大、下滑＝小；鍵盤 1/←＝小、2/→＝大</p>
           <div className="flex gap-4">
-            <motion.button
+            <m.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={() => guess(false)}
               className="min-h-[48px] min-w-[48px] px-8 py-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold games-focus-ring"
             >
               小
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={() => guess(true)}
               className="min-h-[48px] min-w-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
             >
               大
-            </motion.button>
+            </m.button>
           </div>
         </div>
       )}

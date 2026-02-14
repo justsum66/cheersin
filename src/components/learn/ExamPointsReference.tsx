@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { GraduationCap, ChevronDown, AlertTriangle, CheckCircle2, BookOpen } from 'lucide-react'
 
 interface ExamPoint {
@@ -66,7 +66,7 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
 
   const filteredPoints = useMemo(() => {
     if (!filterExam) return examPoints
-    return examPoints.filter(p => p.examTypes.includes(filterExam as any))
+    return examPoints.filter(p => p.examTypes.includes(filterExam as ExamPoint['examTypes'][number]))
   }, [examPoints, filterExam])
 
   const examTypes = useMemo(() => {
@@ -106,18 +106,18 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
             </p>
           </div>
         </div>
-        <motion.div
+        <m.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
           <ChevronDown className="w-5 h-5 text-white/40" />
-        </motion.div>
+        </m.div>
       </button>
 
       {/* 展開內容 */}
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -129,11 +129,10 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
                 <button
                   type="button"
                   onClick={() => setFilterExam(null)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    filterExam === null
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterExam === null
                       ? 'bg-primary-500/20 text-primary-300 border border-primary-500/30'
                       : 'bg-white/5 text-white/60 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   全部
                 </button>
@@ -142,11 +141,10 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
                     key={type}
                     type="button"
                     onClick={() => setFilterExam(type)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      filterExam === type
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterExam === type
                         ? 'bg-primary-500/20 text-primary-300 border border-primary-500/30'
                         : 'bg-white/5 text-white/60 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     {type}
                   </button>
@@ -156,7 +154,7 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
               {/* 考點列表 */}
               <div className="space-y-2">
                 {filteredPoints.map((point, idx) => (
-                  <motion.div
+                  <m.div
                     key={point.topic}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -168,9 +166,8 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
                         {point.importance === 'high' ? (
                           <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
                         ) : (
-                          <CheckCircle2 className={`w-4 h-4 shrink-0 ${
-                            point.importance === 'medium' ? 'text-amber-400' : 'text-emerald-400'
-                          }`} />
+                          <CheckCircle2 className={`w-4 h-4 shrink-0 ${point.importance === 'medium' ? 'text-amber-400' : 'text-emerald-400'
+                            }`} />
                         )}
                         <span className="text-white font-medium text-sm">{point.topic}</span>
                       </div>
@@ -189,7 +186,7 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
                         </span>
                       ))}
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
 
@@ -201,7 +198,7 @@ export function ExamPointsReference({ courseId, chapterTitle, className = '' }: 
                 </p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

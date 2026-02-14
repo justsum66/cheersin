@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { BookOpen, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
 
 interface KeywordSummaryProps {
@@ -20,7 +20,7 @@ export function KeywordSummary({ keywords, chapterTitle, className = '' }: Keywo
   if (!keywords || keywords.length === 0) return null
 
   return (
-    <motion.div 
+    <m.div 
       className={`rounded-xl border border-white/10 bg-gradient-to-br from-primary-500/5 to-accent-500/5 overflow-hidden ${className}`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -40,17 +40,17 @@ export function KeywordSummary({ keywords, chapterTitle, className = '' }: Keywo
             <p className="text-white/50 text-xs">{keywords.length} 個重點概念</p>
           </div>
         </div>
-        <motion.div
+        <m.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
           <ChevronDown className="w-5 h-5 text-white/40" />
-        </motion.div>
+        </m.div>
       </button>
       
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -60,7 +60,7 @@ export function KeywordSummary({ keywords, chapterTitle, className = '' }: Keywo
             <div className="px-4 pb-4 pt-0">
               <div className="flex flex-wrap gap-2">
                 {keywords.map((keyword, idx) => (
-                  <motion.span
+                  <m.span
                     key={keyword}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -68,7 +68,7 @@ export function KeywordSummary({ keywords, chapterTitle, className = '' }: Keywo
                     className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-sm hover:bg-white/10 hover:border-primary-500/30 transition-colors cursor-default"
                   >
                     {keyword}
-                  </motion.span>
+                  </m.span>
                 ))}
               </div>
               <p className="mt-3 text-white/40 text-xs flex items-center gap-1">
@@ -76,10 +76,10 @@ export function KeywordSummary({ keywords, chapterTitle, className = '' }: Keywo
                 掌握這些關鍵詞，複習更有效率
               </p>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   )
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
@@ -65,18 +65,18 @@ export default function MimicFace() {
       <p className="text-white/50 text-sm mb-2 text-center">表情模仿</p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
           onClick={drawExpression}
           whileTap={{ scale: 0.98 }}
         >
           抽表情
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'target' && targetExpression && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-2xl font-bold text-primary-300 mb-4">模仿表情：{targetExpression}</p>
           <button
             type="button"
@@ -85,11 +85,11 @@ export default function MimicFace() {
           >
             開始拍照
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'photo' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-2">輪到 <span className="font-bold text-primary-300">{currentName}</span> 模仿「{targetExpression}」</p>
           <p className="text-white/50 text-sm mb-4">拍照後由大家評分 1–10，或按下方模擬評分</p>
           <div className="flex flex-wrap gap-2 justify-center">
@@ -104,12 +104,12 @@ export default function MimicFace() {
               </button>
             ))}
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -135,7 +135,7 @@ export default function MimicFace() {
             >
               再來一局
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

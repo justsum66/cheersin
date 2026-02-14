@@ -3,7 +3,7 @@
 import './home.css'
 import { memo, useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { motion, useScroll, useTransform, useReducedMotion, type TargetAndTransition } from 'framer-motion'
+import { m, useScroll, useTransform, useReducedMotion, type TargetAndTransition } from 'framer-motion'
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
 import { slideUp, fadeIn, staggerContainer } from '@/lib/animations'
@@ -25,10 +25,8 @@ import {
 
 /** Code splitting：首屏外組件延後載入，縮小首頁 bundle */
 const ResubscribeBanner = dynamic(() => import('@/components/ResubscribeBanner'), { ssr: false, loading: () => null })
-const SpringDrag = dynamic(
-  () => import('@/components/ui/SpringDrag').then((m) => ({ default: m.SpringDrag })),
-  { ssr: false, loading: () => null }
-)
+/** 靜態匯入避免 dynamic chunk 在 dev 出現 undefined.call（framer-motion 依賴順序）；組件體積小 */
+import { SpringDrag } from '@/components/ui/SpringDrag'
 /** R2-105：特色遊戲 3D 輪播 — lazy load 降低首頁 bundle */
 const HomeGamesCarousel3D = dynamic(
   () => import('./HomeGamesCarousel3D').then((m) => ({ default: m.HomeGamesCarousel3D })),
@@ -57,7 +55,7 @@ const HOME_COPY = {
   ctaFooterButton: COPY_CTA_IMMEDIATE_QUIZ,
 } as const
 import Image from 'next/image'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import ParticleBubbles from '@/components/ParticleBubbles'
 import { LOGO_SRC, BRAND_NAME } from '@/components/BrandLogo'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
@@ -160,18 +158,18 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px] mix-blend-screen animate-pulse-slow" style={{ backgroundColor: 'var(--hero-glow-primary)' }} />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow animation-delay-400" style={{ backgroundColor: 'var(--hero-glow-secondary)' }} />
         </div>
-        <motion.div
+        <m.div
           className={`absolute inset-0 z-0 pointer-events-none ${!reducedMotion ? 'will-change-transform' : ''}`}
           style={{ y: heroY, opacity: heroOpacity }}
           aria-hidden
         >
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px] mix-blend-screen" style={{ backgroundColor: 'var(--hero-glow-primary)' }} />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] mix-blend-screen" style={{ backgroundColor: 'var(--hero-glow-secondary)' }} />
-        </motion.div>
+        </m.div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center w-full page-container-mobile px-4 sm:px-6 lg:px-8">
           {/* E13/E15/E34：Logo LCP 優先、sizes 提示、入場 delay 可配置 */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: HERO_ANIMATION_DELAYS.logo }}
@@ -189,27 +187,27 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               fetchPriority="high"
               decoding="async"
             />
-          </motion.div>
+          </m.div>
 
           {/* E22/E23/E33：h1 唯一、aria-describedby 副標、入場 delay 可配置 */}
           {/* P1：Hero 主標使用 design token --text-hero、leading-tight */}
           {/* Phase 1 A3.1: 標題 gradient text 動畫增強 */}
           {/* Phase 1 A2.3: text-balance 平衡換行 */}
-          <motion.h1
+          <m.h1
             id="hero-heading"
             style={{ y: titleY, lineHeight: 1.08 }}
             className="home-heading-1 font-display font-bold mb-4 md:mb-6 tracking-tighter leading-tight text-balance"
             aria-describedby="hero-subtitle"
           >
-            <motion.span
+            <m.span
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.title1 }}
               className="block text-white"
             >
               {t('common.heroTitle1')}
-            </motion.span>
-            <motion.span
+            </m.span>
+            <m.span
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.title2 }}
@@ -220,11 +218,11 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               }}
             >
               {t('common.heroTitle2')}
-            </motion.span>
-          </motion.h1>
+            </m.span>
+          </m.h1>
 
           {/* E04/E35：副標 text-balance、id 供 aria-describedby、delay 可配置 */}
-          <motion.p
+          <m.p
             id="hero-subtitle"
             style={{ y: subtitleY }}
             className="home-subtitle text-white/90 text-balance"
@@ -233,10 +231,10 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             transition={{ duration: 0.8, delay: HERO_ANIMATION_DELAYS.subtitle }}
           >
             {heroSubtitleText}
-          </motion.p>
+          </m.p>
 
           {/* E36/E11：CTA 區入場 delay 可配置、間距一致；R2-099 CTA 區塊背景漸層動畫 */}
-          <motion.div
+          <m.div
             style={{ y: buttonsY }}
             className={`relative rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2 ${!reducedMotion ? 'hero-cta-bg-gradient' : ''}`}
 
@@ -298,13 +296,13 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
             <span className={`order-1 sm:order-3 home-badge shrink-0 mt-1 sm:mt-0 sm:ml-1 relative z-0 ${!reducedMotion ? 'home-badge-pulse' : ''}`}>
               {HOME_COPY.ctaBadge}
             </span>
-          </motion.div>
+          </m.div>
           {/* E27/E49：CTA 提示對比度 WCAG AA、供主 CTA aria-describedby */}
           <p id="hero-cta-hint" className="text-white/70 text-sm mt-5 mb-0 order-last w-full">{HOME_COPY.ctaQuizHint}</p>
         </div>
 
         {/* E12/E37/E38/E29：滾動指示器底邊距、延遲淡出、reducedMotion 時靜態、aria-hidden */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: HERO_ANIMATION_DELAYS.scrollIndicator, duration: 0.6 }}
@@ -313,13 +311,13 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
           aria-hidden
         >
           <div className="w-[1px] h-8 bg-gradient-to-b from-transparent via-white/30 to-transparent" />
-          <motion.div
+          <m.div
             animate={reducedMotion ? { opacity: 0.5 } : { opacity: [0.4, 0.65, 0.4] }}
             transition={reducedMotion ? {} : { duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
             <ChevronDown className="w-6 h-6 text-white/50" aria-hidden />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </section>
 
       {/* H83：ResubscribeBanner 置於 Hero 下方，不遮擋首屏主 CTA */}
@@ -354,13 +352,13 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
 
       {/* B07/B39：Features 區 aria-labelledby、id 供錨點；P1-055 視差裝飾 */}
       <section id="home-features" className="py-10 md:py-14 px-4 relative z-10 bg-white/[0.01]" aria-labelledby="home-features-heading">
-        <motion.div
+        <m.div
           className="absolute inset-0 pointer-events-none overflow-hidden"
           style={{ y: featuresParallaxY }}
           aria-hidden
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[120px] opacity-20" style={{ backgroundColor: 'var(--hero-glow-primary)' }} />
-        </motion.div>
+        </m.div>
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
           {/* B09/B10：Core Features 標籤與主標可配置 */}
           <InViewAnimate delay={0} y={16} amount={0.15} reducedMotion={!!reducedMotion}>
@@ -405,7 +403,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         <h2 id="home-story-heading" className="sr-only">關於 Cheersin</h2>
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <motion.div
+            <m.div
               className="md:pr-4"
               initial={reducedMotion ? { x: 0, opacity: 1 } : { x: -32, opacity: 0 }}
               whileInView={reducedMotion ? undefined : { x: 0, opacity: 1 }}
@@ -417,8 +415,8 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
               <p className="text-white/70 text-sm md:text-base leading-relaxed">
                 Cheersin 從靈魂酒測出發，結合派對遊戲、品酒學堂與 AI 侍酒師，讓每個人都能輕鬆找到自己的命定酒款，在聚會中創造專屬回憶。
               </p>
-            </motion.div>
-            <motion.div
+            </m.div>
+            <m.div
               className="md:pl-4"
               initial={reducedMotion ? { x: 0, opacity: 1 } : { x: 32, opacity: 0 }}
               whileInView={reducedMotion ? undefined : { x: 0, opacity: 1 }}
@@ -429,7 +427,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                 <p className="text-primary-400 font-semibold text-lg mb-1">派對 · 學習 · 諮詢</p>
                 <p className="text-white/50 text-sm">一站滿足探索、玩樂與進階需求</p>
               </div>
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </section>
@@ -524,7 +522,7 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a2e]/80 via-transparent to-transparent pointer-events-none" aria-hidden />
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
           {/* R2-125：下載/CTA 區塊輕微浮動，吸引注意 */}
-          <motion.div
+          <m.div
             className="max-w-4xl mx-auto text-center mb-10"
             animate={reducedMotion ? undefined : { y: [0, -5, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -545,17 +543,17 @@ export default function HomePageClient({ testimonials, faq }: HomePageClientProp
                   <Sparkles className="w-5 h-5" /> {HOME_COPY.ctaFooterButton}
                 </MagneticButton>
               </Link>
-              <motion.div
+              <m.div
                 className="opacity-70"
                 animate={reducedMotion ? undefined : { y: [0, -6, 0] }}
                 transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
                 aria-hidden
               >
                 <Smartphone className="w-10 h-10 text-white/70" />
-              </motion.div>
+              </m.div>
             </div>
             <p className="text-white/70 text-sm mb-6" role="note" aria-label="飲酒與年齡提醒">{FOOTER_DRINK_NOTE}</p>
-          </motion.div>
+          </m.div>
           <form
             id="footer-subscribe-form"
             className="flex flex-col gap-3 max-w-md mx-auto mt-2 mb-6 home-footer-form opacity-90 text-sm"
@@ -696,7 +694,7 @@ const BentoCard = memo(function BentoCard({ cardId, href, icon: Icon, title, des
   return (
     <InViewAnimate delay={delay} y={16} duration={0.4} reducedMotion={!!reducedMotion}>
       <Link href={href} className="block h-full rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] transition-[box-shadow] duration-200" aria-label={`${title}：${description}`}>
-        <motion.div
+        <m.div
           ref={cardRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
@@ -717,7 +715,7 @@ const BentoCard = memo(function BentoCard({ cardId, href, icon: Icon, title, des
           )}
           {/* R2-037：Bento 卡片 hover 時圖標旋轉 15deg、背景微亮；R2-080：圖標獨特入場 */}
           <div className="flex items-start justify-between mb-2 md:mb-3 relative z-10">
-            <motion.span
+            <m.span
               className="inline-block transition-transform duration-200 group-hover:rotate-[15deg] group-hover:brightness-110"
               initial={reducedMotion ? { opacity: 1, scale: 1 } : iconAnim.initial}
               whileInView={reducedMotion ? undefined : iconAnim.animate}
@@ -725,14 +723,14 @@ const BentoCard = memo(function BentoCard({ cardId, href, icon: Icon, title, des
               transition={{ duration: 0.4, delay: delay + 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
               <FeatureIcon icon={Icon} size="md" color="primary" />
-            </motion.span>
+            </m.span>
             {badge && (
               <span className="home-badge">{badge}</span>
             )}
           </div>
           <h3 className="home-heading-3 text-white mb-1 md:mb-2 group-hover:text-primary-400 transition-colors duration-200 relative z-10">{title}</h3>
           <p className="home-body text-white/60 text-xs md:text-sm leading-relaxed line-clamp-2 flex-1 relative z-10">{description}</p>
-        </motion.div>
+        </m.div>
       </Link>
     </InViewAnimate>
   )

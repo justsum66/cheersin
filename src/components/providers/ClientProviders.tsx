@@ -1,6 +1,6 @@
 'use client'
 
-import { MotionConfig } from 'framer-motion'
+import { MotionConfig, LazyMotion, domAnimation } from 'framer-motion'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/query-client'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -24,6 +24,7 @@ function ApiLoadingOverlay() {
 /** A11Y-009：全站 framer-motion 尊重 prefers-reduced-motion */
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
+    <LazyMotion features={domAnimation} strict>
     <MotionConfig reducedMotion="user">
     <QueryClientProvider client={getQueryClient()}>
     <ThemeProvider>
@@ -45,5 +46,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     </ThemeProvider>
     </QueryClientProvider>
     </MotionConfig>
+    </LazyMotion>
   )
 }

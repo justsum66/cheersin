@@ -1,0 +1,29 @@
+{
+  "2026-02-13": {
+    "id": "daily-1",
+    "name": "Cloudy Bay Sauvignon Blanc",
+    "type": "white",
+    "region": "Marlborough",
+    "country": "紐西蘭",
+    "intro": "紐西蘭馬爾堡長相思代表，果香奔放、酸度明亮。",
+    "tastingNotes": "柑橘、百香果、青椒、草本；口感清爽，餘韻帶礦物感。"
+  },
+  "2026-02-14": {
+    "id": "daily-2",
+    "name": "Glenfiddich 12 Year",
+    "type": "whisky",
+    "region": "Speyside",
+    "country": "蘇格蘭",
+    "intro": "斯佩賽單一麥芽入門款，花果香與麥芽甜感平衡。",
+    "tastingNotes": "梨子、蘋果、香草、蜂蜜；尾韻溫和帶橡木。"
+  },
+  "2026-02-15": {
+    "id": "daily-3",
+    "name": "獺祭 純米大吟釀 45",
+    "type": "sake",
+    "region": "山口縣",
+    "country": "日本",
+    "intro": "精米步合 45%，果香清爽、米旨細膩。",
+    "tastingNotes": "蜜瓜、白桃、米香；口感綿密，餘韻乾淨。"
+  }
+}

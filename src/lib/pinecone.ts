@@ -9,23 +9,21 @@
 interface PineconeVector {
     id: string
     values: number[]
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
 }
 
 interface PineconeQueryResult {
     matches: {
         id: string
         score: number
-        metadata?: Record<string, any>
+        metadata?: Record<string, unknown>
     }[]
 }
 
-import { normalizeEnv, normalizeUrl } from './env'
 import { fetchWithRetry } from './fetch-retry'
+import { PINECONE_API_URL, PINECONE_API_KEY } from './env-config'
 
-/** Index host 需無尾端斜線，例如 https://xxx-us-east1-0.aws.pinecone.io */
-const PINECONE_API_URL = normalizeUrl(process.env.PINECONE_API_URL)
-const PINECONE_API_KEY = normalizeEnv(process.env.PINECONE_API_KEY)
+/** Index host 需無尾端斜線，例如 https://xxx-us-east1-0.aws.pinecone.io（由 env-config 提供） */
 const PINECONE_API_VERSION = '2025-10'
 /** P1-19：Pinecone 逾時 15s；P3-34 可重試 5xx */
 const PINECONE_TIMEOUT_MS = 15_000
@@ -89,7 +87,7 @@ export async function queryVectors(
         topK?: number
         namespace?: string
         includeMetadata?: boolean
-        filter?: Record<string, any>
+        filter?: Record<string, unknown>
     } = {}
 ): Promise<PineconeQueryResult> {
     const {
@@ -149,7 +147,7 @@ export async function getIndexStats(): Promise<{
 }
 
 // Test connection
-export async function testPineconeConnection(): Promise<{ success: boolean; message: string; stats?: any }> {
+export async function testPineconeConnection(): Promise<{ success: boolean; message: string; stats?: Awaited<ReturnType<typeof getIndexStats>> }> {
     try {
         const stats = await getIndexStats()
         return {

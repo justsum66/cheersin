@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useRef, useEffect } from 'react'
 import { X, Play, Star, BookOpen, Clock, Trophy, Lock } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
@@ -112,7 +112,7 @@ export function CoursePreviewModal({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <m.div
             className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -123,7 +123,7 @@ export function CoursePreviewModal({
           />
 
           {/* Modal Dialog */}
-          <motion.div
+          <m.div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
@@ -135,7 +135,7 @@ export function CoursePreviewModal({
             transition={{ duration: 0.25 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
+            <m.div
               className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0a0a1a] border border-white/10 shadow-2xl"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -309,8 +309,8 @@ export function CoursePreviewModal({
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Zap, RotateCcw, Clock, Trophy } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 
@@ -58,6 +60,7 @@ const TRIVIA_QUESTIONS = [
 export default function QuickQA() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [currentQ, setCurrentQ] = useState<typeof TRIVIA_QUESTIONS[0] | null>(null)
@@ -147,13 +150,13 @@ export default function QuickQA() {
       </div>
 
       {!currentQ ? (
-        <motion.button
+        <m.button
           whileTap={{ scale: 0.96 }}
           onClick={startRound}
           className="px-8 py-6 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-xl games-focus-ring"
         >
           開始搶答！
-        </motion.button>
+        </m.button>
       ) : (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           {isRunning && (
@@ -163,20 +166,21 @@ export default function QuickQA() {
             </div>
           )}
 
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-center"
           >
             <p className="text-white text-xl font-medium">{currentQ.q}</p>
-          </motion.div>
+          </m.div>
 
           {showAnswer && (
-            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+            <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
               <p className="text-emerald-400 font-bold text-2xl">答案：{currentQ.a}</p>
               {loser && <p className="text-red-400 mt-2">{loser} 答錯，喝！</p>}
               {timeLeft === 0 && !loser && <p className="text-red-400 mt-2">時間到！大家都喝！</p>}
-            </motion.div>
+              {(loser || (timeLeft === 0 && !loser)) && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+            </m.div>
           )}
 
           {isRunning && (

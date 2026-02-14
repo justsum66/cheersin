@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { getPromptsByCategory, CATEGORY_LABEL, type SecretRevealCategory } from './secret-reveal'
 
 describe('secret-reveal', () => {
-  it('getPromptsByCategory(all) returns prompts', () => {
-    const prompts = getPromptsByCategory('all')
+  it('getPromptsByCategory(all) returns prompts', async () => {
+    const prompts = await getPromptsByCategory('all')
     expect(Array.isArray(prompts)).toBe(true)
     expect(prompts.length).toBeGreaterThan(0)
     const first = prompts[0]
@@ -12,8 +12,8 @@ describe('secret-reveal', () => {
     expect(first).toHaveProperty('level')
   })
 
-  it('getPromptsByCategory(love) returns love prompts', () => {
-    const prompts = getPromptsByCategory('love')
+  it('getPromptsByCategory(love) returns love prompts', async () => {
+    const prompts = await getPromptsByCategory('love')
     expect(Array.isArray(prompts)).toBe(true)
     prompts.forEach((p) => expect(p.text).toBeDefined())
   })

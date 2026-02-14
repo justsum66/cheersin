@@ -97,9 +97,11 @@ const nextConfig: NextConfig = {
     }
     return config
   },
-  /** PERF-004 / PERF-018：圖片 WebP/AVIF；首屏圖由元件設 priority */
+  /** PERF-004 / PERF-018：圖片 WebP/AVIF；R2-246 deviceSizes/imageSizes 精確化 */
   images: {
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     /* 白名單：限制外部圖片來源，防止 SSRF */
     remotePatterns: [
       { protocol: 'https', hostname: 'wdegandlipgdvqhgmoai.supabase.co', pathname: '/**' },

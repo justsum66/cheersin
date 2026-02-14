@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Heart, RotateCcw, Check, X } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -145,17 +145,17 @@ export default function CoupleTest() {
             onChange={(e) => setPlayer2Name(e.target.value)}
             className="px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/50 border border-white/20 games-focus-ring"
           />
-          <motion.button
+          <m.button
             whileTap={{ scale: 0.96 }}
             onClick={startGame}
             disabled={!player1Name.trim() || !player2Name.trim()}
             className="px-8 py-4 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold disabled:opacity-50 games-focus-ring"
           >
             開始測試！
-          </motion.button>
+          </m.button>
         </div>
       ) : showResult ? (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           <p className="text-4xl font-bold text-pink-400 mb-2">{compatibility}%</p>
           <p className="text-white/70 mb-1">默契指數</p>
           <p className="text-primary-300 font-medium mb-2">{pairingLabel}</p>
@@ -167,7 +167,7 @@ export default function CoupleTest() {
             <button onClick={resetGame} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">再玩一次</button>
             <CopyResultButton text={`情侶默契測試：${player1Name} ❤️ ${player2Name}\n默契指數：${compatibility}% · ${pairingLabel}\n答對 ${score.correct}/${totalQuestions} 題`} />
           </div>
-        </motion.div>
+        </m.div>
       ) : (
         <div className="flex flex-col items-center gap-6 w-full max-w-md">
           <p className="text-white/50">{t('common.questionOrdinal', { n: totalQuestions + 1 })}</p>
@@ -175,30 +175,30 @@ export default function CoupleTest() {
             <span className="text-pink-400 font-bold">{answererName}</span> 來回答：
           </p>
           
-          <motion.div
+          <m.div
             key={currentQ}
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-pink-500/20 to-red-500/20 border border-pink-500/30 text-center"
           >
             <p className="text-white text-xl">{currentQ}</p>
-          </motion.div>
+          </m.div>
 
           <div className="flex gap-4">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={() => markAnswer(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold games-focus-ring"
             >
               <Check className="w-5 h-5" /> 答對
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={() => markAnswer(false)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 font-bold games-focus-ring"
             >
               <X className="w-5 h-5" /> 答錯，喝！
-            </motion.button>
+            </m.button>
           </div>
         </div>
       )}

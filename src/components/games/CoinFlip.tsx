@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -79,7 +79,7 @@ export default function CoinFlip() {
         <>
           <div className="flex gap-4 mb-6">
             {SIDES.map((s) => (
-              <motion.button
+              <m.button
                 key={s}
                 type="button"
                 whileTap={{ scale: 0.96 }}
@@ -89,10 +89,10 @@ export default function CoinFlip() {
                 aria-label={`猜${s}`}
               >
                 {s}
-              </motion.button>
+              </m.button>
             ))}
           </div>
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={flip}
@@ -101,12 +101,12 @@ export default function CoinFlip() {
             aria-label="拋硬幣"
           >
             拋硬幣
-          </motion.button>
+          </m.button>
         </>
       )}
       <AnimatePresence>
         {show && result !== null && choice !== null && (
-          <motion.div
+          <m.div
             initial={{ scale: 0.5, opacity: 0, rotateY: 0 }}
             animate={{ 
               scale: [0.5, 1.2, 1],
@@ -125,24 +125,24 @@ export default function CoinFlip() {
             style={{ transformStyle: 'preserve-3d' }}
           >
             {/* Phase 1 C1.5: 硬幣 3D 翻转动画 */}
-            <motion.p 
+            <m.p 
               className="text-2xl font-bold text-primary-300 mb-2"
               initial={{ rotateX: -90, opacity: 0 }}
               animate={{ rotateX: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.3 }}
             >
               开{result}
-            </motion.p>
-            <motion.p 
+            </m.p>
+            <m.p 
               className={`font-bold text-xl ${win ? 'text-green-400' : 'text-red-400'}`}
               initial={{ scale: 0 }}
               animate={{ scale: [0, 1.3, 1] }}
               transition={{ delay: 0.7, duration: 0.4 }}
             >
               {win ? '✓ 安全' : '喝！'}
-            </motion.p>
+            </m.p>
             <CopyResultButton text={resultText} className="mt-3 games-focus-ring" />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       {show && (

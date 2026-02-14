@@ -11,11 +11,12 @@ import { logApiError } from '@/lib/api-error-log';
 import { getCurrentUser } from '@/lib/get-current-user';
 import { createServerClient } from '@/lib/supabase-server';
 import { errorResponse, serverErrorResponse } from '@/lib/api-response';
+import { RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes';
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit';
 import { SubscriptionPostBodySchema, MAX_SUBSCRIPTION_ID_LENGTH } from '@/lib/api-body-schemas';
 
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
+import { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } from '@/lib/env-config';
+
 const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
   const ip = getClientIp(request.headers);
   if (await isRateLimitedAsync(ip, 'subscription')) {
     return NextResponse.json(
-      { success: false, error: { code: 'RATE_LIMITED', message: '操作過於頻繁，請稍後再試' } },
+      { success: false, error: { code: 'RATE_LIMITED', message: RATE_LIMIT_MESSAGE } },
       { status: 429, headers: { 'Retry-After': '60' } }
     );
   }

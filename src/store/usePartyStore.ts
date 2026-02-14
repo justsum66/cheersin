@@ -33,6 +33,8 @@ interface PartyState {
     addMember: (member: PartyMember) => void
     removeMember: (memberId: string) => void
     setMemberReady: (memberId: string, isReady: boolean) => void
+    /** R2-077：從 presence sync 同步成員列表（含 isReady） */
+    syncMembers: (members: PartyMember[]) => void
     setCurrentGame: (gameId: string | null) => void
     setPartyPlan: (plan: PartyPlan | null) => void
     resetParty: () => void
@@ -60,6 +62,8 @@ export const usePartyStore = create<PartyState>((set) => ({
     setMemberReady: (memberId, isReady) => set((state) => ({
         members: state.members.map(m => m.id === memberId ? { ...m, isReady } : m)
     })),
+
+    syncMembers: (members) => set({ members }),
 
     setCurrentGame: (gameId) => set({ currentGame: gameId }),
 

@@ -5,6 +5,8 @@
 const KEY_FONT_SIZE = 'cheersin-games-font-size'
 const KEY_REDUCE_MOTION = 'cheersin-games-reduce-motion'
 const KEY_HAPTIC_ENABLED = 'cheersin-games-haptic-enabled'
+/** R2-151：全遊戲非酒精模式 — 懲罰文案替換為「做一下」等 */
+const KEY_NON_ALCOHOL_MODE = 'cheersin-games-non-alcohol-mode'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -51,6 +53,24 @@ export function getHapticEnabled(): boolean {
 export function setHapticEnabled(value: boolean): void {
   try {
     localStorage.setItem(KEY_HAPTIC_ENABLED, value ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+}
+
+/** R2-151：全遊戲非酒精模式 — 開啟時懲罰文案顯示「做一下」等取代「喝一口」 */
+export function getNonAlcoholMode(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(KEY_NON_ALCOHOL_MODE) === '1'
+}
+
+export function setNonAlcoholMode(value: boolean): void {
+  try {
+    localStorage.setItem(KEY_NON_ALCOHOL_MODE, value ? '1' : '0')
+    document.documentElement.dataset.gamesNonAlcohol = value ? '1' : '0'
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cheersin-games-non-alcohol-change'))
+    }
   } catch {
     /* ignore */
   }

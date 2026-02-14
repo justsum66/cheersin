@@ -62,6 +62,10 @@ interface GameStore {
     setCurrentGameId: (id: string | null) => void
     setRound: (round: number) => void
 
+    // Phase 1 Task 14: Game Modes
+    selectedMode: string | null
+    setSelectedMode: (mode: string | null) => void
+
     // Context Actions
     setStats: (stats: Partial<GameStatsSnapshot>) => void
     addReplayEvent: (event: Omit<ReplayEvent, 'ts'>) => void
@@ -88,6 +92,9 @@ export const useGameStore = create<GameStore>((set) => ({
 
     currentRoomSlug: null,
     categoryFilter: null,
+
+    selectedMode: null,
+    setSelectedMode: (selectedMode) => set({ selectedMode }),
 
     setRoomId: (id) => set({ roomId: id }),
     setCurrentRoomSlug: (currentRoomSlug) => set({ currentRoomSlug }),
@@ -125,9 +132,9 @@ export const useGameStore = create<GameStore>((set) => ({
 
     setGameState: (gameState) => set({ gameState }),
     setCurrentGameId: (currentGameId) => set((state) => {
-        // Reset stats/replay on game switch
+        // Reset stats/replay/mode on game switch
         if (state.currentGameId !== currentGameId) {
-            return { currentGameId, stats: {}, replayEvents: [] }
+            return { currentGameId, stats: {}, replayEvents: [], selectedMode: null }
         }
         return { currentGameId }
     }),
@@ -148,6 +155,7 @@ export const useGameStore = create<GameStore>((set) => ({
         round: 1,
         players: [],
         currentGameId: null,
+        selectedMode: null,
         stats: {},
         replayEvents: [],
     })

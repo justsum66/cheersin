@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Target, RotateCcw, Trophy, X, Circle } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -102,13 +103,13 @@ export default function TicTacShot() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-purple-900 to-blue-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-md mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           井字射擊
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-6">射中目標獲勝，射空安全！</p>
 
         <GameRules 
@@ -149,7 +150,7 @@ export default function TicTacShot() {
         <div className="bg-black/30 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-6">
           <div className="grid grid-cols-3 gap-3">
             {board.map((cell, index) => (
-              <motion.button
+              <m.button
                 key={index}
                 onClick={() => handleCellClick(index)}
                 disabled={cell !== null || winner !== null || gameOver}
@@ -163,14 +164,14 @@ export default function TicTacShot() {
                 whileTap={!cell && !winner && !gameOver ? { scale: 0.95 } : {}}
               >
                 {getCellContent(cell)}
-              </motion.button>
+              </m.button>
             ))}
           </div>
         </div>
 
         <AnimatePresence mode="wait">
           {winner && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -185,6 +186,7 @@ export default function TicTacShot() {
                   ? `${players[0]} 射中目標！其他人喝一杯！` 
                   : `${players[1]} 成功防禦！${players[0]} 喝一杯！`}
               </p>
+              {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto mb-4" />}
               <div className="flex gap-4">
                 <button
                   onClick={nextRound}
@@ -200,11 +202,11 @@ export default function TicTacShot() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {gameOver && !winner && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -212,6 +214,7 @@ export default function TicTacShot() {
             >
               <div className="text-2xl font-bold mb-4 text-gray-300">平局！</div>
               <p className="text-lg mb-4">雙方都需喝一杯！</p>
+              {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto mb-4" />}
               <div className="flex gap-4">
                 <button
                   onClick={nextRound}
@@ -227,7 +230,7 @@ export default function TicTacShot() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

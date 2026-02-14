@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { RotateCcw, RefreshCw, MessageCircle } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -101,7 +101,7 @@ export default function TruthWheel() {
         </div>
 
         {/* 轉盤本體 */}
-        <motion.div
+        <m.div
           ref={wheelRef}
           className="w-full h-full rounded-full border-4 border-white/30 overflow-hidden shadow-2xl"
           style={{ transform: `rotate(${rotation}deg)` }}
@@ -137,7 +137,7 @@ export default function TruthWheel() {
               </div>
             )
           })}
-        </motion.div>
+        </m.div>
 
         {/* 中心圓 */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center z-10">
@@ -148,7 +148,7 @@ export default function TruthWheel() {
       {/* 結果 */}
       <AnimatePresence mode="wait">
         {selectedPlayer && currentQuestion && (
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reducedMotion ? undefined : { opacity: 0, y: -20 }}
@@ -164,7 +164,7 @@ export default function TruthWheel() {
             <p className="text-white/40 text-sm text-center">
               拒絕回答要喝兩杯！
             </p>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

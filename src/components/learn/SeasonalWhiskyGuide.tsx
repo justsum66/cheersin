@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Calendar, Sun, CloudSnow, Leaf, Wind, Utensils, Sparkles, Coffee, IceCream, Flame, Snowflake } from 'lucide-react';
 
 const SEASONAL_GUIDES = [
@@ -106,7 +106,7 @@ export function SeasonalWhiskyGuide() {
       {/* 季節選擇導航 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
         {SEASONAL_GUIDES.map((season) => (
-          <motion.button
+          <m.button
             key={season.id}
             onClick={() => setActiveSeason(season.id)}
             className={`p-3 rounded-xl text-left transition-all ${
@@ -126,12 +126,12 @@ export function SeasonalWhiskyGuide() {
             <p className={`text-xs ${activeSeason === season.id ? 'text-white/90' : 'text-white/50'}`}>
               {season.whiskies.length} 款推薦
             </p>
-          </motion.button>
+          </m.button>
         ))}
       </div>
 
       {/* 活動日曆 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-white/10"
@@ -142,7 +142,7 @@ export function SeasonalWhiskyGuide() {
         </div>
         <div className="space-y-2">
           {CALENDAR_EVENTS.map((event, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -156,13 +156,13 @@ export function SeasonalWhiskyGuide() {
                 <p className="text-white font-medium text-sm">{event.event}</p>
                 <p className="text-white/60 text-xs">{event.description}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 特殊場合推薦 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -174,7 +174,7 @@ export function SeasonalWhiskyGuide() {
         </h3>
         <div className="grid md:grid-cols-2 gap-3">
           {SPECIAL_OCCASIONS.map((occasion, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -202,14 +202,14 @@ export function SeasonalWhiskyGuide() {
                   <p className="text-sm text-white/80">{occasion.mood}</p>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 當前季節推薦 */}
       {SEASONAL_GUIDES.map((season) => (
-        <motion.div
+        <m.div
           key={season.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -234,7 +234,7 @@ export function SeasonalWhiskyGuide() {
               </h4>
               <div className="grid gap-3">
                 {season.whiskies.map((whisky, index) => (
-                  <motion.div
+                  <m.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -249,7 +249,7 @@ export function SeasonalWhiskyGuide() {
                     </div>
                     <p className="text-sm text-white/60 mb-1">{whisky.region}</p>
                     <p className="text-xs text-white/50">{whisky.description}</p>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
@@ -290,11 +290,11 @@ export function SeasonalWhiskyGuide() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       ))}
 
       {/* 季節小貼士 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -321,7 +321,7 @@ export function SeasonalWhiskyGuide() {
             </ul>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { ClickableImage } from '@/components/ui/ImageLightbox'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { m, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles, Focus, ChevronDown, ChevronUp } from 'lucide-react'
 import { recordStudyToday, addPoints, getStreak, addLearnMinutes, getLearnMinutes, setCompletedChapterToday, addWeeklyChapterCount, incrementChaptersCompletedToday } from '@/lib/gamification'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -15,7 +15,7 @@ import { addBookmark, removeBookmark, hasBookmark, getBookmarks, getBookmarkLimi
 import { parseContentWithTerms, ParsedTerm } from '@/lib/learn-terms'
 import { PronunciationButton } from '@/components/ui/PronunciationButton'
 import { addWrongAnswer, getWrongAnswersByCourseAndChapter } from '@/lib/wrong-answers'
-import { unlockBadge } from '@/lib/gamification'
+import { unlockBadge, type BadgeId } from '@/lib/gamification'
 import VideoPlayer from '@/components/learn/VideoPlayer'
 import { ShareToStory } from '@/components/learn/ShareToStory'
 import { CertificateShare } from '@/components/learn/CertificateShare'
@@ -23,6 +23,7 @@ import { KeywordSummary, extractKeywords } from '@/components/learn/KeywordSumma
 import { ExamPointsReference } from '@/components/learn/ExamPointsReference'
 import { FontSizeControl } from '@/components/ui/FontSizeControl'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { BadgeUnlockCelebration } from '@/components/profile/BadgeUnlockCelebration'
 import { WineGlossary } from '@/components/learn/WineGlossary'
 import { WineExamples } from '@/components/learn/WineExamples'
 import { InteractiveRegionMap } from '@/components/learn/InteractiveRegionMap'
@@ -44,6 +45,7 @@ import { InteractiveCocktailMap } from '@/components/learn/InteractiveCocktailMa
 import { CocktailRecommendationDatabase } from '@/components/learn/CocktailRecommendationDatabase'
 import { SeasonalCocktailGuide } from '@/components/learn/SeasonalCocktailGuide'
 import toast from 'react-hot-toast'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useTranslation } from '@/contexts/I18nContext'
 import { COPY_TOAST_PROGRESS_SAVED } from '@/config/copy.config'
 import { getReadingListForCourse } from '@/config/learn-reading-list'
@@ -51,6 +53,36 @@ import { getCommonMistakes } from '@/config/learn-common-mistakes'
 import { getReferencesForCourse } from '@/config/learn-references'
 
 const PROGRESS_KEY = 'cheersin_learn_progress'
+/** R2-377：章節測驗通過後才解鎖下一章；key: courseId -> chapterId -> true */
+const QUIZ_PASSED_KEY = 'cheersin_learn_quiz_passed'
+
+function getQuizPassed(courseId: string, chapterId: number): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const raw = localStorage.getItem(QUIZ_PASSED_KEY)
+    if (!raw) return false
+    const parsed = JSON.parse(raw) as Record<string, Record<string, boolean>>
+    return !!parsed[courseId]?.[String(chapterId)]
+  } catch {
+    return false
+  }
+}
+
+function setQuizPassed(courseId: string, chapterId: number): void {
+  if (typeof window === 'undefined') return
+  try {
+    const raw = localStorage.getItem(QUIZ_PASSED_KEY)
+    const parsed = (raw ? JSON.parse(raw) : {}) as Record<string, Record<string, boolean>>
+    if (!parsed[courseId]) parsed[courseId] = {}
+    parsed[courseId][String(chapterId)] = true
+    localStorage.setItem(QUIZ_PASSED_KEY, JSON.stringify(parsed))
+  } catch {
+    /* ignore */
+  }
+}
+
+/** R2-377：通過門檻為 80%（至少 ceil(length*0.8) 題正確） */
+const QUIZ_PASS_THRESHOLD = 0.8
 
 /** Phase 2 B2.1: 智慧推薦下一堂課程 - 課程關聯地圖 */
 const NEXT_COURSE_MAP: Record<string, { id: string; title: string; reason: string }[]> = {
@@ -193,6 +225,27 @@ export function LearnCourseContent({
 
   /** 158 章節測驗；1 選項隨機；42 答錯視覺；shuffledMap 以題目索引區分 */
   const [quizState, setQuizState] = useState<Record<number, { step: number; showCorrect: boolean; wrongIdx?: number; shuffledMap?: Record<number, number[]> }>>({})
+  /** R2-377：每章測驗正確題數，用於判斷是否通過（80%） */
+  const [quizCorrectCount, setQuizCorrectCount] = useState<Record<number, number>>({})
+  const [, setQuizPassedRefresh] = useState(0)
+  const quizPassedSetRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    chapters.forEach((ch) => {
+      if (!ch.quiz?.length) return
+      const step = quizState[ch.id]?.step ?? 0
+      const correct = quizCorrectCount[ch.id] ?? 0
+      const threshold = Math.ceil(ch.quiz.length * QUIZ_PASS_THRESHOLD)
+      if (step >= ch.quiz.length && correct >= threshold) {
+        const key = `${courseId}-${ch.id}`
+        if (!quizPassedSetRef.current.has(key)) {
+          quizPassedSetRef.current.add(key)
+          setQuizPassed(courseId, ch.id)
+          setQuizPassedRefresh((n) => n + 1)
+        }
+      }
+    })
+  }, [courseId, chapters, quizState, quizCorrectCount])
   /** 160 筆記：key = chapterId，初始從 localStorage 讀取 */
   const [notes, setNotes] = useState<Record<number, string>>({})
 
@@ -223,6 +276,7 @@ export function LearnCourseContent({
   const [bookmarkAchievementToast, setBookmarkAchievementToast] = useState<string | null>(null)
   const [bookmarkLimitToast, setBookmarkLimitToast] = useState(false)
   const [learnAchievementToast, setLearnAchievementToast] = useState<string | null>(null)
+  const [showBadgeCelebration, setShowBadgeCelebration] = useState<BadgeId | null>(null)
   const [summaryTooltip, setSummaryTooltip] = useState<{ chId: number; x: number; y: number } | null>(null)
   
   /** Phase 1 D3.2: 閱讀進度自動保存提示狀態 */
@@ -230,6 +284,7 @@ export function LearnCourseContent({
   /** Phase 1 D3.4: 筆記自動保存指示器狀態 */
   const [noteSaveIndicator, setNoteSaveIndicator] = useState<{ [chapterId: number]: boolean }>({})
   const chapterRefs = useRef<Map<number, HTMLElement>>(new Map())
+  const reducedMotion = usePrefersReducedMotion()
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /** Phase 1 D1.3: 章節完成動畫 - Check mark + 成就提示 */
@@ -251,23 +306,17 @@ export function LearnCourseContent({
     
     /* 任務 89：進度儲存成功後輕量 Toast，僅在切換章節/完成時顯示一次 */
     toast.success(COPY_TOAST_PROGRESS_SAVED, { duration: 2500 })
-    /* L73：課程完成率 100% 時解鎖徽章；P2.B3.2 技能解鎖動畫 */
+    /* L73：課程完成率 100% 時解鎖徽章；R2-116 成就解鎖彈窗 */
     if (nextCompleted >= total && total > 0) {
-      unlockBadge('course-complete')
-      toast.success(t('learn.achievementUnlock'), { duration: 3000 })
+      if (unlockBadge('course-complete')) {
+        setShowBadgeCelebration('course-complete')
+      } else {
+        toast.success(t('learn.achievementUnlock'), { duration: 3000 })
+      }
     }
-    const prevMin = getLearnMinutes()
-    addLearnMinutes(5)
-    const nextMin = getLearnMinutes()
-    if (nextMin >= 300 && prevMin < 300) {
-      setLearnAchievementToast('trophy:學習 5 小時！成就解鎖')
-      setTimeout(() => setLearnAchievementToast(null), 3000)
-    } else if (nextMin >= 120 && prevMin < 120) {
-      setLearnAchievementToast('award:學習 2 小時！成就解鎖')
-      setTimeout(() => setLearnAchievementToast(null), 3000)
-    } else if (nextMin >= 60 && prevMin < 60) {
-      setLearnAchievementToast('clock:學習 60 分鐘！成就解鎖')
-      setTimeout(() => setLearnAchievementToast(null), 3000)
+    const { unlockedBadge } = addLearnMinutes(5)
+    if (unlockedBadge) {
+      setShowBadgeCelebration(unlockedBadge)
     }
     const streakBefore = getStreak().days
     recordStudyToday()
@@ -358,18 +407,18 @@ export function LearnCourseContent({
   return (
     <>
       {/* Phase 1 D3.1: 頂部固定閱讀進度條 */}
-      <motion.div
+      <m.div
         className="fixed top-0 left-0 right-0 z-50 h-1 bg-white/5"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <motion.div
+        <m.div
           className="h-full bg-gradient-to-r from-primary-500 via-accent-500 to-primary-400 shadow-lg shadow-primary-500/30"
           style={{ width: `${scrollProgress}%` }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
         />
-      </motion.div>
+      </m.div>
       
     <main id="learn-main" ref={mainRef} className="min-h-screen px-2 sm:px-4 pt-0 pb-16 safe-area-px safe-area-pb" tabIndex={-1} role="main" aria-label="課程內容">
       {/* Phase 2 D1.2: 二欄佈局 - 桌面版側邊導航 + 內容；P2.D4.3 專注閱讀可隱藏側邊 */}
@@ -437,7 +486,7 @@ export function LearnCourseContent({
                 <span className="text-primary-400 font-medium">{progressPct}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <motion.div 
+                <m.div 
                   className="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPct}%` }}
@@ -539,14 +588,14 @@ export function LearnCourseContent({
               {/* Phase 1 D3.2: 閱讀進度自動保存指示器 */}
               <AnimatePresence>
                 {autoSaveIndicator && (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, scale: 0.8, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: -10 }}
                     transition={{ duration: 0.2 }}
                     className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary-500/20 border border-primary-500/30 text-primary-300 text-sm font-medium"
                   >
-                    <motion.div
+                    <m.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       className="w-4 h-4"
@@ -555,9 +604,9 @@ export function LearnCourseContent({
                         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-20" />
                         <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
-                    </motion.div>
+                    </m.div>
                     自動保存中...
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
               
@@ -595,7 +644,7 @@ export function LearnCourseContent({
           {progressPct > 0 && (
             <div className="mt-3 flex items-center gap-2 min-w-0" aria-live="polite" aria-atomic="true" aria-label={`已完成 ${progressPct}%`}>
               <div className="flex-1 min-w-0 h-2 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
+                <m.div
                   className="h-full rounded-full bg-primary-500 progress-bar-fill"
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPct}%` }}
@@ -625,7 +674,7 @@ export function LearnCourseContent({
             }
             /* Phase 1 D2.1: 課程章節動畫比例感 - whileInView 入場動畫 */
             return (
-              <motion.section
+              <m.section
                 key={ch.id}
                 ref={(el) => { if (el) chapterRefs.current.set(ch.id, el) }}
                 id={`ch-${ch.id}`}
@@ -683,14 +732,10 @@ export function LearnCourseContent({
                             return
                           }
                           const count = getBookmarks().length
-                          if (count >= 10) {
-                            unlockBadge('bookmark-10')
-                            setBookmarkAchievementToast('書籤達 10 個！成就解鎖')
-                            setTimeout(() => setBookmarkAchievementToast(null), 2500)
-                          } else if (count >= 5) {
-                            unlockBadge('bookmark-5')
-                            setBookmarkAchievementToast('書籤達 5 個！成就解鎖')
-                            setTimeout(() => setBookmarkAchievementToast(null), 2500)
+                          if (count >= 10 && unlockBadge('bookmark-10')) {
+                            setShowBadgeCelebration('bookmark-10')
+                          } else if (count >= 5 && unlockBadge('bookmark-5')) {
+                            setShowBadgeCelebration('bookmark-5')
                           }
                           if (atLimit) {
                             setBookmarkLimitToast(true)
@@ -771,13 +816,13 @@ export function LearnCourseContent({
                       {/* Phase 1 D3.4: 筆記自動保存指示器 */}
                     <AnimatePresence>
                       {noteSaveIndicator[ch.id] && (
-                        <motion.div
+                        <m.div
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
                           className="flex items-center gap-1 text-primary-400 text-xs"
                         >
-                          <motion.div
+                          <m.div
                             animate={{ rotate: 360 }}
                             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                             className="w-3 h-3"
@@ -786,9 +831,9 @@ export function LearnCourseContent({
                               <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" className="opacity-30" />
                               <path d="M12 8v4l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                             </svg>
-                          </motion.div>
+                          </m.div>
                           已保存
-                        </motion.div>
+                        </m.div>
                       )}
                     </AnimatePresence>
                       <button
@@ -850,6 +895,10 @@ export function LearnCourseContent({
                     ...ch.quiz.filter((q) => !wrongQuestionSet.has(q.question)),
                     ...ch.quiz.filter((q) => wrongQuestionSet.has(q.question)),
                   ]
+                  const chapterPassed = getQuizPassed(courseId, ch.id)
+                  const quizDone = (quizState[ch.id]?.step ?? 0) >= orderedQuiz.length
+                  const quizJustPassed = quizDone && (quizCorrectCount[ch.id] ?? 0) >= Math.ceil(orderedQuiz.length * QUIZ_PASS_THRESHOLD)
+                  const canCompleteChapter = chapterPassed || quizJustPassed
                   return (
                   <div className="mt-4 p-4 rounded-xl bg-white/5 border border-primary-500/20 space-y-3">
                     <div className="flex items-center gap-2 text-primary-400 text-sm font-medium">
@@ -887,6 +936,7 @@ export function LearnCourseContent({
                           },
                         }))
                         if (correct) {
+                          setQuizCorrectCount((prev) => ({ ...prev, [ch.id]: (prev[ch.id] ?? 0) + 1 }))
                           addPoints(5)
                           play('correct')
                         } else {
@@ -917,7 +967,7 @@ export function LearnCourseContent({
                               const chosen = showCorrect && isCorrect
                               const wrong = showCorrect && wrongIdx === mappedIdx
                               return (
-                                <motion.button
+                                <m.button
                                   key={mappedIdx}
                                   type="button"
                                   onClick={() => handleOption(mappedIdx)}
@@ -935,30 +985,30 @@ export function LearnCourseContent({
                                   }`}
                                 >
                                   {opt}
-                                </motion.button>
+                                </m.button>
                               )
                             })}
                           </div>
                           {/* Phase 1 D4.2: 測驗結果揭曉動畫 */}
                           {/* Phase 2 C1.1: 測驗解析模式 - 顯示詳細解釋 */}
                           {showCorrect && (
-                            <motion.div
+                            <m.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                               className="space-y-3"
                             >
-                              <motion.p 
+                              <m.p 
                                 initial={{ x: -10, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.1, duration: 0.3 }}
                                 className="text-white/50 text-xs"
                               >
                                 正確答案：{q.options[q.correctIndex]}
-                              </motion.p>
+                              </m.p>
                               {/* Phase 2 C1.1: 解析區塊 */}
                               {q.explanation && (
-                                <motion.div
+                                <m.div
                                   initial={{ y: 10, opacity: 0 }}
                                   animate={{ y: 0, opacity: 1 }}
                                   transition={{ delay: 0.2, duration: 0.4 }}
@@ -971,10 +1021,10 @@ export function LearnCourseContent({
                                       <p className="text-white/70 text-sm leading-relaxed">{q.explanation}</p>
                                     </div>
                                   </div>
-                                </motion.div>
+                                </m.div>
                               )}
                               {qIdx < (ch.quiz?.length ?? 1) - 1 && (
-                                <motion.button
+                                <m.button
                                   initial={{ y: 10, opacity: 0 }}
                                   animate={{ y: 0, opacity: 1 }}
                                   transition={{ delay: q.explanation ? 0.4 : 0.2, duration: 0.3 }}
@@ -983,57 +1033,70 @@ export function LearnCourseContent({
                                   className="mt-2 min-h-[48px] px-3 py-2 rounded-lg text-xs text-primary-400 hover:text-primary-300 games-focus-ring"
                                 >
                                   下一題 →
-                                </motion.button>
+                                </m.button>
                               )}
-                            </motion.div>
+                            </m.div>
                           )}
                         </div>
                       )
                     })}
-                    {(quizState[ch.id]?.step ?? 0) >= orderedQuiz.length && (
-                      <p className="text-primary-400 text-xs">測驗完成，可點下方「完成本章」</p>
+                    {quizDone && (
+                      quizJustPassed
+                        ? <p className="text-primary-400 text-xs">測驗通過，可點下方「完成本章」</p>
+                        : <p className="text-amber-400 text-xs">未通過（需 80% 正確），請再答一次</p>
                     )}
                   </div>
                   );
                 })()}
 
-                {/* 完成本章；41 勾選動畫 */}
-                {/* Phase 1 D1.3: 課程完成勾選動畫增強 - 彈跳 + 光暈 */}
-                <motion.button
+                {/* 完成本章；41 勾選動畫；R2-377 有測驗時須通過才可點 */}
+                {(() => {
+                  const chapterHasQuiz = (ch.quiz?.length ?? 0) > 0
+                  const quizStepsDone = (quizState[ch.id]?.step ?? 0) >= (ch.quiz?.length ?? 0)
+                  const chapterQuizPassed = getQuizPassed(courseId, ch.id) || (quizStepsDone && (quizCorrectCount[ch.id] ?? 0) >= Math.ceil((ch.quiz?.length ?? 0) * QUIZ_PASS_THRESHOLD))
+                  const allowComplete = !chapterHasQuiz || chapterQuizPassed
+                  return (
+                <m.button
                   type="button"
+                  disabled={chapterHasQuiz && !chapterQuizPassed}
+                  title={chapterHasQuiz && !chapterQuizPassed ? '請先通過本章測驗（80% 正確）' : undefined}
                   onClick={() => markChapterComplete(ch.id)}
                   className={`mt-4 min-h-[48px] min-w-[48px] inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all games-focus-ring ${
                     isCompleted
                       ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30 shadow-[0_0_20px_rgba(139,0,0,0.3)]'
-                      : 'bg-white/10 text-white/80 hover:bg-white/15 border border-white/10 hover:shadow-lg'
+                      : !allowComplete
+                        ? 'bg-white/5 text-white/40 border border-white/10 cursor-not-allowed'
+                        : 'bg-white/10 text-white/80 hover:bg-white/15 border border-white/10 hover:shadow-lg'
                   }`}
-                  whileHover={!isCompleted ? { scale: 1.05, y: -2 } : {}}
-                  whileTap={!isCompleted ? { scale: 0.95 } : {}}
+                  whileHover={!isCompleted && allowComplete ? { scale: 1.05, y: -2 } : {}}
+                  whileTap={!isCompleted && allowComplete ? { scale: 0.95 } : {}}
                   animate={isCompleted ? { scale: [1, 1.1, 1] } : {}}
                   transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
                 >
                   {isCompleted ? (
                     <>
-                      <motion.span 
+                      <m.span 
                         initial={{ scale: 0, rotate: -180 }} 
                         animate={{ scale: 1, rotate: 0 }} 
                         transition={{ duration: 0.4, type: 'spring', stiffness: 300, damping: 15 }}
                         className="text-primary-400"
                       >
                         <Check className="w-5 h-5" />
-                      </motion.span>
-                      <motion.span
+                      </m.span>
+                      <m.span
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.15, duration: 0.3 }}
                       >
                         已完成
-                      </motion.span>
+                      </m.span>
                     </>
                   ) : (
                     '完成本章'
                   )}
-                </motion.button>
+                </m.button>
+                  )
+                })()}
                 {/* L63：上一章 / 下一章按鈕 */}
                 <div className="mt-6 flex items-center justify-between gap-2 flex-wrap games-btn-group">
                   {prevCh ? (
@@ -1047,17 +1110,30 @@ export function LearnCourseContent({
                     </a>
                   ) : <span />}
                   {nextCh ? (
-                    <a
-                      href={`#ch-${nextCh.id}`}
-                      className="min-h-[48px] min-w-[48px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm transition-colors games-focus-ring ml-auto"
-                      aria-label={`下一章：${nextCh.title}`}
-                    >
-                      <span className="truncate max-w-[8rem] sm:max-w-none">下一章：{nextCh.title}</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </a>
+                    (() => {
+                      const chHasQuiz = (ch.quiz?.length ?? 0) > 0
+                      const stepsDone = (quizState[ch.id]?.step ?? 0) >= (ch.quiz?.length ?? 0)
+                      const passed = getQuizPassed(courseId, ch.id) || (stepsDone && (quizCorrectCount[ch.id] ?? 0) >= Math.ceil((ch.quiz?.length ?? 0) * QUIZ_PASS_THRESHOLD))
+                      const nextLocked = chHasQuiz && !passed
+                      return nextLocked ? (
+                        <span className="min-h-[48px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-white/40 text-sm cursor-not-allowed ml-auto" title="請先通過本章測驗（80% 正確）">
+                          <span className="truncate max-w-[8rem] sm:max-w-none">下一章：{nextCh.title}</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </span>
+                      ) : (
+                        <a
+                          href={`#ch-${nextCh.id}`}
+                          className="min-h-[48px] min-w-[48px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm transition-colors games-focus-ring ml-auto"
+                          aria-label={`下一章：${nextCh.title}`}
+                        >
+                          <span className="truncate max-w-[8rem] sm:max-w-none">下一章：{nextCh.title}</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </a>
+                      )
+                    })()
                   ) : <span />}
                 </div>
-              </motion.section>
+              </m.section>
             )
           })}
         </div>
@@ -1066,7 +1142,7 @@ export function LearnCourseContent({
         {courseId === 'wine-basics' && (
           <div className="mt-8 space-y-8">
             {/* 互動式世界葡萄酒產區地圖 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1080,10 +1156,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <InteractiveRegionMap />
-            </motion.section>
+            </m.section>
 
             {/* 葡萄酒專業術語詞典 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1097,10 +1173,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <WineGlossary />
-            </motion.section>
+            </m.section>
 
             {/* 季節性內容與推薦酒款 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1114,10 +1190,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <SeasonalWineGuide />
-            </motion.section>
+            </m.section>
 
             {/* 葡萄酒歷史演進脈絡 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1156,7 +1232,7 @@ export function LearnCourseContent({
                   </p>
                 </div>
               </div>
-            </motion.section>
+            </m.section>
           </div>
         )}
         
@@ -1164,7 +1240,7 @@ export function LearnCourseContent({
         {courseId === 'whisky-101' && (
           <div className="mt-8 space-y-8">
             {/* 互動式世界威士忌產區地圖 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1178,10 +1254,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <InteractiveWhiskyMap />
-            </motion.section>
+            </m.section>
 
             {/* 威士忌專業術語詞典 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1195,10 +1271,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <WhiskyGlossary />
-            </motion.section>
+            </m.section>
 
             {/* 威士忌實例案例 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1212,10 +1288,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <WhiskyExamples />
-            </motion.section>
+            </m.section>
 
             {/* 威士忌推薦與季節性內容 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1229,10 +1305,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <SeasonalWhiskyGuide />
-            </motion.section>
+            </m.section>
 
             {/* 威士忌歷史演進脈絡 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1271,7 +1347,7 @@ export function LearnCourseContent({
                   </p>
                 </div>
               </div>
-            </motion.section>
+            </m.section>
           </div>
         )}
         
@@ -1279,7 +1355,7 @@ export function LearnCourseContent({
         {courseId === 'beer-cider' && (
           <div className="mt-8 space-y-8">
             {/* 互動式世界啤酒與蘋果酒產區地圖 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1293,10 +1369,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <InteractiveBeerCiderMap />
-            </motion.section>
+            </m.section>
 
             {/* 啤酒與蘋果酒專業術語詞典 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1310,10 +1386,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <BeerCiderGlossary />
-            </motion.section>
+            </m.section>
 
             {/* 啤酒與蘋果酒實例案例 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1327,10 +1403,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <BeerCiderExamples />
-            </motion.section>
+            </m.section>
 
             {/* 季節性內容與推薦酒款 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1344,10 +1420,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <SeasonalBeerCiderGuide />
-            </motion.section>
+            </m.section>
 
             {/* 啤酒與蘋果酒歷史演進脈絡 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1386,7 +1462,7 @@ export function LearnCourseContent({
                   </p>
                 </div>
               </div>
-            </motion.section>
+            </m.section>
           </div>
         )}
         
@@ -1394,7 +1470,7 @@ export function LearnCourseContent({
         {courseId === 'cocktail-basics' && (
           <div className="mt-8 space-y-8">
             {/* 互動式世界調酒產區地圖 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1408,10 +1484,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <InteractiveCocktailMap />
-            </motion.section>
+            </m.section>
 
             {/* 調酒專業術語詞典 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1425,10 +1501,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <CocktailGlossary />
-            </motion.section>
+            </m.section>
 
             {/* 調酒實例案例 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1442,10 +1518,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <CocktailExamples />
-            </motion.section>
+            </m.section>
 
             {/* 調酒推薦與季節性內容 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1459,10 +1535,10 @@ export function LearnCourseContent({
                 </p>
               </div>
               <SeasonalCocktailGuide />
-            </motion.section>
+            </m.section>
 
             {/* 調酒歷史演進脈絡 */}
-            <motion.section
+            <m.section
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -1501,7 +1577,7 @@ export function LearnCourseContent({
                   </p>
                 </div>
               </div>
-            </motion.section>
+            </m.section>
           </div>
         )}
 
@@ -1644,7 +1720,7 @@ export function LearnCourseContent({
           if (unfinished.length === 0) return null
           
           return (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -1675,7 +1751,7 @@ export function LearnCourseContent({
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {unfinished.map((course, idx) => (
-                  <motion.div
+                  <m.div
                     key={course.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -1695,10 +1771,10 @@ export function LearnCourseContent({
                         <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-primary-400 group-hover:translate-x-1 transition-all shrink-0 mt-0.5" />
                       </div>
                     </Link>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )
         })()}
 
@@ -1724,7 +1800,7 @@ export function LearnCourseContent({
 
         {/* Phase 1 D1.4: 成就提示優化 - 立體彈出動畫 + 章節完成動畫 */}
         {completedToast && (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, scale: 0.5, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: -10 }}
@@ -1732,19 +1808,19 @@ export function LearnCourseContent({
             className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-6 py-4 rounded-xl bg-gradient-to-r from-primary-500/95 to-secondary-500/95 text-white text-sm font-medium shadow-2xl backdrop-blur-sm border border-white/20 achievement-pop"
           >
             <div className="flex items-center gap-2">
-              <motion.div
+              <m.div
                 initial={{ rotate: -180, scale: 0 }}
                 animate={{ rotate: 0, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
               >
                 <Sparkles className="w-4 h-4" />
-              </motion.div>
+              </m.div>
               +10 積分 · 繼續加油！
             </div>
-          </motion.div>
+          </m.div>
         )}
         {shareToast !== null && (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -1753,16 +1829,16 @@ export function LearnCourseContent({
             role="status"
           >
             <div className="flex items-center gap-2">
-              <motion.div
+              <m.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
               >
                 <Link2 className="w-4 h-4" />
-              </motion.div>
+              </m.div>
               {shareToast === -1 ? '已複製課程連結' : '已複製本章連結'}
             </div>
-          </motion.div>
+          </m.div>
         )}
         {/* Phase 1 D1.5: 成就解鎖提示加強 - 專業圖標系統 */}
         {(bookmarkAchievementToast || learnAchievementToast || bookmarkLimitToast) && (() => {
@@ -1771,7 +1847,7 @@ export function LearnCourseContent({
           const IconComponent = iconType === 'trophy' ? Trophy : iconType === 'clock' ? Clock : iconType === 'pin' ? Pin : Award
           
           return (
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -1780,18 +1856,29 @@ export function LearnCourseContent({
               role="status"
             >
               <div className="flex items-center gap-2">
-                <motion.div
+                <m.div
                   initial={{ rotate: -180, scale: 0 }}
                   animate={{ rotate: 0, scale: 1 }}
                   transition={{ delay: 0.15, duration: 0.4, type: 'spring', stiffness: 250 }}
                 >
                   <IconComponent className="w-4 h-4" />
-                </motion.div>
+                </m.div>
                 {text}
               </div>
-            </motion.div>
+            </m.div>
           )
         })()}
+        {/* R2-116：成就解鎖彈窗 */}
+        <AnimatePresence>
+          {showBadgeCelebration && (
+            <BadgeUnlockCelebration
+              key={showBadgeCelebration}
+              badgeId={showBadgeCelebration}
+              onComplete={() => setShowBadgeCelebration(null)}
+              prefersReducedMotion={!!reducedMotion}
+            />
+          )}
+        </AnimatePresence>
         {/* 33 長按/右鍵顯示章節摘要 */}
         {summaryTooltip && (() => {
           const ch = chapters.find((c) => c.id === summaryTooltip.chId)
@@ -1813,7 +1900,7 @@ export function LearnCourseContent({
       </div>{/* 關閉二欄佈局 grid div */}
       
       {/* Phase 2 D1.3: 行動版底部快速操作列 - 僅行動版顯示 */}
-      <motion.div
+      <m.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1a0a2e]/95 backdrop-blur-lg border-t border-white/10 safe-area-pb"
@@ -1841,7 +1928,7 @@ export function LearnCourseContent({
               {t('common.chapterProgress', { current: activeChapterId ?? 1, total })}
             </span>
             <div className="w-20 h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <motion.div
+              <m.div
                 className="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full"
                 style={{ width: `${(activeChapterId ?? 1) / total * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -1887,7 +1974,7 @@ export function LearnCourseContent({
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </main>
     </>
   )

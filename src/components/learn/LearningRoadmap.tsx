@@ -2,42 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Check, Lock, ChevronRight, Trophy, Star, Target, BookOpen } from 'lucide-react'
-
-interface CourseNode {
-  id: string
-  title: string
-  shortTitle: string
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  category: 'wine' | 'spirits' | 'cocktail' | 'certification'
-  prerequisites?: string[]
-  duration: string
-}
-
-// 課程節點定義
-const COURSE_NODES: CourseNode[] = [
-  // 入門
-  { id: 'wine-basics', title: '葡萄酒入門', shortTitle: '葡酒入門', level: 'beginner', category: 'wine', duration: '45分' },
-  { id: 'whisky-101', title: '威士忌入門', shortTitle: '威士忌入門', level: 'beginner', category: 'spirits', duration: '30分' },
-  { id: 'cocktail-basics', title: '調酒基礎', shortTitle: '調酒基礎', level: 'beginner', category: 'cocktail', duration: '35分' },
-  { id: 'sake-intro', title: '清酒入門', shortTitle: '清酒入門', level: 'beginner', category: 'spirits', duration: '25分' },
-  
-  // 進階
-  { id: 'white-wine', title: '白酒探索', shortTitle: '白酒探索', level: 'intermediate', category: 'wine', prerequisites: ['wine-basics'], duration: '40分' },
-  { id: 'red-wine', title: '紅酒深度', shortTitle: '紅酒深度', level: 'intermediate', category: 'wine', prerequisites: ['wine-basics'], duration: '50分' },
-  { id: 'whisky-single-malt', title: '單一麥芽威士忌', shortTitle: '單麥威士忌', level: 'intermediate', category: 'spirits', prerequisites: ['whisky-101'], duration: '45分' },
-  { id: 'cocktail-classics', title: '經典調酒', shortTitle: '經典調酒', level: 'intermediate', category: 'cocktail', prerequisites: ['cocktail-basics'], duration: '40分' },
-  
-  // 高階
-  { id: 'wine-advanced', title: '葡萄酒進階', shortTitle: '葡酒進階', level: 'advanced', category: 'wine', prerequisites: ['white-wine', 'red-wine'], duration: '60分' },
-  { id: 'tasting-notes', title: '品飲筆記與盲飲', shortTitle: '盲飲技巧', level: 'advanced', category: 'wine', prerequisites: ['wine-advanced'], duration: '55分' },
-  { id: 'wine-pairing', title: '餐酒搭配進階', shortTitle: '餐酒搭配', level: 'advanced', category: 'wine', prerequisites: ['wine-advanced'], duration: '45分' },
-  
-  // 認證
-  { id: 'wset-l2-wines', title: 'WSET L2 葡萄酒', shortTitle: 'WSET L2', level: 'expert', category: 'certification', prerequisites: ['wine-advanced'], duration: '120分' },
-  { id: 'wset-l3-wines', title: 'WSET L3 葡萄酒', shortTitle: 'WSET L3', level: 'expert', category: 'certification', prerequisites: ['wset-l2-wines'], duration: '180分' },
-]
+import { getCurriculumNodes, type CurriculumNode, type CourseLevel } from '@/config/learn-curriculum'
 
 const PROGRESS_KEY = 'cheersin_learn_progress'
 
@@ -60,40 +27,35 @@ interface LearningRoadmapProps {
 }
 
 /**
- * Phase 2 B3.1: 學習成就路線圖
- * 視覺化展示課程進度與學習路徑
+ * Phase 2 B3.1 / R2-378：學習路徑節點圖
+ * 資料來源 learn-curriculum（入門→進階→專家），視覺化課程進度與前置關係
  */
 export function LearningRoadmap({ className = '', currentCourseId }: LearningRoadmapProps) {
   const [progress, setProgress] = useState<Record<string, ProgressEntry>>({})
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'wine' | 'spirits' | 'cocktail' | 'certification'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'wine' | 'spirits' | 'cocktail' | 'beer' | 'certification' | 'other'>('all')
   const [mounted, setMounted] = useState(false)
+
+  const COURSE_NODES = useMemo(() => getCurriculumNodes(), [])
 
   useEffect(() => {
     setMounted(true)
     setProgress(loadProgress())
   }, [])
 
-  // 計算課程狀態
+  // 計算課程狀態（完成 / 進行中 / 可解鎖 / 鎖定）
   const courseStates = useMemo(() => {
     const states: Record<string, 'locked' | 'available' | 'in-progress' | 'completed'> = {}
-    
     COURSE_NODES.forEach(course => {
       const courseProgress = progress[course.id]
-      
-      // 檢查是否已完成
       if (courseProgress && courseProgress.completed >= courseProgress.total) {
         states[course.id] = 'completed'
         return
       }
-      
-      // 檢查是否進行中
       if (courseProgress && courseProgress.completed > 0) {
         states[course.id] = 'in-progress'
         return
       }
-      
-      // 檢查先修課程
-      if (course.prerequisites && course.prerequisites.length > 0) {
+      if (course.prerequisites.length > 0) {
         const allPrereqsCompleted = course.prerequisites.every(prereq => {
           const prereqProgress = progress[prereq]
           return prereqProgress && prereqProgress.completed >= prereqProgress.total
@@ -103,23 +65,19 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
         states[course.id] = 'available'
       }
     })
-    
     return states
-  }, [progress])
+  }, [progress, COURSE_NODES])
 
-  // 過濾課程
   const filteredCourses = useMemo(() => {
     if (selectedCategory === 'all') return COURSE_NODES
     return COURSE_NODES.filter(c => c.category === selectedCategory)
-  }, [selectedCategory])
+  }, [selectedCategory, COURSE_NODES])
 
-  // 依級別分組
   const coursesByLevel = useMemo(() => {
-    const levels = {
-      beginner: [] as CourseNode[],
-      intermediate: [] as CourseNode[],
-      advanced: [] as CourseNode[],
-      expert: [] as CourseNode[],
+    const levels: Record<CourseLevel, CurriculumNode[]> = {
+      beginner: [],
+      intermediate: [],
+      expert: [],
     }
     filteredCourses.forEach(course => {
       levels[course.level].push(course)
@@ -127,20 +85,18 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
     return levels
   }, [filteredCourses])
 
-  // 統計
   const stats = useMemo(() => {
     const completed = Object.values(courseStates).filter(s => s === 'completed').length
     const total = COURSE_NODES.length
-    return { completed, total, percentage: Math.round((completed / total) * 100) }
-  }, [courseStates])
+    return { completed, total, percentage: total ? Math.round((completed / total) * 100) : 0 }
+  }, [courseStates, COURSE_NODES.length])
 
   if (!mounted) return null
 
-  const levelLabels = {
+  const levelLabels: Record<CourseLevel, { label: string; icon: typeof BookOpen; color: string }> = {
     beginner: { label: '入門', icon: BookOpen, color: 'text-emerald-400' },
     intermediate: { label: '進階', icon: Star, color: 'text-amber-400' },
-    advanced: { label: '高階', icon: Target, color: 'text-purple-400' },
-    expert: { label: '專業認證', icon: Trophy, color: 'text-primary-400' },
+    expert: { label: '專家', icon: Trophy, color: 'text-primary-400' },
   }
 
   const categories = [
@@ -148,7 +104,9 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
     { id: 'wine', label: '葡萄酒' },
     { id: 'spirits', label: '烈酒' },
     { id: 'cocktail', label: '調酒' },
+    { id: 'beer', label: '啤酒' },
     { id: 'certification', label: '認證' },
+    { id: 'other', label: '其他' },
   ]
 
   return (
@@ -167,7 +125,7 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
 
       {/* 進度條 */}
       <div className="h-2 rounded-full bg-white/10 mb-6 overflow-hidden">
-        <motion.div
+        <m.div
           className="h-full bg-gradient-to-r from-primary-500 via-accent-500 to-primary-400 rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${stats.percentage}%` }}
@@ -195,9 +153,9 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
 
       {/* 路線圖 */}
       <div className="space-y-8">
-        {Object.entries(coursesByLevel).map(([level, courses]) => {
+        {(Object.entries(coursesByLevel) as [CourseLevel, CurriculumNode[]][]).map(([level, courses]) => {
           if (courses.length === 0) return null
-          const levelInfo = levelLabels[level as keyof typeof levelLabels]
+          const levelInfo = levelLabels[level]
           const LevelIcon = levelInfo.icon
 
           return (
@@ -218,7 +176,7 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
                       : 0
 
                     return (
-                      <motion.div
+                      <m.div
                         key={course.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -234,6 +192,9 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
                                   <span className="text-white/40 text-sm font-medium">{course.shortTitle}</span>
                                 </div>
                                 <p className="text-white/30 text-xs">{course.duration}</p>
+                                {course.prerequisites.length > 0 && (
+                                  <p className="text-white/30 text-xs mt-1">需先完成：{course.prerequisites.slice(0, 2).map(pid => COURSE_NODES.find(c => c.id === pid)?.shortTitle ?? pid).join('、')}</p>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -244,9 +205,9 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
                               isCurrent
                                 ? 'bg-primary-500/20 border-primary-500/50 ring-2 ring-primary-500/30'
                                 : state === 'completed'
-                                  ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/15'
+                                  ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/15 roadmap-node-glow'
                                   : state === 'in-progress'
-                                    ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15'
+                                    ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15 roadmap-node-glow'
                                     : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
                             }`}
                           >
@@ -269,7 +230,7 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
                                 {/* 進度條 */}
                                 {(state === 'in-progress' || state === 'completed') && (
                                   <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                                    <motion.div
+                                    <m.div
                                       className={`h-full rounded-full ${
                                         state === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'
                                       }`}
@@ -285,7 +246,7 @@ export function LearningRoadmap({ className = '', currentCourseId }: LearningRoa
                             </div>
                           </Link>
                         )}
-                      </motion.div>
+                      </m.div>
                     )
                   })}
                 </AnimatePresence>

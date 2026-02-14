@@ -3,6 +3,7 @@
  * POST /api/chat/feedback { messageId, helpful, comment? }
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import { createServerClientOptional } from '@/lib/supabase-server'
 
 export async function POST(request: Request) {
@@ -12,13 +13,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     if (typeof body?.messageId !== 'string' || typeof body?.helpful !== 'boolean') {
-      return NextResponse.json({ error: 'messageId and helpful required' }, { status: 400 })
+      return errorResponse(400, 'INVALID_BODY', { message: 'messageId and helpful required' })
     }
     messageId = body.messageId
     helpful = body.helpful
     comment = typeof body?.comment === 'string' ? body.comment.slice(0, 2000) : undefined
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return errorResponse(400, 'INVALID_JSON', { message: 'Invalid JSON' })
   }
 
   const supabase = createServerClientOptional()
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       .from('ai_feedback')
       .insert({ message_id: messageId, helpful, comment: comment ?? null })
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return errorResponse(500, 'DB_ERROR', { message: error.message })
     }
   }
   return NextResponse.json({ ok: true })

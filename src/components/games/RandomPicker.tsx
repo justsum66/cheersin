@@ -1,20 +1,33 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameStore } from '@/store/useGameStore'
+import LuckyDraw from './LuckyDraw'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const SPIN_MS = 1200
+/** R2-089：頭像輪轉減速 — 後段 interval 漸增模擬減速停止 */
+const SPIN_INTERVAL_START = 60
+const SPIN_INTERVAL_END = 180
 
-/** 隨機選一位：抽選動畫；72 點擊任意處可提前停止。73 支援選 1～3 人。 */
+/** 隨機選一位：抽選動畫；72 點擊任意處可提前停止。73 支援選 1～3 人。R2-089 輪轉減速。 */
 export default function RandomPicker() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+
+  // Phase 2: Game Mode Consolidation
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'draw-lots') {
+    return <LuckyDraw />
+  }
+
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [pickCount, setPickCount] = useState<1 | 2 | 3>(1)
   const [picked, setPicked] = useState<string[] | null>(null)
@@ -60,26 +73,35 @@ export default function RandomPicker() {
     setSpinning(true)
     const spinMs = reducedMotion ? 200 : SPIN_MS
     let tick = 0
-    spinIntervalRef.current = setInterval(() => {
-      tick++
-      setSpinIndices(Array.from({ length: n }, (_, i) => (tick + i) % players.length))
-    }, reducedMotion ? 40 : 80)
-    spinTimeoutRef.current = setTimeout(() => {
-      if (spinIntervalRef.current) clearInterval(spinIntervalRef.current)
-      spinIntervalRef.current = null
-      spinTimeoutRef.current = null
-      setSpinning(false)
-      setPicked(arr.map((i) => players[i] ?? '').filter(Boolean))
-      setSpinIndices(arr)
-      play('win')
-      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50)
-      setShow(true)
-      if (showHideTimeoutRef.current) clearTimeout(showHideTimeoutRef.current)
-      showHideTimeoutRef.current = setTimeout(() => {
-        showHideTimeoutRef.current = null
-        setShow(false)
-      }, 3500)
-    }, spinMs)
+    const startTime = Date.now()
+    const scheduleTick = () => {
+      const elapsed = Date.now() - startTime
+      if (elapsed >= spinMs) {
+        spinTimeoutRef.current = null
+        setSpinning(false)
+        setPicked(arr.map((i) => players[i] ?? '').filter(Boolean))
+        setSpinIndices(arr)
+        play('win')
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50)
+        setShow(true)
+        if (showHideTimeoutRef.current) clearTimeout(showHideTimeoutRef.current)
+        showHideTimeoutRef.current = setTimeout(() => {
+          showHideTimeoutRef.current = null
+          setShow(false)
+        }, 3500)
+        return
+      }
+      const progress = Math.min(1, elapsed / spinMs)
+      const interval = reducedMotion
+        ? 40
+        : SPIN_INTERVAL_START + (SPIN_INTERVAL_END - SPIN_INTERVAL_START) * Math.pow(progress, 2)
+      spinTimeoutRef.current = setTimeout(() => {
+        tick++
+        setSpinIndices(Array.from({ length: n }, (_, i) => (tick + i) % players.length))
+        scheduleTick()
+      }, interval)
+    }
+    scheduleTick()
   }, [players, pickCount, play, reducedMotion])
 
   useEffect(() => {
@@ -140,7 +162,7 @@ export default function RandomPicker() {
         複製名單
       </button>
       {spinning && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -150,7 +172,7 @@ export default function RandomPicker() {
           aria-busy="true"
         >
           {spinIndices.map((idx, i) => (
-            <motion.span
+            <m.span
               key={`${i}-${idx}-${spinIndices.length}`}
               initial={{ scale: 0.6, opacity: 0.3 }}
               animate={{ scale: [0.9, 1.15, 1], opacity: [0.6, 1, 1] }}
@@ -158,20 +180,20 @@ export default function RandomPicker() {
               className="text-xl font-bold text-primary-300 drop-shadow-lg"
             >
               {players[idx]}
-            </motion.span>
+            </m.span>
           ))}
-        </motion.div>
+        </m.div>
       )}
       <AnimatePresence mode="wait">
         {show && picked && picked.length > 0 && !spinning && (
-          <motion.div
+          <m.div
             initial={{ scale: 0.3, opacity: 0, y: -50 }}
-            animate={{ 
+            animate={{
               scale: [0.3, 1.2, 0.95, 1],
               opacity: 1,
               y: [-50, 0, 5, 0]
             }}
-            transition={{ 
+            transition={{
               duration: 0.8,
               times: [0, 0.5, 0.8, 1],
               ease: [0.68, -0.55, 0.265, 1.55]
@@ -182,7 +204,7 @@ export default function RandomPicker() {
             aria-live="polite"
           >
             {/* Phase 1 C2.4: 選人結果彈跳呼吸動畫 */}
-            <motion.div
+            <m.div
               animate={{
                 scale: [1, 1.05, 1]
               }}
@@ -195,23 +217,23 @@ export default function RandomPicker() {
             >
               <div className="flex flex-wrap gap-2 justify-center mb-2">
                 {picked.map((name, i) => (
-                  <motion.p 
-                    key={i} 
+                  <m.p
+                    key={i}
                     className="text-2xl font-bold text-primary-300"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 + i * 0.15 }}
                   >
                     {name}
-                  </motion.p>
+                  </m.p>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
             <CopyResultButton text={`隨機選${picked.length}人：${picked.join('、')}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-      <motion.button
+      <m.button
         type="button"
         whileTap={{ scale: 0.96 }}
         onClick={(e) => { e.stopPropagation(); if (!spinning) pick(); }}
@@ -220,7 +242,7 @@ export default function RandomPicker() {
         aria-label={`抽${pickCount}位`}
       >
         {spinning ? '抽籤中…（點畫面停止）' : `抽${pickCount}位`}
-      </motion.button>
+      </m.button>
     </div>
   )
 }

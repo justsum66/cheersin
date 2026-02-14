@@ -60,9 +60,9 @@ export const OptimizedImage = memo(function OptimizedImage({
   // 計算 placeholder
   const blurDataURL = shimmerEffect
     ? getBlurDataURL(
-        typeof props.width === 'number' ? props.width : 100,
-        typeof props.height === 'number' ? props.height : 100
-      )
+      typeof props.width === 'number' ? props.width : 100,
+      typeof props.height === 'number' ? props.height : 100
+    )
     : SOLID_BLUR
 
   return (
@@ -73,9 +73,8 @@ export const OptimizedImage = memo(function OptimizedImage({
       blurDataURL={blurDataURL}
       loading={props.loading ?? 'lazy'}
       onLoad={handleLoad}
-      className={`${className} transition-opacity ${
-        fadeInDuration > 0 ? `duration-${fadeInDuration}` : ''
-      } ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={`${className} transition-opacity ${fadeInDuration > 0 ? `duration-${fadeInDuration}` : ''
+        } ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
       style={{
         ...props.style,
         transitionDuration: `${fadeInDuration}ms`,
@@ -84,4 +83,4 @@ export const OptimizedImage = memo(function OptimizedImage({
   )
 })
 
-export default OptimizedImage
+

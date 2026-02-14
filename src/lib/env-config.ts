@@ -6,6 +6,16 @@ import { normalizeEnv, normalizeUrl } from './env'
 
 /** Groq：console.groq.com，必填（chat 主線） */
 export const GROQ_API_KEY = normalizeEnv(process.env.GROQ_API_KEY)
+/** 選填：auto-tag API 專用，未設則用 GROQ_API_KEY */
+export const GROQ_AUTO_TAG_API_KEY = normalizeEnv(process.env.GROQ_AUTO_TAG_API_KEY)
+/** 選填：party-dj 專用，未設則用 GROQ_API_KEY */
+export const GROQ_PARTY_DJ_API_KEY = normalizeEnv(process.env.GROQ_PARTY_DJ_API_KEY)
+/** 選填：Vision 酒標辨識專用，未設則用 GROQ_API_KEY */
+export const GROQ_VISION_API_KEY = normalizeEnv(process.env.GROQ_VISION_API_KEY)
+/** 選填：靈魂酒測專用，未設則用 GROQ_API_KEY */
+export const GROQ_SOUL_WINE_API_KEY = normalizeEnv(process.env.GROQ_SOUL_WINE_API_KEY)
+/** 選填：health 端點測試 Groq 用，未設則用 GROQ_API_KEY */
+export const GROQ_HEALTH_API_KEY = normalizeEnv(process.env.GROQ_HEALTH_API_KEY)
 /** Chat 模型（可切換 llama-3.3-70b-versatile 等）；Vision 模型用於酒標辨識 */
 export const GROQ_CHAT_MODEL = normalizeEnv(process.env.GROQ_CHAT_MODEL) || 'llama-3.3-70b-versatile'
 export const GROQ_VISION_MODEL = normalizeEnv(process.env.GROQ_VISION_MODEL) || 'meta-llama/llama-4-scout-17b-16e-instruct'
@@ -21,6 +31,12 @@ export const NVIDIA_NIM_API_KEY = normalizeEnv(process.env.NVIDIA_NIM_API_KEY)
 
 /** OpenRouter：openrouter.ai，選填，embedding + chat fallback */
 export const OPENROUTER_API_KEY = normalizeEnv(process.env.OPENROUTER_API_KEY)
+/** 選填：embedding 專用，未設則用 OPENROUTER_API_KEY（RAG 與 chat fallback 可分流） */
+export const OPENROUTER_EMBEDDING_API_KEY = normalizeEnv(process.env.OPENROUTER_EMBEDDING_API_KEY)
+/** 選填：health 端點測試 OpenRouter 用，未設則用 OPENROUTER_API_KEY */
+export const OPENROUTER_HEALTH_API_KEY = normalizeEnv(process.env.OPENROUTER_HEALTH_API_KEY)
+/** OpenRouter chat 預設模型（選填）；未設則用 anthropic/claude-3.5-sonnet */
+export const OPENROUTER_CHAT_MODEL = normalizeEnv(process.env.OPENROUTER_CHAT_MODEL) || 'anthropic/claude-3.5-sonnet'
 
 /** Supabase：無尾端斜線 */
 export const NEXT_PUBLIC_SUPABASE_URL = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
@@ -56,6 +72,9 @@ export const PAYPAL_PREMIUM_PLAN_ID = normalizeEnv(process.env.PAYPAL_PREMIUM_PL
 
 /** Admin / Debug */
 export const ADMIN_SECRET = normalizeEnv(process.env.ADMIN_SECRET)
+
+/** Cron 排程驗證（如 subscription-reminder）；未設時部分 cron 可放行或僅 dev */
+export const CRON_SECRET = normalizeEnv(process.env.CRON_SECRET)
 
 /** 是否有 Groq（chat 主線） */
 export const hasGroq = Boolean(GROQ_API_KEY)

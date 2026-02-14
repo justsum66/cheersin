@@ -37,7 +37,9 @@ describe('POST /api/upload', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
-    expect(json.error).toMatch(/allowed|image/)
+    expect(json.success).toBe(false)
+    const msg = typeof json.error?.message === 'string' ? json.error.message : ''
+    expect(msg).toMatch(/allowed|image/)
   })
 
   it('回傳 400 當檔案超過 5MB', async () => {
@@ -48,6 +50,8 @@ describe('POST /api/upload', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
-    expect(json.error).toMatch(/large|5MB/)
+    expect(json.success).toBe(false)
+    const msg = typeof json.error?.message === 'string' ? json.error.message : ''
+    expect(msg).toMatch(/large|5MB/)
   })
 })

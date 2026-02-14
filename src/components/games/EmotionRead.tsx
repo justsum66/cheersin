@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -78,7 +79,7 @@ export default function EmotionRead() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -94,11 +95,11 @@ export default function EmotionRead() {
             >
               開始挑戰
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'playing' && currentEmotion && (
-          <motion.div
+          <m.div
             key="playing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -119,11 +120,11 @@ export default function EmotionRead() {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && currentEmotion && (
-          <motion.div
+          <m.div
             key="result"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -135,6 +136,7 @@ export default function EmotionRead() {
             <div className={`text-3xl font-bold ${selected === currentEmotion.name ? 'text-green-400' : 'text-red-400'}`}>
               {selected === currentEmotion.name ? '答對了！' : '答錯了！喝一口！'}
             </div>
+            {selected !== currentEmotion.name && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white/60">正確答案：{currentEmotion.name}</div>
             <div className="text-white mt-4">
               {players.map(p => (
@@ -156,7 +158,7 @@ export default function EmotionRead() {
               </button>
             </div>
             <CopyResultButton text={`表情讀心 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

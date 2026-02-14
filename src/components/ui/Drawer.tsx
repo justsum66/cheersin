@@ -3,7 +3,7 @@
 /** R2-121 / A11Y-006：全局 Drawer — 底部滑入 + 遮罩、Escape 關閉、焦點鎖定、focus trap */
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 
 const FOCUSABLE =
@@ -69,7 +69,7 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -79,7 +79,7 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
           aria-modal="true"
           aria-labelledby={title ? 'drawer-title' : undefined}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -88,7 +88,7 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
             onClick={onClose}
             aria-hidden
           />
-          <motion.div
+          <m.div
             ref={contentRef}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -125,8 +125,8 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
               </div>
             )}
             <div className="p-4">{children}</div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>,
     document.body

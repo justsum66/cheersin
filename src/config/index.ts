@@ -4,6 +4,7 @@
  */
 export * from './analytics.config'
 export * from './announcements.config'
+export * from './assistant.config'
 export * from './chat.config'
 export * from './copy.config'
 export * from './design-tokens'

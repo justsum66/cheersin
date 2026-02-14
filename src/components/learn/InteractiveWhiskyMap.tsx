@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MapPin, Globe, Info, Star, Award, History, Factory, Wine } from 'lucide-react';
 
 // 威士忌產區資料
@@ -211,7 +211,7 @@ export function InteractiveWhiskyMap() {
 
         {/* 產區標記 */}
         {WHISKY_REGIONS.map((region) => (
-          <motion.div
+          <m.div
             key={region.id}
             className={`absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/50 shadow-lg ${
               hoveredRegion === region.id || selectedRegion === region.id
@@ -239,7 +239,7 @@ export function InteractiveWhiskyMap() {
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
               {region.name}
             </div>
-          </motion.div>
+          </m.div>
         ))}
 
         {/* 地圖標題 */}
@@ -254,7 +254,7 @@ export function InteractiveWhiskyMap() {
 
       {/* 產區資訊面板 */}
       {selectedRegionData && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-white/20 rounded-2xl p-6"
@@ -355,7 +355,7 @@ export function InteractiveWhiskyMap() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* 產區比較表格 */}

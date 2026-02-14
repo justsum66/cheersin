@@ -4,6 +4,8 @@ import {
   chatWithSommelierStream,
   chatWithSommelierVision,
   getSommelierSystemPrompt,
+  GROQ_CHAT_MODEL,
+  GROQ_VISION_MODEL,
   type ChatMessage,
   type SommelierUserContext,
   type VisionMessage,
@@ -15,8 +17,9 @@ import { chatWithOpenRouter } from '@/lib/openrouter'
 import { getEmbedding } from '@/lib/embedding'
 import { queryVectors } from '@/lib/pinecone'
 import { recordApiCall } from '@/lib/api-usage'
-import { hasPinecone } from '@/lib/env-config'
+import { hasPinecone, hasGroq, hasOpenRouter } from '@/lib/env-config'
 import { parseWinesFromResponse } from '@/lib/wine-response'
+import type { ChatProvider } from '@/config/chat.config'
 import {
   CHAT_FALLBACK_ORDER,
   RAG_NAMESPACE,
@@ -37,6 +40,7 @@ import {
   searchCocktails,
   formatCocktailsForPrompt,
 } from '@/lib/cocktaildb'
+import { serverFlags } from '@/lib/feature-flags'
 
 const NAMESPACE_WINES = 'wines'
 
@@ -44,7 +48,6 @@ const MAX_RETRIES = 2
 /** EXPERT_60 P2：速率限制依訂閱分級 — Free 10/min，Pro 60/min */
 const RATE_LIMIT_FREE_PER_MIN = 10
 const RATE_LIMIT_PRO_PER_MIN = 60
-const CHAT_TIMEOUT_MS = 30000
 const MAX_USER_MESSAGE_LENGTH = 2000
 /** P0-07：防 DoS / 注入 — messages 與 content 上限 */
 const MAX_MESSAGES_LENGTH = 50
@@ -91,6 +94,21 @@ function sanitizeUserInput(text: string): string {
   return s
 }
 
+/** 依 CHAT_FALLBACK_ORDER + has* + USE_OPENROUTER_FALLBACK 過濾，非串流與串流共用 */
+function getEffectiveFallbackOrder(): ChatProvider[] {
+  return CHAT_FALLBACK_ORDER.filter((p) => {
+    if (p === 'groq') return hasGroq
+    if (p === 'nim') return hasNIM()
+    if (p === 'openrouter') return hasOpenRouter && serverFlags.useOpenRouterFallback
+    return false
+  })
+}
+
+/** 建構 NIM/OpenRouter 用 messages（system + messages） */
+function buildOpenRouterMessages(systemPrompt: string, messages: ChatMessage[]): { role: 'user' | 'assistant' | 'system'; content: string }[] {
+  return [{ role: 'system', content: systemPrompt }, ...messages]
+}
+
 /** P2-390：失敗時記錄 success: false 與 latency，供監控與 Fallback 分析 */
 function recordChatFailure(provider: string, model: string, startMs: number, reason?: string): void {
   recordApiCall({
@@ -109,18 +127,14 @@ async function chatWithGroqOrFallback(
   startMs?: number
 ): Promise<{ message: string; model: string }> {
   const systemPrompt = getSommelierSystemPrompt(userContext)
-  const openRouterMessages: { role: 'user' | 'assistant' | 'system'; content: string }[] = [
-    { role: 'system', content: systemPrompt },
-    ...messages,
-  ]
-  const began = startMs ?? Date.now()
+  const openRouterMessages = buildOpenRouterMessages(systemPrompt, messages)
 
-  for (const provider of CHAT_FALLBACK_ORDER) {
+  for (const provider of getEffectiveFallbackOrder()) {
     if (provider === 'groq') {
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
           const { text, usage } = await chatWithSommelier(messages, userContext)
-          const model = 'groq/llama-3.3-70b'
+          const model = `groq/${GROQ_CHAT_MODEL}`
           if (startMs != null) {
             recordApiCall({
               endpoint: 'chat',
@@ -138,12 +152,12 @@ async function chatWithGroqOrFallback(
           const is429 = (err: unknown) =>
             (err as { status?: number })?.status === 429 ||
             /rate limit|429/i.test(reason)
-          if (startMs != null) recordChatFailure('groq', 'llama-3.3-70b', startMs, reason)
+          if (startMs != null) recordChatFailure('groq', GROQ_CHAT_MODEL, startMs, reason)
           if (is429(error)) {
             logger.warn('Groq 429 rate limit, skip retry and try next provider')
             break
           }
-          if (attempt < MAX_RETRIES) logger.warn(`Groq attempt ${attempt + 1} failed, retrying`, { error: reason })
+          if (attempt < MAX_RETRIES) logger.warn(`Groq attempt ${attempt + 1} failed, retrying`, { provider: 'groq', attempt: attempt + 1, reason })
           else break
         }
       }
@@ -158,20 +172,28 @@ async function chatWithGroqOrFallback(
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error)
         if (startMs != null) recordChatFailure('nim', 'llama', startMs, reason)
-        logger.warn('NIM chat failed, trying next provider', { reason })
+        logger.warn('NIM chat failed, trying next provider', { provider: 'nim', reason })
       }
       continue
     }
     if (provider === 'openrouter') {
       try {
-        const text = await chatWithOpenRouter(openRouterMessages, { temperature: 0.8, maxTokens: 1024 })
+        const { text, usage } = await chatWithOpenRouter(openRouterMessages, { temperature: 0.8, maxTokens: 1024 })
         const model = 'openrouter/fallback'
-        if (startMs != null) recordApiCall({ endpoint: 'chat', model, success: true, latencyMs: Date.now() - startMs })
+        if (startMs != null) recordApiCall({
+          endpoint: 'chat',
+          model,
+          success: true,
+          latencyMs: Date.now() - startMs,
+          promptTokens: usage?.prompt_tokens,
+          completionTokens: usage?.completion_tokens,
+          totalTokens: usage?.total_tokens,
+        })
         return { message: text, model }
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error)
         if (startMs != null) recordChatFailure('openrouter', 'fallback', startMs, reason)
-        logger.warn('OpenRouter chat failed, trying next provider', { reason })
+        logger.warn('OpenRouter chat failed, trying next provider', { provider: 'openrouter', reason })
       }
     }
   }
@@ -374,7 +396,7 @@ export async function POST(request: NextRequest) {
       ]
       try {
         const visionResponse = await chatWithSommelierVision(visionMessages, contextWithRag)
-        recordApiCall({ endpoint: 'chat', model: 'groq/llama-4-scout-vision', success: true, latencyMs: Date.now() - startMs })
+        recordApiCall({ endpoint: 'chat', model: `groq/${GROQ_VISION_MODEL}`, success: true, latencyMs: Date.now() - startMs })
         const similarQuestions = await getSimilarQuestions(visionResponse, lastUserStr)
         const { text: messageText, wines } = parseWinesFromResponse(visionResponse)
         userPromise.then((u) => void persistChatHistory(u?.id, lastUserStr, visionResponse))
@@ -387,7 +409,7 @@ export async function POST(request: NextRequest) {
       } catch (visionErr) {
         logger.warn('Vision chat failed, falling back to text-only', { err: visionErr instanceof Error ? visionErr.message : String(visionErr) })
         recordApiCall({ endpoint: 'chat', model: 'groq/vision-fail', success: false, latencyMs: Date.now() - startMs })
-        // 不 return，繼續走下方文字流程（會當成無圖請求）
+        // Vision 失敗時不 return，繼續走下方文字流程（依 CHAT_FALLBACK_ORDER 用純文字再試）
       }
     }
 
@@ -411,53 +433,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    /** 串流路徑：依 CHAT_FALLBACK_ORDER 與 provider 可用性依序嘗試 Groq stream → NIM stream → OpenRouter 非串流 */
     if (useStream && !imageDataUrl) {
       const encoder = new TextEncoder()
       const systemPrompt = getSommelierSystemPrompt(contextWithRag)
+      const streamOrder = getEffectiveFallbackOrder()
       const stream = new ReadableStream({
         async start(controller) {
           try {
             controller.enqueue(encoder.encode(streamLine({ type: 'meta', sources })))
             let fullContent = ''
             let streamUsed = false
-            try {
-              for await (const chunk of chatWithSommelierStream(messages, contextWithRag)) {
-                fullContent += chunk
-                controller.enqueue(encoder.encode(streamLine({ type: 'delta', content: chunk })))
-                streamUsed = true
-              }
-            } catch (groqErr) {
-              if (hasNIM()) {
-                try {
+            let lastErr: unknown
+            for (const provider of streamOrder) {
+              try {
+                if (provider === 'groq') {
+                  for await (const chunk of chatWithSommelierStream(messages, contextWithRag)) {
+                    fullContent += chunk
+                    controller.enqueue(encoder.encode(streamLine({ type: 'delta', content: chunk })))
+                    streamUsed = true
+                  }
+                  break
+                }
+                if (provider === 'nim') {
                   for await (const chunk of chatWithNIMStream(messages, { systemPrompt, temperature: 0.8, maxTokens: 1024 })) {
                     fullContent += chunk
                     controller.enqueue(encoder.encode(streamLine({ type: 'delta', content: chunk })))
                     streamUsed = true
                   }
-                } catch {
-                  /* NIM 也失敗，fallback 至 OpenRouter 非串流 */
-                  try {
-                    const openRouterMessages = [{ role: 'system' as const, content: systemPrompt }, ...messages]
-                    const text = await chatWithOpenRouter(openRouterMessages, { temperature: 0.8, maxTokens: 1024 })
-                    fullContent = text
-                    controller.enqueue(encoder.encode(streamLine({ type: 'delta', content: text })))
-                    streamUsed = true
-                  } catch {
-                    throw groqErr
-                  }
+                  break
                 }
-              } else {
-                try {
-                  const openRouterMessages = [{ role: 'system' as const, content: systemPrompt }, ...messages]
-                  const text = await chatWithOpenRouter(openRouterMessages, { temperature: 0.8, maxTokens: 1024 })
+                if (provider === 'openrouter') {
+                  const orMessages = buildOpenRouterMessages(systemPrompt, messages)
+                  const { text } = await chatWithOpenRouter(orMessages, { temperature: 0.8, maxTokens: 1024 })
                   fullContent = text
                   controller.enqueue(encoder.encode(streamLine({ type: 'delta', content: text })))
                   streamUsed = true
-                } catch {
-                  throw groqErr
+                  break
                 }
+              } catch (err) {
+                lastErr = err
+                continue
               }
             }
+            if (!streamUsed && lastErr) throw lastErr
             recordApiCall({ endpoint: 'chat', model: streamUsed ? 'groq-or-nim-stream' : 'stream-fail', success: true, latencyMs: Date.now() - startMs })
             const similarQuestions = await getSimilarQuestions(fullContent, lastUser)
             controller.enqueue(encoder.encode(streamLine({ type: 'done', similarQuestions })))
@@ -520,7 +539,7 @@ export async function POST(request: NextRequest) {
     logger.error('Chat API error', { endpoint: 'chat', message: errMsg })
     const fallback = OFFLINE_FALLBACK_REPLIES[Math.floor(Math.random() * OFFLINE_FALLBACK_REPLIES.length)]
     return NextResponse.json(
-      { error: 'Failed to get response', message: fallback },
+      { error: 'Failed to get response', message: fallback, code: 'UPSTREAM_ERROR', retryable: true },
       { status: 500 }
     )
   }

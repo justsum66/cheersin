@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { Search, BookOpen, Volume2, ExternalLink, Filter } from 'lucide-react';
 
 interface BeerCiderTerm {
@@ -316,7 +316,7 @@ export function BeerCiderGlossary() {
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -331,10 +331,10 @@ export function BeerCiderGlossary() {
         <p className="text-white/70 max-w-2xl mx-auto">
           掌握專業術語，提升品飲理解力。每一個詞彙都包含中英文對照、發音指導與實際應用範例。
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋與篩選 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -366,10 +366,10 @@ export function BeerCiderGlossary() {
             </select>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 統計資訊 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -377,7 +377,7 @@ export function BeerCiderGlossary() {
       >
         <span>找到 {filteredTerms.length} 個術語</span>
         <span>總計 {BEER_CIDER_TERMS.length} 個術語</span>
-      </motion.div>
+      </m.div>
 
       {/* 複雜度標籤 */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -399,7 +399,7 @@ export function BeerCiderGlossary() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AnimatePresence>
           {filteredTerms.map((term, index) => (
-            <motion.div
+            <m.div
               key={term.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -433,7 +433,7 @@ export function BeerCiderGlossary() {
                 <span className="text-xs text-amber-400 font-medium">點擊查看詳情</span>
                 <ExternalLink className="w-4 h-4 text-white/40" />
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
       </div>
@@ -441,14 +441,14 @@ export function BeerCiderGlossary() {
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedTerm && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedTerm(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -535,8 +535,8 @@ export function BeerCiderGlossary() {
                   })}
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

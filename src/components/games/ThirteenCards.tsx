@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Layers, RotateCcw } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -62,7 +62,7 @@ export default function ThirteenCards() {
   const renderRow = (cards: Card[], label: string, baseDelay = 0) => (
     <div className="flex flex-wrap justify-center gap-1">
       {cards.map((c, i) => (
-        <motion.span
+        <m.span
           key={`${c.suit}-${c.rank}-${i}`}
           initial={{ x: -80, y: -20, opacity: 0, scale: 0.5 }}
           animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
@@ -71,7 +71,7 @@ export default function ThirteenCards() {
           title={`${rankLabel(c.rank)} ${c.suit}`}
         >
           {rankLabel(c.rank)}{suitSymbol(c.suit)}
-        </motion.span>
+        </m.span>
       ))}
       <span className="text-white/40 text-xs self-center ml-1">({label})</span>
     </div>
@@ -132,7 +132,7 @@ export default function ThirteenCards() {
   return (
     <div className="h-full flex flex-col items-center justify-center py-4 px-4">
       <AnimatePresence>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center p-6 rounded-2xl bg-white/5 border border-white/10"
@@ -141,7 +141,7 @@ export default function ThirteenCards() {
           <p className="text-white/80 mb-2">你輸了 {drinks} 墩 → 喝 {drinks} 口</p>
           <p className="text-white/40 text-sm mb-3">前墩：你 {rowScore(playerFront)} vs 系統 {rowScore(systemFront)} · 中墩：你 {rowScore(playerMid)} vs 系統 {rowScore(systemMid)} · 後墩：你 {rowScore(playerBack)} vs 系統 {rowScore(systemBack)}</p>
           <CopyResultButton text={`十三張：輸 ${drinks} 墩 → 喝 ${drinks} 口`} />
-        </motion.div>
+        </m.div>
       </AnimatePresence>
       <button
         type="button"

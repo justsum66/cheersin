@@ -1,31 +1,17 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Music, Play, Pause, RefreshCw, Trophy } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
+import { GUESS_SONG_ITEMS } from '@/data/guess-song'
 
-const SONGS = [
-  { title: '小幸運', artist: '田馥甄', hint: '我聽見雨滴落在青青草地', era: '2010s' },
-  { title: '告白氣球', artist: '周杰倫', hint: '塞納河畔左岸的咖啡', era: '2010s' },
-  { title: '愛情轉移', artist: '陳奕迅', hint: '徘徊過多少櫥窗', era: '2000s' },
-  { title: '稀客', artist: '張惠妹', hint: '我是你的稀客', era: '2020s' },
-  { title: '後來', artist: '劉若英', hint: '後來我總算學會了如何去愛', era: '2000s' },
-  { title: '青花瓷', artist: '周杰倫', hint: '素胚勾勒出青花筆鋒濃轉淡', era: '2000s' },
-  { title: '演員', artist: '薛之謙', hint: '簡單點 說話的方式簡單點', era: '2010s' },
-  { title: '說好的幸福呢', artist: '周杰倫', hint: '妳的回話凌亂著', era: '2000s' },
-  { title: '我懷念的', artist: '孫燕姿', hint: '我還記得你說家是唯一的城堡', era: '2000s' },
-  { title: '光年之外', artist: '鄧紫棋', hint: '緣份讓我們相遇亂世以外', era: '2010s' },
-  { title: '漂向北方', artist: '黃明志', hint: '有人為了生活背井離鄉', era: '2010s' },
-  { title: '大魚', artist: '周深', hint: '海浪無聲將夜幕深深淹沒', era: '2010s' },
-  { title: '起風了', artist: '吳青峰', hint: '這一路上走走停停', era: '2010s' },
-  { title: '體面', artist: '于文文', hint: '分手應該體面', era: '2010s' },
-  { title: '夜曲', artist: '周杰倫', hint: '一群嗜血的螞蟻', era: '2000s' },
-]
+/** R2-139：猜歌擴充 — 題庫改為 data/guess-song，歌名＋歌詞片段文字猜題 */
+const SONGS = GUESS_SONG_ITEMS
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 
@@ -197,7 +183,7 @@ export default function GuessSong() {
 
           <AnimatePresence mode="wait">
             {currentSong && (
-              <motion.div
+              <m.div
                 key={currentSong.title}
                 initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -257,7 +243,7 @@ export default function GuessSong() {
                     </button>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { m, useReducedMotion } from 'framer-motion'
 
 const LOGO_SRC = '/logo_monochrome_gold.png'
 /** 小型圖標用於 AI 頭像等場景 */
@@ -35,13 +36,20 @@ export function BrandLogo({
   className = '',
   size = variant === 'compact' || variant === 'header' ? 32 : 40,
 }: BrandLogoProps) {
+  const reducedMotion = useReducedMotion()
   const useLink = href !== undefined ? !!href : variant === 'nav'
   const to = href ?? (variant === 'nav' ? '/' : undefined)
   const showTagline = variant === 'nav'
   const isCompact = variant === 'compact' || variant === 'header'
 
+  /** R2-090：首次載入淡入 + 輕微旋轉（尊重 prefers-reduced-motion）；LazyMotion 下須用 m 以利 tree-shake */
   const content = (
-    <span className={`brand-logo inline-flex items-center gap-2 sm:gap-3 ${className}`}>
+    <m.span
+      initial={reducedMotion ? false : { opacity: 0, rotate: -2 }}
+      animate={{ opacity: 1, rotate: 0 }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: 'easeOut' }}
+      className={`brand-logo inline-flex items-center gap-2 sm:gap-3 ${className}`}
+    >
       <span
         className={`
           relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-xl
@@ -78,7 +86,7 @@ export function BrandLogo({
           </span>
         )}
       </span>
-    </span>
+    </m.span>
   )
 
   if (useLink && to) {

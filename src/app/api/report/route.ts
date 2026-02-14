@@ -6,8 +6,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { errorResponse } from '@/lib/api-response'
 import { ReportPostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
 import { stripHtml } from '@/lib/sanitize'
 import { logger } from '@/lib/logger'
+import { RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 /** P3-44：檢舉 API 每 IP 每分鐘最多 5 次；SEC-003 Zod 校驗 */
@@ -17,14 +19,12 @@ export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request.headers)
     if (await isRateLimitedAsync(ip, 'report')) {
-      return NextResponse.json(
-        { error: '操作過於頻繁，請稍後再試' },
-        { status: 429, headers: { 'Retry-After': '60' } }
-      )
+      const res = errorResponse(429, 'RATE_LIMITED', { message: RATE_LIMIT_MESSAGE })
+      res.headers.set('Retry-After', '60')
+      return res
     }
-    const raw = await request.json().catch(() => ({}))
-    const parsed = ReportPostBodySchema.safeParse(raw)
-    if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: '請求參數格式錯誤' })
+    const parsed = await zodParseBody(request, ReportPostBodySchema)
+    if (!parsed.success) return parsed.response
     const body = parsed.data
     const type = body.type ?? '其他'
     const description = stripHtml((body.description ?? '').slice(0, 500)).trim()

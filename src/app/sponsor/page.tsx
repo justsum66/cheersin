@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Wine, Heart, ArrowLeft } from 'lucide-react'
 
 /** P1-270：贊助一杯酒 — 小額打賞，輕量級支持方式 */
@@ -13,19 +13,19 @@ export default function SponsorPage() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl" />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass rounded-3xl p-8 md:p-12 max-w-md w-full text-center relative"
       >
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', bounce: 0.5 }}
           className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center"
         >
           <Wine className="w-10 h-10 text-white" aria-hidden />
-        </motion.div>
+        </m.div>
         <h1 className="text-2xl font-display font-bold text-white mb-2">贊助一杯酒</h1>
         <p className="text-white/70 text-sm mb-6">
           喜歡 Cheersin 嗎？請我們喝一杯，支持我們持續開發更多派對遊戲與品酒內容。
@@ -52,7 +52,7 @@ export default function SponsorPage() {
           <ArrowLeft className="w-4 h-4" />
           返回首頁
         </Link>
-      </motion.div>
+      </m.div>
     </main>
   )
 }

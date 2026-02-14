@@ -5,7 +5,8 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
-import { SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, SLUG_PATTERN } from '@/lib/games-room'
+import { ROOM_ERROR, ROOM_MESSAGE } from '@/lib/api-error-codes'
 
 const PARTY_ROOM_GAME_ID = 'party-room'
 
@@ -16,16 +17,12 @@ export async function POST(
   try {
     const { slug } = await params
     if (!slug || !SLUG_PATTERN.test(slug)) {
-      return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+      return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
     }
     const supabase = createServerClient()
-    const { data: room, error: roomError } = await supabase
-      .from('game_rooms')
-      .select('id')
-      .eq('slug', slug)
-      .single()
+    const { data: room, error: roomError } = await getRoomBySlug(supabase, slug, 'id')
     if (roomError || !room) {
-      return errorResponse(404, 'Room not found', { message: '找不到該房間' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
     }
     const { data: existing } = await supabase
       .from('game_states')

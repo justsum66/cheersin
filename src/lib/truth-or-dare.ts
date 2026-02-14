@@ -3,8 +3,6 @@
  * 分類 溫和(mild)/普通(spicy)/大膽(adult)，難度 1–5 星；fallback 為內建題庫。
  */
 
-import truthOrDareJson from '@/data/truthOrDare.json'
-
 export type TruthDareLevel = 'mild' | 'spicy' | 'adult'
 
 export interface TruthDareItem {
@@ -29,33 +27,37 @@ const STARS_BY_LEVEL: Record<JsonLevel, number> = {
 }
 
 /** 從 JSON 建構題庫：扁平化 questions.truth / questions.dare 並對應 level、stars */
-function buildPoolFromJson(
+async function buildPoolFromJson(
   type: 'truth' | 'dare'
-): TruthDareItem[] {
-  const q = (truthOrDareJson as { questions: { truth: Record<string, Array<{ text: string; level: string }>>; dare: Record<string, Array<{ text: string; level: string }>> } }).questions?.[type]
-  if (!q || typeof q !== 'object') return []
-  const out: TruthDareItem[] = []
-  const cats = ['mild', 'normal', 'bold', 'adult'] as const
-  for (const cat of cats) {
-    const list = q[cat]
-    if (!Array.isArray(list)) continue
-    const level = LEVEL_MAP[cat]
-    const stars = STARS_BY_LEVEL[cat]
-    for (const item of list) {
-      if (item?.text) {
-        out.push({
-          text: item.text,
-          level: level,
-          stars,
-        })
+): Promise<TruthDareItem[]> {
+  try {
+    const mod = await import('@/data/truthOrDare.json')
+    const q = (mod.default as { questions: { truth: Record<string, Array<{ text: string; level: string }>>; dare: Record<string, Array<{ text: string; level: string }>> } }).questions?.[type]
+
+    if (!q || typeof q !== 'object') return []
+    const out: TruthDareItem[] = []
+    const cats = ['mild', 'normal', 'bold', 'adult'] as const
+    for (const cat of cats) {
+      const list = q[cat]
+      if (!Array.isArray(list)) continue
+      const level = LEVEL_MAP[cat]
+      const stars = STARS_BY_LEVEL[cat]
+      for (const item of list) {
+        if (item?.text) {
+          out.push({
+            text: item.text,
+            level: level,
+            stars,
+          })
+        }
       }
     }
+    return out
+  } catch (error) {
+    console.error(`Failed to load TruthOrDare data (${type}):`, error)
+    return []
   }
-  return out
 }
-
-const truthFromJson = buildPoolFromJson('truth')
-const dareFromJson = buildPoolFromJson('dare')
 
 const truth: TruthDareItem[] = [
   { text: '最近一次說謊是什麼時候？', level: 'mild', stars: 1 },
@@ -184,41 +186,26 @@ function expandPool<T extends TruthDareItem>(pool: T[], targetMin: number): T[] 
 
 const TRUTH_MIN = 260
 const DARE_MIN = 260
+const ADULT_TRUTH_MIN = 200
+const ADULT_DARE_MIN = 200
 
-/** 優先使用 JSON 題庫（106–110），不足或無則用內建 + 擴充 */
-export const truthPool: TruthDareItem[] =
-  truthFromJson.length >= TRUTH_MIN
+export async function getTruthPool(): Promise<TruthDareItem[]> {
+  const truthFromJson = await buildPoolFromJson('truth')
+  return truthFromJson.length >= TRUTH_MIN
     ? truthFromJson
     : truthFromJson.length > 0
       ? [...truthFromJson, ...expandPool(truth, Math.max(0, TRUTH_MIN - truthFromJson.length))]
       : expandPool(truth, TRUTH_MIN)
+}
 
-export const darePool: TruthDareItem[] =
-  dareFromJson.length >= DARE_MIN
+export async function getDarePool(): Promise<TruthDareItem[]> {
+  const dareFromJson = await buildPoolFromJson('dare')
+  return dareFromJson.length >= DARE_MIN
     ? dareFromJson
     : dareFromJson.length > 0
       ? [...dareFromJson, ...expandPool(dare, Math.max(0, DARE_MIN - dareFromJson.length))]
       : expandPool(dare, DARE_MIN)
-
-export function getTruthPool(): TruthDareItem[] {
-  return truthPool
 }
-
-export function getDarePool(): TruthDareItem[] {
-  return darePool
-}
-
-/** 18+ 專用題庫：僅 adult 等級，至少 200 真心話 + 200 大冒險，僅付費用戶可解鎖 */
-const ADULT_TRUTH_MIN = 200
-const ADULT_DARE_MIN = 200
-
-function getAdultFromJson(type: 'truth' | 'dare'): TruthDareItem[] {
-  const full = type === 'truth' ? truthFromJson : dareFromJson
-  return full.filter((item) => item.level === 'adult')
-}
-
-const adultTruthFromJson = getAdultFromJson('truth')
-const adultDareFromJson = getAdultFromJson('dare')
 
 const adultTruthInline: TruthDareItem[] = [
   { text: '你最尷尬的約會經歷是什麼？', level: 'adult', stars: 5 },
@@ -266,17 +253,22 @@ const adultDareInline: TruthDareItem[] = [
   { text: '讓大家看你手機最後一張照片', level: 'adult', stars: 5 },
 ]
 
-const adultTruthCombined = [...adultTruthFromJson, ...adultTruthInline]
-const adultDareCombined = [...adultDareFromJson, ...adultDareInline]
-export const adultTruthPool: TruthDareItem[] = adultTruthCombined.length >= ADULT_TRUTH_MIN ? adultTruthCombined : expandPool(adultTruthCombined, ADULT_TRUTH_MIN)
-export const adultDarePool: TruthDareItem[] = adultDareCombined.length >= ADULT_DARE_MIN ? adultDareCombined : expandPool(adultDareCombined, ADULT_DARE_MIN)
-
-export function getAdultTruthPool(): TruthDareItem[] {
-  return adultTruthPool
+function getAdultFromJson(full: TruthDareItem[]): TruthDareItem[] {
+  return full.filter((item) => item.level === 'adult')
 }
 
-export function getAdultDarePool(): TruthDareItem[] {
-  return adultDarePool
+export async function getAdultTruthPool(): Promise<TruthDareItem[]> {
+  const truthFromJson = await buildPoolFromJson('truth')
+  const adultTruthFromJson = getAdultFromJson(truthFromJson)
+  const adultTruthCombined = [...adultTruthFromJson, ...adultTruthInline]
+  return adultTruthCombined.length >= ADULT_TRUTH_MIN ? adultTruthCombined : expandPool(adultTruthCombined, ADULT_TRUTH_MIN)
+}
+
+export async function getAdultDarePool(): Promise<TruthDareItem[]> {
+  const dareFromJson = await buildPoolFromJson('dare')
+  const adultDareFromJson = getAdultFromJson(dareFromJson)
+  const adultDareCombined = [...adultDareFromJson, ...adultDareInline]
+  return adultDareCombined.length >= ADULT_DARE_MIN ? adultDareCombined : expandPool(adultDareCombined, ADULT_DARE_MIN)
 }
 
 /**

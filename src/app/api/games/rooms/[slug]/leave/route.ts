@@ -6,7 +6,8 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
-import { SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, SLUG_PATTERN } from '@/lib/games-room'
+import { ROOM_ERROR, ROOM_MESSAGE } from '@/lib/api-error-codes'
 import { LeaveRoomBodySchema } from '@/lib/api-body-schemas'
 
 export async function POST(
@@ -15,22 +16,18 @@ export async function POST(
 ) {
   try {
     const { slug } = await params
-    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
     const raw = await request.json().catch(() => ({}))
     const parsed = LeaveRoomBodySchema.safeParse(raw)
     if (!parsed.success) {
-      return errorResponse(400, 'Invalid body', { message: '缺少玩家識別' })
+      return errorResponse(400, ROOM_ERROR.INVALID_BODY, { message: ROOM_MESSAGE.MISSING_PLAYER_ID })
     }
     const { playerId } = parsed.data
     const supabase = createServerClient()
 
-    const { data: room, error: roomError } = await supabase
-      .from('game_rooms')
-      .select('id, host_id')
-      .eq('slug', slug)
-      .single()
+    const { data: room, error: roomError } = await getRoomBySlug<{ id: string; host_id: string | null }>(supabase, slug, 'id, host_id')
     if (roomError || !room) {
-      return errorResponse(404, 'Room not found', { message: '房間不存在或已過期' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND_OR_EXPIRED })
     }
 
     const { data: player, error: playerErr } = await supabase
@@ -40,7 +37,7 @@ export async function POST(
       .eq('room_id', room.id)
       .single()
     if (playerErr || !player) {
-      return errorResponse(404, 'Player not in room', { message: '找不到該玩家' })
+      return errorResponse(404, ROOM_ERROR.PLAYER_NOT_IN_ROOM, { message: ROOM_MESSAGE.PLAYER_NOT_IN_ROOM })
     }
 
     const { error: updateError } = await supabase

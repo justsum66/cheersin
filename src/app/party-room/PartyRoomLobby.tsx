@@ -3,7 +3,7 @@
 /**
  * PR-16：派對房「無房間」狀態 — 建立房間中的 loading 畫面
  */
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 
@@ -17,7 +17,7 @@ export function PartyRoomLobby({ creating }: PartyRoomLobbyProps) {
   if (!creating) return null
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-[60vh] flex flex-col items-center justify-center gap-6 px-4"
@@ -33,6 +33,6 @@ export function PartyRoomLobby({ creating }: PartyRoomLobbyProps) {
         <SkeletonCard />
         <SkeletonCard />
       </div>
-    </motion.div>
+    </m.div>
   )
 }

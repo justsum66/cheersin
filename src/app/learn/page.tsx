@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useDeferredValue, useRef, useCallback, type ReactNode } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network, Users, Sparkles } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { ArrowRight, ChevronLeft, ChevronRight, Wine, GlassWater, Beer, Martini, Lock, Star, BookOpen, Bookmark, Trophy, Award, Search, UserPlus, Share2, Check, Target, Clock, Flame, Play, ChevronDown, ChevronUp, LayoutGrid, List, AlertCircle, FileQuestion, Network, Users, Sparkles, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -10,7 +10,7 @@ import { canAccessProCourse, canUseProTrial, getProTrialRemainingThisMonth, hasP
 import { UpgradeModal } from '@/components/UpgradeModal'
 import { getBookmarks } from '@/lib/learn-bookmarks'
 import { getPoints, getLeaderboard, getStreak, getLearnMinutes, getUnlockedBadges, BADGE_LABELS, getCompletedChapterToday, getWeeklyChapterCount, maybeUnlockHolidayBadge, getSommelierLevel, getFriendCompare, setFriendCompare, getLearnDailyGoal, setLearnDailyGoal, getChaptersCompletedToday, getLearnChaptersHistory } from '@/lib/gamification'
-import { LEARN_COURSE_COUNT } from '@/lib/learn-constants'
+import { LEARN_COURSE_COUNT, FREE_LEARN_COURSES_COUNT } from '@/lib/learn-constants'
 import { getCourseRating } from '@/lib/learn-course-ratings'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
@@ -50,9 +50,9 @@ const COURSES: {
     title: '葡萄酒入門',
     description: '從零開始認識葡萄酒的世界',
     icon: Wine,
-    lessons: 8,
-    duration: '45分鐘',
-    estimatedMinutes: 45,
+    lessons: 10,
+    duration: '50分鐘',
+    estimatedMinutes: 50,
     color: 'from-red-500 to-purple-600',
     free: true,
     previewImage: null,
@@ -81,9 +81,9 @@ const COURSES: {
     title: '威士忌基礎',
     description: '探索威士忌的迷人魅力',
     icon: GlassWater,
-    lessons: 6,
-    duration: '35分鐘',
-    estimatedMinutes: 35,
+    lessons: 8,
+    duration: '40分鐘',
+    estimatedMinutes: 40,
     color: 'from-amber-500 to-orange-600',
     free: true,
     previewImage: null,
@@ -97,9 +97,9 @@ const COURSES: {
     title: '清酒之道',
     description: '日本清酒的精緻文化',
     icon: Martini,
-    lessons: 5,
-    duration: '30分鐘',
-    estimatedMinutes: 30,
+    lessons: 6,
+    duration: '35分鐘',
+    estimatedMinutes: 35,
     color: 'from-blue-400 to-cyan-500',
     free: false,
     previewImage: null,
@@ -125,9 +125,9 @@ const COURSES: {
     title: '調酒基礎',
     description: '認識基酒、調酒技法與經典雞尾酒',
     icon: Martini,
-    lessons: 6,
-    duration: '35分鐘',
-    estimatedMinutes: 35,
+    lessons: 8,
+    duration: '40分鐘',
+    estimatedMinutes: 40,
     color: 'from-orange-400 to-rose-500',
     free: false,
     previewImage: null,
@@ -844,7 +844,7 @@ export default function LearnPage() {
         </div>
 
         {/* L01：學院主標字級與字重階層明確；Hero 區；排版優化：間距與圓角 */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -856,10 +856,10 @@ export default function LearnPage() {
           </h1>
           {/* 4 主副標層級視覺區分：副標用較淡色與較小字級 */}
           <HeroSubtitle count={LEARN_COURSE_COUNT} />
-        </motion.div>
+        </m.div>
 
         {/* 50 進度環形圖；161 等級徽章；66-70 RWD 間距；動畫 stagger */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -907,10 +907,10 @@ export default function LearnPage() {
               </span>
             )}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* 57 每日任務；58 週挑戰；36 可摺疊；59 模組動畫；排版優化 */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="mb-6">
+        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="mb-6">
           <button type="button" onClick={() => setTaskOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-2 py-2 rounded-lg hover:bg-white/5 transition-colors -mx-1 px-1" aria-expanded={taskOpen}>
             <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
               <Target className="w-5 h-5 text-primary-400 shrink-0" />
@@ -920,7 +920,7 @@ export default function LearnPage() {
           </button>
           <AnimatePresence initial={false}>
           {taskOpen && (
-          <motion.div
+          <m.div
             key="task-content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -949,14 +949,14 @@ export default function LearnPage() {
             {weeklyCount >= 3 && <Check className="w-5 h-5 text-primary-400 flex-shrink-0" />}
           </div>
           </div>
-          </motion.div>
+          </m.div>
           )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
 
         {/* 60 學習歷程時間軸；36 可摺疊；59 模組動畫 */}
         {timelineEntries.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
             <button type="button" onClick={() => setTimelineOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={timelineOpen}>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
                 <Clock className="w-5 h-5 text-primary-400" />
@@ -980,12 +980,12 @@ export default function LearnPage() {
               ))}
             </div>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {/* P3 學習推薦：有進度未完成時顯示「繼續學習」區塊 */}
         {continueLearningCourse && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
@@ -1010,11 +1010,11 @@ export default function LearnPage() {
               </div>
               <ChevronRight className="w-5 h-5 text-primary-400 shrink-0" />
             </Link>
-          </motion.div>
+          </m.div>
         )}
 
         {/* P2.B2.2 學習提醒排程：每日目標 */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
           <h2 className="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
             <Target className="w-4 h-4 text-primary-400" />
             今日目標
@@ -1040,11 +1040,11 @@ export default function LearnPage() {
               <span className="text-green-400 text-sm">✓ 達標</span>
             )}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* P2.C3.2 本週之星：排行榜 */}
         {leaderboard.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
             <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-400" />
               本週之星
@@ -1061,12 +1061,12 @@ export default function LearnPage() {
                 </span>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {/* P2.B2.3 遺忘曲線複習：艾賓浩斯 1/3/7 天建議複習 */}
         {reviewSuggestions.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
             <h2 className="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-amber-400" />
               建議複習
@@ -1084,12 +1084,12 @@ export default function LearnPage() {
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {/* P2.B3.3 學習時間熱力圖：過去 7 天每日完成章數 */}
         {heatmapHistory.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
             <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary-400" />
               過去 7 天學習
@@ -1115,7 +1115,7 @@ export default function LearnPage() {
                 )
               })}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {/* AUDIT /learn #36：無進行中、無書籤時空狀態文案引導 */}
@@ -1127,7 +1127,7 @@ export default function LearnPage() {
 
         {/* 51 成就列表；89 品酒師等級認證；90 專屬會員徽章；36 可摺疊；59 模組動畫 */}
         {(badges.length > 0 || hasProBadge(tier) || sommelierLevel) && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
             <button type="button" onClick={() => setAchievementOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={achievementOpen}>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
                 <Star className="w-5 h-5 text-primary-400" />
@@ -1159,7 +1159,7 @@ export default function LearnPage() {
                 const BadgeIcon = badgeIcons[id] || Award
                 
                 return (
-                  <motion.span
+                  <m.span
                     key={id}
                     initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -1174,16 +1174,16 @@ export default function LearnPage() {
                   >
                     <BadgeIcon className="w-3.5 h-3.5" />
                     {BADGE_LABELS[id] ?? id}
-                  </motion.span>
+                  </m.span>
                 )
               })}
             </div>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {/* 56 與好友比較；36 可摺疊；59 模組動畫 */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
+        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
           <button type="button" onClick={() => setFriendOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={friendOpen}>
             <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
               <UserPlus className="w-5 h-5 text-primary-400" />
@@ -1257,11 +1257,11 @@ export default function LearnPage() {
             <p className="text-white/40 text-xs">邀請好友一起學，輸入好友的完成堂數來比拼（最多 55 堂）</p>
           </div>
           )}
-        </motion.div>
+        </m.div>
 
         {/* 160 我的書籤；36 可摺疊 */}
         {bookmarks.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
             <button type="button" onClick={() => setBookmarkOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={bookmarkOpen} aria-label={bookmarkOpen ? '收合我的書籤' : '展開我的書籤'}>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
                 <Bookmark className="w-5 h-5 text-primary-400" aria-hidden />
@@ -1273,7 +1273,7 @@ export default function LearnPage() {
             {bookmarkOpen && (
             <div className="space-y-2">
               {bookmarks.slice(0, 5).map((b, i) => (
-                <motion.div
+                <m.div
                   key={`${b.courseId}-${b.chapterId}-${i}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -1286,15 +1286,15 @@ export default function LearnPage() {
                     <span className="font-medium">{b.courseTitle ?? b.courseId}</span>
                     <span className="text-white/50"> · {t('common.chapterLabel', { n: b.chapterId })} {b.title}</span>
                   </Link>
-                </motion.div>
+                </m.div>
               ))}
             </div>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {/* 9 課程關聯圖（前置/後續）視覺化 */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <button type="button" onClick={() => setPathMapOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={pathMapOpen} aria-controls="learn-path-map-content">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
               <Target className="w-5 h-5 text-primary-400" />
@@ -1333,14 +1333,106 @@ export default function LearnPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* 酒類知識入口；49 樣式優化；L11 詞彙表入口與知識區並列 */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 md:mb-8 space-y-3"
         >
+          <Link
+            href="/learn/daily"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <Wine className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">每日一酒</h2>
+              <p className="text-white/50 text-sm">當日推薦酒款與品鑑筆記</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link
+            href="/learn/flavor-wheel"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
+          >
+            <div className="p-2 rounded-xl bg-amber-500/20">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">風味輪</h2>
+              <p className="text-white/50 text-sm">點選風味詞探索品飲描述</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link
+            href="/learn/wines"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <Wine className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">酒款搜索</h2>
+              <p className="text-white/50 text-sm">依名稱、產區、類型搜尋酒款</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link
+            href="/learn/notes"
+            className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
+          >
+            <div className="p-2 rounded-xl bg-primary-500/20">
+              <BookOpen className="w-5 h-5 text-primary-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">品鑑筆記</h2>
+              <p className="text-white/50 text-sm">記錄酒款、評分與照片</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link href="/learn/regions" className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none">
+            <div className="p-2 rounded-xl bg-primary-500/20"><MapPin className="w-5 h-5 text-primary-400" /></div>
+            <div>
+              <h2 className="font-semibold text-white">產區地圖</h2>
+              <p className="text-white/50 text-sm">點選產區查看名稱與簡介</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link href="/learn/pairing" className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none">
+            <div className="p-2 rounded-xl bg-amber-500/20"><Star className="w-5 h-5 text-amber-400" /></div>
+            <div>
+              <h2 className="font-semibold text-white">配餐指南</h2>
+              <p className="text-white/50 text-sm">菜式與酒款搭配建議</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link href="/learn/news" className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none">
+            <div className="p-2 rounded-xl bg-primary-500/20"><BookOpen className="w-5 h-5 text-primary-400" /></div>
+            <div>
+              <h2 className="font-semibold text-white">酒類新聞</h2>
+              <p className="text-white/50 text-sm">產業動態與品酒新知</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link href="/learn/events" className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none">
+            <div className="p-2 rounded-xl bg-amber-500/20"><Clock className="w-5 h-5 text-amber-400" /></div>
+            <div>
+              <h2 className="font-semibold text-white">活動日曆</h2>
+              <p className="text-white/50 text-sm">品酒活動與展覽</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
+          <Link href="/learn/ai-sommelier" className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none">
+            <div className="p-2 rounded-xl bg-primary-500/20"><Sparkles className="w-5 h-5 text-primary-400" /></div>
+            <div>
+              <h2 className="font-semibold text-white">AI 品酒助手</h2>
+              <p className="text-white/50 text-sm">描述口感偏好，獲得酒款推薦</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40 ml-auto shrink-0" />
+          </Link>
           <Link
             href="/learn/glossary"
             className="flex items-center gap-3 p-4 md:p-5 min-h-[48px] rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 hover:border-primary-500/30 hover:bg-white/10 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:outline-none"
@@ -1498,11 +1590,11 @@ export default function LearnPage() {
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 ml-auto" />
           </Link>
-        </motion.div>
+        </m.div>
 
         {/* L87：課程篩選區 aria-label */}
         {/* UX_LAYOUT_200 #77：篩選與列表關係標示 — 篩選區 aria-describedby 指向結果數量 */}
-        <motion.div
+        <m.div
           role="region"
           aria-label="課程篩選"
           aria-describedby="learn-course-list"
@@ -1571,13 +1663,13 @@ export default function LearnPage() {
               </button>
             </>
           )}
-        </motion.div>
+        </m.div>
 
         {/* 151 課程分類；AUDIT #27 篩選為 tablist、方向鍵可切換 */}
         {/* L78：等級 tab 小屏橫向捲動 */}
         <div className="mb-4">
           <p id="learn-level-label" className="text-white/50 text-xs mb-2 text-center sm:text-left">等級</p>
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mb-4 overflow-x-auto scrollbar-hide pb-1"
@@ -1605,12 +1697,12 @@ export default function LearnPage() {
               </button>
             )
           })}
-        </motion.div>
+        </m.div>
         </div>
         {/* L90：篩選與列表間距一致 */}
         <div className="mb-6">
           <p className="text-white/50 text-xs mb-2 text-center sm:text-left">認證</p>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3">
           {['all', 'WSET', 'CMS', 'MW'].map((cert) => {
             const count = cert === 'all' ? levelFiltered.length : levelFiltered.filter((c) => {
               const ce = CERT_MAP[c.id] ?? ''
@@ -1630,7 +1722,7 @@ export default function LearnPage() {
               </button>
             )
           })}
-        </motion.div>
+        </m.div>
         </div>
 
         {/* P2.D1.1 卡片/列表切換 */}
@@ -1748,7 +1840,10 @@ export default function LearnPage() {
           {visibleCourses.map((course, index) => {
             const isProCourse = !course.free
             const hasAccess = canAccessPro || (isProCourse && tier === 'free' && proTrialAllowed)
-            const isLocked = isProCourse && !hasAccess
+            /** R2-211：免費方案僅可免費學習前 FREE_LEARN_COURSES_COUNT 門課 */
+            const globalIndex = COURSES.findIndex((c) => c.id === course.id)
+            const freeTierOverLimit = tier === 'free' && globalIndex >= FREE_LEARN_COURSES_COUNT
+            const isLocked = (isProCourse && !hasAccess) || freeTierOverLimit
             const prog = progress[course.id]
             const totalChapters = course.lessons
             const completed = prog ? Math.min(prog.completed, totalChapters) : 0
@@ -1772,7 +1867,7 @@ export default function LearnPage() {
                   <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
                 </Link>
               ) : (
-              <motion.div
+              <m.div
                 style={{ transformStyle: 'preserve-3d' }}
                 whileHover={{
                   scale: 1.025,
@@ -1853,7 +1948,7 @@ export default function LearnPage() {
                   <div className={`aspect-video w-full rounded-t-2xl bg-gradient-to-br ${course.color} flex items-center justify-center relative overflow-hidden group/cover`} aria-hidden>
                     <course.icon className="w-12 h-12 text-white/80 transition-transform duration-300 group-hover/cover:scale-110" />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-t-xl transition-all duration-300 group-hover/cover:bg-black/30" aria-hidden>
-                      <motion.div 
+                      <m.div 
                         className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/50"
                         whileHover={{
                           scale: 1.15,
@@ -1862,7 +1957,7 @@ export default function LearnPage() {
                         }}
                       >
                         <Play className="w-6 h-6 text-white ml-1" fill="currentColor" />
-                      </motion.div>
+                      </m.div>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4">
@@ -1912,7 +2007,7 @@ export default function LearnPage() {
                       {/* Phase 1 D2.1: 進度環形圖與進度條動畫增強 */}
                       {/* F72 進度環形圖；AUDIT #23 進度環 role="progressbar" aria-valuenow */}
                       {progressPct > 0 && (
-                        <motion.div 
+                        <m.div 
                           className="mt-2 flex items-center gap-2" 
                           role="progressbar" 
                           aria-valuenow={progressPct} 
@@ -1923,7 +2018,7 @@ export default function LearnPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2, duration: 0.3 }}
                         >
-                          <motion.div 
+                          <m.div 
                             className="relative w-7 h-7 shrink-0" 
                             aria-hidden
                             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -1931,7 +2026,7 @@ export default function LearnPage() {
                           >
                             <svg className="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
                               <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-white/10" />
-                              <motion.circle 
+                              <m.circle 
                                 cx="16" 
                                 cy="16" 
                                 r="14" 
@@ -1946,18 +2041,18 @@ export default function LearnPage() {
                                 transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
                               />
                             </svg>
-                            <motion.span 
+                            <m.span 
                               className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white"
                               initial={{ opacity: 0, scale: 0.5 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: 0.5, duration: 0.3 }}
                             >
                               {progressPct}%
-                            </motion.span>
-                          </motion.div>
+                            </m.span>
+                          </m.div>
                           {progressPct < 100 && (
                             <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                              <motion.div 
+                              <m.div 
                                 className="h-full rounded-full bg-gradient-to-r from-primary-500 to-secondary-500"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progressPct}%` }}
@@ -1965,12 +2060,12 @@ export default function LearnPage() {
                               />
                             </div>
                           )}
-                        </motion.div>
+                        </m.div>
                       )}
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
               )}
               </InViewAnimate>
             )
@@ -2011,7 +2106,7 @@ export default function LearnPage() {
             : sameLevel.slice(0, 2)
           if (recommended.length === 0) return null
           return (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10"
@@ -2029,13 +2124,13 @@ export default function LearnPage() {
                   </Link>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )
         })()}
 
         {/* 15 課程完成後下一堂建議 */}
         {nextCourseSuggestion && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 p-4 rounded-xl bg-primary-500/15 border border-primary-500/30"
@@ -2048,11 +2143,11 @@ export default function LearnPage() {
               {nextCourseSuggestion.title}
               <ChevronRight className="w-4 h-4" />
             </Link>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Featured Course Detail */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -2093,10 +2188,10 @@ export default function LearnPage() {
               開始學習
             </Link>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* 161–165 排行榜（僅自己，可後端擴充） */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
@@ -2120,7 +2215,7 @@ export default function LearnPage() {
           <div className="space-y-2">
             <AnimatePresence>
               {leaderboard.slice(0, 5).map((e, index) => (
-                <motion.div
+                <m.div
                   key={e.rank}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -2141,7 +2236,7 @@ export default function LearnPage() {
                   } ${e.rank === 1 ? 'ring-2 ring-amber-400/50 shadow-lg shadow-amber-400/20' : ''} ${e.rank === 2 ? 'ring-1 ring-slate-300/50' : ''} ${e.rank === 3 ? 'ring-1 ring-amber-700/50' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <motion.span 
+                    <m.span 
                       className="text-2xl w-8 text-center"
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
@@ -2153,10 +2248,10 @@ export default function LearnPage() {
                       }}
                     >
                       {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : `#${e.rank}`}
-                    </motion.span>
+                    </m.span>
                     <span className="text-white/70 font-medium">{e.name}</span>
                   </div>
-                  <motion.span 
+                  <m.span 
                     className="text-primary-400 font-semibold flex items-center gap-1"
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -2164,15 +2259,15 @@ export default function LearnPage() {
                   >
                     <Target className="w-4 h-4" />
                     {e.points} 分
-                  </motion.span>
-                </motion.div>
+                  </m.span>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* 91 學習成就分享卡片；92 邀請好友；93 學習進度分享 */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-6 flex flex-wrap justify-center gap-3"
@@ -2239,7 +2334,7 @@ export default function LearnPage() {
             <UserPlus className="w-4 h-4" />
             邀請好友學品酒
           </button>
-        </motion.div>
+        </m.div>
         {/* 33 Toast 位置統一：fixed bottom-24 */}
         {(inviteToast || shareProgressToast || shareAchieveToast) && (
           <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl bg-primary-500/90 text-white text-sm font-medium shadow-lg" role="status">
@@ -2260,7 +2355,7 @@ export default function LearnPage() {
         )}
 
         {/* Upgrade CTA */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -2283,7 +2378,7 @@ export default function LearnPage() {
           <Link href="/pricing" className="btn-secondary mt-4 inline-block min-h-[48px] min-w-[48px] inline-flex items-center justify-center games-focus-ring rounded">
             立即升級
           </Link>
-        </motion.div>
+        </m.div>
 
       <UpgradeModal
         open={showUpgrade}

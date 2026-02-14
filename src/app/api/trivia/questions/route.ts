@@ -4,6 +4,7 @@
  * GET ?limit=8&difficulty=easy|medium|hard
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import { getTriviaFallback } from '@/data/trivia-fallback'
 
 const TRIVIA_API = 'https://the-trivia-api.com/v2/questions'
@@ -81,8 +82,7 @@ export async function GET(request: Request) {
       next: { revalidate: 60 },
     })
     if (!res.ok) {
-      const text = await res.text()
-      return NextResponse.json({ error: `Trivia API: ${res.status}` }, { status: 502 })
+      return errorResponse(502, 'UPSTREAM_ERROR', { message: `Trivia API: ${res.status}` })
     }
     const raw = await res.json() as Array<{
       id: string

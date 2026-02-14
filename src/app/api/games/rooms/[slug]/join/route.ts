@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
-import { hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, hashRoomPassword, secureComparePasswordHash, SLUG_PATTERN } from '@/lib/games-room'
+import { ROOM_ERROR, ROOM_MESSAGE, RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes'
 import { sanitizeUserInput } from '@/lib/sanitize'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { JoinRoomBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
 
 const MAX_PLAYERS = 12
 
@@ -16,36 +18,28 @@ export async function POST(
   try {
     const ip = getClientIp(request.headers)
     if (await isRateLimitedAsync(ip, 'join')) {
-      return NextResponse.json(
-        { error: '操作過於頻繁，請稍後再試', retryAfter: 60 },
-        { status: 429, headers: { 'Retry-After': '60' } }
-      )
+      const res = errorResponse(429, 'RATE_LIMITED', { message: RATE_LIMIT_MESSAGE })
+      res.headers.set('Retry-After', '60')
+      return res
     }
     const { slug } = await params
-    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
-    const raw = await request.json().catch(() => ({}))
-    const parsed = JoinRoomBodySchema.safeParse(raw)
-    if (!parsed.success) {
-      return errorResponse(400, 'Invalid body', { message: '請輸入顯示名稱' })
-    }
+    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
+    const parsed = await zodParseBody(request, JoinRoomBodySchema, { defaultRaw: {}, invalidBodyMessage: '請輸入顯示名稱' })
+    if (!parsed.success) return parsed.response
     const { displayName: rawName, isSpectator: isSpectatorRaw } = parsed.data
     const displayName = sanitizeUserInput(rawName, 20)
-    if (!displayName) return errorResponse(400, 'displayName required', { message: '請輸入顯示名稱' })
+    if (!displayName) return errorResponse(400, ROOM_ERROR.DISPLAY_NAME_REQUIRED, { message: ROOM_MESSAGE.DISPLAY_NAME_REQUIRED })
     const isSpectator = isSpectatorRaw === true
     try {
       const supabase = createServerClient()
-      const { data: room, error: roomError } = await supabase
-        .from('game_rooms')
-        .select('id, password_hash, settings')
-        .eq('slug', slug)
-        .single()
+      const { data: room, error: roomError } = await getRoomBySlug<{ id: string; password_hash?: string | null; settings?: { max_players?: number } | null }>(supabase, slug, 'id, password_hash, settings')
       if (roomError || !room) throw roomError || new Error('Room not found')
-      const roomWithHash = room as { id: string; password_hash?: string | null; settings?: { max_players?: number } | null }
+      const roomWithHash = room
       if (roomWithHash.password_hash) {
         const provided = typeof parsed.data.password === 'string' ? parsed.data.password.trim() : ''
         const hash = hashRoomPassword(provided)
         if (!secureComparePasswordHash(hash, roomWithHash.password_hash)) {
-          return errorResponse(403, 'INVALID_PASSWORD', { message: '房間密碼錯誤' })
+          return errorResponse(403, ROOM_ERROR.INVALID_PASSWORD, { message: ROOM_MESSAGE.INVALID_PASSWORD })
         }
       }
       const maxPlayersForRoom = typeof roomWithHash.settings?.max_players === 'number' ? roomWithHash.settings.max_players : MAX_PLAYERS
@@ -55,7 +49,7 @@ export async function POST(
         .eq('room_id', room.id)
       const nonSpectatorCount = (existingPlayers ?? []).filter((p) => !(p as { is_spectator?: boolean }).is_spectator).length
       if (!isSpectator && nonSpectatorCount >= maxPlayersForRoom) {
-        return errorResponse(400, 'ROOM_FULL', { message: '房間已滿' })
+        return errorResponse(400, ROOM_ERROR.ROOM_FULL, { message: ROOM_MESSAGE.ROOM_FULL })
       }
       const nextIndex = (existingPlayers ?? []).length
       const insertPayload: { room_id: string; display_name: string; order_index: number; is_spectator?: boolean } = {
@@ -86,7 +80,7 @@ export async function POST(
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown error'
     if (message === 'Room not found' || (e as { code?: string })?.code === 'PGRST116') {
-      return errorResponse(404, 'Room not found', { message: '找不到該房間' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
     }
     return serverErrorResponse(e)
   }

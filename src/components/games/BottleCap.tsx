@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Circle, RefreshCw, Target, Trophy } from 'lucide-react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
+import { Circle, RefreshCw, Target, Trophy, Wine } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
+import { getTruthPool, getDarePool } from '@/lib/truth-or-dare'
 
 const TARGETS = [
   { id: 1, points: 3, size: 40, color: 'bg-red-500', name: '紅心' },
@@ -16,6 +17,9 @@ const TARGETS = [
   { id: 3, points: 1, size: 80, color: 'bg-green-500', name: '綠區' },
   { id: 4, points: 0, size: 100, color: 'bg-blue-500', name: '藍區' },
 ]
+
+/** R2-159：瓶蓋遊戲模式 — 射擊計分 或 真心話瓶 */
+type BottleCapMode = 'shoot' | 'bottle'
 
 export default function BottleCap() {
   const { t } = useTranslation()
@@ -31,6 +35,18 @@ export default function BottleCap() {
   const [score, setScore] = useState<Record<number, number>>({})
   const [roundCount, setRoundCount] = useState(0)
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 })
+  /** R2-159：數位真心話瓶模式 — 轉瓶指到的人可選真心話或大冒險 */
+  const [bottleMode, setBottleMode] = useState<BottleCapMode | null>(null)
+  const [bottlePhase, setBottlePhase] = useState<'spin' | 'pointed' | 'question'>('spin')
+  const [pointedPlayerIndex, setPointedPlayerIndex] = useState<number | null>(null)
+  const [bottleQuestion, setBottleQuestion] = useState<{ text: string; type: 'truth' | 'dare' } | null>(null)
+  const [truthPool, setTruthPool] = useState<{ text: string; level: string }[]>([])
+  const [darePool, setDarePool] = useState<{ text: string; level: string }[]>([])
+
+  useEffect(() => {
+    getTruthPool().then(setTruthPool)
+    getDarePool().then(setDarePool)
+  }, [])
 
   const startAiming = useCallback(() => {
     // 隨機目標位置
@@ -47,7 +63,7 @@ export default function BottleCap() {
     // 隨機射擊結果（模擬彈射）
     const random = Math.random()
     let result: typeof TARGETS[0]
-    
+
     if (random < 0.1) {
       result = TARGETS[0] // 10% 紅心
     } else if (random < 0.3) {
@@ -92,11 +108,101 @@ export default function BottleCap() {
     setRoundCount(0)
   }, [])
 
+  /** R2-159：轉瓶 — 隨機指到一人 */
+  const spinBottle = useCallback(() => {
+    play('click')
+    const idx = Math.floor(Math.random() * players.length)
+    setPointedPlayerIndex(idx)
+    setBottlePhase('pointed')
+  }, [players.length, play])
+
+  /** R2-159：選擇真心話或大冒險後抽題 */
+  const pickTruthOrDare = useCallback((type: 'truth' | 'dare') => {
+    play('click')
+    const pool = type === 'truth' ? truthPool : darePool
+    const item = pool[Math.floor(Math.random() * pool.length)]
+    if (item) {
+      setBottleQuestion({ text: item.text, type })
+      setBottlePhase('question')
+    }
+  }, [truthPool, darePool, play])
+
+  /** R2-159：下一輪（再轉瓶） */
+  const bottleNext = useCallback(() => {
+    play('click')
+    setBottleQuestion(null)
+    setPointedPlayerIndex(null)
+    setBottlePhase('spin')
+  }, [play])
+
   const currentPlayer = players[currentPlayerIndex]
   const leaderboard = Object.entries(score)
     .map(([i, s]) => ({ name: players[Number(i)], score: s }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score)
+
+  /** R2-159：未選模式時顯示射擊 / 真心話瓶 */
+  if (bottleMode === null) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="瓶蓋遊戲">
+        <GameRules rules={t('games.bottleCapRules')} rulesKey="bottle-cap.rules" />
+        <p className="text-white/60 mb-6">選擇玩法</p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            type="button"
+            onClick={() => { play('click'); setBottleMode('shoot') }}
+            className="min-h-[56px] px-8 py-3 rounded-2xl bg-white/10 hover:bg-amber-500/30 text-white font-medium flex items-center gap-3 games-focus-ring"
+          >
+            <Target className="w-6 h-6" />
+            射擊計分
+          </button>
+          <button
+            type="button"
+            onClick={() => { play('click'); setBottleMode('bottle') }}
+            className="min-h-[56px] px-8 py-3 rounded-2xl bg-white/10 hover:bg-primary-500/30 text-white font-medium flex items-center gap-3 games-focus-ring"
+          >
+            <Wine className="w-6 h-6" />
+            真心話瓶（指到的人選真心話或大冒險）
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  /** R2-159：真心話瓶流程 */
+  if (bottleMode === 'bottle') {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="真心話瓶">
+        <GameRules rules="轉瓶隨機指到一人，該玩家選擇「真心話」或「大冒險」，依題目回答或執行。" rulesKey="bottle-cap.bottle-rules" />
+        <button type="button" onClick={() => setBottleMode(null)} className="absolute top-4 right-4 text-white/50 text-sm games-focus-ring">換模式</button>
+        {bottlePhase === 'spin' && (
+          <div className="text-center">
+            <Wine className="w-16 h-16 text-primary-400 mx-auto mb-4" />
+            <p className="text-white/70 mb-6">轉瓶指到誰？</p>
+            <button type="button" onClick={spinBottle} className="btn-primary px-8 py-3 text-lg games-focus-ring">轉瓶</button>
+          </div>
+        )}
+        {bottlePhase === 'pointed' && pointedPlayerIndex !== null && (
+          <div className="text-center max-w-md">
+            <p className="text-white/60 mb-2">指向</p>
+            <p className="text-2xl font-bold text-primary-400 mb-6">{players[pointedPlayerIndex]}</p>
+            <p className="text-white/50 text-sm mb-4">請選擇</p>
+            <div className="flex gap-4 justify-center">
+              <button type="button" onClick={() => pickTruthOrDare('truth')} className="btn-primary px-6 py-3 games-focus-ring">真心話</button>
+              <button type="button" onClick={() => pickTruthOrDare('dare')} className="btn-primary px-6 py-3 games-focus-ring bg-secondary-500 hover:bg-secondary-600">大冒險</button>
+            </div>
+          </div>
+        )}
+        {bottlePhase === 'question' && bottleQuestion && (
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+            <p className="text-white/50 text-sm mb-2">{bottleQuestion.type === 'truth' ? '真心話' : '大冒險'}</p>
+            <p className="text-xl font-bold text-white mb-6 px-2">{bottleQuestion.text}</p>
+            <button type="button" onClick={bottleNext} className="btn-primary px-6 py-2 games-focus-ring">下一輪</button>
+          </m.div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="瓶蓋彈射">
@@ -104,7 +210,7 @@ export default function BottleCap() {
         rules={t('games.bottleCapRules')}
         rulesKey="bottle-cap.rules"
       />
-
+      <button type="button" onClick={() => setBottleMode(null)} className="absolute top-4 right-4 text-white/50 text-sm games-focus-ring">換模式</button>
       <Target className="w-12 h-12 text-amber-400 mb-4" />
       <p className="text-white/50 text-sm mb-2">{t('common.roundLabel', { n: roundCount + 1 })}</p>
 
@@ -127,15 +233,15 @@ export default function BottleCap() {
           <p className="text-white/60 mb-4">{currentPlayer} {t('games.bottleCapAiming')}</p>
 
           {/* 靶子 */}
-          <div 
+          <div
             className="relative w-64 h-64 mx-auto mb-6"
-            style={{ 
+            style={{
               left: `${targetPosition.x - 50}%`,
               top: `${targetPosition.y - 50}%`,
             }}
           >
             {TARGETS.slice().reverse().map((target) => (
-              <motion.div
+              <m.div
                 key={target.id}
                 className={`absolute rounded-full ${target.color} opacity-80`}
                 style={{
@@ -153,33 +259,33 @@ export default function BottleCap() {
             </div>
           </div>
 
-          <motion.button
+          <m.button
             type="button"
             onClick={shoot}
             whileTap={{ scale: 0.9 }}
             className="px-12 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xl games-focus-ring shadow-lg"
           >
             {t('games.bottleCapShoot')} 🚀
-          </motion.button>
+          </m.button>
         </div>
       )}
 
       {gamePhase === 'result' && shotResult && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center w-full max-w-md"
           >
             {shotResult.points >= 0 ? (
               <>
-                <motion.div
+                <m.div
                   initial={reducedMotion ? false : { y: -50 }}
                   animate={{ y: 0 }}
                   className={`w-24 h-24 rounded-full ${shotResult.color || 'bg-gray-500'} mx-auto mb-4 flex items-center justify-center shadow-lg`}
                 >
                   <span className="text-white font-bold text-2xl">{shotResult.points}</span>
-                </motion.div>
+                </m.div>
                 <p className="text-2xl font-bold text-white mb-2">{shotResult.name}！</p>
                 {shotResult.points > 0 && (
                   <p className="text-green-400 font-bold mb-4">得 {shotResult.points} 分！</p>
@@ -190,14 +296,14 @@ export default function BottleCap() {
               </>
             ) : (
               <>
-                <motion.p
+                <m.p
                   initial={reducedMotion ? false : { rotate: -10 }}
                   animate={{ rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 0.3, repeat: 2 }}
                   className="text-6xl mb-4"
                 >
                   💨
-                </motion.p>
+                </m.p>
                 <p className="text-2xl font-bold text-red-400 mb-2">{t('games.bottleCapMiss')}</p>
                 <p className="text-red-400 font-bold mb-4">{currentPlayer} {t('games.bottleCapDrink')}</p>
               </>
@@ -212,7 +318,7 @@ export default function BottleCap() {
                 label={t('common.copy')}
               />
             </div>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
 

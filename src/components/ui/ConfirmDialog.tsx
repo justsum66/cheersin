@@ -2,7 +2,7 @@
 
 /** UX_LAYOUT_200 #115 / A11Y-006：危險操作二次確認 — 可重用確認對話框；focus trap、Esc 關閉、關閉時 focus 回觸發按鈕 */
 import { useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 const FOCUSABLE =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -78,7 +78,7 @@ export function ConfirmDialog({
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           className="fixed inset-0 z-[60] flex items-center justify-center p-4 safe-area-px bg-black/60 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
@@ -90,7 +90,7 @@ export function ConfirmDialog({
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Phase 1 A3.2: 增強 Modal Spring 動畫 */}
-          <motion.div
+          <m.div
             ref={contentRef}
             className="modal-padding modal-content-overflow w-full max-w-md rounded-2xl bg-[#1a0a2e] border border-white/10 shadow-xl"
             initial={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -131,8 +131,8 @@ export function ConfirmDialog({
                 {confirmLabel}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

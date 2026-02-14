@@ -1,18 +1,17 @@
 'use client'
 
+import { memo } from 'react'
 import { LucideIcon } from 'lucide-react'
 
 // P001: Use CSS transitions instead of framer-motion for simple hover effects
-// Reduces bundle size and improves performance
-// Phase 1 A4.2: Enhanced icon animations with rotation and pulse
-
+// R2-233: 純展示組件用 React.memo 減少重繪
 interface FeatureIconProps {
     icon: LucideIcon
     color?: 'primary' | 'secondary' | 'accent' | 'white'
     size?: 'sm' | 'md' | 'lg'
 }
 
-export default function FeatureIcon({ icon: Icon, color = 'primary', size = 'md' }: FeatureIconProps) {
+function FeatureIconInner({ icon: Icon, color = 'primary', size = 'md' }: FeatureIconProps) {
     const sizeClasses = {
         sm: 'w-10 h-10',
         md: 'w-14 h-14',
@@ -52,3 +51,5 @@ export default function FeatureIcon({ icon: Icon, color = 'primary', size = 'md'
         </div>
     )
 }
+
+export const FeatureIcon = memo(FeatureIconInner)

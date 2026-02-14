@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { usePunishment } from './PunishmentContext'
 import type { PunishmentHistoryEntry } from './types'
 import { PUNISHMENT_LEVEL_LABEL } from './types'
@@ -34,7 +34,7 @@ export default function PunishmentHistory({ maxItems = 20, className = '' }: Pun
       <ul className="space-y-1.5 text-sm max-h-48 overflow-auto">
         <AnimatePresence mode="popLayout">
         {recent.map((h: PunishmentHistoryEntry, i: number) => (
-          <motion.li 
+          <m.li 
             key={h.id} 
             className="text-white/70 flex flex-wrap gap-x-2 gap-y-0.5 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
             initial={reducedMotion ? false : { x: -20, opacity: 0 }}
@@ -59,7 +59,7 @@ export default function PunishmentHistory({ maxItems = 20, className = '' }: Pun
                 <span className="text-white/40 text-xs">({PUNISHMENT_LEVEL_LABEL[h.punishment.level]})</span>
               </>
             )}
-          </motion.li>
+          </m.li>
         ))}
         </AnimatePresence>
       </ul>

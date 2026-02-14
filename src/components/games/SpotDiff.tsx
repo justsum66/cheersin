@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Search, RefreshCw, Clock } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -149,7 +149,7 @@ export default function SpotDiff() {
             </span>
           </div>
 
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/10 rounded-2xl p-6 mb-6"
@@ -157,7 +157,7 @@ export default function SpotDiff() {
             <p className="text-5xl leading-relaxed tracking-wider">
               {currentSet.emojis}
             </p>
-          </motion.div>
+          </m.div>
 
           <p className="text-white/60 mb-4">找出不一樣的那個！</p>
 
@@ -181,7 +181,7 @@ export default function SpotDiff() {
       )}
 
       {gamePhase === 'result' && currentSet && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -205,7 +205,7 @@ export default function SpotDiff() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

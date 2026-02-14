@@ -6,7 +6,7 @@
  */
 import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Copy, Users, Play, ChevronLeft, LogOut } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -77,7 +77,7 @@ export function ScriptMurderRoom({
       : joinError
 
   return (
-    <motion.div
+    <m.div
       key="lobby"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -145,7 +145,7 @@ export function ScriptMurderRoom({
                 aria-invalid={!!joinErrorDisplay}
                 aria-describedby={joinErrorDisplay ? 'script-murder-join-error' : undefined}
               />
-              <motion.button
+              <m.button
                 type="button"
                 disabled={joinLoading || !displayName.trim()}
                 onClick={() => displayName.trim() && joinRoom(displayName.trim())}
@@ -153,7 +153,7 @@ export function ScriptMurderRoom({
                 whileTap={{ scale: 0.98 }}
               >
                 {joinLoading ? t('scriptMurder.joining') : t('scriptMurder.joinButton')}
-              </motion.button>
+              </m.button>
             </div>
             {joinErrorDisplay && <p id="script-murder-join-error" className="text-red-400 text-sm mt-2" role="alert" aria-live="assertive">{joinErrorDisplay}</p>}
           </div>
@@ -197,7 +197,7 @@ export function ScriptMurderRoom({
         )}
         {joined && isHost && (players.length >= (scriptDetail?.minPlayers ?? 4) || allowSoloTest) && !isExpired && (
           <>
-            <motion.button
+            <m.button
               ref={startGameTriggerRef}
               type="button"
               onClick={() => setShowStartConfirm(true)}
@@ -207,7 +207,7 @@ export function ScriptMurderRoom({
               whileTap={{ scale: 0.98 }}
             >
               <Play className="w-5 h-5" /> {t('scriptMurder.startGameLabel')}
-            </motion.button>
+            </m.button>
             <ConfirmDialog
               open={showStartConfirm}
               title={t('scriptMurder.startConfirmTitle')}
@@ -227,7 +227,7 @@ export function ScriptMurderRoom({
         )}
         {joined && myPlayerRowId && onLeave && (
           <>
-            <motion.button
+            <m.button
               ref={leaveTriggerRef}
               type="button"
               onClick={() => setShowLeaveConfirm(true)}
@@ -237,7 +237,7 @@ export function ScriptMurderRoom({
               whileTap={{ scale: 0.98 }}
             >
               <LogOut className="w-4 h-4" /> {t('scriptMurder.leaveRoom')}
-            </motion.button>
+            </m.button>
             <ConfirmDialog
               open={showLeaveConfirm}
               title={t('scriptMurder.leaveConfirmTitle')}
@@ -252,6 +252,6 @@ export function ScriptMurderRoom({
           </>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

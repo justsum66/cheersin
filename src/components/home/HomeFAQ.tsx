@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
 /** T067 P2：遊戲懲罰可自訂、FAQ 說明「可非酒精」，家長與不喝酒玩家接納 */
@@ -22,7 +22,7 @@ export default function HomeFAQ() {
       <h3 className="text-sm font-medium text-white/60 mb-3">常見問題</h3>
       <div className="space-y-2">
         {FAQ_ITEMS.map((item, index) => (
-          <motion.div
+          <m.div
             key={index}
             layout
             className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
@@ -34,16 +34,16 @@ export default function HomeFAQ() {
               aria-expanded={openIndex === index}
             >
               <span className="text-sm font-medium">{item.q}</span>
-              <motion.span
+              <m.span
                 animate={{ rotate: openIndex === index ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
                 <ChevronDown className="w-4 h-4 text-white/50" />
-              </motion.span>
+              </m.span>
             </button>
             <AnimatePresence initial={false}>
               {openIndex === index && (
-                <motion.div
+                <m.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -51,10 +51,10 @@ export default function HomeFAQ() {
                   className="overflow-hidden"
                 >
                   <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </div>

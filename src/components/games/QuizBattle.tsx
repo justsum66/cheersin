@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -90,15 +91,15 @@ export default function QuizBattle() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
+          <m.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
             <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <p className="text-white/80">{currentPlayer} 的回合</p>
             <button onClick={startRound} className="px-8 py-4 bg-primary-500 hover:bg-primary-600 rounded-2xl text-white font-bold text-xl transition-colors">開始答題</button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'playing' && current && (
-          <motion.div key="playing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-4 w-full max-w-md">
+          <m.div key="playing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-4 w-full max-w-md">
             <div className="text-4xl font-bold text-accent-400">{timeLeft}秒</div>
             <div className="text-2xl text-white font-bold text-center">{current.q}</div>
             <div className="grid grid-cols-2 gap-4 w-full">
@@ -106,14 +107,15 @@ export default function QuizBattle() {
                 <button key={opt} onClick={() => selectAnswer(opt)} className="px-4 py-4 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold text-lg transition-colors">{opt}</button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && current && (
-          <motion.div key="result" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-4">
+          <m.div key="result" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-4">
             <div className={`text-3xl font-bold ${selected === current.answer ? 'text-green-400' : 'text-red-400'}`}>
               {selected === current.answer ? '答對了！' : selected ? '答錯了！喝一口！' : '時間到！喝一口！'}
             </div>
+            {selected !== current.answer && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white/60">正確答案：{current.answer}</div>
             <div className="text-white mt-4">{players.map(p => <span key={p} className="mx-2">{p}: {scores[p] || 0}分</span>)}</div>
             <div className="flex gap-4 mt-4">
@@ -121,7 +123,7 @@ export default function QuizBattle() {
               <button onClick={resetGame} className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold transition-colors">重新開始</button>
             </div>
             <CopyResultButton text={`知識對決 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

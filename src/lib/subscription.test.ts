@@ -10,8 +10,8 @@ import {
 } from './subscription'
 
 describe('subscription tier helpers', () => {
-  it('getMaxAICallsPerDay free is 10', () => {
-    expect(getMaxAICallsPerDay('free')).toBe(10)
+  it('getMaxAICallsPerDay free is 5', () => {
+    expect(getMaxAICallsPerDay('free')).toBe(5)
   })
   it('getMaxAICallsPerDay premium is -1', () => {
     expect(getMaxAICallsPerDay('premium')).toBe(-1)
@@ -28,11 +28,11 @@ describe('subscription tier helpers', () => {
   it('canAccessProCourse premium is true', () => {
     expect(canAccessProCourse('premium')).toBe(true)
   })
-  it('canUseAICall free with 5 used returns true', () => {
-    expect(canUseAICall('free', 5)).toBe(true)
+  it('canUseAICall free with 4 used returns true', () => {
+    expect(canUseAICall('free', 4)).toBe(true)
   })
-  it('canUseAICall free with 10 used returns false', () => {
-    expect(canUseAICall('free', 10)).toBe(false)
+  it('canUseAICall free with 5 used returns false', () => {
+    expect(canUseAICall('free', 5)).toBe(false)
   })
   it('canUseAICall premium with any used returns true', () => {
     expect(canUseAICall('premium', 100)).toBe(true)

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { MapPin, Globe, Info, BarChart3, Wheat } from 'lucide-react';
 
 interface BeerCiderRegion {
@@ -295,7 +295,7 @@ export function InteractiveBeerCiderMap() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -310,11 +310,11 @@ export function InteractiveBeerCiderMap() {
         <p className="text-white/70 max-w-3xl mx-auto">
           探索全球最重要的啤酒與蘋果酒產區，了解各地的特色風味、釀造傳統和文化背景。
         </p>
-      </motion.div>
+      </m.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 地圖區域 */}
-        <motion.div 
+        <m.div 
           className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 border border-white/10 relative overflow-hidden"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -330,7 +330,7 @@ export function InteractiveBeerCiderMap() {
 
             {/* 3D 效果的區域標記 */}
             {BEER_CIDER_REGIONS.map((region, index) => (
-              <motion.div
+              <m.div
                 key={region.id}
                 className={`absolute cursor-pointer group ${selectedRegion?.id === region.id ? 'z-10' : ''}`}
                 style={{
@@ -344,7 +344,7 @@ export function InteractiveBeerCiderMap() {
                 whileHover={{ scale: 1.3, zIndex: 20 }}
                 onClick={() => setSelectedRegion(region)}
               >
-                <motion.div
+                <m.div
                   className="relative"
                   whileHover={{ y: -10 }}
                   transition={{ type: 'spring', stiffness: 300 }}
@@ -353,17 +353,17 @@ export function InteractiveBeerCiderMap() {
                     className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
                     style={{ backgroundColor: region.color }}
                   />
-                  <motion.div
+                  <m.div
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
                   >
                     {region.name}
-                  </motion.div>
+                  </m.div>
                   
                   {/* 3D 效果光暈 */}
-                  <motion.div
+                  <m.div
                     className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-50"
                     style={{ 
                       backgroundColor: region.color,
@@ -376,8 +376,8 @@ export function InteractiveBeerCiderMap() {
                     }}
                     transition={{ duration: 0.3 }}
                   />
-                </motion.div>
-              </motion.div>
+                </m.div>
+              </m.div>
             ))}
           </div>
 
@@ -393,10 +393,10 @@ export function InteractiveBeerCiderMap() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* 資訊面板 */}
-        <motion.div 
+        <m.div 
           className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -427,7 +427,7 @@ export function InteractiveBeerCiderMap() {
 
           <AnimatePresence mode="wait">
             {activeTab === 'info' ? (
-              <motion.div
+              <m.div
                 key="info"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -529,9 +529,9 @@ export function InteractiveBeerCiderMap() {
                     <p className="text-white/50">點擊地圖上的標記以查看區域詳細資訊</p>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.div
+              <m.div
                 key="comparison"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -558,7 +558,7 @@ export function InteractiveBeerCiderMap() {
                             <span>{data.qualityScore}/10</span>
                           </div>
                           <div className="w-full bg-white/10 rounded-full h-2">
-                            <motion.div 
+                            <m.div 
                               className="bg-amber-500 h-2 rounded-full"
                               initial={{ width: 0 }}
                               animate={{ width: `${data.qualityScore * 10}%` }}
@@ -573,7 +573,7 @@ export function InteractiveBeerCiderMap() {
                             <span>{data.variety}/10</span>
                           </div>
                           <div className="w-full bg-white/10 rounded-full h-2">
-                            <motion.div 
+                            <m.div 
                               className="bg-blue-500 h-2 rounded-full"
                               initial={{ width: 0 }}
                               animate={{ width: `${data.variety * 10}%` }}
@@ -588,7 +588,7 @@ export function InteractiveBeerCiderMap() {
                             <span>{data.tradition}/10</span>
                           </div>
                           <div className="w-full bg-white/10 rounded-full h-2">
-                            <motion.div 
+                            <m.div 
                               className="bg-green-500 h-2 rounded-full"
                               initial={{ width: 0 }}
                               animate={{ width: `${data.tradition * 10}%` }}
@@ -600,14 +600,14 @@ export function InteractiveBeerCiderMap() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* 額外資訊區域 */}
-      <motion.div 
+      <m.div 
         className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -645,7 +645,7 @@ export function InteractiveBeerCiderMap() {
             到英國的傳統酒吧，這些飲品承載著深厚的社會和文化意義。
           </p>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

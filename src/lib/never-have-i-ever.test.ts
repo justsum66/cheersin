@@ -5,14 +5,14 @@ import { describe, it, expect } from 'vitest'
 import { getStatementsByCategory, CATEGORY_LABEL } from './never-have-i-ever'
 
 describe('getStatementsByCategory', () => {
-  it('returns array for all', () => {
-    const list = getStatementsByCategory('all')
+  it('returns array for all', async () => {
+    const list = await getStatementsByCategory('all')
     expect(Array.isArray(list)).toBe(true)
     expect(list.length).toBeGreaterThan(0)
   })
 
-  it('each item has text and category', () => {
-    const list = getStatementsByCategory('all')
+  it('each item has text and category', async () => {
+    const list = await getStatementsByCategory('all')
     const cats = ['love', 'work', 'life', 'dark', 'adult']
     list.slice(0, 5).forEach((item) => {
       expect(typeof item.text).toBe('string')
@@ -21,8 +21,8 @@ describe('getStatementsByCategory', () => {
     })
   })
 
-  it('love category returns array', () => {
-    const list = getStatementsByCategory('love')
+  it('love category returns array', async () => {
+    const list = await getStatementsByCategory('love')
     expect(Array.isArray(list)).toBe(true)
     list.forEach((item) => {
       expect(item.category).toBe('love')
@@ -30,8 +30,8 @@ describe('getStatementsByCategory', () => {
     })
   })
 
-  it('work category returns array', () => {
-    const list = getStatementsByCategory('work')
+  it('work category returns array', async () => {
+    const list = await getStatementsByCategory('work')
     expect(Array.isArray(list)).toBe(true)
     list.forEach((item) => expect(item.category).toBe('work'))
   })

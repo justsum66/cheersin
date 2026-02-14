@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 /** 長頁面頂部閱讀進度條（116） */
-export default function ScrollProgress() {
+export function ScrollProgress() {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {

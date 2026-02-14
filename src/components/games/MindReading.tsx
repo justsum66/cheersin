@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Sparkles, RotateCcw, Check, X } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -112,9 +112,9 @@ export default function MindReading() {
       {!currentTopic ? (
         <div className="text-center">
           <p className="text-white/70 mb-4">猜猜 <span className="text-violet-400 font-bold">{target}</span> 的想法</p>
-          <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-xl games-focus-ring">
+          <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-xl games-focus-ring">
             開始讀心！
-          </motion.button>
+          </m.button>
         </div>
       ) : !targetAnswer ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
@@ -167,7 +167,7 @@ export default function MindReading() {
           )}
         </div>
       ) : (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center w-full max-w-md">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center w-full max-w-md">
           <p className="text-white/50 mb-2">{currentTopic.topic}</p>
           <p className="text-violet-400 font-bold text-2xl mb-4">{target} 選了：{targetAnswer}</p>
           <div className="space-y-2">
@@ -185,7 +185,7 @@ export default function MindReading() {
             <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一輪</button>
             <CopyResultButton text={`讀心術：${currentTopic.topic}\n${target} 選了 ${targetAnswer}\n${Object.entries(guesses).map(([p, g]) => `${p}: ${g} ${g === targetAnswer ? '✓' : '✗'}`).join('\n')}`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {Object.keys(scores).length > 0 && (

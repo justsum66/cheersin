@@ -48,36 +48,36 @@ export default function PitchPerfect() {
     setTargetNote(note)
     setGuesses({})
     setCurrentPlayerIndex(0)
-    
+
     // 播放音符
     if (typeof window !== 'undefined') {
       if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        audioContextRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
       }
-      
+
       if (oscillatorRef.current) {
         oscillatorRef.current.stop()
       }
-      
+
       oscillatorRef.current = audioContextRef.current.createOscillator()
       oscillatorRef.current.type = 'sine'
       oscillatorRef.current.frequency.setValueAtTime(note.frequency, audioContextRef.current.currentTime)
-      
+
       const gainNode = audioContextRef.current.createGain()
       gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 1.5)
-      
+
       oscillatorRef.current.connect(gainNode)
       gainNode.connect(audioContextRef.current.destination)
-      
+
       oscillatorRef.current.start()
       oscillatorRef.current.stop(audioContextRef.current.currentTime + 1.5)
     }
-    
+
     setTimeout(() => {
       setGameState('guessing')
     }, 2000)
-    
+
     play('click')
   }
 
@@ -88,7 +88,7 @@ export default function PitchPerfect() {
       [currentPlayer]: guess
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -107,7 +107,7 @@ export default function PitchPerfect() {
         }))
       }
     })
-    
+
     // 表演者得分（如果有猜對的人）
     const correctGuesses = Object.values(guesses).filter(g => g === targetNote?.name).length
     if (correctGuesses > 0) {
@@ -116,7 +116,7 @@ export default function PitchPerfect() {
         [currentPlayer]: (prev[currentPlayer] || 0) + correctGuesses
       }))
     }
-    
+
     setGameState('results')
     play('win')
   }
@@ -143,7 +143,7 @@ export default function PitchPerfect() {
     setRound(1)
     setScores({})
     setTargetNote(null)
-    
+
     if (oscillatorRef.current) {
       oscillatorRef.current.stop()
     }
@@ -151,7 +151,7 @@ export default function PitchPerfect() {
       audioContextRef.current.close()
       audioContextRef.current = null
     }
-    
+
     play('click')
   }
 
@@ -164,7 +164,7 @@ export default function PitchPerfect() {
             <h1 className="text-2xl font-bold text-white">完美音準</h1>
           </div>
           <p className="text-white/80 mb-6">測試你的音感，聽音辨符！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -175,8 +175,8 @@ export default function PitchPerfect() {
               <li>• 進行5輪比賽</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -194,14 +194,14 @@ export default function PitchPerfect() {
           <h2 className="text-xl font-bold text-white mb-4">
             {currentPlayer} 的回合
           </h2>
-          
+
           <div className="text-8xl mb-6">
             🎵
           </div>
-          
+
           <p className="text-white/80 mb-6">準備播放音符</p>
-          
-          <button 
+
+          <button
             onClick={playTargetNote}
             className="games-touch-target w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-bold"
           >
@@ -243,7 +243,7 @@ export default function PitchPerfect() {
                     </div>
                   )}
                 </div>
-                
+
                 {currentPlayer !== player ? (
                   <div className="space-y-2">
                     {NOTES.map((note) => (
@@ -276,7 +276,7 @@ export default function PitchPerfect() {
   }
 
   if (gameState === 'results') {
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -289,14 +289,14 @@ export default function PitchPerfect() {
               {round < 5 ? '回合結果' : '最終結果'}
             </h1>
           </div>
-          
+
           {round < 5 && targetNote && (
             <div className="bg-white/10 rounded-lg p-4 mb-6 text-center">
               <p className="text-4xl mb-2">{targetNote.emoji}</p>
               <p className="text-white">本輪音符：{targetNote.name}</p>
             </div>
           )}
-          
+
           <div className="space-y-3 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -310,16 +310,16 @@ export default function PitchPerfect() {
               </div>
             ))}
           </div>
-          
+
           {round < 5 ? (
-            <button 
+            <button
               onClick={nextRound}
               className="games-touch-target w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-bold"
             >
               下一輪
             </button>
           ) : (
-            <button 
+            <button
               onClick={restartGame}
               className="games-touch-target w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-bold"
             >

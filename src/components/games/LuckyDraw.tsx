@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -75,35 +76,36 @@ export default function LuckyDraw() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && !drawing && (
-          <motion.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
+          <m.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
             <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <p className="text-white/80">{currentPlayer} 的回合</p>
             <div className="text-6xl">🎋</div>
             <button onClick={draw} className="px-8 py-4 bg-primary-500 hover:bg-primary-600 rounded-2xl text-white font-bold text-xl transition-colors">抽籤</button>
-          </motion.div>
+          </m.div>
         )}
 
         {drawing && currentFortune && (
-          <motion.div key="drawing" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 0.2, repeat: Infinity }} className="flex flex-col items-center gap-4">
+          <m.div key="drawing" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 0.2, repeat: Infinity }} className="flex flex-col items-center gap-4">
             <div className="text-8xl">{currentFortune.emoji}</div>
             <div className={`text-4xl font-bold ${currentFortune.color}`}>{currentFortune.text}</div>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && currentFortune && !drawing && (
-          <motion.div key="result" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-4">
+          <m.div key="result" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-4">
             <div className="text-8xl">{currentFortune.emoji}</div>
             <div className={`text-5xl font-bold ${currentFortune.color}`}>{currentFortune.text}</div>
             <div className="text-white/80 text-xl">
               {currentFortune.drink > 0 ? `喝 ${currentFortune.drink} 口！` : '免喝！恭喜！'}
             </div>
+            {currentFortune.drink > 0 && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white mt-4">{players.map(p => <span key={p} className="mx-2">{p}: 累計{totalDrinks[p] || 0}口</span>)}</div>
             <div className="flex gap-4 mt-4">
               <button onClick={nextRound} className="px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-xl text-white font-bold transition-colors">下一回合</button>
               <button onClick={resetGame} className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold transition-colors">重新開始</button>
             </div>
             <CopyResultButton text={`幸運抽抽 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

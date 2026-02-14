@@ -5,7 +5,7 @@
  * SM-01：自 page 拆出
  */
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Trophy, Play, ListOrdered, Vote, Award } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import type { ScriptState, ScriptDetail } from '@/types/script-murder'
@@ -23,7 +23,7 @@ export function ScriptMurderEnded({ scriptState, scriptDetail, roomSlug }: Scrip
   return (
     <div className="min-h-screen px-4 py-8">
       <div className="max-w-lg mx-auto text-center">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
@@ -60,24 +60,24 @@ export function ScriptMurderEnded({ scriptState, scriptDetail, roomSlug }: Scrip
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Link
               href={`/script-murder?room=${encodeURIComponent(roomSlug)}`}
               className="min-h-[48px] px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium games-focus-ring inline-flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Play className="w-5 h-5" /> {t('scriptMurder.playAgain')}
             </Link>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          </m.div>
+          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <Link
               href="/script-murder"
               className="min-h-[48px] px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white games-focus-ring inline-flex items-center justify-center w-full sm:w-auto"
             >
               {t('scriptMurder.backLobby')}
             </Link>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </div>

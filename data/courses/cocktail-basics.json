@@ -2,7 +2,7 @@
   "id": "cocktail-basics",
   "title": "調酒基礎",
   "description": "認識基酒、調酒技法與經典雞尾酒，在家也能調出專業感",
-  "duration": "35分鐘",
+  "duration": "40分鐘",
   "free": false,
   "chapters": [
     {
@@ -60,6 +60,25 @@
       "content": "居家調酒入門：先備齊 1–2 種基酒（琴酒、伏特加或龍舌蘭）與量酒器、搖盪杯、榨汁器、冰格。從 Highball、Gin Tonic 等直調款開始（不需搖盪），再嘗試 Margarita、Daiquiri、Whiskey Sour 等搖盪款。關鍵：大冰塊融化慢、新鮮檸檬萊姆、品質中上的基酒（不必最貴）。可參考 IBA 經典配方或 2:1:1 酸甜公式，再依口味微調。多練幾次熟能生巧。進階：蛋清（Dry Shake）賦予綿密泡沫；澄清（Clarified）製作透明調酒；自製糖漿與浸漬。",
       "quiz": [
         { "question": "新手適合從哪類調酒開始？", "options": ["複雜三層 shot", "直調款如 Highball", "僅純飲", "熱調酒"], "correctIndex": 1 }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "更多經典調酒",
+      "duration": "6分鐘",
+      "content": "Negroni：琴酒 + 金巴利 + 甜苦艾酒 1:1:1，攪拌後橙皮。Daiquiri：白蘭姆 + 萊姆汁 + 糖漿，搖盪。Whiskey Sour：波本 + 檸檬汁 + 糖漿，可加蛋清。Gin Fizz：琴酒 + 檸檬汁 + 糖漿 + 蘇打水，搖盪後直調蘇打。Espresso Martini：伏特加 + 咖啡利口酒 + 濃縮咖啡，搖盪。掌握基酒與酸甜比例後，可替換基酒創造變體（如 Tequila Negroni）。",
+      "quiz": [
+        { "question": "Negroni 的三種材料比例通常是？", "options": ["2:1:1", "1:1:1", "3:1:1", "1:2:1"], "correctIndex": 1 },
+        { "question": "Whiskey Sour 的基酒是？", "options": ["琴酒", "龍舌蘭", "波本威士忌", "蘭姆酒"], "correctIndex": 2 }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "進階技巧與裝飾",
+      "duration": "5分鐘",
+      "content": "裝飾：檸檬皮 twist（擠油後放入）、柑橘片、薄荷拍醒後放入、櫻桃、黃瓜條、鹽口/糖口杯緣。蛋清 Dry Shake：先不加冰搖盪 10–15 秒再加冰搖，產生綿密泡沫，適用 Whiskey Sour、Pisco Sour。雙重過濾（fine strain）可濾掉碎冰與果肉，酒體更清澈。攪拌時用吧叉匙順向攪拌 20–30 秒至夠冰。大冰塊可自製或購買矽膠冰格，融化慢、稀釋少。",
+      "quiz": [
+        { "question": "Dry Shake 通常用於？", "options": ["直調調酒", "含蛋清調酒以產生泡沫", "僅熱飲", "僅無酒精"], "correctIndex": 1 }
       ]
     }
   ]

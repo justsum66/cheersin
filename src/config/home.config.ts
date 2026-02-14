@@ -37,6 +37,9 @@ export const HOME_FEATURES_LABEL = 'Core Features'
 export const FOOTER_DRINK_NOTE = '未滿 18 歲請勿飲酒 · 飲酒過量有害健康'
 export const FOOTER_DRINK_NOTE_BOTTOM = '飲酒過量有害健康'
 
+/** R2-095：合作夥伴 Logo 區塊 — 名稱可配置，icon 由 HomePartnerMarquee 對應 */
+export const PARTNER_NAMES = ['Wine', 'Cheers', 'Bar', 'Party', 'Learn', 'Chat'] as const
+
 /** B29/B50：Bento 四卡文案可配置（品牌）；P0-001 圍繞 AI 派對靈魂伴侶；#20 劇本殺導流 */
 export const BENTO_CARDS = [
   { id: 'quiz' as const, title: '靈魂酒測', description: '30 秒測出你的命定酒款，AI 精準推薦。', badge: '最受歡迎' },

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
@@ -70,18 +70,18 @@ export default function TongueTwister() {
       <p className="text-white/50 text-sm mb-2 text-center">語速挑戰</p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold"
           onClick={startRound}
           whileTap={{ scale: 0.98 }}
         >
           抽繞口令
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'challenge' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
           <p className="text-white/70 mb-2">輪到 <span className="font-bold text-primary-300">{currentName}</span></p>
           <p className="text-xl md:text-2xl font-bold text-primary-200 mb-6 leading-relaxed px-2">{twister}</p>
           <p className="text-white/40 text-xs mb-4">念三遍不卡即過關</p>
@@ -101,12 +101,12 @@ export default function TongueTwister() {
               失敗（喝）
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && failed != null && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -124,7 +124,7 @@ export default function TongueTwister() {
             >
               下一題
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

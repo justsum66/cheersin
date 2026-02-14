@@ -1,10 +1,11 @@
 'use client'
 
 /**
- * P2.E1.3 徽章牆：學習成就公開展示
+ * P2.E1.3 / R2-123：徽章牆 — 學習成就公開展示；解鎖時 scale 0→1 + 旋轉入場
  */
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { m } from 'framer-motion'
 import { Award, ChevronLeft, Lock } from 'lucide-react'
 import { getUnlockedBadges, BADGE_LABELS, type BadgeId } from '@/lib/gamification'
 
@@ -33,11 +34,14 @@ export default function LearnBadgesPage() {
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {ALL_BADGE_IDS.map((id) => {
+          {ALL_BADGE_IDS.map((id, idx) => {
             const isUnlocked = unlocked.includes(id)
             return (
-              <div
+              <m.div
                 key={id}
+                initial={isUnlocked ? { scale: 0, rotate: -8 } : false}
+                animate={isUnlocked ? { scale: 1, rotate: 0 } : {}}
+                transition={{ duration: 0.4, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
                 className={`p-4 rounded-xl border text-center transition-colors ${
                   isUnlocked
                     ? 'bg-primary-500/10 border-primary-500/30'
@@ -53,7 +57,7 @@ export default function LearnBadgesPage() {
                   )}
                 </div>
                 <p className="text-sm font-medium text-white/90 truncate">{BADGE_LABELS[id]}</p>
-              </div>
+              </m.div>
             )
           })}
         </div>

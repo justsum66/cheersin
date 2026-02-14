@@ -1,28 +1,17 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { m , AnimatePresence } from 'framer-motion'
+import { Plus, Trash2 } from 'lucide-react'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
 import CopyResultButton from '../CopyResultButton'
+import { WHO_IS_UNDERCOVER_WORD_PAIRS, loadCustomWordPairs, saveCustomWordPairs } from '@/data/who-is-undercover-words'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4', '玩家 5']
-/** 詞組：平民詞 / 臥底詞（臥底拿到不同的詞） */
-const WORD_PAIRS: [string, string][] = [
-  ['香蕉', '蘋果'],
-  ['牛奶', '豆漿'],
-  ['老師', '學生'],
-  ['警察', '小偷'],
-  ['西瓜', '冬瓜'],
-  ['包子', '餃子'],
-  ['鳳梨', '菠蘿'],
-  ['玫瑰', '月季'],
-  ['蝴蝶', '蜜蜂'],
-  ['可樂', '雪碧'],
-]
 
-/** 誰是臥底：分配詞語、輪流描述、投票、揭曉。平民找出臥底或臥底存活則臥底贏。 */
+/** R2-136：詞庫 = 內建 200+ + 自訂；開始前可加自訂詞對。 */
 export default function WhoIsUndercover() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
@@ -33,10 +22,40 @@ export default function WhoIsUndercover() {
   const [currentSpeaker, setCurrentSpeaker] = useState(0)
   const [votes, setVotes] = useState<Record<number, number>>({})
   const [roundWordPair, setRoundWordPair] = useState<[string, string] | null>(null)
+  const [customPairs, setCustomPairs] = useState<[string, string][]>(() => loadCustomWordPairs())
+  const [showCustomForm, setShowCustomForm] = useState(false)
+  const [newCivilian, setNewCivilian] = useState('')
+  const [newUndercover, setNewUndercover] = useState('')
+
+  useEffect(() => {
+    setCustomPairs(loadCustomWordPairs())
+  }, [])
+  useEffect(() => {
+    saveCustomWordPairs(customPairs)
+  }, [customPairs])
+
+  const allPairs = useMemo(() => [...WHO_IS_UNDERCOVER_WORD_PAIRS, ...customPairs], [customPairs])
+
+  const addCustomPair = useCallback(() => {
+    const c = newCivilian.trim()
+    const u = newUndercover.trim()
+    if (c && u && c !== u) {
+      setCustomPairs((prev) => [...prev, [c, u]])
+      setNewCivilian('')
+      setNewUndercover('')
+      setShowCustomForm(false)
+      play('click')
+    }
+  }, [newCivilian, newUndercover, play])
+  const removeCustomPair = useCallback((index: number) => {
+    setCustomPairs((prev) => prev.filter((_, i) => i !== index))
+    play('click')
+  }, [play])
 
   const startGame = useCallback(() => {
+    if (allPairs.length === 0) return
     play('click')
-    const pair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)]
+    const pair = allPairs[Math.floor(Math.random() * allPairs.length)]
     const undercover = Math.floor(Math.random() * players.length)
     const assign: Record<number, string> = {}
     for (let i = 0; i < players.length; i++) {
@@ -48,7 +67,7 @@ export default function WhoIsUndercover() {
     setVotes({})
     setCurrentSpeaker(0)
     setPhase('assign')
-  }, [players.length, play])
+  }, [players.length, play, allPairs])
 
   const goDescribe = useCallback(() => { play('click'); setPhase('describe') }, [play])
   const nextSpeaker = useCallback(() => {
@@ -98,18 +117,60 @@ export default function WhoIsUndercover() {
       <p className="text-white/50 text-sm mb-2 text-center">誰是臥底</p>
 
       {phase === 'idle' && (
-        <motion.button
-          type="button"
-          className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
-          onClick={startGame}
-          whileTap={{ scale: 0.98 }}
-        >
-          開始遊戲
-        </motion.button>
+        <div className="flex flex-col items-center gap-3 w-full max-w-md">
+          <p className="text-white/50 text-sm">詞庫共 {allPairs.length} 組（含自訂 {customPairs.length} 組）</p>
+          <m.button
+            type="button"
+            className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
+            onClick={startGame}
+            whileTap={{ scale: 0.98 }}
+            disabled={allPairs.length === 0}
+          >
+            開始遊戲
+          </m.button>
+          <button
+            type="button"
+            onClick={() => setShowCustomForm((v) => !v)}
+            className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm games-focus-ring inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> 自訂詞語
+          </button>
+          {showCustomForm && (
+            <div className="w-full p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+              <input
+                type="text"
+                value={newCivilian}
+                onChange={(e) => setNewCivilian(e.target.value)}
+                placeholder="平民詞"
+                className="w-full min-h-[48px] px-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm games-focus-ring"
+                aria-label="平民詞"
+              />
+              <input
+                type="text"
+                value={newUndercover}
+                onChange={(e) => setNewUndercover(e.target.value)}
+                placeholder="臥底詞"
+                className="w-full min-h-[48px] px-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm games-focus-ring"
+                aria-label="臥底詞"
+              />
+              <button type="button" onClick={addCustomPair} className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-lg bg-primary-500 text-white text-sm games-focus-ring">新增</button>
+              {customPairs.length > 0 && (
+                <ul className="text-white/60 text-xs space-y-1 max-h-24 overflow-y-auto">
+                  {customPairs.map((p, i) => (
+                    <li key={i} className="flex items-center justify-between gap-2">
+                      <span>{p[0]} / {p[1]}</span>
+                      <button type="button" onClick={() => removeCustomPair(i)} className="p-1 text-red-400" aria-label="刪除"><Trash2 className="w-3 h-3" /></button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {phase === 'assign' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-4">詞語已分配，請記住自己的詞，不要讓別人看到。</p>
           <button
             type="button"
@@ -118,11 +179,11 @@ export default function WhoIsUndercover() {
           >
             開始描述
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'describe' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-2">輪到 <span className="font-bold text-primary-300">{players[currentSpeaker]}</span> 描述自己的詞（一句話，不直接說出詞）</p>
           <div className="flex gap-2 justify-center flex-wrap mt-4">
             <button
@@ -140,11 +201,11 @@ export default function WhoIsUndercover() {
               開始投票
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'vote' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-2">輪到 <span className="font-bold text-primary-300">{players[currentSpeaker]}</span> 投票（選出你認為的臥底）</p>
           <div className="flex flex-wrap gap-2 justify-center mt-3">
             {players.map((name, i) => (
@@ -168,12 +229,12 @@ export default function WhoIsUndercover() {
               揭曉
             </button>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'reveal' && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -200,7 +261,7 @@ export default function WhoIsUndercover() {
             >
               再來一局
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

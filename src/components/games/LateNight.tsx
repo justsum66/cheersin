@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Utensils, RotateCcw, Check, X } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -100,47 +100,47 @@ export default function LateNight() {
       <p className="text-white/70 mb-4">輪到 <span className="text-orange-400 font-bold">{currentPlayer}</span></p>
 
       {!currentTopic ? (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-xl games-focus-ring">
           抽話題
-        </motion.button>
+        </m.button>
       ) : !shared ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30 text-center"
           >
             <span className="text-xs text-orange-400/50 uppercase tracking-wider">{currentTopic.category}</span>
             <p className="text-white text-xl font-bold mt-2">{currentTopic.topic}</p>
-          </motion.div>
+          </m.div>
 
           <p className="text-white/50 text-sm mt-2">分享完後，其他人給評價</p>
 
           <div className="flex gap-4">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={() => share(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold games-focus-ring"
             >
               <Check className="w-5 h-5" /> 分享很棒！
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={() => share(false)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-white/70 font-bold games-focus-ring"
             >
               <X className="w-5 h-5" /> 普普通通
-            </motion.button>
+            </m.button>
           </div>
         </div>
       ) : (
-        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+        <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
           <p className="text-emerald-400 font-bold text-xl mb-4">分享完成！</p>
           <div className="flex gap-3 justify-center">
             <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>
             <CopyResultButton text={`深夜食堂：${currentPlayer}\n話題：${currentTopic.topic}`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {Object.keys(likeCount).length > 0 && (

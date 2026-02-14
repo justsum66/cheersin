@@ -1,7 +1,8 @@
 'use client'
 
-/** P1-082：進度條組件 — 課程進度、經驗值等；支持動畫與標籤 */
+/** P1-082 / R2-068：進度條組件 — 課程進度、經驗值等；m.div width animate */
 import { useEffect, useState } from 'react'
+import { m , useReducedMotion } from 'framer-motion'
 
 export interface ProgressBarProps {
   /** 0–100 */
@@ -29,6 +30,7 @@ export function ProgressBar({
   height = 'md',
 }: ProgressBarProps) {
   const [mounted, setMounted] = useState(false)
+  const reducedMotion = useReducedMotion()
   useEffect(() => setMounted(true), [])
   const pct = Math.min(100, Math.max(0, max > 0 ? (value / max) * 100 : 0))
 
@@ -41,9 +43,11 @@ export function ProgressBar({
         </div>
       )}
       <div className={`w-full rounded-full bg-white/10 overflow-hidden ${heightClass[height]}`}>
-        <div
-          className={`rounded-full bg-primary-500 transition-[width] duration-500 ease-out ${heightClass[height]}`}
-          style={{ width: mounted ? `${pct}%` : '0%' }}
+        <m.div
+          className={`rounded-full bg-primary-500 ${heightClass[height]}`}
+          initial={reducedMotion ? false : { width: 0 }}
+          animate={{ width: mounted ? `${pct}%` : '0%' }}
+          transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
         />
       </div>
     </div>

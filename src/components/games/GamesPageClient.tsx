@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { getFontSize, getReduceMotion } from '@/lib/games-settings'
 import { Gamepad2, Users, UserPlus, X, RotateCcw, Settings, Eye, EyeOff, Crown, GripVertical, Plus, Shuffle } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import GameWrapper from '@/components/games/GameWrapper'
 import type { DisplayCategory } from '@/components/games/Lobby'
 /** P0-018：非首屏遊戲列表懶加載，降低大廳首屏 bundle */
@@ -24,14 +24,18 @@ import { useNavVisibility } from '@/contexts/NavVisibilityContext'
 import { useTranslation } from '@/contexts/I18nContext'
 import { getMaxRoomPlayers } from '@/lib/subscription'
 import { LazyGame, prefetchGame } from '@/components/games/GameLazyMap'
-import { gamesWithCategory, getGameMeta, GUEST_TRIAL_GAME_IDS, type GameId } from '@/config/games.config'
+import { gamesWithCategory, getGameMeta, getGameRequiredTier, GUEST_TRIAL_GAME_IDS, type GameId } from '@/config/games.config'
+import { canPlayGame, getWeeklyFreeGameIds } from '@/lib/games-weekly-free'
+import { PaidGameLock } from '@/components/games/PaidGameLock'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { STORAGE_KEYS } from '@/lib/constants'
+import { loadPlaylists, savePlaylists, createPlaylistId, type GamePlaylist } from '@/lib/games-playlists'
 import toast from 'react-hot-toast'
 import { getWeeklyPlayCounts, incrementWeeklyPlay } from '@/lib/games-weekly'
 import { getLastSession, saveLastSession, clearLastSession } from '@/lib/games-last-session'
 import { setGameRating } from '@/lib/games-favorites'
 import { trackGameStart, trackGameEnd } from '@/lib/game-analytics'
+import { migrateGameStats } from '@/lib/migrations/game-stats-migration'
 import { Star } from 'lucide-react'
 const STORAGE_KEY = 'cheersin_games_players'
 const ROOM_JOINED_KEY = 'cheersin_room_joined'
@@ -130,6 +134,12 @@ function GamesPageContent() {
       }
     }
   }, [])
+
+  /** Phase 1 Task 13: 執行數據遷移（一次性） */
+  useEffect(() => {
+    migrateGameStats()
+  }, [])
+
   /** GAMES_500 #40：預載下一可能路由（/learn、/pricing）可選 */
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -160,6 +170,10 @@ function GamesPageContent() {
   /** GAMES_500 #175：房間 reconnection 與離線提示 — 需 backend/Service Worker 支援後於此或 useGameRoom 實作。GAMES_500 #209：觀戰者加入時廣播或提示可選 — 可於房間狀態訂閱時顯示 toast。 */
 
   const [activeGame, setActiveGame] = useState<GameId>(null)
+  /** R2-134：自訂播放列表 — 依序啟動時剩餘佇列，離開一局後自動開下一局 */
+  const [playlistQueue, setPlaylistQueue] = useState<GameId[] | null>(null)
+  /** R2-134：播放列表 CRUD，從 localStorage 載入 */
+  const [playlists, setPlaylists] = useState<GamePlaylist[]>(() => (typeof window !== 'undefined' ? loadPlaylists() : []))
   /** GAMES_500 #37：離開遊戲返回 Lobby 還原捲動位置 */
   const savedScrollYRef = useRef(0)
   /** P1-169：FAB 滾動至建立房間區塊 */
@@ -194,9 +208,44 @@ function GamesPageContent() {
       setRecentGameIds(next)
     } catch { /* ignore */ }
     setFabOpen(false)
-  // gamesWithCategory 來自 config 常數，穩定；roomSlug 影響試玩限制邏輯
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: gamesWithCategory is module-level
+    // gamesWithCategory 來自 config 常數，穩定；roomSlug 影響試玩限制邏輯
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: gamesWithCategory is module-level
   }, [roomSlug])
+  /** R2-134：依序播放播放列表 — 設第一局為 activeGame，其餘進 playlistQueue；過濾已下架遊戲 id，僅保留仍存在者 */
+  const handleStartPlaylist = useCallback((queue: GameId[]) => {
+    const validQueue = queue.filter((gameId): gameId is string => gameId != null && getGameMeta(gameId) != null)
+    if (validQueue.length === 0) {
+      toast.error('播放列表中沒有可用的遊戲（可能已下架）')
+      return
+    }
+    const id = validQueue[0]
+    if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
+      setShowGuestTrialLimitModal(true)
+      return
+    }
+    if (!canPlayGame(id, tier)) {
+      const required = getGameRequiredTier(id)
+      if (required) {
+        setPaidLockGame({ id, name: getGameMeta(id)?.name ?? id })
+        return
+      }
+    }
+    savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
+    setActiveGame(id)
+    setPlaylistQueue(validQueue.length > 1 ? validQueue.slice(1) : null)
+    saveLastSession(id)
+    incrementWeeklyPlay(id)
+    setWeeklyPlayCounts(getWeeklyPlayCounts())
+    setShowRestoreBanner(false)
+    try {
+      const raw = localStorage.getItem(RECENT_GAMES_KEY)
+      const arr = raw ? (JSON.parse(raw) as string[]) : []
+      const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
+      localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
+      setRecentGameIds(next)
+    } catch { /* ignore */ }
+    setFabOpen(false)
+  }, [roomSlug, tier])
   const [localPlayers, setLocalPlayers] = useState<string[]>([])
   const [showPlayerModal, setShowPlayerModal] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
@@ -257,6 +306,8 @@ function GamesPageContent() {
   const [ratingVariant, setRatingVariant] = useState<0 | 1>(() => (typeof window !== 'undefined' && Math.random() < 0.5 ? 0 : 1))
   /** P0-009：訪客試玩達 3 次後顯示登入 modal */
   const [showGuestTrialLimitModal, setShowGuestTrialLimitModal] = useState(false)
+  /** R2-191：點擊付費遊戲未訂閱時顯示付費牆 modal */
+  const [paidLockGame, setPaidLockGame] = useState<{ id: string; name: string } | null>(null)
 
   /** EXPERT_60 P2：評分彈窗出現時送 analytics（variant 用於 A/B） */
   useEffect(() => {
@@ -266,7 +317,7 @@ function GamesPageContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'game_rating_modal_show', value: 1, id: `variant_${ratingVariant}` }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
   }, [gameIdToRate, ratingVariant])
 
@@ -331,7 +382,7 @@ function GamesPageContent() {
   /** GAMES_500 #161：房間錯誤重試間隔與防抖（1.5s 內不重複） */
   const [roomRetryCooldown, setRoomRetryCooldown] = useState(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers: no-op in room mode, setLocalPlayers in list mode; identity intentional
-  const setPlayers = isInRoomMode ? (() => {}) : setLocalPlayers
+  const setPlayers = isInRoomMode ? (() => { }) : setLocalPlayers
 
   /** GAMES_500 #137：API 錯誤碼對應友善文案（密碼錯誤／房間已滿／過期） */
   const mapRoomJoinError = useCallback((err: string) => {
@@ -470,7 +521,7 @@ function GamesPageContent() {
     } catch {
       /* ignore */
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable, init once from localStorage
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable, init once from localStorage
   }, [maxPlayers])
 
   useEffect(() => {
@@ -496,12 +547,12 @@ function GamesPageContent() {
     if (players.length >= maxPlayers) return
     setPlayers([...players, name])
     setNewPlayerName('')
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable from useState
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable from useState
   }, [newPlayerName, players, maxPlayers, setPlayers, sanitizePlayerName])
 
   const removePlayer = useCallback((index: number) => {
     setPlayers(players.filter((_, i) => i !== index))
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable from useState
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlayers stable from useState
   }, [players, setPlayers])
 
   /** P1-109：玩家拖拽排序 — 僅本地模式；移動 fromIndex 至 toIndex */
@@ -619,7 +670,7 @@ function GamesPageContent() {
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/5 rounded-full blur-[150px]" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary-500/5 rounded-full blur-[150px]" />
-          <motion.div
+          <m.div
             className="absolute w-[400px] h-[400px] bg-accent-500/5 rounded-full blur-[120px]"
             animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
             transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
@@ -628,590 +679,690 @@ function GamesPageContent() {
           />
         </div>
 
-      <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
-        {/* 主內容：menu 或 game 二選一，mode="wait" 僅允許單一子節點 */}
-        <AnimatePresence mode="wait">
-          {!activeGame ? (
-            <motion.div
-              key="menu"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: LOBBY_GAME_TRANSITION_MS / 1000 }}
-            >
-              {/* 任務 28：首次教學 overlay；AUDIT #47 可加「跳過」與「不再顯示」勾選 */}
-              {showTutorial && (!roomSlug || joinedDisplayName) && (
-                <div className="mb-6 p-5 rounded-2xl bg-primary-500/20 border border-primary-500/40 text-left" role="region" aria-label="使用教學">
-                  <p className="text-white font-medium mb-2">歡迎來到派對遊樂場！</p>
-                  <ul className="text-white/80 text-sm space-y-1 mb-4 list-disc list-inside">
-                    <li>點選下方遊戲卡片即可開始</li>
-                    <li>右上角「設定」可調音量與字級</li>
-                    <li>「管理玩家」可新增名單，供轉盤等遊戲使用</li>
-                  </ul>
-                  <label className="flex items-center gap-2 text-white/70 text-sm mb-4 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={tutorialDontShowAgain}
-                      onChange={(e) => setTutorialDontShowAgain(e.target.checked)}
-                      className="rounded border-white/30 text-primary-500 focus:ring-primary-400"
-                      aria-label="不再顯示此教學"
-                    />
-                    不再顯示此教學
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (tutorialDontShowAgain) {
-                          try { localStorage.setItem(TUTORIAL_DONE_KEY, '1') } catch { /* ignore */ }
-                        }
-                        setShowTutorial(false)
-                      }}
-                      className="min-h-[48px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
-                    >
-                      知道了
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowTutorial(false)}
-                      className="min-h-[48px] px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
-                      aria-label="跳過教學"
-                    >
-                      跳過
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Header */}
-              <div className="text-center mb-4">
-                <div className="flex justify-center mb-2">
-                  <FeatureIcon icon={Gamepad2} size="lg" color="white" />
-                </div>
-                <h1 className="text-5xl md:text-7xl font-display font-bold mb-3" id="games-page-title">
-                  派對<span className="gradient-text">遊樂場</span>
-                </h1>
-                <p className="text-white/50 text-xl max-w-lg mx-auto mb-4">
-                  你的 AI 派對靈魂伴侶，點燃聚會氣氛。
-                </p>
-                <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
-                <p className="mb-4">
-                  <Link href="/script-murder" className="text-primary-400 hover:text-primary-300 text-sm underline underline-offset-2">
-                    酒局劇本殺 — 4–8 人秘密角色、投票懲罰
-                  </Link>
-                </p>
-
-                {/* P1-116：房間人數顯示 — 在房間內頂部顯示目前人數/上限 */}
-                {roomSlug && joinedDisplayName && (
-                  <p className="mb-4 px-4 py-2 rounded-xl bg-white/5 border border-white/10 inline-flex items-center gap-2 text-white/80 text-sm" role="status" aria-label={`房間人數 ${roomPlayers.length} ／${maxPlayers} 人`}>
-                    <Users className="w-4 h-4 text-primary-400" aria-hidden />
-                    <span>目前 {roomPlayers.length}/{maxPlayers} 人</span>
-                  </p>
-                )}
-
-                {/* Room: loading / error / join form；GAMES_500 #166 房間 loading skeleton */}
-                {roomSlug && roomLoading && (
-                  <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto animate-pulse" role="status" aria-label="載入房間中">
-                    <div className="h-5 bg-white/10 rounded w-1/3 mb-3" />
-                    <div className="h-4 bg-white/10 rounded w-full mb-2" />
-                    <div className="h-12 bg-white/10 rounded w-full" />
-                  </div>
-                )}
-                {/* GAMES_500 #23 #29：房間不存在／slug 無效時友善錯誤頁 + 回首頁 CTA */}
-                {roomSlug && !roomLoading && roomError && (
-                  <div className="mb-4 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/50 text-red-300 text-sm" role="alert" aria-live="assertive">
-                    <p>{roomError}</p>
-                    <p className="text-white/60 text-xs mt-1">請確認連結是否正確，或返回遊樂場使用本機名單。</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
+        <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
+          {/* 主內容：menu 或 game 二選一，mode="wait" 僅允許單一子節點 */}
+          <AnimatePresence mode="wait">
+            {!activeGame ? (
+              <m.div
+                key="menu"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: LOBBY_GAME_TRANSITION_MS / 1000 }}
+              >
+                {/* 任務 28：首次教學 overlay；AUDIT #47 可加「跳過」與「不再顯示」勾選 */}
+                {showTutorial && (!roomSlug || joinedDisplayName) && (
+                  <div className="mb-6 p-5 rounded-2xl bg-primary-500/20 border border-primary-500/40 text-left" role="region" aria-label="使用教學">
+                    <p className="text-white font-medium mb-2">歡迎來到派對遊樂場！</p>
+                    <ul className="text-white/80 text-sm space-y-1 mb-4 list-disc list-inside">
+                      <li>點選下方遊戲卡片即可開始</li>
+                      <li>右上角「設定」可調音量與字級</li>
+                      <li>「管理玩家」可新增名單，供轉盤等遊戲使用</li>
+                    </ul>
+                    <label className="flex items-center gap-2 text-white/70 text-sm mb-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={tutorialDontShowAgain}
+                        onChange={(e) => setTutorialDontShowAgain(e.target.checked)}
+                        className="rounded border-white/30 text-primary-500 focus:ring-primary-400"
+                        aria-label="不再顯示此教學"
+                      />
+                      不再顯示此教學
+                    </label>
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => {
-                          if (!roomSlug || roomRetryCooldown) return
-                          setRoomRetryCooldown(true)
-                          setTimeout(() => {
-                            fetchRoom(roomSlug)
-                            setRoomRetryCooldown(false)
-                          }, 1500)
+                          if (tutorialDontShowAgain) {
+                            try { localStorage.setItem(TUTORIAL_DONE_KEY, '1') } catch { /* ignore */ }
+                          }
+                          setShowTutorial(false)
                         }}
-                        disabled={roomRetryCooldown}
-                        className="min-h-[48px] min-w-[44px] px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
-                        aria-label="重試載入房間（約 1.5 秒後）"
+                        className="min-h-[48px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
                       >
-                        {roomRetryCooldown ? '重試中…' : '重試'}
+                        知道了
                       </button>
                       <button
                         type="button"
-                        onClick={() => router.replace('/games')}
-                        className="min-h-[48px] min-w-[44px] px-4 py-2 rounded-xl bg-white/10 text-white"
-                        aria-label="回首頁或使用本機名單"
+                        onClick={() => setShowTutorial(false)}
+                        className="min-h-[48px] px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
+                        aria-label="跳過教學"
                       >
-                        回首頁
+                        跳過
                       </button>
                     </div>
                   </div>
                 )}
-                {/* AUDIT #6：加入房間表單與建立房間區塊視覺層級分明 */}
-                {roomSlug && !roomLoading && !roomError && !joinedDisplayName && (
-                  <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto" role="region" aria-label="加入房間">
-                    <h3 className="text-base font-semibold text-white mb-1">加入房間</h3>
-                    {roomFull ? (
-                      <p id="room-full-msg" className="text-amber-400 text-sm mb-2" role="status">房間已滿（{roomPlayers.length}/{maxPlayers} 人），無法加入</p>
-                    ) : (
-                      <p className="text-white/60 text-sm mb-2">輸入暱稱後加入</p>
-                    )}
-                    {/* T070 P2：遊戲可匿名或暱稱，規則清楚 */}
-                    <p className="text-white/50 text-xs mb-2">可不填真實姓名，暱稱即可。</p>
-                    <form
-                      onSubmit={(e) => { e.preventDefault(); handleJoinRoom(); }}
-                      className="flex flex-col gap-2"
-                      aria-label="加入房間表單"
-                    >
-                      <div className="flex gap-2">
-                        <label htmlFor="room-join-name" className="sr-only">{t('games.roomJoinNameLabel')}</label>
-                        <input
-                          id="room-join-name"
-                          type="text"
-                          value={roomJoinName}
-                          onChange={(e) => { setRoomJoinName(e.target.value.slice(0, 20)); setRoomJoinError(null); }}
-                          placeholder="你的暱稱"
-                          maxLength={20}
-                          required
-                          aria-required="true"
-                          aria-label={t('games.roomJoinNameLabel')}
-                          aria-invalid={!!roomJoinError}
-                          aria-describedby={roomJoinError ? 'room-join-error' : undefined}
-                          className="flex-1 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30"
-                        />
+
+                {/* Header */}
+                <div className="text-center mb-4">
+                  <div className="flex justify-center mb-2">
+                    <FeatureIcon icon={Gamepad2} size="lg" color="white" />
+                  </div>
+                  <h1 className="text-5xl md:text-7xl font-display font-bold mb-3" id="games-page-title">
+                    派對<span className="gradient-text">遊樂場</span>
+                  </h1>
+                  <p className="text-white/50 text-xl max-w-lg mx-auto mb-4">
+                    你的 AI 派對靈魂伴侶，點燃聚會氣氛。
+                  </p>
+                  <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
+                  <p className="mb-4">
+                    <Link href="/script-murder" className="text-primary-400 hover:text-primary-300 text-sm underline underline-offset-2">
+                      酒局劇本殺 — 4–8 人秘密角色、投票懲罰
+                    </Link>
+                  </p>
+
+                  {/* P1-116：房間人數顯示 — 在房間內頂部顯示目前人數/上限 */}
+                  {roomSlug && joinedDisplayName && (
+                    <p className="mb-4 px-4 py-2 rounded-xl bg-white/5 border border-white/10 inline-flex items-center gap-2 text-white/80 text-sm" role="status" aria-label={`房間人數 ${roomPlayers.length} ／${maxPlayers} 人`}>
+                      <Users className="w-4 h-4 text-primary-400" aria-hidden />
+                      <span>目前 {roomPlayers.length}/{maxPlayers} 人</span>
+                    </p>
+                  )}
+
+                  {/* Room: loading / error / join form；GAMES_500 #166 房間 loading skeleton */}
+                  {roomSlug && roomLoading && (
+                    <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto animate-pulse" role="status" aria-label="載入房間中">
+                      <div className="h-5 bg-white/10 rounded w-1/3 mb-3" />
+                      <div className="h-4 bg-white/10 rounded w-full mb-2" />
+                      <div className="h-12 bg-white/10 rounded w-full" />
+                    </div>
+                  )}
+                  {/* GAMES_500 #23 #29：房間不存在／slug 無效時友善錯誤頁 + 回首頁 CTA */}
+                  {roomSlug && !roomLoading && roomError && (
+                    <div className="mb-4 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/50 text-red-300 text-sm" role="alert" aria-live="assertive">
+                      <p>{roomError}</p>
+                      <p className="text-white/60 text-xs mt-1">請確認連結是否正確，或返回遊樂場使用本機名單。</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => setRoomJoinName(RANDOM_NICKNAMES[Math.floor(Math.random() * RANDOM_NICKNAMES.length)] as string)}
-                          className="min-h-[48px] px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium shrink-0"
-                          title="隨機暱稱"
+                          onClick={() => {
+                            if (!roomSlug || roomRetryCooldown) return
+                            setRoomRetryCooldown(true)
+                            setTimeout(() => {
+                              fetchRoom(roomSlug)
+                              setRoomRetryCooldown(false)
+                            }, 1500)
+                          }}
+                          disabled={roomRetryCooldown}
+                          className="min-h-[48px] min-w-[44px] px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                          aria-label="重試載入房間（約 1.5 秒後）"
                         >
-                          隨機
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={!roomJoinName.trim() || roomFull}
-                          className="min-h-[48px] min-w-[48px] px-6 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-bold"
-                          aria-describedby={roomFull ? 'room-full-msg' : undefined}
-                        >
-                          加入
+                          {roomRetryCooldown ? '重試中…' : '重試'}
                         </button>
                         <button
                           type="button"
-                          onClick={handleJoinAsSpectator}
-                          disabled={!roomJoinName.trim() || roomFull}
-                          className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 disabled:opacity-50 text-white text-sm font-medium"
-                          title="以觀戰者身份加入，僅觀看不參與"
-                          aria-label="以觀戰者身份加入（僅觀看，不參與遊戲）"
-                          aria-describedby={roomFull ? 'room-full-msg' : undefined}
+                          onClick={() => router.replace('/games')}
+                          className="min-h-[48px] min-w-[44px] px-4 py-2 rounded-xl bg-white/10 text-white"
+                          aria-label="回首頁或使用本機名單"
                         >
-                          觀戰
+                          回首頁
                         </button>
                       </div>
-                      <div className="relative flex items-center">
+                    </div>
+                  )}
+                  {/* AUDIT #6：加入房間表單與建立房間區塊視覺層級分明 */}
+                  {roomSlug && !roomLoading && !roomError && !joinedDisplayName && (
+                    <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto" role="region" aria-label="加入房間">
+                      <h3 className="text-base font-semibold text-white mb-1">加入房間</h3>
+                      {roomFull ? (
+                        <p id="room-full-msg" className="text-amber-400 text-sm mb-2" role="status">房間已滿（{roomPlayers.length}/{maxPlayers} 人），無法加入</p>
+                      ) : (
+                        <p className="text-white/60 text-sm mb-2">輸入暱稱後加入</p>
+                      )}
+                      {/* T070 P2：遊戲可匿名或暱稱，規則清楚 */}
+                      <p className="text-white/50 text-xs mb-2">可不填真實姓名，暱稱即可。</p>
+                      <form
+                        onSubmit={(e) => { e.preventDefault(); handleJoinRoom(); }}
+                        className="flex flex-col gap-2"
+                        aria-label="加入房間表單"
+                      >
+                        <div className="flex gap-2">
+                          <label htmlFor="room-join-name" className="sr-only">{t('games.roomJoinNameLabel')}</label>
+                          <input
+                            id="room-join-name"
+                            type="text"
+                            value={roomJoinName}
+                            onChange={(e) => { setRoomJoinName(e.target.value.slice(0, 20)); setRoomJoinError(null); }}
+                            placeholder="你的暱稱"
+                            maxLength={20}
+                            required
+                            aria-required="true"
+                            aria-label={t('games.roomJoinNameLabel')}
+                            aria-invalid={!!roomJoinError}
+                            aria-describedby={roomJoinError ? 'room-join-error' : undefined}
+                            className="flex-1 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/30"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setRoomJoinName(RANDOM_NICKNAMES[Math.floor(Math.random() * RANDOM_NICKNAMES.length)] as string)}
+                            className="min-h-[48px] px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium shrink-0"
+                            title="隨機暱稱"
+                          >
+                            隨機
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={!roomJoinName.trim() || roomFull}
+                            className="min-h-[48px] min-w-[48px] px-6 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-bold"
+                            aria-describedby={roomFull ? 'room-full-msg' : undefined}
+                          >
+                            加入
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleJoinAsSpectator}
+                            disabled={!roomJoinName.trim() || roomFull}
+                            className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 disabled:opacity-50 text-white text-sm font-medium"
+                            title="以觀戰者身份加入，僅觀看不參與"
+                            aria-label="以觀戰者身份加入（僅觀看，不參與遊戲）"
+                            aria-describedby={roomFull ? 'room-full-msg' : undefined}
+                          >
+                            觀戰
+                          </button>
+                        </div>
+                        <div className="relative flex items-center">
+                          <input
+                            type={showJoinPassword ? 'text' : 'password'}
+                            inputMode="numeric"
+                            autoComplete="off"
+                            value={roomJoinPassword}
+                            onChange={(e) => { setRoomJoinPassword(e.target.value.replace(/\D/g, '').slice(0, 4)); setRoomJoinError(null); }}
+                            placeholder="房間密碼（若房主有設定）"
+                            maxLength={4}
+                            aria-label="房間密碼（若房主有設定）"
+                            aria-invalid={!!roomJoinError}
+                            aria-describedby={roomJoinError ? 'room-join-error' : undefined}
+                            className="min-h-[48px] w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowJoinPassword((s) => !s)}
+                            className="absolute right-2 flex items-center justify-center w-9 h-9 rounded-lg text-white/50 hover:text-white hover:bg-white/10 games-touch-target"
+                            aria-label={showJoinPassword ? '隱藏密碼' : '顯示密碼'}
+                          >
+                            {showJoinPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </form>
+                      {roomJoinError && <p id="room-join-error" className="text-red-400 text-sm mt-2" role="alert" aria-live="assertive">{roomJoinError}</p>}
+                    </div>
+                  )}
+
+                  {/* AUDIT #6：建立房間 CTA 與加入房間表單視覺層級分明 — 建立房間區塊標題與邊框 */}
+                  <div className="flex flex-wrap gap-3 justify-center items-start" ref={createRoomSectionRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowSettingsModal(true)}
+                      className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white min-h-[48px] min-w-[48px]"
+                      aria-label="設定"
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span>設定</span>
+                    </button>
+                    <button
+                      ref={playerModalTriggerRef}
+                      onClick={() => setShowPlayerModal(true)}
+                      className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white min-h-[48px] min-w-[48px]"
+                      aria-label="管理玩家名單"
+                    >
+                      <Users className="w-5 h-5" />
+                      <span>管理玩家 ({players.length})</span>
+                      <UserPlus className="w-4 h-4 text-primary-400" />
+                    </button>
+                    <div className="flex flex-col gap-2 items-center p-4 rounded-xl border border-primary-500/20 bg-primary-500/5 min-w-[200px]" role="group" aria-label="建立房間">
+                      {/* P1-110：創建房間三步引導 — 設置密碼 → 邀請好友 → 選擇遊戲；依狀態高亮當前步驟 */}
+                      {(() => {
+                        const step = !isInRoomMode ? 1 : (activeGame ? 3 : 2)
+                        return (
+                          <div className="flex items-center gap-1 mb-2 text-xs" role="list" aria-label="建立房間流程">
+                            <span className={`flex items-center gap-1 ${step >= 1 ? 'text-primary-400' : 'text-white/40'}`}>
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 1 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>1</span>
+                              <span>設密碼</span>
+                            </span>
+                            <span className="w-3 h-px bg-white/20" aria-hidden />
+                            <span className={`flex items-center gap-1 ${step >= 2 ? 'text-primary-400' : 'text-white/40'}`}>
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 2 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>2</span>
+                              <span>邀請好友</span>
+                            </span>
+                            <span className="w-3 h-px bg-white/20" aria-hidden />
+                            <span className={`flex items-center gap-1 ${step >= 3 ? 'text-primary-400' : 'text-white/40'}`}>
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 3 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>3</span>
+                              <span>選擇遊戲</span>
+                            </span>
+                          </div>
+                        )
+                      })()}
+                      <span className="text-sm font-semibold text-primary-300">建立房間</span>
+                      <div className="relative flex items-center w-full max-w-[200px]">
                         <input
-                          type={showJoinPassword ? 'text' : 'password'}
+                          type={showCreatePassword ? 'text' : 'password'}
                           inputMode="numeric"
                           autoComplete="off"
-                          value={roomJoinPassword}
-                          onChange={(e) => { setRoomJoinPassword(e.target.value.replace(/\D/g, '').slice(0, 4)); setRoomJoinError(null); }}
-                          placeholder="房間密碼（若房主有設定）"
+                          value={roomCreatePassword}
+                          onChange={(e) => setRoomCreatePassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                          placeholder="4 位數密碼（選填）"
                           maxLength={4}
-                          aria-label="房間密碼（若房主有設定）"
-                          aria-invalid={!!roomJoinError}
-                          aria-describedby={roomJoinError ? 'room-join-error' : undefined}
-                          className="min-h-[48px] w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
+                          aria-label="建立房間密碼（選填）"
+                          className="w-full min-h-[48px] bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
                         />
                         <button
                           type="button"
-                          onClick={() => setShowJoinPassword((s) => !s)}
+                          onClick={() => setShowCreatePassword((s) => !s)}
                           className="absolute right-2 flex items-center justify-center w-9 h-9 rounded-lg text-white/50 hover:text-white hover:bg-white/10 games-touch-target"
-                          aria-label={showJoinPassword ? '隱藏密碼' : '顯示密碼'}
+                          aria-label={showCreatePassword ? '隱藏密碼' : '顯示密碼'}
                         >
-                          {showJoinPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showCreatePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
-                    </form>
-                    {roomJoinError && <p id="room-join-error" className="text-red-400 text-sm mt-2" role="alert" aria-live="assertive">{roomJoinError}</p>}
-                  </div>
-                )}
-
-                {/* AUDIT #6：建立房間 CTA 與加入房間表單視覺層級分明 — 建立房間區塊標題與邊框 */}
-                <div className="flex flex-wrap gap-3 justify-center items-start" ref={createRoomSectionRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowSettingsModal(true)}
-                    className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white min-h-[48px] min-w-[48px]"
-                    aria-label="設定"
-                  >
-                    <Settings className="w-5 h-5" />
-                    <span>設定</span>
-                  </button>
-                  <button
-                    ref={playerModalTriggerRef}
-                    onClick={() => setShowPlayerModal(true)}
-                    className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white min-h-[48px] min-w-[48px]"
-                    aria-label="管理玩家名單"
-                  >
-                    <Users className="w-5 h-5" />
-                    <span>管理玩家 ({players.length})</span>
-                    <UserPlus className="w-4 h-4 text-primary-400" />
-                  </button>
-                  <div className="flex flex-col gap-2 items-center p-4 rounded-xl border border-primary-500/20 bg-primary-500/5 min-w-[200px]" role="group" aria-label="建立房間">
-                    {/* P1-110：創建房間三步引導 — 設置密碼 → 邀請好友 → 選擇遊戲；依狀態高亮當前步驟 */}
-                    {(() => {
-                      const step = !isInRoomMode ? 1 : (activeGame ? 3 : 2)
-                      return (
-                        <div className="flex items-center gap-1 mb-2 text-xs" role="list" aria-label="建立房間流程">
-                          <span className={`flex items-center gap-1 ${step >= 1 ? 'text-primary-400' : 'text-white/40'}`}>
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 1 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>1</span>
-                            <span>設密碼</span>
-                          </span>
-                          <span className="w-3 h-px bg-white/20" aria-hidden />
-                          <span className={`flex items-center gap-1 ${step >= 2 ? 'text-primary-400' : 'text-white/40'}`}>
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 2 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>2</span>
-                            <span>邀請好友</span>
-                          </span>
-                          <span className="w-3 h-px bg-white/20" aria-hidden />
-                          <span className={`flex items-center gap-1 ${step >= 3 ? 'text-primary-400' : 'text-white/40'}`}>
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step >= 3 ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}>3</span>
-                            <span>選擇遊戲</span>
-                          </span>
+                      {roomCreatePassword.length === 4 && (
+                        <p className="text-white/50 text-xs" role="status" aria-label="密碼強度">
+                          {/^(\d)\1{3}$/.test(roomCreatePassword) ? '強度：弱（建議避免同一數字）' : /^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(roomCreatePassword) ? '強度：中（連續數字）' : '強度：佳'}
+                        </p>
+                      )}
+                      <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer min-h-[48px]">
+                        <input
+                          type="checkbox"
+                          checked={roomCreateAnonymous}
+                          onChange={(e) => setRoomCreateAnonymous(e.target.checked)}
+                          className="rounded border-white/30 bg-white/10 text-primary-500"
+                          aria-label="建立時開啟匿名模式（玩家顯示為玩家A/B）"
+                        />
+                        <span>匿名模式（玩家A/B）</span>
+                      </label>
+                      <button
+                        onClick={handleCreateRoom}
+                        disabled={creatingRoom}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary-500 hover:bg-primary-600 border border-primary-500/50 text-white font-semibold min-h-[48px] min-w-[48px] disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
+                      >
+                        {creatingRoom ? '建立中…' : '建立房間'}
+                      </button>
+                      {createRoomError && (
+                        <div className="mt-2 space-y-1">
+                          <p className="text-red-400 text-sm" role="alert">{createRoomError}</p>
+                          <Link href="/pricing" className="text-primary-400 hover:text-primary-300 text-xs font-medium underline underline-offset-1">
+                            升級方案可開更多人
+                          </Link>
                         </div>
-                      )
-                    })()}
-                    <span className="text-sm font-semibold text-primary-300">建立房間</span>
-                    <div className="relative flex items-center w-full max-w-[200px]">
-                      <input
-                        type={showCreatePassword ? 'text' : 'password'}
-                        inputMode="numeric"
-                        autoComplete="off"
-                        value={roomCreatePassword}
-                        onChange={(e) => setRoomCreatePassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        placeholder="4 位數密碼（選填）"
-                        maxLength={4}
-                        aria-label="建立房間密碼（選填）"
-                        className="w-full min-h-[48px] bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-2 text-white placeholder-white/30 text-sm"
-                      />
+                      )}
+                      {!isInRoomMode && players.length >= maxPlayers && maxPlayers < 12 && (
+                        <p className="text-amber-400/90 text-xs mt-1">目前名單已滿（{maxPlayers} 人），升級可開更多人</p>
+                      )}
+                    </div>
+                    {isInRoomMode && (
                       <button
                         type="button"
-                        onClick={() => setShowCreatePassword((s) => !s)}
-                        className="absolute right-2 flex items-center justify-center w-9 h-9 rounded-lg text-white/50 hover:text-white hover:bg-white/10 games-touch-target"
-                        aria-label={showCreatePassword ? '隱藏密碼' : '顯示密碼'}
+                        onClick={() => {
+                          if (window.confirm('確定要離開房間嗎？名單將不再同步。')) {
+                            try {
+                              const raw = localStorage.getItem(ROOM_JOINED_KEY)
+                              const obj = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {}
+                              delete obj[roomSlug!]
+                              localStorage.setItem(ROOM_JOINED_KEY, JSON.stringify(obj))
+                            } catch { /* ignore */ }
+                            /** GAMES_500 #223：觀戰者離開房間後狀態清除（localStorage + 導向 /games） */
+                            router.replace('/games')
+                          }
+                        }}
+                        className="min-h-[48px] px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm"
+                        aria-label="離開房間（會清除本機加入狀態）"
                       >
-                        {showCreatePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        離開房間
                       </button>
-                    </div>
-                    {roomCreatePassword.length === 4 && (
-                      <p className="text-white/50 text-xs" role="status" aria-label="密碼強度">
-                        {/^(\d)\1{3}$/.test(roomCreatePassword) ? '強度：弱（建議避免同一數字）' : /^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(roomCreatePassword) ? '強度：中（連續數字）' : '強度：佳'}
-                      </p>
-                    )}
-                    <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer min-h-[48px]">
-                      <input
-                        type="checkbox"
-                        checked={roomCreateAnonymous}
-                        onChange={(e) => setRoomCreateAnonymous(e.target.checked)}
-                        className="rounded border-white/30 bg-white/10 text-primary-500"
-                        aria-label="建立時開啟匿名模式（玩家顯示為玩家A/B）"
-                      />
-                      <span>匿名模式（玩家A/B）</span>
-                    </label>
-                    <button
-                      onClick={handleCreateRoom}
-                      disabled={creatingRoom}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary-500 hover:bg-primary-600 border border-primary-500/50 text-white font-semibold min-h-[48px] min-w-[48px] disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
-                    >
-                      {creatingRoom ? '建立中…' : '建立房間'}
-                    </button>
-                    {createRoomError && (
-                      <div className="mt-2 space-y-1">
-                        <p className="text-red-400 text-sm" role="alert">{createRoomError}</p>
-                        <Link href="/pricing" className="text-primary-400 hover:text-primary-300 text-xs font-medium underline underline-offset-1">
-                          升級方案可開更多人
-                        </Link>
-                      </div>
-                    )}
-                    {!isInRoomMode && players.length >= maxPlayers && maxPlayers < 12 && (
-                      <p className="text-amber-400/90 text-xs mt-1">目前名單已滿（{maxPlayers} 人），升級可開更多人</p>
                     )}
                   </div>
+                  {players.length === 0 && !roomSlug && (
+                    <p className="text-white/40 text-sm mt-2">先新增玩家，命運轉盤等遊戲會自動帶入名單</p>
+                  )}
                   {isInRoomMode && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm('確定要離開房間嗎？名單將不再同步。')) {
-                          try {
-                            const raw = localStorage.getItem(ROOM_JOINED_KEY)
-                            const obj = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {}
-                            delete obj[roomSlug!]
-                            localStorage.setItem(ROOM_JOINED_KEY, JSON.stringify(obj))
-                          } catch { /* ignore */ }
-                          /** GAMES_500 #223：觀戰者離開房間後狀態清除（localStorage + 導向 /games） */
-                          router.replace('/games')
-                        }
-                      }}
-                      className="min-h-[48px] px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm"
-                      aria-label="離開房間（會清除本機加入狀態）"
-                    >
-                      離開房間
-                    </button>
+                    <>
+                      {/* GAMES_500 #178：房間內玩家變更時 aria-live 通知 */}
+                      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">目前 {roomPlayers.length} 位玩家</p>
+                      <p className="text-white/40 text-sm mt-2" role="status">
+                        房間模式：{joinedDisplayName}
+                        {joinedAsSpectator && '（觀戰中）'}
+                        {players.length > 0 && (
+                          <> · {players.slice(0, 3).join('、')}{players.length > 3 ? ` +${players.length - 3} 人` : ''}，共 {players.length} 人</>
+                        )}
+                        （名單會自動同步）
+                      </p>
+                    </>
                   )}
                 </div>
-                {players.length === 0 && !roomSlug && (
-                  <p className="text-white/40 text-sm mt-2">先新增玩家，命運轉盤等遊戲會自動帶入名單</p>
-                )}
-{isInRoomMode && (
-                <>
-                  {/* GAMES_500 #178：房間內玩家變更時 aria-live 通知 */}
-                  <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">目前 {roomPlayers.length} 位玩家</p>
-                  <p className="text-white/40 text-sm mt-2" role="status">
-                    房間模式：{joinedDisplayName}
-                    {joinedAsSpectator && '（觀戰中）'}
-                    {players.length > 0 && (
-                      <> · {players.slice(0, 3).join('、')}{players.length > 3 ? ` +${players.length - 3} 人` : ''}，共 {players.length} 人</>
-                    )}
-                    （名單會自動同步）
-                  </p>
-                </>
-                )}
-              </div>
 
-              {/* E90 P2：新遊戲上線預告橫幅 — announcements.config 有 type=game 時顯示 */}
-              {(!roomSlug || joinedDisplayName) && getActiveLaunchAnnouncements().filter((a) => a.type === 'game').map((a) => {
-                const id = a.id
-                const meta = typeof id === 'string' ? getGameMeta(id) : null
-                return meta ? (
-                  <div key={a.id} className="mb-4 p-4 rounded-2xl bg-accent-500/10 border border-accent-500/20" role="region" aria-label="新作上線">
-                    <p className="text-accent-300 text-sm font-medium">{a.label}：{meta.name}</p>
-                    <p className="text-white/60 text-xs mt-1">快去試玩</p>
+                {/* E90 P2：新遊戲上線預告橫幅 — announcements.config 有 type=game 時顯示 */}
+                {(!roomSlug || joinedDisplayName) && getActiveLaunchAnnouncements().filter((a) => a.type === 'game').map((a) => {
+                  const id = a.id
+                  const meta = typeof id === 'string' ? getGameMeta(id) : null
+                  return meta ? (
+                    <div key={a.id} className="mb-4 p-4 rounded-2xl bg-accent-500/10 border border-accent-500/20" role="region" aria-label="新作上線">
+                      <p className="text-accent-300 text-sm font-medium">{a.label}：{meta.name}</p>
+                      <p className="text-white/60 text-xs mt-1">快去試玩</p>
+                    </div>
+                  ) : null
+                })}
+
+                {/* 任務 23：存檔恢復橫幅 — 意外關閉後可恢復上次遊戲 */}
+                {(!roomSlug || joinedDisplayName) && lastSession && showRestoreBanner && getGameMeta(lastSession.gameId) && (
+                  <div className="mb-4 p-4 rounded-2xl bg-primary-500/15 border border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="恢復上次遊戲">
+                    <p className="text-white/90 text-sm">
+                      是否恢復上次的遊戲？<span className="font-medium text-primary-300">{getGameMeta(lastSession.gameId)?.name}</span>
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { clearLastSession(); setLastSession(null); setShowRestoreBanner(false); }}
+                        className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
+                      >
+                        不用
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0; setActiveGame(lastSession.gameId); setShowRestoreBanner(false); }}
+                        className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium"
+                      >
+                        恢復
+                      </button>
+                    </div>
                   </div>
-                ) : null
-              })}
+                )}
 
-              {/* 任務 23：存檔恢復橫幅 — 意外關閉後可恢復上次遊戲 */}
-              {(!roomSlug || joinedDisplayName) && lastSession && showRestoreBanner && getGameMeta(lastSession.gameId) && (
-                <div className="mb-4 p-4 rounded-2xl bg-primary-500/15 border border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="恢復上次遊戲">
-                  <p className="text-white/90 text-sm">
-                    是否恢復上次的遊戲？<span className="font-medium text-primary-300">{getGameMeta(lastSession.gameId)?.name}</span>
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { clearLastSession(); setLastSession(null); setShowRestoreBanner(false); }}
-                      className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
-                    >
-                      不用
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0; setActiveGame(lastSession.gameId); setShowRestoreBanner(false); }}
-                      className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium"
-                    >
-                      恢復
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* P1-258：免費用戶瀏覽到付費遊戲時，醒目「一鍵解鎖全部 Pro 遊戲」按鈕 */}
-              {(!roomSlug || joinedDisplayName) && tier === 'free' && (
-                <div className="mb-4 flex justify-center">
-                  <Link
-                    href="/pricing"
-                    className="inline-flex items-center gap-2 min-h-[48px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring"
-                    aria-label="一鍵解鎖全部 Pro 遊戲"
-                  >
-                    <Crown className="w-4 h-4" aria-hidden />
-                    一鍵解鎖全部 Pro 遊戲
-                  </Link>
-                </div>
-              )}
-              {/* R2-181：玩了 3 局後提示升級解鎖 18+ 與更多遊戲；可關閉 */}
-              {(!roomSlug || joinedDisplayName) && tier === 'free' && freeGamesPlayedCount >= 3 && !upgradePromptDismissed && (
-                <div className="mb-4 p-4 rounded-2xl bg-primary-500/15 border border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="升級 Pro 解鎖更多">
-                  <p className="text-white/90 text-sm">
-                    升級到 Pro 解鎖 18+ 模式和 50+ 遊戲
-                  </p>
-                  <div className="flex items-center gap-2">
+                {/* P1-258：免費用戶瀏覽到付費遊戲時，醒目「一鍵解鎖全部 Pro 遊戲」按鈕 */}
+                {(!roomSlug || joinedDisplayName) && tier === 'free' && (
+                  <div className="mb-4 flex justify-center">
                     <Link
                       href="/pricing"
-                      className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring"
+                      className="inline-flex items-center gap-2 min-h-[48px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring"
+                      aria-label="一鍵解鎖全部 Pro 遊戲"
                     >
-                      升級
+                      <Crown className="w-4 h-4" aria-hidden />
+                      一鍵解鎖全部 Pro 遊戲
+                    </Link>
+                  </div>
+                )}
+                {/* R2-181：玩了 3 局後提示升級解鎖 18+ 與更多遊戲；可關閉 */}
+                {(!roomSlug || joinedDisplayName) && tier === 'free' && freeGamesPlayedCount >= 3 && !upgradePromptDismissed && (
+                  <div className="mb-4 p-4 rounded-2xl bg-primary-500/15 border border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="升級 Pro 解鎖更多">
+                    <p className="text-white/90 text-sm">
+                      升級到 Pro 解鎖 18+ 模式和 50+ 遊戲
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/pricing"
+                        className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring"
+                      >
+                        升級
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setUpgradePromptDismissed(true)}
+                        className="min-h-[48px] px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 text-sm games-focus-ring"
+                        aria-label="關閉"
+                      >
+                        <X className="w-4 h-4" aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
+                {(!roomSlug || joinedDisplayName) && (
+                  <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
+                    <Lobby
+                      games={gamesWithCategory}
+                      recentGameIds={recentGameIds}
+                      weeklyPlayCounts={weeklyPlayCounts}
+                      weeklyFreeGameIds={getWeeklyFreeGameIds()}
+                      displayFilter={lobbyDisplayFilter}
+                      onDisplayFilterChange={handleLobbyTabChange}
+                      playlists={playlists}
+                      onStartPlaylist={handleStartPlaylist}
+                      onSavePlaylists={(next) => { setPlaylists(next); savePlaylists(next) }}
+                      initialSearchQuery={searchParams.get('q') ?? ''}
+                      onSelect={(id) => {
+                        /** P0-009：訪客試玩 3 次後強制登入 */
+                        if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
+                          setShowGuestTrialLimitModal(true)
+                          return
+                        }
+                        /** R2-191：付費遊戲 — 未訂閱且非本週免費則顯示付費牆 */
+                        if (!canPlayGame(id, tier)) {
+                          const required = getGameRequiredTier(id)
+                          if (required) {
+                            setPaidLockGame({ id, name: getGameMeta(id)?.name ?? id })
+                            return
+                          }
+                        }
+                        savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
+                        setActiveGame(id)
+                        saveLastSession(id)
+                        incrementWeeklyPlay(id)
+                        setWeeklyPlayCounts(getWeeklyPlayCounts())
+                        setShowRestoreBanner(false)
+                        try {
+                          const raw = localStorage.getItem(RECENT_GAMES_KEY)
+                          const arr = raw ? (JSON.parse(raw) as string[]) : []
+                          const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
+                          localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
+                          setRecentGameIds(next)
+                        } catch {
+                          /* ignore */
+                        }
+                      }}
+                    />
+                  </Suspense>
+                )}
+              </m.div>
+            ) : activeGame && selectedGame ? (
+              <GameErrorBoundary
+                key={activeGame}
+                gameName={selectedGame.name}
+                onReset={() => setActiveGame(null)}
+                title={t('gameError.title')}
+                desc={t('gameError.desc')}
+                retryLabel={t('gameError.retry')}
+                backLobbyLabel={t('gameError.backLobby')}
+              >
+                <GameWrapper
+                  title={selectedGame.name}
+                  description={selectedGame.description}
+                  onExit={() => {
+                    const exitedGame = activeGame
+                    const durationMs = gameStartTimeRef.current > 0 ? Date.now() - gameStartTimeRef.current : 0
+                    trackGameEnd(exitedGame ?? '', durationMs, 0)
+                    gameStartTimeRef.current = 0
+                    /** R2-134：播放列表依序啟動 — 佇列有下一局則直接開，否則回大廳 */
+                    if (playlistQueue && playlistQueue.length > 0) {
+                      const nextId = playlistQueue[0]
+                      if (nextId == null) {
+                        setPlaylistQueue(null)
+                        setActiveGame(null)
+                      } else {
+                        setPlaylistQueue(playlistQueue.length > 1 ? playlistQueue.slice(1) : null)
+                        setActiveGame(nextId)
+                        saveLastSession(nextId)
+                        incrementWeeklyPlay(nextId)
+                        setWeeklyPlayCounts(getWeeklyPlayCounts())
+                        try {
+                          const raw = localStorage.getItem(RECENT_GAMES_KEY)
+                          const arr = raw ? (JSON.parse(raw) as string[]) : []
+                          const next = [nextId, ...arr.filter((x) => x !== nextId)].slice(0, RECENT_GAMES_MAX)
+                          localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
+                          setRecentGameIds(next)
+                        } catch { /* ignore */ }
+                      }
+                    } else {
+                      setPlaylistQueue(null)
+                      setActiveGame(null)
+                    }
+                    /** AUDIT #20：離開遊戲後評分彈窗延遲 500ms，避免與關閉動畫重疊 */
+                    if (rateModalTimeoutRef.current) clearTimeout(rateModalTimeoutRef.current)
+                    rateModalTimeoutRef.current = setTimeout(() => {
+                      rateModalTimeoutRef.current = null
+                      setGameIdToRate(exitedGame ?? null)
+                    }, 500)
+                    /** P0-009 / T055：試玩結束後計數並引導登入；達 3 次後下次點試玩會彈登入 modal */
+                    if (!roomSlug && exitedGame && GUEST_TRIAL_GAME_IDS.includes(exitedGame)) {
+                      incrementGuestTrialCount()
+                      toast(
+                        (t) => (
+                          <span className="flex items-center gap-2 flex-wrap">
+                            <span>試玩結束，登入以開房間、保存進度</span>
+                            <Link href="/login" className="underline font-medium text-primary-300 hover:text-primary-200" onClick={() => toast.dismiss(t.id)}>
+                              登入
+                            </Link>
+                          </span>
+                        ),
+                        { duration: 6000 }
+                      )
+                    }
+                  }}
+                  players={players}
+                  maxPlayers={isInRoomMode ? maxPlayers : undefined}
+                  switchGameList={gamesWithCategory.slice(0, 8).map((g) => ({ id: g.id, name: g.name }))}
+                  onSwitchGame={(id) => setActiveGame(id)}
+                  currentGameId={activeGame}
+                  shareInviteUrl={isInRoomMode ? (roomInviteUrl ?? (roomSlug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${roomSlug}` : null)) : undefined}
+                  isSpectator={joinedAsSpectator}
+                  onPlayAgain={isInRoomMode ? handlePlayAgain : undefined}
+                  anonymousMode={isInRoomMode ? roomAnonymousMode : undefined}
+                  isHost={isInRoomMode ? isRoomHost : undefined}
+                  onToggleAnonymous={isInRoomMode && isRoomHost ? setRoomAnonymousMode : undefined}
+                  reportContext={{ roomSlug: roomSlug ?? undefined, gameId: activeGame ?? undefined }}
+                  isGuestTrial={!roomSlug && !!activeGame && GUEST_TRIAL_GAME_IDS.includes(activeGame)}
+                  trialRoundsMax={3}
+                >
+                  <LazyGame gameId={activeGame} />
+                </GameWrapper>
+              </GameErrorBoundary>
+            ) : null}
+          </AnimatePresence>
+
+          {/* P1-169：移動端浮動操作按鈕 — 創建房間、隨機遊戲 */}
+          {!activeGame && (
+            <div className="fixed bottom-20 right-4 z-30 md:hidden flex flex-col items-end gap-2">
+              <AnimatePresence>
+                {fabOpen && (
+                  <>
+                    <m.button
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      type="button"
+                      onClick={() => { createRoomSectionRef.current?.scrollIntoView({ behavior: 'smooth' }); setFabOpen(false) }}
+                      className="min-h-[48px] px-4 py-2 rounded-full bg-primary-500/90 hover:bg-primary-500 text-white text-sm font-medium shadow-lg flex items-center gap-2"
+                      aria-label="捲動至建立房間"
+                    >
+                      <Users className="w-4 h-4" /> 創建房間
+                    </m.button>
+                    <m.button
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      type="button"
+                      onClick={handleRandomGame}
+                      disabled={gamesWithCategory.length === 0}
+                      className="min-h-[48px] px-4 py-2 rounded-full bg-white/90 hover:bg-white text-[#0a0a1a] text-sm font-medium shadow-lg flex items-center gap-2 disabled:opacity-50"
+                      aria-label="隨機選一個遊戲"
+                    >
+                      <Shuffle className="w-4 h-4" /> 隨機來一個
+                    </m.button>
+                  </>
+                )}
+              </AnimatePresence>
+              <m.button
+                type="button"
+                onClick={() => setFabOpen((o) => !o)}
+                className="min-h-[56px] min-w-[56px] rounded-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg flex items-center justify-center games-focus-ring"
+                aria-label={fabOpen ? '關閉快捷選單' : '開啟快捷選單'}
+                aria-expanded={fabOpen}
+              >
+                <Plus className={`w-6 h-6 transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
+              </m.button>
+            </div>
+          )}
+
+          {/* Settings Modal：獨立 AnimatePresence，不與 mode="wait" 混用 */}
+          <AnimatePresence>
+            {showSettingsModal && (
+              <SettingsModal key="settings-modal" onClose={() => setShowSettingsModal(false)} />
+            )}
+          </AnimatePresence>
+
+          {/* R2-191：付費遊戲未訂閱時顯示付費牆 */}
+          <AnimatePresence>
+            {paidLockGame && (
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+              >
+                <PaidGameLock
+                  gameName={paidLockGame.name}
+                  requiredTier="premium"
+                  onClose={() => setPaidLockGame(null)}
+                />
+              </m.div>
+            )}
+          </AnimatePresence>
+
+          {/* P0-009：訪客試玩 3 次後強制登入 modal */}
+          <AnimatePresence>
+            {showGuestTrialLimitModal && (
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setShowGuestTrialLimitModal(false)}
+              >
+                <m.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="guest-trial-limit-title"
+                  aria-describedby="guest-trial-limit-desc"
+                >
+                  <h2 id="guest-trial-limit-title" className="text-xl font-bold text-white mb-2">試玩已達 3 次</h2>
+                  <p id="guest-trial-limit-desc" className="text-white/70 text-sm mb-6">登入後可開房間、保存進度並暢玩全部遊戲。</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      href="/login"
+                      className="min-h-[48px] inline-flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
+                      onClick={() => setShowGuestTrialLimitModal(false)}
+                    >
+                      前往登入
                     </Link>
                     <button
                       type="button"
-                      onClick={() => setUpgradePromptDismissed(true)}
-                      className="min-h-[48px] px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 text-sm games-focus-ring"
+                      onClick={() => setShowGuestTrialLimitModal(false)}
+                      className="min-h-[48px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
                       aria-label="關閉"
                     >
-                      <X className="w-4 h-4" aria-hidden />
+                      稍後再說
                     </button>
                   </div>
-                </div>
-              )}
-              {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
-              {(!roomSlug || joinedDisplayName) && (
-                <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
-                  <Lobby
-                    games={gamesWithCategory}
-                    recentGameIds={recentGameIds}
-                    weeklyPlayCounts={weeklyPlayCounts}
-                    displayFilter={lobbyDisplayFilter}
-                    onDisplayFilterChange={handleLobbyTabChange}
-                    onSelect={(id) => {
-                      /** P0-009：訪客試玩 3 次後強制登入 */
-                      if (!roomSlug && GUEST_TRIAL_GAME_IDS.includes(id) && getGuestTrialCount() >= GUEST_TRIAL_LIMIT) {
-                        setShowGuestTrialLimitModal(true)
-                        return
-                      }
-                      savedScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0
-                      setActiveGame(id)
-                      saveLastSession(id)
-                      incrementWeeklyPlay(id)
-                      setWeeklyPlayCounts(getWeeklyPlayCounts())
-                      setShowRestoreBanner(false)
-                      try {
-                        const raw = localStorage.getItem(RECENT_GAMES_KEY)
-                        const arr = raw ? (JSON.parse(raw) as string[]) : []
-                        const next = [id, ...arr.filter((x) => x !== id)].slice(0, RECENT_GAMES_MAX)
-                        localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(next))
-                        setRecentGameIds(next)
-                      } catch {
-                        /* ignore */
-                      }
-                    }}
-                  />
-                </Suspense>
-              )}
-            </motion.div>
-          ) : activeGame && selectedGame ? (
-            <GameErrorBoundary
-              key={activeGame}
-              gameName={selectedGame.name}
-              onReset={() => setActiveGame(null)}
-              title={t('gameError.title')}
-              desc={t('gameError.desc')}
-              retryLabel={t('gameError.retry')}
-              backLobbyLabel={t('gameError.backLobby')}
-            >
-              <GameWrapper
-                title={selectedGame.name}
-                description={selectedGame.description}
-                onExit={() => {
-                  const exitedGame = activeGame
-                  const durationMs = gameStartTimeRef.current > 0 ? Date.now() - gameStartTimeRef.current : 0
-                  trackGameEnd(exitedGame ?? '', durationMs, 0)
-                  gameStartTimeRef.current = 0
-                  setActiveGame(null)
-                  /** AUDIT #20：離開遊戲後評分彈窗延遲 500ms，避免與關閉動畫重疊 */
-                  if (rateModalTimeoutRef.current) clearTimeout(rateModalTimeoutRef.current)
-                  rateModalTimeoutRef.current = setTimeout(() => {
-                    rateModalTimeoutRef.current = null
-                    setGameIdToRate(exitedGame ?? null)
-                  }, 500)
-                  /** P0-009 / T055：試玩結束後計數並引導登入；達 3 次後下次點試玩會彈登入 modal */
-                  if (!roomSlug && exitedGame && GUEST_TRIAL_GAME_IDS.includes(exitedGame)) {
-                    incrementGuestTrialCount()
-                    toast(
-                      (t) => (
-                        <span className="flex items-center gap-2 flex-wrap">
-                          <span>試玩結束，登入以開房間、保存進度</span>
-                          <Link href="/login" className="underline font-medium text-primary-300 hover:text-primary-200" onClick={() => toast.dismiss(t.id)}>
-                            登入
-                          </Link>
-                        </span>
-                      ),
-                      { duration: 6000 }
-                    )
-                  }
-                }}
-                players={players}
-                maxPlayers={isInRoomMode ? maxPlayers : undefined}
-                switchGameList={gamesWithCategory.slice(0, 8).map((g) => ({ id: g.id, name: g.name }))}
-                onSwitchGame={(id) => setActiveGame(id)}
-                currentGameId={activeGame}
-                shareInviteUrl={isInRoomMode ? (roomInviteUrl ?? (roomSlug && typeof window !== 'undefined' ? `${window.location.origin}/games?room=${roomSlug}` : null)) : undefined}
-                isSpectator={joinedAsSpectator}
-                onPlayAgain={isInRoomMode ? handlePlayAgain : undefined}
-                anonymousMode={isInRoomMode ? roomAnonymousMode : undefined}
-                isHost={isInRoomMode ? isRoomHost : undefined}
-                onToggleAnonymous={isInRoomMode && isRoomHost ? setRoomAnonymousMode : undefined}
-                reportContext={{ roomSlug: roomSlug ?? undefined, gameId: activeGame ?? undefined }}
-                isGuestTrial={!roomSlug && !!activeGame && GUEST_TRIAL_GAME_IDS.includes(activeGame)}
-                trialRoundsMax={3}
-              >
-                <LazyGame gameId={activeGame} />
-              </GameWrapper>
-            </GameErrorBoundary>
-          ) : null}
-        </AnimatePresence>
+                </m.div>
+              </m.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* P1-169：移動端浮動操作按鈕 — 創建房間、隨機遊戲 */}
-        {!activeGame && (
-          <div className="fixed bottom-20 right-4 z-30 md:hidden flex flex-col items-end gap-2">
-            <AnimatePresence>
-              {fabOpen && (
-                <>
-                  <motion.button
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    type="button"
-                    onClick={() => { createRoomSectionRef.current?.scrollIntoView({ behavior: 'smooth' }); setFabOpen(false) }}
-                    className="min-h-[48px] px-4 py-2 rounded-full bg-primary-500/90 hover:bg-primary-500 text-white text-sm font-medium shadow-lg flex items-center gap-2"
-                    aria-label="捲動至建立房間"
-                  >
-                    <Users className="w-4 h-4" /> 創建房間
-                  </motion.button>
-                  <motion.button
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    type="button"
-                    onClick={handleRandomGame}
-                    disabled={gamesWithCategory.length === 0}
-                    className="min-h-[48px] px-4 py-2 rounded-full bg-white/90 hover:bg-white text-[#0a0a1a] text-sm font-medium shadow-lg flex items-center gap-2 disabled:opacity-50"
-                    aria-label="隨機選一個遊戲"
-                  >
-                    <Shuffle className="w-4 h-4" /> 隨機來一個
-                  </motion.button>
-                </>
-              )}
-            </AnimatePresence>
-            <motion.button
-              type="button"
-              onClick={() => setFabOpen((o) => !o)}
-              className="min-h-[56px] min-w-[56px] rounded-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg flex items-center justify-center games-focus-ring"
-              aria-label={fabOpen ? '關閉快捷選單' : '開啟快捷選單'}
-              aria-expanded={fabOpen}
-            >
-              <Plus className={`w-6 h-6 transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
-            </motion.button>
-          </div>
-        )}
-
-        {/* Settings Modal：獨立 AnimatePresence，不與 mode="wait" 混用 */}
+        {/* Player Management Modal */}
         <AnimatePresence>
-          {showSettingsModal && (
-            <SettingsModal key="settings-modal" onClose={() => setShowSettingsModal(false)} />
-          )}
-        </AnimatePresence>
-
-        {/* P0-009：訪客試玩 3 次後強制登入 modal */}
-        <AnimatePresence>
-          {showGuestTrialLimitModal && (
-            <motion.div
+          {showPlayerModal && (
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={() => setShowGuestTrialLimitModal(false)}
+              onClick={closePlayerModal}
             >
-              <motion.div
+              <m.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
@@ -1219,127 +1370,81 @@ function GamesPageContent() {
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="guest-trial-limit-title"
-                aria-describedby="guest-trial-limit-desc"
+                aria-labelledby="player-modal-title"
+                aria-label="管理玩家名單"
               >
-                <h2 id="guest-trial-limit-title" className="text-xl font-bold text-white mb-2">試玩已達 3 次</h2>
-                <p id="guest-trial-limit-desc" className="text-white/70 text-sm mb-6">登入後可開房間、保存進度並暢玩全部遊戲。</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/login"
-                    className="min-h-[48px] inline-flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
-                    onClick={() => setShowGuestTrialLimitModal(false)}
-                  >
-                    前往登入
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setShowGuestTrialLimitModal(false)}
-                    className="min-h-[48px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 font-medium"
-                    aria-label="關閉"
-                  >
-                    稍後再說
-                  </button>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 id="player-modal-title" className="text-2xl font-bold text-white flex items-center gap-3">
+                    <Users className="w-6 h-6 text-primary-400" />
+                    玩家列表
+                  </h2>
+                  <ModalCloseButton onClick={closePlayerModal} aria-label="關閉" className="rounded-full text-white/70" />
                 </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
-      {/* Player Management Modal */}
-      <AnimatePresence>
-        {showPlayerModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={closePlayerModal}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="player-modal-title"
-              aria-label="管理玩家名單"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 id="player-modal-title" className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Users className="w-6 h-6 text-primary-400" />
-                  玩家列表
-                </h2>
-                <ModalCloseButton onClick={closePlayerModal} aria-label="關閉" className="rounded-full text-white/70" />
-              </div>
+                {!isInRoomMode && (
+                  <>
+                    <form onSubmit={(e) => { e.preventDefault(); addPlayer(); }} className="flex gap-2 mb-2">
+                      <label htmlFor="new-player-name" className="sr-only">輸入玩家暱稱（最多 20 字）</label>
+                      <input
+                        id="new-player-name"
+                        type="text"
+                        value={newPlayerName}
+                        onChange={(e) => { setNewPlayerName(e.target.value); setAddPlayerError(null); }}
+                        placeholder="輸入玩家暱稱..."
+                        maxLength={20}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 outline-none focus:border-primary-500 transition-colors"
+                        aria-invalid={!!addPlayerError}
+                        aria-describedby={addPlayerError ? 'add-player-error' : undefined}
+                      />
+                      <button type="submit" disabled={players.length >= maxPlayers} className="px-6 py-3 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-bold transition-colors" title={players.length >= maxPlayers ? `已達人數上限（${maxPlayers} 人），升級可開更多人` : '新增玩家'}>
+                        新增
+                      </button>
+                    </form>
+                    {addPlayerError && <p id="add-player-error" className="text-red-400 text-sm mb-2" role="alert">{addPlayerError}</p>}
+                    {players.length >= maxPlayers && <p className="text-amber-400/90 text-xs mb-2">已達人數上限（{maxPlayers} 人）</p>}
+                    <p className="mb-4">
+                      <button
+                        type="button"
+                        onClick={() => setNewPlayerName(RANDOM_NICKNAMES[Math.floor(Math.random() * RANDOM_NICKNAMES.length)] ?? '')}
+                        className="text-xs text-primary-400 hover:text-primary-300 hover:underline"
+                        aria-label="隨機產生暱稱"
+                      >
+                        隨機暱稱
+                      </button>
+                    </p>
+                    <p className="text-white/40 text-xs mb-4">
+                      最多 {maxPlayers} 人（依方案：Free 4 / Basic 8 / Pro 12），用於命運轉盤等遊戲
+                      {players.length >= maxPlayers && maxPlayers < 12 && (
+                        <Link href="/pricing" className="ml-2 text-primary-400 hover:underline">升級可開更多人數</Link>
+                      )}
+                    </p>
+                  </>
+                )}
+                {isInRoomMode && (
+                  <p className="text-white/40 text-xs mb-4">房間名單（會自動同步）</p>
+                )}
 
-              {!isInRoomMode && (
-                <>
-                  <form onSubmit={(e) => { e.preventDefault(); addPlayer(); }} className="flex gap-2 mb-2">
-                    <label htmlFor="new-player-name" className="sr-only">輸入玩家暱稱（最多 20 字）</label>
-                    <input
-                      id="new-player-name"
-                      type="text"
-                      value={newPlayerName}
-                      onChange={(e) => { setNewPlayerName(e.target.value); setAddPlayerError(null); }}
-                      placeholder="輸入玩家暱稱..."
-                      maxLength={20}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 outline-none focus:border-primary-500 transition-colors"
-                      aria-invalid={!!addPlayerError}
-                      aria-describedby={addPlayerError ? 'add-player-error' : undefined}
-                    />
-                    <button type="submit" disabled={players.length >= maxPlayers} className="px-6 py-3 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-bold transition-colors" title={players.length >= maxPlayers ? `已達人數上限（${maxPlayers} 人），升級可開更多人` : '新增玩家'}>
-                      新增
-                    </button>
-                  </form>
-                  {addPlayerError && <p id="add-player-error" className="text-red-400 text-sm mb-2" role="alert">{addPlayerError}</p>}
-                  {players.length >= maxPlayers && <p className="text-amber-400/90 text-xs mb-2">已達人數上限（{maxPlayers} 人）</p>}
-                  <p className="mb-4">
+                {/* GAMES_500 #172：玩家列表空狀態「新增玩家」CTA 明顯 */}
+                {!isInRoomMode && players.length === 0 && (
+                  <div className="mb-4 space-y-2">
+                    <p className="text-white/60 text-sm">在下方輸入暱稱後按「新增」加入名單</p>
                     <button
                       type="button"
-                      onClick={() => setNewPlayerName(RANDOM_NICKNAMES[Math.floor(Math.random() * RANDOM_NICKNAMES.length)] ?? '')}
-                      className="text-xs text-primary-400 hover:text-primary-300 hover:underline"
-                      aria-label="隨機產生暱稱"
+                      onClick={loadLastSavedList}
+                      className="w-full min-h-[48px] px-4 py-2 rounded-xl bg-white/10 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 flex items-center justify-center gap-2 text-sm"
                     >
-                      隨機暱稱
+                      <RotateCcw className="w-4 h-4" />
+                      載入上次名單
                     </button>
-                  </p>
-                  <p className="text-white/40 text-xs mb-4">
-                    最多 {maxPlayers} 人（依方案：Free 4 / Basic 8 / Pro 12），用於命運轉盤等遊戲
-                    {players.length >= maxPlayers && maxPlayers < 12 && (
-                      <Link href="/pricing" className="ml-2 text-primary-400 hover:underline">升級可開更多人數</Link>
-                    )}
-                  </p>
-                </>
-              )}
-              {isInRoomMode && (
-                <p className="text-white/40 text-xs mb-4">房間名單（會自動同步）</p>
-              )}
-
-              {/* GAMES_500 #172：玩家列表空狀態「新增玩家」CTA 明顯 */}
-              {!isInRoomMode && players.length === 0 && (
-                <div className="mb-4 space-y-2">
-                  <p className="text-white/60 text-sm">在下方輸入暱稱後按「新增」加入名單</p>
-                  <button
-                    type="button"
-                    onClick={loadLastSavedList}
-                    className="w-full min-h-[48px] px-4 py-2 rounded-xl bg-white/10 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 flex items-center justify-center gap-2 text-sm"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    載入上次名單
-                  </button>
-                </div>
-              )}
-              {/* Player List；P1-117：房主標識（皇冠） */}
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {players.length === 0 ? (
-                  <p className="text-white/30 text-center py-8">尚未新增任何玩家</p>
-                ) : (
-                  isInRoomMode
-                    ? roomPlayers.map((p, i) => (
+                  </div>
+                )}
+                {/* Player List；P1-117：房主標識（皇冠） */}
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {players.length === 0 ? (
+                    <p className="text-white/30 text-center py-8">尚未新增任何玩家</p>
+                  ) : (
+                    isInRoomMode
+                      ? roomPlayers.map((p, i) => (
                         <div key={p.id ?? i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-2">
                           <span className="flex items-center gap-2 text-white font-medium truncate min-w-0">
                             {p.isHost && <Crown className="w-4 h-4 shrink-0 text-secondary-400" aria-label="房主" />}
@@ -1355,7 +1460,7 @@ function GamesPageContent() {
                           </span>
                         </div>
                       ))
-                    : players.map((player, i) => (
+                      : players.map((player, i) => (
                         <div
                           key={i}
                           draggable
@@ -1383,190 +1488,213 @@ function GamesPageContent() {
                           </button>
                         </div>
                       ))
-                )}
-              </div>
+                  )}
+                </div>
 
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </m.div>
+            </m.div>
+          )}
+        </AnimatePresence>
 
-      {/* 任務 10：離開遊戲後彈出 1–5 星評分 */}
-      <AnimatePresence>
-        {gameIdToRate && getGameMeta(gameIdToRate) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setGameIdToRate(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold text-white mb-2">
-                {ratingVariant === 0 ? '為剛才的遊戲評分' : '喜歡剛才的遊戲嗎？給個星'}
-              </h3>
-              <p className="text-white/60 text-sm mb-4">{getGameMeta(gameIdToRate)?.name}</p>
-              <div className="flex justify-center gap-2 mb-6">
-                {[1, 2, 3, 4, 5].map((stars) => (
+        {/* 任務 10：離開遊戲後彈出 1–5 星評分；R2-192 Pro 統計預覽；R2-209 下一款推薦 */}
+        <AnimatePresence>
+          {gameIdToRate && getGameMeta(gameIdToRate) && (() => {
+            const idx = gamesWithCategory.findIndex((g) => g.id === gameIdToRate)
+            const nextGame = idx >= 0 && idx < gamesWithCategory.length - 1 ? gamesWithCategory[idx + 1] : gamesWithCategory[0]?.id !== gameIdToRate ? gamesWithCategory[0] : undefined
+            return (
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setGameIdToRate(null)}
+              >
+                <m.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h3 className="text-lg font-bold text-white mb-2">
+                    {ratingVariant === 0 ? '為剛才的遊戲評分' : '喜歡剛才的遊戲嗎？給個星'}
+                  </h3>
+                  <p className="text-white/60 text-sm mb-4">{getGameMeta(gameIdToRate)?.name}</p>
+                  <div className="flex justify-center gap-2 mb-6">
+                    {[1, 2, 3, 4, 5].map((stars) => (
+                      <button
+                        key={stars}
+                        type="button"
+                        onClick={() => {
+                          setGameRating(gameIdToRate, stars)
+                          try {
+                            fetch('/api/analytics', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ name: 'game_rating_submit', value: stars, id: gameIdToRate ?? `variant_${ratingVariant}` }),
+                            }).catch(() => { })
+                          } catch { /* noop */ }
+                          setGameIdToRate(null)
+                        }}
+                        className="p-2 rounded-full hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                        aria-label={`給 ${stars} 星`}
+                      >
+                        <Star className="w-8 h-8 text-secondary-400 hover:text-secondary-300 fill-secondary-500/50 hover:fill-secondary-400" />
+                      </button>
+                    ))}
+                  </div>
                   <button
-                    key={stars}
                     type="button"
                     onClick={() => {
-                      setGameRating(gameIdToRate, stars)
                       try {
                         fetch('/api/analytics', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ name: 'game_rating_submit', value: stars, id: gameIdToRate ?? `variant_${ratingVariant}` }),
-                        }).catch(() => {})
+                          body: JSON.stringify({ name: 'game_rating_skip', value: 1, id: `variant_${ratingVariant}` }),
+                        }).catch(() => { })
                       } catch { /* noop */ }
                       setGameIdToRate(null)
                     }}
-                    className="p-2 rounded-full hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-                    aria-label={`給 ${stars} 星`}
+                    className="w-full min-h-[48px] rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium mb-3"
                   >
-                    <Star className="w-8 h-8 text-secondary-400 hover:text-secondary-300 fill-secondary-500/50 hover:fill-secondary-400" />
+                    略過
                   </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    fetch('/api/analytics', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ name: 'game_rating_skip', value: 1, id: `variant_${ratingVariant}` }),
-                    }).catch(() => {})
-                  } catch { /* noop */ }
-                  setGameIdToRate(null)
-                }}
-                className="w-full min-h-[48px] rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium"
-              >
-                略過
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Invite Link + QR Modal (after create room) */}
-      <AnimatePresence>
-        {createInvite && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setCreateInvite(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/10 overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #6B0F1A 0%, #8B1530 50%, #C9A961 100%)' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">邀請玩家</h2>
-                <ModalCloseButton onClick={() => { setCreateInvite(null); setInviteCopyJustDone(false); setInviteBlockCollapsed(false); }} aria-label="關閉" className="rounded-full text-white/80" />
-              </div>
-              <p className="text-white/90 text-sm mb-1 text-center">建立成功！進入房間後即可開始選遊戲。</p>
-              <p className="text-white/90 text-2xl md:text-3xl font-bold font-mono tracking-widest mb-2 text-center">
-                {createInvite.slug}
-              </p>
-              {inviteBlockCollapsed ? (
-                <>
-                  <p className="text-white/70 text-sm mb-4 text-center">房間碼 · 點下方展開可複製連結或 QR</p>
-                  <button
-                    type="button"
-                    onClick={() => setInviteBlockCollapsed(false)}
-                    className="w-full min-h-[48px] mb-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-                    aria-expanded="false"
-                    aria-label="展開邀請連結與 QR 碼"
-                  >
-                    展開邀請連結
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-white/70 text-sm mb-2 text-center">房間碼 · 分享連結或掃描 QR 加入</p>
-                  <button
-                    type="button"
-                    onClick={() => setInviteBlockCollapsed(true)}
-                    className="mb-3 text-white/50 text-xs hover:text-white/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded px-2 py-1"
-                    aria-expanded="true"
-                    aria-label="收合邀請區塊"
-                  >
-                    收合
-                  </button>
-                  {/* GAMES_500 #181：複製與分享並存時不擁擠 — flex-wrap + gap */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
-                    <input
-                      readOnly
-                      value={createInvite.inviteUrl}
-                      aria-label="邀請連結"
-                      className="flex-1 min-w-0 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm"
-                    />
-                    <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
+                  {/* R2-192：免費用戶顯示 Pro 統計預覽，引導升級 */}
+                  {tier === 'free' && (
+                    <p className="text-white/40 text-xs mb-3 text-center">
+                      升級 Pro 解鎖：勝率、連勝、完整遊戲統計
+                    </p>
+                  )}
+                  {/* R2-209：下一款推薦遊戲 */}
+                  {nextGame && (
                     <button
                       type="button"
                       onClick={() => {
-                        try {
-                          navigator.clipboard.writeText(createInvite.inviteUrl)
-                          toast.success(t('common.copied'))
-                          setInviteCopyJustDone(true)
-                          if (inviteCopyTimeoutRef.current) clearTimeout(inviteCopyTimeoutRef.current)
-                          inviteCopyTimeoutRef.current = setTimeout(() => {
-                            inviteCopyTimeoutRef.current = null
-                            setInviteCopyJustDone(false)
-                          }, INVITE_COPY_FEEDBACK_MS)
-                        } catch {
-                          toast.error(t('gamesRoom.copyFailed'))
-                        }
+                        setActiveGame(nextGame.id)
+                        setGameIdToRate(null)
                       }}
-                      aria-label={inviteCopyJustDone ? t('gamesRoom.inviteCopiedAria') : t('gamesRoom.inviteCopyAria')}
-                      className="min-h-[48px] min-w-[120px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] transition-colors"
+                      className="w-full min-h-[48px] rounded-xl bg-primary-500/20 hover:bg-primary-500/30 border border-primary-500/40 text-primary-300 text-sm font-medium"
                     >
-                      {inviteCopyJustDone ? t('common.copied') : t('gamesRoom.copyLink')}
+                      下一款推薦：{nextGame.name}
                     </button>
-                    </div>
-                  </div>
-                  {showQR && (
-                    <div className="flex justify-center mb-4">
-                      <Image
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(createInvite.inviteUrl)}`}
-                        alt={t('gamesRoom.inviteQR')}
-                        width={200}
-                        height={200}
-                        className="rounded-xl border border-white/10"
-                      />
-                    </div>
                   )}
-                </>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  router.replace(`/games?room=${createInvite.slug}`)
-                  setCreateInvite(null)
-                  setInviteBlockCollapsed(false)
-                }}
-                className="w-full min-h-[48px] rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
+                </m.div>
+              </m.div>
+            )
+          })()}
+        </AnimatePresence>
+
+        {/* Invite Link + QR Modal (after create room) */}
+        <AnimatePresence>
+          {createInvite && (
+            <m.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setCreateInvite(null)}
+            >
+              <m.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/10 overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #6B0F1A 0%, #8B1530 50%, #C9A961 100%)' }}
+                onClick={(e) => e.stopPropagation()}
               >
-                進入房間
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-white">邀請玩家</h2>
+                  <ModalCloseButton onClick={() => { setCreateInvite(null); setInviteCopyJustDone(false); setInviteBlockCollapsed(false); }} aria-label="關閉" className="rounded-full text-white/80" />
+                </div>
+                <p className="text-white/90 text-sm mb-1 text-center">建立成功！進入房間後即可開始選遊戲。</p>
+                <p className="text-white/90 text-2xl md:text-3xl font-bold font-mono tracking-widest mb-2 text-center">
+                  {createInvite.slug}
+                </p>
+                {inviteBlockCollapsed ? (
+                  <>
+                    <p className="text-white/70 text-sm mb-4 text-center">房間碼 · 點下方展開可複製連結或 QR</p>
+                    <button
+                      type="button"
+                      onClick={() => setInviteBlockCollapsed(false)}
+                      className="w-full min-h-[48px] mb-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                      aria-expanded="false"
+                      aria-label="展開邀請連結與 QR 碼"
+                    >
+                      展開邀請連結
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-white/70 text-sm mb-2 text-center">房間碼 · 分享連結或掃描 QR 加入</p>
+                    <button
+                      type="button"
+                      onClick={() => setInviteBlockCollapsed(true)}
+                      className="mb-3 text-white/50 text-xs hover:text-white/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded px-2 py-1"
+                      aria-expanded="true"
+                      aria-label="收合邀請區塊"
+                    >
+                      收合
+                    </button>
+                    {/* GAMES_500 #181：複製與分享並存時不擁擠 — flex-wrap + gap */}
+                    <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
+                      <input
+                        readOnly
+                        value={createInvite.inviteUrl}
+                        aria-label="邀請連結"
+                        className="flex-1 min-w-0 min-h-[48px] bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm"
+                      />
+                      <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              navigator.clipboard.writeText(createInvite.inviteUrl)
+                              toast.success(t('common.copied'))
+                              setInviteCopyJustDone(true)
+                              if (inviteCopyTimeoutRef.current) clearTimeout(inviteCopyTimeoutRef.current)
+                              inviteCopyTimeoutRef.current = setTimeout(() => {
+                                inviteCopyTimeoutRef.current = null
+                                setInviteCopyJustDone(false)
+                              }, INVITE_COPY_FEEDBACK_MS)
+                            } catch {
+                              toast.error(t('gamesRoom.copyFailed'))
+                            }
+                          }}
+                          aria-label={inviteCopyJustDone ? t('gamesRoom.inviteCopiedAria') : t('gamesRoom.inviteCopyAria')}
+                          className="min-h-[48px] min-w-[120px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] transition-colors"
+                        >
+                          {inviteCopyJustDone ? t('common.copied') : t('gamesRoom.copyLink')}
+                        </button>
+                      </div>
+                    </div>
+                    {showQR && (
+                      <div className="flex justify-center mb-4">
+                        <Image
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(createInvite.inviteUrl)}`}
+                          alt={t('gamesRoom.inviteQR')}
+                          width={200}
+                          height={200}
+                          className="rounded-xl border border-white/10"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    router.replace(`/games?room=${createInvite.slug}`)
+                    setCreateInvite(null)
+                    setInviteBlockCollapsed(false)
+                  }}
+                  className="w-full min-h-[48px] rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]"
+                >
+                  進入房間
+                </button>
+              </m.div>
+            </m.div>
+          )}
+        </AnimatePresence>
       </div>
     </PullToRefresh>
   )

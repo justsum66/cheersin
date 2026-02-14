@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Activity, RotateCcw, Check, X, Trophy } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
@@ -114,20 +114,20 @@ export default function ReactionMaster() {
       </div>
 
       {gameState === 'idle' && (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xl games-focus-ring">
           {t('common.roundStart', { n: round + 1 })}
-        </motion.button>
+        </m.button>
       )}
 
       {gameState === 'waiting' && (
         <div className="flex flex-col items-center gap-6">
-          <motion.div
+          <m.div
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1, repeat: Infinity }}
             className="w-32 h-32 rounded-full bg-white/10 border-4 border-white/30 flex items-center justify-center"
           >
             <span className="text-white/50 text-xl">{t('games.reactionMasterWait')}</span>
-          </motion.div>
+          </m.div>
           <div className="grid grid-cols-2 gap-2">
             {players.flatMap(p => COLORS.map((c, i) => (
               <button
@@ -144,13 +144,13 @@ export default function ReactionMaster() {
 
       {gameState === 'show' && targetColor && (
         <div className="flex flex-col items-center gap-6">
-          <motion.div
+          <m.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className={`w-32 h-32 rounded-full ${targetColor.color} flex items-center justify-center shadow-lg`}
           >
             <span className="text-white font-bold text-2xl">{targetColor.name}</span>
-          </motion.div>
+          </m.div>
           <div className="text-center">
             {players.map(p => (
               <div key={p} className="mb-2">
@@ -174,7 +174,7 @@ export default function ReactionMaster() {
       )}
 
       {gameState === 'result' && (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           {wrongPlayer ? (
             <>
               <X className="w-16 h-16 text-red-500 mx-auto mb-2" />
@@ -193,7 +193,7 @@ export default function ReactionMaster() {
             <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">{t('games.reactionMasterNextRound')}</button>
             <CopyResultButton text={wrongPlayer ? `${t('games.reactionMasterTitle')}：${wrongPlayer} ${t('games.reactionMasterDrink')}` : `${t('games.reactionMasterTitle')}：${winner?.[0]} ${t('games.reactionMasterFastest')} ${winner?.[1]}ms`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {Object.keys(scores).length > 0 && (

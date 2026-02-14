@@ -66,20 +66,21 @@ export function getLearnMinutes(): number {
   }
 }
 
-/** 增加學習分鐘數（完成章節時呼叫，預估每章 5 分鐘）；53 學習時長成就 */
-export function addLearnMinutes(delta: number): number {
-  if (typeof window === 'undefined') return 0
+/** 增加學習分鐘數（完成章節時呼叫，預估每章 5 分鐘）；53 學習時長成就；回傳解鎖的徽章 id（若有） */
+export function addLearnMinutes(delta: number): { minutes: number; unlockedBadge: BadgeId | null } {
+  if (typeof window === 'undefined') return { minutes: 0, unlockedBadge: null }
   const prev = getLearnMinutes()
   const next = Math.max(0, prev + delta)
+  let unlocked: BadgeId | null = null
   try {
     localStorage.setItem(LEARN_MINUTES_KEY, String(next))
-    if (next >= 300 && prev < 300) unlockBadge('learn-300')
-    else if (next >= 120 && prev < 120) unlockBadge('learn-120')
-    else if (next >= 60 && prev < 60) unlockBadge('learn-60')
+    if (next >= 300 && prev < 300 && unlockBadge('learn-300')) unlocked = 'learn-300'
+    else if (next >= 120 && prev < 120 && unlockBadge('learn-120')) unlocked = 'learn-120'
+    else if (next >= 60 && prev < 60 && unlockBadge('learn-60')) unlocked = 'learn-60'
   } catch {
     /* ignore */
   }
-  return next
+  return { minutes: next, unlockedBadge: unlocked }
 }
 
 /** 57 每日任務：今日是否已完成任一章節 */
@@ -221,6 +222,7 @@ export const BADGE_LABELS: Record<BadgeId, string> = {
   'learn-300': '學習 5 小時',
   'holiday-cny': '春節限定',
   'course-complete': '完成一門課程',
+  'trivia-streak-5': '酒神隨堂考連續答對 5 題',
 }
 
 /** 59 節慶徽章：若在節慶期間則自動解鎖 */
@@ -254,7 +256,8 @@ export function recordStudyToday(): number {
   return nextDays
 }
 
-export type BadgeId = 'first-quiz' | 'streak-7' | 'games-10' | 'learn-1' | 'wishlist-5' | 'assistant-10' | 'bookmark-5' | 'bookmark-10' | 'learn-60' | 'learn-120' | 'learn-300' | 'holiday-cny' | 'course-complete'
+/** R2-137：遊戲成就 — 連續答對 5 題等 */
+export type BadgeId = 'first-quiz' | 'streak-7' | 'games-10' | 'learn-1' | 'wishlist-5' | 'assistant-10' | 'bookmark-5' | 'bookmark-10' | 'learn-60' | 'learn-120' | 'learn-300' | 'holiday-cny' | 'course-complete' | 'trivia-streak-5'
 
 export function getUnlockedBadges(): BadgeId[] {
   if (typeof window === 'undefined') return []
@@ -267,14 +270,16 @@ export function getUnlockedBadges(): BadgeId[] {
   }
 }
 
-export function unlockBadge(id: BadgeId): void {
-  if (typeof window === 'undefined') return
+/** 解鎖徽章；回傳 true 表示新解鎖（可觸發慶祝 UI） */
+export function unlockBadge(id: BadgeId): boolean {
+  if (typeof window === 'undefined') return false
   const list = getUnlockedBadges()
-  if (list.includes(id)) return
+  if (list.includes(id)) return false
   try {
     localStorage.setItem(KEYS.BADGES, JSON.stringify([...list, id]))
+    return true
   } catch {
-    /* ignore */
+    return false
   }
 }
 

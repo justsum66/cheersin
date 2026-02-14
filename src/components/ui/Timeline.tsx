@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 /** P1-158：時間線組件 — 以時間為軸展示活動歷史；R2-063 節點依次從左側滑入 */
 export interface TimelineItem {
@@ -22,7 +22,7 @@ export function Timeline({ items, className = '' }: TimelineProps) {
   return (
     <ul className={`space-y-0 ${className}`} role="list">
       {items.map((item, i) => (
-        <motion.li
+        <m.li
           key={item.id}
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
@@ -48,7 +48,7 @@ export function Timeline({ items, className = '' }: TimelineProps) {
               <p className="text-xs text-white/40 mt-0.5">{item.meta}</p>
             )}
           </div>
-        </motion.li>
+        </m.li>
       ))}
     </ul>
   )

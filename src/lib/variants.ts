@@ -50,8 +50,9 @@ export const modalOverlay: Variants = {
   exit: { opacity: 0 },
 }
 
+/** R2-032：Modal 內容淡入淡出 + scale 0.9→1 */
 export const modalContent: Variants = {
-  hidden: { opacity: 0, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.9 },
   visible: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.98 },
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useAccordion } from '@/hooks/useAccordion'
 import { TypewriterText } from '@/components/ui/TypewriterText'
@@ -20,7 +20,7 @@ export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
       <TypewriterText text="常見問題" as="h3" reducedMotion={!!reducedMotion} className="text-sm font-medium text-white/60 mb-3" />
       <div className="space-y-2">
         {items.map((item, index) => (
-          <motion.div
+          <m.div
             key={index}
             layout
             className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
@@ -32,16 +32,16 @@ export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
               aria-expanded={openIndex === index}
             >
               <span className="text-sm font-medium">{item.q}</span>
-              <motion.span
+              <m.span
                 animate={{ rotate: openIndex === index ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
                 <ChevronDown className="w-4 h-4 text-white/50" />
-              </motion.span>
+              </m.span>
             </button>
             <AnimatePresence initial={false}>
               {openIndex === index && (
-                <motion.div
+                <m.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -49,10 +49,10 @@ export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
                   className="overflow-hidden"
                 >
                   <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </div>

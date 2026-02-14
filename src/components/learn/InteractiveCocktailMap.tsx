@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
   Info, 
@@ -348,7 +348,7 @@ export function InteractiveCocktailMap() {
 
         {/* Region Markers */}
         {COCKTAIL_REGIONS.map((region) => (
-          <motion.button
+          <m.button
             key={region.id}
             className={`absolute w-6 h-6 rounded-full border-2 border-white/50 shadow-lg z-10 ${
               hoveredRegion === region.id ? 'scale-125 z-20' : ''
@@ -365,7 +365,7 @@ export function InteractiveCocktailMap() {
             whileTap={{ scale: 0.9 }}
             aria-label={`${region.name} - ${region.country}`}
           >
-            <motion.div
+            <m.div
               animate={{ scale: hoveredRegion === region.id ? 1.1 : 1 }}
               className="w-full h-full rounded-full flex items-center justify-center text-white text-xs font-bold drop-shadow-lg"
             >
@@ -374,8 +374,8 @@ export function InteractiveCocktailMap() {
               ) : (
                 <Sparkles className="w-3 h-3" />
               )}
-            </motion.div>
-          </motion.button>
+            </m.div>
+          </m.button>
         ))}
 
         {/* Top Regions Panel */}
@@ -386,7 +386,7 @@ export function InteractiveCocktailMap() {
           </div>
           <div className="space-y-2">
             {topRegions.map((region, index) => (
-              <motion.button
+              <m.button
                 key={region.id}
                 className={`w-full text-left p-2 rounded-lg flex items-center gap-2 text-sm transition-colors ${
                   selectedRegion?.id === region.id
@@ -401,7 +401,7 @@ export function InteractiveCocktailMap() {
                 <span className="text-yellow-400 font-bold">#{region.popularityRank}</span>
                 <span className="text-white">{region.name}</span>
                 <span className="text-white/60 ml-auto">{region.country}</span>
-              </motion.button>
+              </m.button>
             ))}
           </div>
         </div>
@@ -421,14 +421,14 @@ export function InteractiveCocktailMap() {
       {/* Region Information Modal */}
       <AnimatePresence>
         {selectedRegion && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedRegion(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -686,8 +686,8 @@ export function InteractiveCocktailMap() {
                   關閉
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 

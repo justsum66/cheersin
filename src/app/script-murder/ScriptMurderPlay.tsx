@@ -5,7 +5,7 @@
  * SM-01：自 page 拆出
  */
 import Link from 'next/link'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ChevronDown, ChevronUp, Check } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { DrinkingAnimation } from '@/components/games/DrinkingAnimation'
@@ -78,7 +78,7 @@ export function ScriptMurderPlay({
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin max-w-full">
               {Array.from({ length: totalCh }).map((_, i) => (
-                <motion.span
+                <m.span
                   key={i}
                   className={`shrink-0 w-2 h-2 rounded-full ${i < currentIdx ? 'bg-primary-500' : i === currentIdx ? 'bg-primary-400' : 'bg-white/20'}`}
                   initial={false}
@@ -107,7 +107,7 @@ export function ScriptMurderPlay({
           aria-valuemax={totalCh}
           aria-valuetext={t('common.chapterProgress', { current: currentIdx + 1, total: totalCh })}
         >
-          <motion.div
+          <m.div
             className="h-full bg-primary-500 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${((currentIdx + 1) / totalCh) * 100}%` }}
@@ -115,7 +115,7 @@ export function ScriptMurderPlay({
           />
         </div>
         {myRole && (
-          <motion.div
+          <m.div
             key={myRole.id}
             initial={{ rotateY: -95, opacity: 0 }}
             animate={{ rotateY: 0, opacity: 1 }}
@@ -148,7 +148,7 @@ export function ScriptMurderPlay({
             </button>
             <AnimatePresence>
               {roleClueOpen && myRole.secretClue && (
-                <motion.div
+                <m.div
                   id="script-murder-role-clue-region"
                   role="region"
                   aria-label={t('scriptMurder.secretClue')}
@@ -161,28 +161,28 @@ export function ScriptMurderPlay({
                   <p className="px-4 py-2 text-amber-200/90 text-sm break-words">
                     {t('scriptMurder.secretClue')}：{myRole.secretClue}
                   </p>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </m.div>
         )}
         {/* SM-10：章節切換 transition；投票揭曉／懲罰區塊已有 motion 入場 */}
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={currentIdx}
             initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: transitionDur, ease: 'easeOut' }}
           >
-            <motion.h2
+            <m.h2
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: transitionDur, delay: prefersReducedMotion ? 0 : 0.05 }}
               className="text-lg font-semibold text-white mb-4"
             >
               {currentChapter.title}
-            </motion.h2>
+            </m.h2>
             <div className="space-y-4">
               {contentNodes.map((node, i) => (
                 <ContentNodeBlock
@@ -201,7 +201,7 @@ export function ScriptMurderPlay({
                 <p className="text-white/50 text-sm" role="status">{t('scriptMurder.waitHostNext')}</p>
               )}
               {isHost && (
-                <motion.button
+                <m.button
                   type="button"
                   disabled={actionLoading || (hasPunishment && !scriptState.punishmentDone)}
                   onClick={() => postScriptAction('advance')}
@@ -209,10 +209,10 @@ export function ScriptMurderPlay({
                   className="min-h-[48px] px-6 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium games-focus-ring disabled:opacity-50"
                 >
                   {actionLoading ? t('actions.loading') : t('scriptMurder.nextChapter')}
-                </motion.button>
+                </m.button>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
     </div>
@@ -244,7 +244,7 @@ function ContentNodeBlock({
     const baseClass = `leading-relaxed ${isNpc ? 'italic text-white/60 pl-4 border-l-2 border-white/20' : 'text-white/80'}`
     if (highlights.length === 0) {
       return (
-        <motion.p
+        <m.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: prefersReducedMotion ? 0 : 0.05 }}
@@ -254,7 +254,7 @@ function ContentNodeBlock({
         >
           {isNpc && <span className="text-white/40 text-sm not-italic">{t('scriptMurder.npcNarration')}：</span>}
           {text}
-        </motion.p>
+        </m.p>
       )
     }
     const parts: Array<{ str: string; highlight: boolean }> = []
@@ -269,7 +269,7 @@ function ContentNodeBlock({
     }
     if (remaining) parts.push({ str: remaining, highlight: false })
     return (
-      <motion.p
+      <m.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: prefersReducedMotion ? 0 : 0.05 }}
@@ -287,7 +287,7 @@ function ContentNodeBlock({
             <span key={i}>{p.str}</span>
           )
         )}
-      </motion.p>
+      </m.p>
     )
   }
 
@@ -303,7 +303,7 @@ function ContentNodeBlock({
     )
     const maxCount = Math.max(1, ...Object.values(voteCounts))
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDur }}
@@ -317,13 +317,13 @@ function ContentNodeBlock({
         )}
         {myVote ? (
           <>
-            <motion.p
+            <m.p
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               className="text-primary-300 text-sm flex items-center gap-2 mb-3"
             >
               <Check className="w-4 h-4" /> {t('scriptMurder.voted')}：{myVote}
-            </motion.p>
+            </m.p>
             {totalVotes > 0 && (
               <p className="text-white/50 text-xs mb-2" aria-live="polite">
                 {t('scriptMurder.voteTotal', { count: totalVotes })}
@@ -343,7 +343,7 @@ function ContentNodeBlock({
                         {opt}
                       </span>
                       <div className="flex-1 h-6 rounded-md bg-white/10 overflow-hidden min-w-[60px]">
-                        <motion.div
+                        <m.div
                           className="h-full bg-primary-500/80 rounded-md"
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
@@ -363,7 +363,7 @@ function ContentNodeBlock({
           <p className="text-white/50 text-sm">{t('scriptMurder.noVoteOptions')}</p>
         ) : (
           (node.options ?? []).map((opt, j) => (
-            <motion.button
+            <m.button
               key={j}
               type="button"
               disabled={actionLoading}
@@ -372,17 +372,17 @@ function ContentNodeBlock({
               className="block w-full text-left min-h-[48px] px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white mb-2 games-focus-ring disabled:opacity-50"
             >
               {opt}
-            </motion.button>
+            </m.button>
           ))
         )}
-      </motion.div>
+      </m.div>
     )
   }
 
   if (node.type === 'punishment') {
     const [diceMin, diceMax] = node.diceRange ?? []
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDur }}
@@ -397,18 +397,18 @@ function ContentNodeBlock({
         )}
         {scriptState.punishmentDone ? (
           <>
-            <motion.p
+            <m.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="mt-3 text-amber-200/90 text-sm flex items-center gap-2"
             >
               <Check className="w-4 h-4 shrink-0" /> {t('scriptMurder.executed')}
-            </motion.p>
+            </m.p>
             {/* R2-128：懲罰執行後顯示倒酒視覺化 */}
             <DrinkingAnimation duration={1.2} className="mt-3 mx-auto" />
           </>
         ) : (
-          <motion.button
+          <m.button
             type="button"
             disabled={actionLoading}
             onClick={() => postScriptAction('punishment_done')}
@@ -416,15 +416,15 @@ function ContentNodeBlock({
             className="mt-3 min-h-[48px] px-4 py-2 rounded-lg bg-amber-500/20 text-amber-200 font-medium games-focus-ring"
           >
             {t('scriptMurder.confirmed')}
-          </motion.button>
+          </m.button>
         )}
-      </motion.div>
+      </m.div>
     )
   }
 
   if (node.type === 'choice') {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDur }}
@@ -439,13 +439,13 @@ function ContentNodeBlock({
           ))}
         </ul>
         <p className="text-white/50 text-xs mt-3">{t('scriptMurder.nodeWaitHost')}</p>
-      </motion.div>
+      </m.div>
     )
   }
 
   if (node.type === 'timer') {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDur }}
@@ -458,7 +458,7 @@ function ContentNodeBlock({
         {node.timeoutPunishment && <p className="text-white/60 text-xs mt-1">{t('scriptMurder.timerTimeout')}：{node.timeoutPunishment}</p>}
         {node.successReward && <p className="text-primary-300/80 text-xs mt-1">{t('scriptMurder.timerSuccess')}：{node.successReward}</p>}
         <p className="text-white/50 text-xs mt-3">{t('scriptMurder.nodeWaitHost')}</p>
-      </motion.div>
+      </m.div>
     )
   }
 

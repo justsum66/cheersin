@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 const TESTIMONIALS = [
   { name: 'Amy', text: '測驗結果超準，推薦的酒款真的對味！', tag: '靈魂酒測' },
@@ -16,7 +16,7 @@ export default function HomeTestimonials() {
     <div className="overflow-hidden py-4">
       <div className="flex gap-4 animate-scroll-left hover:[animation-play-state:paused]">
         {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-          <motion.div
+          <m.div
             key={i}
             initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -30,7 +30,7 @@ export default function HomeTestimonials() {
                 {t.tag}
               </span>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </div>

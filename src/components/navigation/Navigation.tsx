@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import {
   Crown,
   Sun,
@@ -21,6 +21,7 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { BrandLogo } from '@/components/BrandLogo'
 import { NotificationPanel } from '@/components/navigation/NotificationPanel'
+import { ThemeTransitionOverlay } from '@/components/theme/ThemeTransitionOverlay'
 import { UserMenu } from '@/components/navigation/UserMenu'
 import {
   NAV_ITEMS,
@@ -47,6 +48,8 @@ export default function Navigation() {
   const [scrollY, setScrollY] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  /** R2-048：主題切換圓形擴散過渡 */
+  const [themeTransition, setThemeTransition] = useState<{ target: 'dark' | 'light'; x: number; y: number } | null>(null)
 
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement>(null)
@@ -124,7 +127,17 @@ export default function Navigation() {
   /* L71：列印時隱藏導航，課程頁列印僅印主體 */
   return (
     <>
-      <motion.nav
+      {themeTransition != null && (
+        <ThemeTransitionOverlay
+          targetTheme={themeTransition.target}
+          origin={{ x: themeTransition.x, y: themeTransition.y }}
+          onComplete={(target) => {
+            setTheme(target)
+            setThemeTransition(null)
+          }}
+        />
+      )}
+      <m.nav
         className="fixed top-0 left-0 right-0 backdrop-blur-2xl print:hidden safe-area-pt"
         style={{
           zIndex: Z_NAV_TOP,
@@ -142,17 +155,24 @@ export default function Navigation() {
         <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* N08 / UX_LAYOUT_200 #66：品牌區可點回首頁；單一 Link 由 BrandLogo 渲染，避免 <a> 巢狀 */}
-            <motion.div
+            <m.div
               whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
             >
               <BrandLogo variant="nav" href="/" />
-            </motion.div>
+            </m.div>
 
             {/* N20：主題/高對比/字體 aria-pressed 與 state 一致 */}
             <div className="flex items-center gap-1" role="group" aria-label="顯示設定">
               <button
-                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+                onClick={(e) => {
+                  const target = resolved === 'dark' ? 'light' : 'dark'
+                  if (prefersReducedMotion) {
+                    setTheme(target)
+                    return
+                  }
+                  setThemeTransition({ target, x: e.clientX, y: e.clientY })
+                }}
                 className="p-2 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-colors games-touch-target flex items-center justify-center games-focus-ring"
                 title={resolved === 'dark' ? '切換淺色' : '切換深色'}
                 aria-label={resolved === 'dark' ? '切換淺色模式' : '切換深色模式'}
@@ -198,13 +218,13 @@ export default function Navigation() {
                     aria-current={isActive ? 'page' : undefined}
                     className="games-focus-ring rounded-full"
                   >
-                    <motion.div
+                    <m.div
                       className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors min-h-[48px] flex items-center ${isActive ? 'text-primary-400 font-semibold' : 'text-white/60 hover:text-white'}`}
                       whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
                       whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
                     >
                       {isActive && (
-                        <motion.div
+                        <m.div
                           layoutId={prefersReducedMotion ? undefined : 'nav-pill'}
                           className="absolute inset-0 bg-white/10 rounded-full"
                           transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -213,13 +233,13 @@ export default function Navigation() {
                       <span className="relative z-10">{label}</span>
                       {/* R2-046：當前頁滑動底線指示器 */}
                       {isActive && (
-                        <motion.span
+                        <m.span
                           layoutId={prefersReducedMotion ? undefined : 'nav-active-underline'}
                           className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary-400 rounded-full"
                           transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 30 }}
                         />
                       )}
-                    </motion.div>
+                    </m.div>
                   </Link>
                 )
               })}
@@ -233,13 +253,13 @@ export default function Navigation() {
                 aria-current={(pathname === '/pricing' || pathname === '/subscription') ? 'page' : undefined}
                 className="nav-cta-ux icon-interact icon-glow games-focus-ring rounded-lg flex items-center gap-2 text-xs font-bold uppercase tracking-wider games-touch-target justify-center"
               >
-                <motion.span
+                <m.span
                   className={tier === 'free' ? 'text-secondary-500 hover:text-secondary-400' : 'text-primary-400 hover:text-primary-300'}
                   whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
                 >
                   <Crown className="w-5 h-5" aria-hidden />
                   {tierLabel}
-                </motion.span>
+                </m.span>
               </Link>
               <div className="h-6 w-px flex-shrink-0 bg-white/10" role="separator" aria-hidden />
 
@@ -256,7 +276,7 @@ export default function Navigation() {
             </div>
 
             {/* N07/N29：行動選單按鈕 aria-controls、ref 供焦點回歸 */}
-            <motion.button
+            <m.button
               ref={menuButtonRef}
               className="md:hidden games-touch-target w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 games-focus-ring"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -267,29 +287,29 @@ export default function Navigation() {
             >
               <AnimatePresence mode="wait">
                 {isMobileMenuOpen ? (
-                  <motion.div
+                  <m.div
                     key="close"
                     initial={prefersReducedMotion ? undefined : { rotate: -90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={prefersReducedMotion ? undefined : { rotate: 90, opacity: 0 }}
                   >
                     <X className="w-5 h-5 text-white" />
-                  </motion.div>
+                  </m.div>
                 ) : (
-                  <motion.div
+                  <m.div
                     key="menu"
                     initial={prefersReducedMotion ? undefined : { rotate: 90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={prefersReducedMotion ? undefined : { rotate: -90, opacity: 0 }}
                   >
                     <Menu className="w-5 h-5 text-white" />
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
-            </motion.button>
+            </m.button>
           </div>
         </div>
-      </motion.nav>
+      </m.nav>
 
       {/* N21 / UX-013：底部導航 z-index、safe-area、aria-current、巢狀路由高亮；UX-004 ref 供鍵盤彈起時 scrollIntoView */}
       <nav
@@ -321,7 +341,7 @@ export default function Navigation() {
       {/* N15：行動選單 overlay 點擊關閉；N07 id；N19 順序與桌面一致 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
+          <m.div
             ref={mobileMenuRef}
             id={MOBILE_MENU_ID}
             className="fixed inset-0 md:hidden bg-[#1a0a2e]/90 backdrop-blur-xl"
@@ -345,7 +365,7 @@ export default function Navigation() {
               {NAV_ITEMS.map((item, index) => {
                 const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
-                  <motion.div
+                  <m.div
                     key={item.href}
                     initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -361,13 +381,13 @@ export default function Navigation() {
                       <item.icon className={`w-8 h-8 ${isActive ? 'text-primary-400/80' : 'text-white/50'}`} />
                       {t(`nav.${item.navKey}`)}
                     </Link>
-                  </motion.div>
+                  </m.div>
                 )
               })}
 
               <div className="w-16 h-[1px] bg-white/10 my-4" aria-hidden />
 
-              <motion.div
+              <m.div
                 initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.3 }}
@@ -377,9 +397,9 @@ export default function Navigation() {
                     {CTA_UNLOCK_PRO}
                   </button>
                 </Link>
-              </motion.div>
+              </m.div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

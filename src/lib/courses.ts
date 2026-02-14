@@ -16,6 +16,8 @@ export interface Chapter {
   title: string
   duration: string
   content: string
+  /** R2-385：可選影片 URL（YouTube 或 mp4），課程內嵌播放 */
+  videoUrl?: string | null
   /** 158 互動式測驗（可選） */
   quiz?: ChapterQuizItem[]
 }

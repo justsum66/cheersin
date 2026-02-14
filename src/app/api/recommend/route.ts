@@ -4,7 +4,9 @@ import { getEmbedding } from '@/lib/embedding'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { RecommendPostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
 import { logApiError } from '@/lib/api-error-log'
+import { PINECONE_API_KEY, PINECONE_API_URL } from '@/lib/env-config'
 
 const NAMESPACE_WINES = 'wines'
 
@@ -21,17 +23,12 @@ export async function POST(request: NextRequest) {
       res.headers.set('X-RateLimit-Limit', '30')
       return res
     }
-    const raw = await request.json().catch(() => null)
-    if (raw === null) return errorResponse(400, 'INVALID_JSON', { message: '請求 body 必須為有效 JSON' })
-    const parsed = RecommendPostBodySchema.safeParse(raw)
-    if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: '請求參數格式錯誤' })
+    const parsed = await zodParseBody(request, RecommendPostBodySchema)
+    if (!parsed.success) return parsed.response
     const body = parsed.data
 
-    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_API_URL) {
-      return NextResponse.json(
-        { error: 'Pinecone not configured' },
-        { status: 503 }
-      )
+    if (!PINECONE_API_KEY || !PINECONE_API_URL) {
+      return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Pinecone 未設定，無法提供推薦' })
     }
 
     let vector: number[] | null = null

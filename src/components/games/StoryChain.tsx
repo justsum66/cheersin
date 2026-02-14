@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { BookOpen, RotateCcw, Trophy, PenTool } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -97,13 +97,13 @@ export default function StoryChain() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-blue-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-teal-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           故事接龍
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">發揮創意，共同編織精彩故事！</p>
 
         <GameRules 
@@ -118,7 +118,7 @@ export default function StoryChain() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -144,11 +144,11 @@ export default function StoryChain() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -199,7 +199,7 @@ export default function StoryChain() {
               </div>
 
               <div className="w-full bg-white/10 rounded-full h-2">
-                <motion.div 
+                <m.div 
                   className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full"
                   initial={{ width: '0%' }}
                   animate={{ width: `${(storyParts.length / (players.length * 2)) * 100}%` }}
@@ -209,11 +209,11 @@ export default function StoryChain() {
               <p className="text-center text-white/80 mt-2">
                 {t('common.segmentsProgress', { current: storyParts.length, total: players.length * 2 })}
               </p>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -242,7 +242,7 @@ export default function StoryChain() {
                 <h3 className="text-xl font-bold mb-4 text-center">創意得分</h3>
                 <div className="space-y-3">
                   {players.map((player, index) => (
-                    <motion.div
+                    <m.div
                       key={player}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -253,7 +253,7 @@ export default function StoryChain() {
                         <span className="font-bold text-green-400">{player}</span>
                         <span className="text-2xl font-bold text-yellow-400">{scores[player] || 0}分</span>
                       </div>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function StoryChain() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

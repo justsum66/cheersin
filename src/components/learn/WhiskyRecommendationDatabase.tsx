@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Filter, Star, ShoppingCart, Award, TrendingUp, MapPin, Calendar, DollarSign } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 // 威士忌推薦資料庫
 const WHISKY_RECOMMENDATIONS = [
@@ -257,6 +257,8 @@ const FILTER_OPTIONS = {
   abv: ['40%以下', '40-45%', '45-50%', '50%以上']
 };
 
+type WhiskyRecommendation = typeof WHISKY_RECOMMENDATIONS[number];
+
 export function WhiskyRecommendationDatabase() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Record<string, string[]>>({
@@ -270,7 +272,7 @@ export function WhiskyRecommendationDatabase() {
   });
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'name' | 'abv'>('rating');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedWhisky, setSelectedWhisky] = useState<any>(null);
+  const [selectedWhisky, setSelectedWhisky] = useState<WhiskyRecommendation | null>(null);
 
   // 應用篩選和排序
   const filteredAndSortedWhiskies = useMemo(() => {
@@ -279,7 +281,7 @@ export function WhiskyRecommendationDatabase() {
     // 應用搜尋
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(whisky => 
+      result = result.filter(whisky =>
         whisky.name.toLowerCase().includes(term) ||
         whisky.description.toLowerCase().includes(term) ||
         whisky.tastingNotes.toLowerCase().includes(term) ||
@@ -329,8 +331,8 @@ export function WhiskyRecommendationDatabase() {
 
     // 應用排序
     result.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortBy) {
         case 'rating':
@@ -402,13 +404,13 @@ export function WhiskyRecommendationDatabase() {
             className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
-        
+
         <select
           value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [field, order] = e.target.value.split('-');
-            setSortBy(field as any);
-            setSortOrder(order as any);
+            setSortBy(field as typeof sortBy);
+            setSortOrder(order as typeof sortOrder);
           }}
           className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
@@ -437,7 +439,7 @@ export function WhiskyRecommendationDatabase() {
             清除全部
           </button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(FILTER_OPTIONS).map(([category, options]) => (
             <div key={category} className="space-y-2">
@@ -455,11 +457,10 @@ export function WhiskyRecommendationDatabase() {
                   <button
                     key={option}
                     onClick={() => toggleFilter(category, option)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
-                      filters[category].includes(option)
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${filters[category].includes(option)
                         ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
                         : 'bg-white/10 text-white/70 hover:bg-white/20'
-                    }`}
+                      }`}
                   >
                     {option}
                   </button>
@@ -479,7 +480,7 @@ export function WhiskyRecommendationDatabase() {
       {/* 威士忌卡片列表 */}
       <div className="grid gap-4">
         {filteredAndSortedWhiskies.map((whisky, index) => (
-          <motion.div
+          <m.div
             key={whisky.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -511,9 +512,9 @@ export function WhiskyRecommendationDatabase() {
                     <div className="text-sm text-white/60">{whisky.abv}</div>
                   </div>
                 </div>
-                
+
                 <p className="text-white/80 mt-2 text-sm">{whisky.description}</p>
-                
+
                 <div className="flex flex-wrap gap-2 mt-3">
                   <span className="px-2 py-1 bg-white/10 rounded-full text-xs text-white/70">
                     {whisky.ageStatement}
@@ -529,7 +530,7 @@ export function WhiskyRecommendationDatabase() {
                   )}
                 </div>
               </div>
-              
+
               <div className="lg:w-64">
                 <div className="space-y-2 text-sm">
                   <div>
@@ -559,19 +560,19 @@ export function WhiskyRecommendationDatabase() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* 威士忌詳細資訊彈窗 */}
       {selectedWhisky && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedWhisky(null)}
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
@@ -698,7 +699,7 @@ export function WhiskyRecommendationDatabase() {
                   <div className="space-y-2">
                     <p className="text-white/70 text-sm">可取得性: {selectedWhisky.availability}</p>
                     <div className="space-y-2">
-                      {selectedWhisky.purchaseLinks.map((link: any, i: number) => (
+                      {selectedWhisky.purchaseLinks.map((link: WhiskyRecommendation['purchaseLinks'][number], i: number) => (
                         <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                           <div>
                             <div className="font-medium text-white">{link.platform}</div>
@@ -706,9 +707,9 @@ export function WhiskyRecommendationDatabase() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-white">{link.price}</span>
-                            <a 
-                              href={link.url} 
-                              target="_blank" 
+                            <a
+                              href={link.url}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm hover:opacity-90 transition-opacity"
                             >
@@ -722,8 +723,8 @@ export function WhiskyRecommendationDatabase() {
                 </div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </div>
   );

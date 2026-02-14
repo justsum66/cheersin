@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Music, RefreshCw, Circle } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -175,14 +175,14 @@ export default function RhythmTap() {
 
       {gamePhase === 'countdown' && (
         <div className="text-center">
-          <motion.p
+          <m.p
             key={countdown}
             initial={reducedMotion ? false : { scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="text-8xl font-bold text-pink-400"
           >
             {countdown}
-          </motion.p>
+          </m.p>
           <p className="text-white/60 mt-4">準備好...</p>
         </div>
       )}
@@ -191,7 +191,7 @@ export default function RhythmTap() {
         <div className="text-center w-full max-w-md">
           <div className="flex justify-center gap-2 mb-6">
             {Array.from({ length: BEATS_PER_ROUND }).map((_, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 animate={{
                   scale: i === currentBeat ? [1, 1.3, 1] : 1,
@@ -203,21 +203,21 @@ export default function RhythmTap() {
             ))}
           </div>
 
-          <motion.button
+          <m.button
             type="button"
             onClick={handleTap}
             whileTap={{ scale: 0.95 }}
             className="w-48 h-48 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center games-focus-ring shadow-lg shadow-pink-500/30"
           >
             <Circle className="w-24 h-24 text-white" fill="white" />
-          </motion.button>
+          </m.button>
 
           <p className="text-white/50 mt-4">點擊次數：{tapTimes.length}</p>
         </div>
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -247,7 +247,7 @@ export default function RhythmTap() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

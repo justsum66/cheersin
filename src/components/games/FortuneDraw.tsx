@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Ticket, RefreshCw, Trophy, Sparkles } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -159,25 +159,25 @@ export default function FortuneDraw() {
 
       <AnimatePresence mode="wait">
         {isDrawing && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="text-center"
           >
-            <motion.div
+            <m.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               className="w-20 h-20 mx-auto mb-4"
             >
               <Sparkles className="w-full h-full text-amber-400" />
-            </motion.div>
+            </m.div>
             <p className="text-white/70">抽籤中...</p>
-          </motion.div>
+          </m.div>
         )}
 
         {fortune && categoryData && (
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.8, rotateY: 180 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             className={`w-full max-w-md bg-gradient-to-br ${categoryData.color} rounded-2xl p-6 mb-6 border border-white/30 shadow-lg`}
@@ -197,7 +197,7 @@ export default function FortuneDraw() {
                 <p className="text-lg font-bold">{fortune.action}</p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

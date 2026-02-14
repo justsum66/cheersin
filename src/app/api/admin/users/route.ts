@@ -7,13 +7,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminRequest } from '@/lib/admin-auth'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { ADMIN_ERROR, ADMIN_MESSAGE } from '@/lib/api-error-codes'
+import { ADMIN_SECRET } from '@/lib/env-config'
 import { logger } from '@/lib/logger'
 import type { SubscriptionTier } from '@/lib/subscription'
 
 function isAdmin(request: NextRequest): boolean {
   return isAdminRequest(
     request.headers.get('x-admin-secret'),
-    process.env.ADMIN_SECRET,
+    ADMIN_SECRET,
     process.env.NODE_ENV === 'development'
   )
 }
@@ -21,18 +23,15 @@ function isAdmin(request: NextRequest): boolean {
 /** GET /api/admin/users?q=email@example.com 或 ?q=uuid */
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   const supabase = createServerClientOptional()
   if (!supabase) {
-    return NextResponse.json(
-      { error: 'Supabase not configured' },
-      { status: 503 }
-    )
+    return errorResponse(503, ADMIN_ERROR.SERVICE_NOT_CONFIGURED, { message: ADMIN_MESSAGE.SUPABASE_NOT_CONFIGURED })
   }
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q) {
-    return errorResponse(400, 'Missing query', { message: '請提供查詢參數 q（email 或 user id）' })
+    return errorResponse(400, ADMIN_ERROR.MISSING_QUERY, { message: ADMIN_MESSAGE.MISSING_QUERY })
   }
 
   try {
@@ -91,28 +90,25 @@ const VALID_TIERS: SubscriptionTier[] = ['free', 'basic', 'premium']
 /** PATCH /api/admin/users — 更新用戶訂閱階級 */
 export async function PATCH(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   const supabase = createServerClientOptional()
   if (!supabase) {
-    return NextResponse.json(
-      { error: 'Supabase not configured' },
-      { status: 503 }
-    )
+    return errorResponse(503, ADMIN_ERROR.SERVICE_NOT_CONFIGURED, { message: ADMIN_MESSAGE.SUPABASE_NOT_CONFIGURED })
   }
 
   let body: { userId: string; subscription_tier: SubscriptionTier }
   try {
     body = await request.json()
   } catch {
-    return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
+    return errorResponse(400, ADMIN_ERROR.INVALID_JSON, { message: ADMIN_MESSAGE.INVALID_JSON_BODY })
   }
   const { userId, subscription_tier } = body
   if (!userId || typeof userId !== 'string') {
-    return errorResponse(400, 'Missing userId', { message: '請提供 userId' })
+    return errorResponse(400, ADMIN_ERROR.MISSING_USER_ID, { message: ADMIN_MESSAGE.MISSING_USER_ID })
   }
   if (!VALID_TIERS.includes(subscription_tier)) {
-    return errorResponse(400, 'Invalid tier', { message: 'subscription_tier 須為 free、basic 或 premium' })
+    return errorResponse(400, ADMIN_ERROR.INVALID_TIER, { message: ADMIN_MESSAGE.INVALID_TIER })
   }
 
   try {
@@ -125,7 +121,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) throw error
     if (!data) {
-      return errorResponse(404, 'User not found', { message: '找不到該用戶' })
+      return errorResponse(404, ADMIN_ERROR.USER_NOT_FOUND, { message: ADMIN_MESSAGE.USER_NOT_FOUND })
     }
 
     logger.info('Admin updated user tier', { userId, subscription_tier })

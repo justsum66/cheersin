@@ -1,13 +1,20 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizeEnv, normalizeUrl } from '@/lib/env'
 
 /** SEC-009：JWT 刷新由 @supabase/ssr createBrowserClient 自動處理；401 由各 API 呼叫端或統一 error boundary 處理 */
+/** R2-250：瀏覽器端 Supabase client 單例，避免重複建立連線 */
+let browserClient: SupabaseClient | null = null
+
 /** 瀏覽器端 Supabase client（anon key，受 RLS 限制）；用於登入、profiles、Realtime */
 export function createClient() {
+  if (typeof window !== 'undefined' && browserClient) return browserClient
   const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
   const key = normalizeEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '')
   if (!url || !key) {
     throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
   }
-  return createBrowserClient(url, key)
+  const client = createBrowserClient(url, key)
+  if (typeof window !== 'undefined') browserClient = client
+  return client
 }

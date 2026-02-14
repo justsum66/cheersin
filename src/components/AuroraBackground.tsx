@@ -1,9 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
-/** 裝飾用背景；原 P001 動態載入 motion.div 在 Next 15 + webpack 下可能回傳 undefined 導致 runtime "reading 'call'" 錯誤，改為直接 import（optimizePackageImports 已做 tree-shake） */
-const MotionDiv = motion.div
+/** 裝飾用背景；須使用 m 而非 motion，因在 LazyMotion 內渲染（motion 會破壞 tree shaking）。 */
+const MotionDiv = m.div
 
 /** A11y: 純裝飾背景，標記 aria-hidden 避免 region 違規 */
 export default function AuroraBackground() {

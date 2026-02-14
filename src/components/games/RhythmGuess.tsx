@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -158,7 +158,7 @@ export default function RhythmGuess() {
       )}
       {/* G3D-RhythmGuess-01：節奏按鈕 3D 立體、拍點按下動效 */}
       {phase === 'beat' && (
-        <motion.button
+        <m.button
           type="button"
           onClick={handleTap}
           className="min-h-[64px] min-w-[64px] sm:min-h-[80px] sm:min-w-[80px] rounded-full bg-primary-500 text-white text-xl sm:text-2xl font-bold games-focus-ring shadow-[0_6px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.35)]"
@@ -167,11 +167,11 @@ export default function RhythmGuess() {
           whileTap={reducedMotion ? undefined : { scale: 0.95 }}
         >
           <span className="tabular-nums">{beatIndex + 1} / {beatCount}</span>
-        </motion.button>
+        </m.button>
       )}
       {/* G3D-RhythmGuess-04/579：結果區贏/喝 3D 或動效強調 */}
       {phase === 'result' && result && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 }}
@@ -193,7 +193,7 @@ export default function RhythmGuess() {
               下一位
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </div>
   )

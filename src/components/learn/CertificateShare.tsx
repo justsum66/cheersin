@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Award, Share2, Copy, Download, Check, Twitter, Instagram, Sparkles } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import { logger } from '@/lib/logger'
@@ -82,7 +82,7 @@ export function CertificateShare({
   return (
     <div className={className}>
       {/* 觸發按鈕 */}
-      <motion.button
+      <m.button
         type="button"
         onClick={() => setIsOpen(true)}
         whileHover={{ scale: 1.02 }}
@@ -92,19 +92,19 @@ export function CertificateShare({
         <Award className="w-5 h-5" />
         <span className="font-medium">查看證書</span>
         <Share2 className="w-4 h-4 ml-1" />
-      </motion.button>
+      </m.button>
 
       {/* 證書彈窗 */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
@@ -248,8 +248,8 @@ export function CertificateShare({
               >
                 關閉
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

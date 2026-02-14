@@ -1,12 +1,12 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { SkeletonCard, SkeletonText } from '@/components/ui/Skeleton'
 
 /** R2-039：頁面切換過渡 — 淡入；48 骨架屏優化首屏體驗 */
 export default function Loading() {
   return (
-    <motion.main
+    <m.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
@@ -30,7 +30,7 @@ export default function Loading() {
         </div>
         <SkeletonText lines={5} className="max-w-2xl min-h-[120px]" />
       </div>
-    </motion.main>
+    </m.main>
   )
 }
 

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Send, RotateCcw, Trophy, Star } from 'lucide-react'
+import { m , AnimatePresence } from 'framer-motion'
+import { Heart, Send, RotateCcw, Trophy } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { VoteBarChart } from './VoteBarChart'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -113,13 +114,13 @@ export default function ComplimentBattle() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-rose-900 to-purple-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           讚美大戰
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">互相讚美，由大家投票選出最棒的！</p>
 
         <GameRules 
@@ -135,7 +136,7 @@ export default function ComplimentBattle() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -161,11 +162,11 @@ export default function ComplimentBattle() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -182,7 +183,7 @@ export default function ComplimentBattle() {
                 <p className="text-lg mb-4">請每位玩家輪流讚美其他人：</p>
                 <div className="space-y-3">
                   {players.map((player, index) => (
-                    <motion.div
+                    <m.div
                       key={player}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -200,7 +201,7 @@ export default function ComplimentBattle() {
                       {compliments[player] && (
                         <p className="text-white/80 mt-2 text-left">&quot;{compliments[player]}&quot;</p>
                       )}
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
               </div>
@@ -212,11 +213,11 @@ export default function ComplimentBattle() {
                     : `還需要 ${players.length - Object.keys(compliments).length} 人完成讚美`}
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'voting' && (
-            <motion.div
+            <m.div
               key="voting"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -230,7 +231,7 @@ export default function ComplimentBattle() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {getVotedPlayers().map((player) => (
-                  <motion.button
+                  <m.button
                     key={player}
                     onClick={() => submitVote(player)}
                     whileHover={{ scale: 1.02 }}
@@ -239,12 +240,12 @@ export default function ComplimentBattle() {
                   >
                     <div className="font-bold text-rose-400 mb-2">{player}</div>
 <p className="text-white/80">&quot;{compliments[player]}&quot;</p>
-                  </motion.button>
+                  </m.button>
                 ))}
               </div>
 
               <div className="w-full bg-white/10 rounded-full h-2">
-                <motion.div 
+                <m.div 
                   className="bg-gradient-to-r from-rose-500 to-pink-500 h-2 rounded-full"
                   initial={{ width: '0%' }}
                   animate={{ width: `${((currentVoter + 1) / players.length) * 100}%` }}
@@ -254,11 +255,11 @@ export default function ComplimentBattle() {
               <p className="text-center text-white/80 mt-2">
                 {t('common.votesProgress', { current: currentVoter + 1, total: players.length })}
               </p>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -269,33 +270,18 @@ export default function ComplimentBattle() {
                 本回合結果
               </h2>
               
-              <div className="space-y-4 mb-8">
-                {Object.entries(votes)
-                  .sort(([,a], [,b]) => b - a)
-                  .map(([player, voteCount], index) => (
-                    <motion.div
-                      key={player}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`bg-white/10 rounded-lg p-4 border-l-4 ${
-                        index === 0 ? 'border-yellow-400' : 'border-white/30'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className={`font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
-                            {player}
-                          </span>
-                          {index === 0 && <Star className="w-4 h-4 inline ml-2 text-yellow-400" />}
-                        </div>
-                        <span className="text-xl font-bold">
-                          {voteCount} 票
-                        </span>
-                      </div>
-<p className="text-white/80 mt-2">&quot;{compliments[player]}&quot;</p>
-                    </motion.div>
-                  ))}
+              <div className="mb-8">
+                <VoteBarChart
+                  items={Object.entries(votes)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([player, count]) => ({
+                      label: player,
+                      count,
+                      subtitle: compliments[player],
+                    }))}
+                  reducedMotion={!!reducedMotion}
+                  highlightFirst
+                />
               </div>
 
               <div className="mb-6">
@@ -325,7 +311,7 @@ export default function ComplimentBattle() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Image, RefreshCw, Trophy, Eye, EyeOff } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -176,7 +176,7 @@ export default function PhotoGuess() {
 
           <AnimatePresence mode="wait">
             {currentPuzzle && (
-              <motion.div
+              <m.div
                 key={currentPuzzle.answer}
                 initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -232,7 +232,7 @@ export default function PhotoGuess() {
                     </button>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

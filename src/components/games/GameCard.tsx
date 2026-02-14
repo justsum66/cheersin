@@ -3,10 +3,10 @@
 import { memo, useState, useEffect, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { cardHover3D } from '@/lib/animations'
 import { ChevronRight, Users, Heart, Star, Share2, Crown, HelpCircle, type LucideIcon } from 'lucide-react'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import { Badge } from '@/components/ui/Badge'
 import { GAME_DIFFICULTY_LABELS, type GameDifficulty } from '@/config/games.config'
 import { GAMES_CARD_PLAYERS_I18N_KEY } from '@/lib/games-ui-constants'
@@ -51,8 +51,12 @@ export interface GameCardData {
   isNew?: boolean
   /** P1-195：付費功能角標（Pro/皇冠） */
   isPremium?: boolean
+  /** R2-191：本週限時免費，與 isPremium 同時為 true 時顯示「本週免費」標籤 */
+  isWeeklyFree?: boolean
   /** P1-118：點擊規則圖標時彈出 Modal 預覽規則 */
   onShowRules?: (game: { id: string; name: string; rulesSummary?: string }) => void
+  /** Task 15: 顯示 18+ 內容標籤 */
+  hasAdultContent?: boolean
 }
 
 /** GAMES_500 #115：描述 line-clamp 行數可配置，預設 2 */
@@ -153,7 +157,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
     <>
       {/* Phase 1 C5.2: Lobby 遊戲卡片 hover 深度效果增強 - 微妙 3D 傾角 + 深度陰影 */}
       {/* Phase 1 E3.3: virtual-scroll-card 優化長列表渲染性能 */}
-      <motion.div
+      <m.div
         ref={buttonRef}
         role="listitem"
         tabIndex={0}
@@ -161,7 +165,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         onMouseLeave={() => setIsHovered(false)}
         onFocus={() => setIsHovered(true)}
         onBlur={() => setIsHovered(false)}
-        className={`virtual-scroll-card rounded-2xl glass-card-spotlight p-4 md:p-6 text-left group flex flex-col gap-4 relative overflow-hidden h-full min-h-[180px] transition-all duration-300 border shadow-glass-2 hover:shadow-glass-hover outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring ${colorHoverGlow[game.color] ?? ''}`}
+        className={`virtual-scroll-card rounded-2xl glass-card-spotlight p-4 md:p-6 text-left group flex flex-col gap-4 relative overflow-hidden h-full min-h-[180px] transition-all duration-300 border shadow-glass-2 hover:shadow-xl hover:border-primary/30 outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring ${colorHoverGlow[game.color] ?? ''}`}
         style={{ transformStyle: 'preserve-3d' }}
         title={game.rulesSummary ?? game.name}
         onClick={() => onSelect(game.id)}
@@ -191,11 +195,23 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         }}
         whileTap={reducedMotion ? undefined : { scale: 0.98 }}
       >
-        {/* P1-195：付費遊戲 Pro/皇冠角標 */}
+        {/* P1-195：付費遊戲 Pro/皇冠角標；R2-191：本週免費時加標籤 */}
         {game.isPremium && (
-          <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-primary-500/90 to-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="Pro 方案解鎖">
-            <Crown className="w-3 h-3" /> Pro
+          <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1.5 flex-wrap justify-end max-w-[70%]">
+            {game.isWeeklyFree && (
+              <span className="inline-flex px-2 py-0.5 rounded-md bg-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="本週限時免費">本週免費</span>
+            )}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-primary-500/90 to-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="Pro 方案解鎖">
+              <Crown className="w-3 h-3" /> Pro
+            </span>
           </span>
+        )}
+        {/* Task 15: 18+ 標籤 - 與 Premium 並排或單獨顯示 */}
+        {game.hasAdultContent && !game.isPremium && (
+          <span className="absolute top-2 right-2 z-10 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold shadow-md" aria-label="含成人內容">18+</span>
+        )}
+        {game.hasAdultContent && game.isPremium && (
+          <span className="absolute top-8 right-2 z-10 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold shadow-md" aria-label="含成人內容">18+</span>
         )}
         {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
         {game.isNew && !game.isPremium && (
@@ -203,8 +219,9 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             <Badge variant="accent" size="sm">{t('games.new')}</Badge>
           </span>
         )}
+        {/* R2-057：人氣標籤脈動吸引注意 */}
         {game.popular && !game.isNew && (
-          <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
+          <span className="absolute top-2 right-2 origin-center rotate-12 inline-flex px-2 py-0.5 rounded bg-secondary-500/90 text-secondary-950 text-[10px] font-bold uppercase tracking-wider shadow-md z-10 animate-[pulse_2.5s_ease-in-out_infinite]">
             {t('games.popular')}
           </span>
         )}
@@ -218,7 +235,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         {/* 任務 4：收藏心形，左上角，點擊不觸發進入遊戲（不可用 button 包 button，故外層改為 div） */}
         {/* P1-173：收藏心形點擊時跳動動畫 — whileTap 放大 + 心形 keyframe */}
         {game.onToggleFavorite != null && (
-          <motion.button
+          <m.button
             type="button"
             onClick={handleHeartClick}
             className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 hover:bg-white/10 transition-colors games-touch-target flex items-center justify-center games-focus-ring"
@@ -226,7 +243,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             whileTap={reducedMotion ? undefined : { scale: 1.2 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
           >
-            <motion.span
+            <m.span
               key={game.isFavorite ? 'on' : 'off'}
               initial={reducedMotion ? false : { scale: 1 }}
               animate={reducedMotion ? {} : game.isFavorite ? { scale: [1, 1.35, 1] } : { scale: 1 }}
@@ -234,13 +251,13 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
               className="inline-block"
             >
               <Heart className={`w-4 h-4 ${game.isFavorite ? 'fill-red-500 text-red-500' : 'text-white/60'}`} />
-            </motion.span>
-          </motion.button>
+            </m.span>
+          </m.button>
         )}
         {/* GAMES_500 #118 #129：icon 尺寸與 FeatureIcon 一致；間距 token */}
         {/* Phase 1 C5.2: 圖示 hover 放大 + 右上箭頭淡入 */}
         <div className="flex justify-between items-start btn-icon-text-gap">
-          <motion.div
+          <m.div
             className="flex items-center gap-2"
             whileHover={reducedMotion ? undefined : {
               scale: 1.08,
@@ -248,8 +265,8 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             }}
           >
             <FeatureIcon icon={game.icon} size="md" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 0 }}
             whileHover={{ opacity: 1, x: 0 }}
@@ -259,7 +276,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             <div className="p-2 bg-white/10 rounded-full">
               <ChevronRight className="w-4 h-4 text-white" />
             </div>
-          </motion.div>
+          </m.div>
         </div>
 
         <div className="z-10 mt-auto">
@@ -313,7 +330,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         {/* P1-108：hover 顯示規則與評分覆蓋層（背面效果） */}
         <AnimatePresence>
           {showFlipOverlay && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: '100%' }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: '100%' }}
@@ -322,10 +339,10 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
             >
               {game.rulesSummary && <p className="text-white/90 text-sm leading-relaxed text-center mb-2 line-clamp-4">{game.rulesSummary}</p>}
               <StarRow gameId={game.id} rating={game.rating} onRate={game.onRate} />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
       {contextMenu && typeof document !== 'undefined' && createPortal(
         <div
           className="fixed z-[9999] min-w-[160px] rounded-xl border border-white/10 bg-[#1a0a2e] shadow-xl py-1"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { GlassWater, Star, Award, MapPin, TrendingUp, Filter, Search } from 'lucide-react';
 
 interface BeerCiderExample {
@@ -277,7 +277,7 @@ export function BeerCiderExamples() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -292,10 +292,10 @@ export function BeerCiderExamples() {
         <p className="text-white/70 max-w-3xl mx-auto">
           探索世界各地的代表性啤酒與蘋果酒，了解不同風格的特色、風味特徵及品飲建議。
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋和篩選 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -327,10 +327,10 @@ export function BeerCiderExamples() {
             </select>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 統計資訊 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -338,12 +338,12 @@ export function BeerCiderExamples() {
       >
         <span>找到 {sortedExamples.length} 款酒品</span>
         <span>總計 {BEER_CIDER_EXAMPLES.length} 款酒品</span>
-      </motion.div>
+      </m.div>
 
       {/* 酒款列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedExamples.map((example, index) => (
-          <motion.div
+          <m.div
             key={example.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -393,21 +393,21 @@ export function BeerCiderExamples() {
                 <span className="text-xs text-amber-400">{example.availability}</span>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedExample && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedExample(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -585,8 +585,8 @@ export function BeerCiderExamples() {
                   <span className="text-white font-medium">{selectedExample.rating}/5.0</span>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

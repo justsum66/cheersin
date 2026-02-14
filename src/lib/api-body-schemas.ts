@@ -114,4 +114,20 @@ export const SubscriptionPromoPostBodySchema = z.object({
   code: z.string().min(1, 'code required').trim(),
 })
 
+/** 從 schema 推型別，供 api-bodies 與 route 共用，確保與 Zod 一致 */
+export type GamesRoomsPostBody = z.infer<typeof GamesRoomsPostBodySchema>
+export type GamesRoomsPatchBody = z.infer<typeof GamesRoomsPatchBodySchema>
+export type JoinRoomBody = z.infer<typeof JoinRoomBodySchema>
+export type LeaveRoomBody = z.infer<typeof LeaveRoomBodySchema>
+export type RecommendPostBody = z.infer<typeof RecommendPostBodySchema>
+export type ReportPostBody = z.infer<typeof ReportPostBodySchema>
+export type LearnNotesPostBody = z.infer<typeof LearnNotesPostBodySchema>
+export type LearnCertificatePostBody = z.infer<typeof LearnCertificatePostBodySchema>
+export type LearnProgressPostBody = z.infer<typeof LearnProgressPostBodySchema>
+export type ScriptMurderPostBody = z.infer<typeof ScriptMurderPostBodySchema>
+export type SubscriptionPromoPostBody = z.infer<typeof SubscriptionPromoPostBodySchema>
+export type SubscriptionPostBody = z.infer<typeof SubscriptionPostBodySchema>
+export type ChatPostBody = z.infer<typeof ChatPostBodySchema>
+export type VerifyTurnstileBody = z.infer<typeof VerifyTurnstileBodySchema>
+
 export { MAX_DISPLAY_NAME_LENGTH }

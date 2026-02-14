@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Heart, Sparkles, Gamepad2, Bot } from 'lucide-react'
 
 /** P1-266：感謝頁 — 支付完成後可導向此頁，展示解鎖內容並引導立即體驗 */
@@ -13,20 +13,20 @@ export default function ThankYouPage() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl" />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="glass rounded-3xl p-8 md:p-12 max-w-md w-full text-center relative"
       >
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', bounce: 0.5 }}
           className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center"
         >
           <Heart className="w-10 h-10 text-white" aria-hidden />
-        </motion.div>
+        </m.div>
         <h1 className="text-2xl font-display font-bold text-white mb-2">感謝您的支持</h1>
         <p className="text-white/70 text-sm mb-6">
           您已解鎖辣味通行證與完整功能，現在就開始體驗吧。
@@ -64,7 +64,7 @@ export default function ThankYouPage() {
             返回首頁
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </main>
   )
 }

@@ -1,18 +1,22 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 /** G4.23 主題分類：動物/食物/明星等 */
 const THEMES = ['酒類', '食物', '地名', '動物', '明星'] as const
+/** R2-165：加速模式每輪少 1 秒，最少 3 秒 */
+const BASE_SECONDS = 10
+const MIN_SECONDS = 3
 
-/** 乾杯接力：輪流說一個詞接龍，卡住或重複喝。 */
+/** 乾杯接力：輪流說一個詞接龍，卡住或重複喝。R2-165 加速模式可選。 */
 export default function ToastRelay() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
@@ -23,18 +27,58 @@ export default function ToastRelay() {
   const [input, setInput] = useState('')
   const [loser, setLoser] = useState<string | null>(null)
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
+  const [speedMode, setSpeedMode] = useState(false)
+  const [roundIndex, setRoundIndex] = useState(0)
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
+  /** R2-163：連環敬酒模式 — 被敬者立即敬下一位 */
+  const [chainToastMode, setChainToastMode] = useState(false)
+  const [chainToastActive, setChainToastActive] = useState(false)
+  const [chainToasterIndex, setChainToasterIndex] = useState(0)
+  const [chainToastDrinkResult, setChainToastDrinkResult] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [isStartPending, setIsStartPending] = useState(false)
   const [isSubmitPending, setIsSubmitPending] = useState(false)
   const startCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const submitCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const speedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const currentPlayerIndexRef = useRef(currentPlayerIndex)
+  currentPlayerIndexRef.current = currentPlayerIndex
+
+  const secondsForRound = Math.max(MIN_SECONDS, BASE_SECONDS - roundIndex)
 
   useEffect(() => {
     return () => {
       if (startCooldownRef.current) clearTimeout(startCooldownRef.current)
       if (submitCooldownRef.current) clearTimeout(submitCooldownRef.current)
+      if (speedTimerRef.current) clearInterval(speedTimerRef.current)
     }
   }, [])
+
+  /** R2-165：加速模式倒數，時間到當前玩家輸（用 ref 取當前玩家避免閉包過期） */
+  useEffect(() => {
+    if (!speedMode || loser !== null || timeLeft === null) {
+      if (speedTimerRef.current) clearInterval(speedTimerRef.current)
+      speedTimerRef.current = null
+      return
+    }
+    speedTimerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t === null || t <= 1) {
+          if (speedTimerRef.current) clearInterval(speedTimerRef.current)
+          speedTimerRef.current = null
+          play('wrong')
+          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100)
+          const idx = currentPlayerIndexRef.current
+          setLoser(players[idx] ?? '')
+          return null
+        }
+        return t - 1
+      })
+    }, 1000)
+    return () => {
+      if (speedTimerRef.current) clearInterval(speedTimerRef.current)
+    }
+  }, [speedMode, loser, timeLeft, players, play])
 
   /** G-ToastRelay-76 邊界：無玩家時不崩潰 */
   const currentPlayer = players.length > 0 ? players[currentPlayerIndex % players.length] : '—'
@@ -42,7 +86,7 @@ export default function ToastRelay() {
   /** 中文接龍：取最後一字（支援 CJK 字元） */
   const lastChar = lastWord ? (Array.from(lastWord).pop() ?? lastWord.slice(-1)) : null
 
-  const startRound = () => {
+  const startRound = useCallback(() => {
     if (isStartPending) return
     setIsStartPending(true)
     if (startCooldownRef.current) clearTimeout(startCooldownRef.current)
@@ -55,8 +99,23 @@ export default function ToastRelay() {
     setInput('')
     setLoser(null)
     setCurrentPlayerIndex(0)
+    setRoundIndex(0)
+    setTimeLeft(speedMode ? BASE_SECONDS : null)
     inputRef.current?.focus()
-  }
+  }, [isStartPending, play, speedMode])
+
+  /** R2-163：選擇被敬的人 → 顯示喝一口 → 該人成為下一位敬酒者 */
+  const selectChainToastTarget = useCallback((targetIndex: number) => {
+    play('click')
+    const name = players[targetIndex]
+    setChainToastDrinkResult(name)
+    setChainToasterIndex(targetIndex)
+  }, [players, play])
+
+  const chainToastNext = useCallback(() => {
+    play('click')
+    setChainToastDrinkResult(null)
+  }, [play])
 
   const submitWord = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,8 +144,48 @@ export default function ToastRelay() {
     play('click')
     setChain((prev) => [...prev, word])
     setInput('')
+    setRoundIndex((r) => r + 1)
+    const nextTime = speedMode ? Math.max(MIN_SECONDS, BASE_SECONDS - (roundIndex + 1)) : null
+    setTimeLeft(nextTime)
     setCurrentPlayerIndex((i) => (i + 1) % players.length)
     setTimeout(() => inputRef.current?.focus(), 50)
+  }
+
+  /** R2-163：連環敬酒模式進行中時顯示敬酒/喝一口 UI */
+  if (chainToastActive) {
+    const toasterName = players[chainToasterIndex] ?? '—'
+    const otherIndices = players.map((_, i) => i).filter((i) => i !== chainToasterIndex)
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="連環敬酒">
+        <GameRules rules="敬酒的人選一位，被敬的人喝一口後成為下一位敬酒者，依此類推。" rulesKey="toast-relay.chain-rules" />
+        {chainToastDrinkResult ? (
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+            <p className="text-red-400 font-bold text-xl mb-4">{chainToastDrinkResult} 喝一口</p>
+            {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+            <p className="text-white/60 text-sm mb-2">下一輪由 {toasterName} 敬酒</p>
+            <button type="button" onClick={chainToastNext} className="btn-primary px-6 py-3 games-focus-ring">下一輪</button>
+          </m.div>
+        ) : (
+          <div className="text-center">
+            <p className="text-white/70 mb-2">{toasterName} 敬酒</p>
+            <p className="text-white/50 text-sm mb-4">選擇要敬的人（被敬者喝一口後接棒敬下一位）</p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {otherIndices.map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => selectChainToastTarget(i)}
+                  className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-primary-500/30 text-white font-medium games-focus-ring"
+                >
+                  {players[i]}
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={() => setChainToastActive(false)} className="mt-6 text-white/50 text-sm games-focus-ring">結束連環敬酒</button>
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -107,6 +206,32 @@ export default function ToastRelay() {
           </button>
         ))}
       </div>
+      {/* R2-165：加速模式開關（僅在未開始時可切換） */}
+      {chain.length === 0 && (
+        <>
+          <label className="flex items-center gap-2 mb-2 text-white/70 text-sm">
+            <input type="checkbox" checked={speedMode} onChange={(e) => setSpeedMode(e.target.checked)} className="rounded games-focus-ring" />
+            加速模式（每輪少 1 秒，超時喝）
+          </label>
+          {/* R2-163：連環敬酒模式 */}
+          <label className="flex items-center gap-2 mb-2 text-white/70 text-sm">
+            <input type="checkbox" checked={chainToastMode} onChange={(e) => setChainToastMode(e.target.checked)} className="rounded games-focus-ring" />
+            連環敬酒（被敬者立即敬下一位）
+          </label>
+          {chainToastMode && (
+            <button
+              type="button"
+              onClick={() => { play('click'); setChainToasterIndex(0); setChainToastDrinkResult(null); setChainToastActive(true) }}
+              className="mb-4 min-h-[48px] px-6 py-2 rounded-xl bg-secondary-500 text-white font-medium games-focus-ring"
+            >
+              開始連環敬酒
+            </button>
+          )}
+        </>
+      )}
+      {speedMode && timeLeft !== null && !loser && (
+        <p className="text-amber-400 font-mono text-lg mb-1" role="timer" aria-live="polite">剩餘 {timeLeft} 秒</p>
+      )}
       {/* G3D-ToastRelay-07 + P1-130：輪到誰玩家名排版、truncate、輪到你了醒目提示（脈動發光） */}
       <p className="text-white/70 text-base sm:text-lg md:text-xl mb-2 w-full max-w-xs text-center px-2 games-helper" aria-live="polite">
         輪到：<span className="tabular-nums truncate inline-block max-w-[10rem] sm:max-w-none align-bottom animate-pulse text-primary-300 font-bold shadow-[0_0_12px_rgb(139_0_0_/_0.5)]" title={currentPlayer}>{currentPlayer}</span>
@@ -118,8 +243,8 @@ export default function ToastRelay() {
       )}
       {!loser ? (
         <div className="w-full max-w-xs space-y-3">
-          {/* 開始一輪：明確 CTA，smoke 測試與無障礙用 */}
-          {chain.length === 0 && (
+          {/* 開始一輪：明確 CTA，smoke 測試與無障礙用（連環敬酒模式時不顯示） */}
+          {chain.length === 0 && !chainToastMode && (
             <button
               type="button"
               onClick={startRound}
@@ -148,7 +273,7 @@ export default function ToastRelay() {
         </form>
         </div>
       ) : (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 }}
@@ -158,13 +283,14 @@ export default function ToastRelay() {
           data-testid="toast-relay-result"
         >
           <p className="text-red-400 font-bold text-xl md:text-2xl mb-3 games-result-text">{loser} 喝！</p>
+          {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
             <CopyResultButton text={`乾杯接力：${loser} 喝`} label="複製結果" className="games-focus-ring" />
             <button type="button" onClick={startRound} disabled={isStartPending} className="min-h-[48px] min-w-[48px] px-4 rounded-xl bg-white/10 text-white hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed games-focus-ring transition-transform" aria-label="再一輪">
               再一輪
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
       {/* G3D-ToastRelay-04：本局歷史區接龍列表卡片化、間距 */}
       {chain.length > 0 && !loser && (

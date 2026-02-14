@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -108,7 +109,7 @@ export default function WordScramble() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -124,11 +125,11 @@ export default function WordScramble() {
             >
               開始挑戰
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'playing' && currentWord && (
-          <motion.div
+          <m.div
             key="playing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,11 +154,11 @@ export default function WordScramble() {
             >
               確認答案
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && showResult && currentWord && (
-          <motion.div
+          <m.div
             key="result"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -168,6 +169,7 @@ export default function WordScramble() {
             <div className={`text-3xl font-bold ${guess === currentWord.word ? 'text-green-400' : 'text-red-400'}`}>
               {guess === currentWord.word ? '答對了！' : '答錯了！喝一口！'}
             </div>
+            {guess !== currentWord.word && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white/60">正確答案：{currentWord.word}</div>
             <div className="text-white mt-4">
               {players.map(p => (
@@ -189,7 +191,7 @@ export default function WordScramble() {
               </button>
             </div>
             <CopyResultButton text={`文字重組 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

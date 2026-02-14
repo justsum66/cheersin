@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Sparkles, RefreshCw, Clock } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -142,7 +142,7 @@ export default function FlashCard() {
 
       {gamePhase === 'showing' && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center"
@@ -153,18 +153,18 @@ export default function FlashCard() {
             </div>
             <div className="flex gap-4 justify-center text-6xl p-8 bg-white/10 rounded-2xl">
               {flashItems.map((item, i) => (
-                <motion.span
+                <m.span
                   key={i}
                   initial={reducedMotion ? false : { opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                 >
                   {item}
-                </motion.span>
+                </m.span>
               ))}
             </div>
             <p className="text-white/50 mt-4">快速記住這些圖案！</p>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
 
@@ -190,7 +190,7 @@ export default function FlashCard() {
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -213,7 +213,7 @@ export default function FlashCard() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { m , useReducedMotion } from 'framer-motion'
 import { Smartphone } from 'lucide-react'
 
 /** 傳手機的視覺動畫：手機圖示從左傳到右，表示傳給下一位 */
@@ -19,7 +19,7 @@ export default function PassPhoneAnimation() {
 
   return (
     <div className="flex justify-center py-6 overflow-hidden" aria-hidden>
-      <motion.div
+      <m.div
         className="flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10"
         initial={{ x: -80, opacity: 0.6 }}
         animate={{ x: 80, opacity: 1 }}
@@ -31,7 +31,7 @@ export default function PassPhoneAnimation() {
         }}
       >
         <Smartphone className="w-10 h-10 text-primary-400" strokeWidth={1.5} />
-      </motion.div>
+      </m.div>
     </div>
   )
 }

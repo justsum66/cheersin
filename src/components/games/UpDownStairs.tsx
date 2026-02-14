@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameRoom } from '@/hooks/useGameRoom'
@@ -189,7 +189,7 @@ export default function UpDownStairs() {
       </div>
       <p className="text-white/70 text-lg mb-6">輪到 {currentPlayer}</p>
       <div className="flex gap-4">
-        <motion.button
+        <m.button
           type="button"
           whileTap={{ scale: 0.96 }}
           onClick={() => say(true)}
@@ -197,8 +197,8 @@ export default function UpDownStairs() {
           className="min-h-[48px] min-w-[100px] px-6 py-3 rounded-xl bg-primary-500/80 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold games-focus-ring"
         >
           上一樓
-        </motion.button>
-        <motion.button
+        </m.button>
+        <m.button
           type="button"
           whileTap={{ scale: 0.96 }}
           onClick={() => say(false)}
@@ -206,7 +206,7 @@ export default function UpDownStairs() {
           className="min-h-[48px] min-w-[100px] px-6 py-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold games-focus-ring"
         >
           下一樓
-        </motion.button>
+        </m.button>
       </div>
       {floorHistory.length > 0 && (
         <div className="mt-4 w-full max-w-xs">

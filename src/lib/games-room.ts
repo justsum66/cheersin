@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Game room slug generator (short, URL-safe).
@@ -54,4 +55,17 @@ export interface GameRoomPlayerRow {
   display_name: string
   order_index: number
   joined_at: string
+}
+
+/**
+ * 依 slug 查詢單一房間，供 /api/games/rooms/[slug]/* 共用
+ * @param columns 預設 'id'，可傳 'id, host_id, settings' 等
+ */
+export async function getRoomBySlug<T = { id: string }>(
+  supabase: SupabaseClient,
+  slug: string,
+  columns = 'id'
+): Promise<{ data: T | null; error: unknown }> {
+  const result = await supabase.from('game_rooms').select(columns).eq('slug', slug).single()
+  return { data: result.data as T | null, error: result.error }
 }

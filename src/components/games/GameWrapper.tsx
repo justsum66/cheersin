@@ -1,16 +1,15 @@
 'use client'
 
 import { createContext, useContext } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { scaleIn } from '@/lib/animations'
 import { GameSessionProvider } from './GameSessionProvider'
-// import { GameStateProvider } from './GameStateProvider' // Removed
-// import { GameTimerProvider } from './GameTimerProvider' // Removed
 import { GameSoundProvider } from './GameSoundProvider'
 import { useGameWrapperLogic } from './useGameWrapperLogic'
 import GameWrapperHeader from './GameWrapperHeader'
 import GameWrapperBody from './GameWrapperBody'
 import PassPhoneMode from './PassPhoneMode'
+import { GameModeSelector } from './GameModeSelector'
 import type { GameWrapperProps, SwitchGameItem } from './GameWrapperTypes'
 
 /** 供子元件（如 GameRules）註冊規則內文；任務 18 改為點擊問號觸發 */
@@ -54,7 +53,7 @@ export default function GameWrapper(props: GameWrapperProps) {
         <GameSoundProvider>
           <GameReduceMotionContext.Provider value={logic.reducedMotion}>
             <GameHotkeyContext.Provider value={{ registerSpace: logic.registerSpace, registerDigit: logic.registerDigit }}>
-              <motion.div
+              <m.div
                 ref={logic.wrapperRef}
                 variants={scaleIn}
                 initial="hidden"
@@ -104,8 +103,17 @@ export default function GameWrapper(props: GameWrapperProps) {
                 >
                   {logic.children}
                 </GameWrapperBody>
-              </motion.div>
+              </m.div>
               <PassPhoneMode />
+
+              {logic.showModeSelector && (
+                <GameModeSelector
+                  modes={logic.availableModes}
+                  onSelect={logic.onSelectMode}
+                  onCancel={() => logic.onExit?.()}
+                  title={props.title}
+                />
+              )}
             </GameHotkeyContext.Provider>
           </GameReduceMotionContext.Provider>
         </GameSoundProvider>

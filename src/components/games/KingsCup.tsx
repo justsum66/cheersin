@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
+import { m , AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { ChevronDown, ChevronUp, Edit3, Save, RotateCcw } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -245,7 +245,7 @@ export default function KingsCup() {
 
         <AnimatePresence>
           {currentCard && (
-            <motion.div
+            <m.div
               key={currentCard.card + usedCards.length}
               initial={reducedMotion ? false : { y: 0, rotateY: 0 }}
               animate={{ y: -20, x: 120, rotate: 12, rotateY: 0 }}
@@ -256,7 +256,7 @@ export default function KingsCup() {
               data-testid="kings-cup-result"
             >
               {/* G3-001: Card Perspective Effect */}
-              <motion.div
+              <m.div
                 className="relative w-40 md:w-48 aspect-[5/7] rounded-2xl shadow-2xl transition-transform ease-out"
                 style={{
                   transformStyle: 'preserve-3d',
@@ -301,8 +301,8 @@ export default function KingsCup() {
                 </div>
                 {/* Card Glare Effect */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 to-transparent pointer-events-none mix-blend-overlay" />
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -320,7 +320,7 @@ export default function KingsCup() {
         </div>
         <div className="flex flex-col items-center">
           <div className="w-10 h-14 rounded-b-lg border-2 border-amber-600/50 bg-amber-950/30 relative overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]">
-            <motion.div
+            <m.div
               className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-600 to-amber-500/80"
               initial={false}
               animate={{
@@ -331,7 +331,7 @@ export default function KingsCup() {
                 ease: [0.68, -0.55, 0.265, 1.55]
               }}
             >
-              <motion.div
+              <m.div
                 className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-b from-amber-400/50 to-transparent"
                 animate={kingCount > 0 ? {
                   scaleX: [1, 1.1, 1],
@@ -343,10 +343,10 @@ export default function KingsCup() {
                   ease: "easeInOut"
                 }}
               />
-            </motion.div>
+            </m.div>
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none" />
           </div>
-          <motion.p
+          <m.p
             className="text-white/40 text-xs mt-1"
             animate={kingCount === 4 ? {
               color: ['rgba(255,255,255,0.4)', 'rgba(251,191,36,0.8)', 'rgba(255,255,255,0.4)']
@@ -354,7 +354,7 @@ export default function KingsCup() {
             transition={{ duration: 1, repeat: kingCount === 4 ? Infinity : 0 }}
           >
             公杯
-          </motion.p>
+          </m.p>
         </div>
       </div>
 
@@ -429,19 +429,19 @@ export default function KingsCup() {
       {/* 54 最後一張 K 全屏警告：閃爍 + 震動 */}
       <AnimatePresence>
         {showFourthKing && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 safe-area-px safe-area-pb"
             onClick={() => setShowFourthKing(false)}
           >
-            <motion.div
+            <m.div
               className="absolute inset-0 bg-red-950/40"
               animate={{ opacity: [0.4, 0.8, 0.4] }}
               transition={{ duration: 0.5, repeat: 2 }}
             />
-            <motion.div
+            <m.div
               ref={fourthKingModalRef}
               role="dialog"
               aria-modal="true"
@@ -456,22 +456,22 @@ export default function KingsCup() {
               <h2 id="kings-fourth-king-title" className="text-xl md:text-3xl font-bold text-yellow-400 mb-4">🍷 第四張國王！</h2>
               <p className="text-white/80 mb-6 text-base md:text-lg">喝掉那杯公杯吧！</p>
               <button type="button" onClick={() => setShowFourthKing(false)} className="btn-primary w-full min-h-[48px] games-focus-ring">知道了</button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* 重置確認 */}
       <AnimatePresence>
         {showResetConfirm && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 safe-area-px safe-area-pb"
             onClick={() => setShowResetConfirm(false)}
           >
-            <motion.div
+            <m.div
               ref={resetConfirmModalRef}
               role="dialog"
               aria-modal="true"
@@ -487,22 +487,22 @@ export default function KingsCup() {
                 <button type="button" onClick={reset} className="btn-primary min-h-[48px] min-w-[48px] games-focus-ring" data-testid="kings-cup-reset-confirm">確定重置</button>
                 <button type="button" onClick={() => setShowResetConfirm(false)} className="btn-secondary min-h-[48px] min-w-[48px] games-focus-ring">取消</button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* G3-003: Edit Rules Modal */}
       <AnimatePresence>
         {showEditRules && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 safe-area-px safe-area-pb"
             onClick={() => setShowEditRules(false)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
@@ -556,8 +556,8 @@ export default function KingsCup() {
                   完成設定
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

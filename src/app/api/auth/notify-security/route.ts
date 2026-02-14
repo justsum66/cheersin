@@ -4,6 +4,7 @@
  * 未設定發信時僅記錄日誌，不阻擋流程
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import { getClientIp } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 
@@ -15,10 +16,10 @@ export async function POST(request: Request) {
     event = typeof body?.event === 'string' ? body.event : ''
     email = typeof body?.email === 'string' ? body.email.trim().slice(0, 256) : undefined
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return errorResponse(400, 'INVALID_JSON', { message: 'Invalid JSON' })
   }
   if (!event || !['login', 'password_change'].includes(event)) {
-    return NextResponse.json({ error: 'event must be login or password_change' }, { status: 400 })
+    return errorResponse(400, 'INVALID_BODY', { message: 'event must be login or password_change' })
   }
   const ip = getClientIp(request.headers)
   logger.info('security_event', { event, hasEmail: !!email, ip })

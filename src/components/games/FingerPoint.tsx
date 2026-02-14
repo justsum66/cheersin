@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { HandMetal, RefreshCw, Clock, Users } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -21,11 +21,13 @@ export default function FingerPoint() {
   const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
-  const [gamePhase, setGamePhase] = useState<'ready' | 'countdown' | 'show' | 'result'>('ready')
+  const [gamePhase, setGamePhase] = useState<'ready' | 'countdown' | 'show' | 'result' | 'chain'>('ready')
   const [targetDirection, setTargetDirection] = useState<Direction | null>(null)
   const [countdown, setCountdown] = useState(3)
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME)
   const [loserIndex, setLoserIndex] = useState<number | null>(null)
+  /** R2-169：連鎖反應 — 被指的人可反指，實際喝酒者為被反指的人 */
+  const [chainTargetIndex, setChainTargetIndex] = useState<number | null>(null)
   const [roundCount, setRoundCount] = useState(0)
   const [losses, setLosses] = useState<Record<number, number>>({})
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -66,17 +68,35 @@ export default function FingerPoint() {
     }, 1000)
   }, [play])
 
+  /** R2-169：先記錄被指的人，進入 chain 階段可反指；不反指則被指的人喝 */
   const selectLoser = useCallback((playerIndex: number) => {
     if (timerRef.current) clearInterval(timerRef.current)
     play('wrong')
     setLoserIndex(playerIndex)
+    setChainTargetIndex(null)
+    setRoundCount(r => r + 1)
+    setGamePhase('chain')
+  }, [play])
+
+  const passToPlayer = useCallback((targetIndex: number) => {
+    play('click')
+    setChainTargetIndex(targetIndex)
     setLosses(prev => ({
       ...prev,
-      [playerIndex]: (prev[playerIndex] || 0) + 1
+      [targetIndex]: (prev[targetIndex] || 0) + 1
     }))
-    setRoundCount(r => r + 1)
     setGamePhase('result')
   }, [play])
+
+  const skipChain = useCallback(() => {
+    if (loserIndex === null) return
+    setLosses(prev => ({
+      ...prev,
+      [loserIndex]: (prev[loserIndex] || 0) + 1
+    }))
+    setChainTargetIndex(null)
+    setGamePhase('result')
+  }, [loserIndex])
 
   const nextRound = useCallback(() => {
     setTargetDirection(null)
@@ -135,14 +155,14 @@ export default function FingerPoint() {
 
       {gamePhase === 'countdown' && (
         <div className="text-center">
-          <motion.p
+          <m.p
             key={countdown}
             initial={reducedMotion ? false : { scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="text-8xl font-bold text-cyan-400"
           >
             {countdown}
-          </motion.p>
+          </m.p>
           <p className="text-white/60 mt-4">準備好...</p>
         </div>
       )}
@@ -156,14 +176,14 @@ export default function FingerPoint() {
             </span>
           </div>
 
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             className="text-[120px] mb-6"
           >
             {targetDirection}
-          </motion.div>
+          </m.div>
 
           <p className="text-white/60 mb-4">誰最慢或指錯？點選輸家：</p>
           <div className="grid grid-cols-2 gap-2">
@@ -181,8 +201,36 @@ export default function FingerPoint() {
         </div>
       )}
 
+      {gamePhase === 'chain' && loserIndex !== null && (
+        <m.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center w-full max-w-md"
+        >
+          <p className="text-white/70 mb-2">被指到：<span className="font-bold text-amber-300">{players[loserIndex]}</span></p>
+          <p className="text-white/50 text-sm mb-4">R2-169 連鎖：可反指一人，被反指的人喝；不反指則自己喝</p>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {players.map((name, i) => (
+              i !== loserIndex && (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => passToPlayer(i)}
+                  className="min-h-[48px] px-4 py-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 games-focus-ring hover:bg-amber-500/30"
+                >
+                  反指 → {name}
+                </button>
+              )
+            ))}
+          </div>
+          <button type="button" onClick={skipChain} className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm games-focus-ring">
+            不反指，我喝
+          </button>
+        </m.div>
+      )}
+
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -192,7 +240,7 @@ export default function FingerPoint() {
 
           {loserIndex !== null && (
             <p className="text-red-400 font-bold text-xl mb-4">
-              {players[loserIndex]} 喝一杯！
+              {chainTargetIndex !== null ? `${players[chainTargetIndex]} 被反指，喝一杯！` : `${players[loserIndex]} 喝一杯！`}
             </p>
           )}
 
@@ -201,11 +249,11 @@ export default function FingerPoint() {
               下一輪
             </button>
             <CopyResultButton
-              text={`手指快指 第 ${roundCount} 輪：\n方向：${targetDirection}\n輸家：${loserIndex !== null ? players[loserIndex] : '無'}`}
+              text={`手指快指 第 ${roundCount} 輪：\n方向：${targetDirection}\n輸家：${chainTargetIndex !== null ? players[chainTargetIndex] : loserIndex !== null ? players[loserIndex] : '無'}`}
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {loserBoard.length > 0 && (

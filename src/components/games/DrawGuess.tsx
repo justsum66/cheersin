@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Pencil, RefreshCw, Check, X, Timer, RotateCcw } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -189,7 +189,7 @@ export default function DrawGuess() {
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -212,7 +212,7 @@ export default function DrawGuess() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

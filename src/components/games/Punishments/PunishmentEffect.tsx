@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGameSound } from '@/hooks/useGameSound'
 
 const FLASH_DURATION_MS = 400
@@ -45,7 +45,7 @@ export default function PunishmentEffect({ active, text, onComplete }: Punishmen
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -54,15 +54,15 @@ export default function PunishmentEffect({ active, text, onComplete }: Punishmen
           aria-hidden
         >
           {text && (
-            <motion.p
+            <m.p
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               className="text-white font-bold text-xl md:text-2xl text-center px-4 drop-shadow-lg"
             >
               {text}
-            </motion.p>
+            </m.p>
           )}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

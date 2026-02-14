@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Link2, RefreshCw, Trophy, Timer } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -9,11 +9,43 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 
-const STARTING_WORDS = [
-  '蘋果', '香蕉', '電腦', '手機', '飛機', '汽車', '音樂', '電影',
-  '美食', '旅行', '學校', '公司', '朋友', '家庭', '運動', '遊戲',
-  '書本', '網路', '咖啡', '茶葉', '巧克力', '蛋糕', '披薩', '漢堡'
-]
+/** R2-157：名字接龍主題詞庫 */
+const WORD_CHAIN_THEMES = {
+  general: {
+    label: '綜合',
+    words: [
+      '蘋果', '香蕉', '電腦', '手機', '飛機', '汽車', '音樂', '電影',
+      '美食', '旅行', '學校', '公司', '朋友', '家庭', '運動', '遊戲',
+      '書本', '網路', '咖啡', '茶葉', '巧克力', '蛋糕', '披薩', '漢堡',
+    ],
+  },
+  drink: {
+    label: '酒名',
+    words: [
+      '啤酒', '紅酒', '白酒', '威士忌', '伏特加', '琴酒', '蘭姆酒', '龍舌蘭',
+      '梅酒', '清酒', '燒酎', '高粱', '紹興', '米酒', '香檳', '調酒',
+      '可樂娜', '海尼根', '台啤', '麒麟', '朝日', '札幌', '梅酒', '柚子酒',
+    ],
+  },
+  food: {
+    label: '食物',
+    words: [
+      '蘋果', '香蕉', '蛋糕', '披薩', '漢堡', '壽司', '拉麵', '咖哩',
+      '牛排', '雞排', '滷味', '火鍋', '燒烤', '水餃', '小籠包', '珍珠奶茶',
+      '咖啡', '茶葉', '巧克力', '冰淇淋', '布丁', '餅乾', '麵包', '吐司',
+    ],
+  },
+  celebrity: {
+    label: '明星',
+    words: [
+      '周杰倫', '蔡依林', '五月天', '鄧紫棋', '蕭敬騰', '林俊傑', '田馥甄', '楊丞琳',
+      '王力宏', '張惠妹', '陳奕迅', '劉德華', '張學友', '郭富城', '黎明', '梁朝偉',
+      '成龍', '李連杰', '周星馳', '劉德華', '梁家輝', '張國榮', '梅艷芳', '王菲',
+    ],
+  },
+} as const
+type WordChainThemeKey = keyof typeof WORD_CHAIN_THEMES
+const DEFAULT_THEME: WordChainThemeKey = 'general'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 const TIME_LIMIT = 10
@@ -29,6 +61,7 @@ export default function WordChain() {
   const [wordHistory, setWordHistory] = useState<string[]>([])
   const [scores, setScores] = useState<Record<number, number>>({})
   const [gameStarted, setGameStarted] = useState(false)
+  const [theme, setTheme] = useState<WordChainThemeKey>(DEFAULT_THEME)
   const [timer, setTimer] = useState(TIME_LIMIT)
   const [isRunning, setIsRunning] = useState(false)
   const [inputWord, setInputWord] = useState('')
@@ -72,7 +105,8 @@ export default function WordChain() {
   }, [handleTimeout])
 
   const startGame = useCallback(() => {
-    const startWord = STARTING_WORDS[Math.floor(Math.random() * STARTING_WORDS.length)]
+    const list = WORD_CHAIN_THEMES[theme].words
+    const startWord = list[Math.floor(Math.random() * list.length)]
     setCurrentWord(startWord)
     setWordHistory([startWord])
     setGameStarted(true)
@@ -80,7 +114,7 @@ export default function WordChain() {
     setCurrentPlayerIndex(0)
     startTimer()
     play('click')
-  }, [startTimer, play])
+  }, [theme, startTimer, play])
 
   const submitWord = useCallback(() => {
     const word = inputWord.trim()
@@ -181,7 +215,22 @@ export default function WordChain() {
       {!gameStarted ? (
         <div className="text-center">
           <Link2 className="w-16 h-16 text-primary-400 mx-auto mb-4" />
-          <p className="text-white/70 mb-6">準備好文字接龍了嗎？</p>
+          <p className="text-white/70 mb-4">準備好文字接龍了嗎？</p>
+          {/* R2-157：名字接龍主題（酒名/食物/明星） */}
+          <p className="text-white/50 text-sm mb-2">主題</p>
+          <div className="flex flex-wrap gap-2 justify-center mb-6">
+            {(Object.keys(WORD_CHAIN_THEMES) as WordChainThemeKey[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTheme(k)}
+                className={`min-h-[44px] px-4 py-2 rounded-xl text-sm font-medium games-focus-ring ${theme === k ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                aria-pressed={theme === k}
+              >
+                {WORD_CHAIN_THEMES[k].label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             onClick={startGame}
@@ -203,7 +252,7 @@ export default function WordChain() {
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={currentWord}
               initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -242,19 +291,19 @@ export default function WordChain() {
               >
                 跳過 (喝一口)
               </button>
-            </motion.div>
+            </m.div>
           </AnimatePresence>
 
           <AnimatePresence>
             {feedback && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className={`mb-4 px-4 py-2 rounded-lg ${feedback.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
               >
                 {feedback.message}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

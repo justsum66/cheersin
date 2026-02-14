@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Search, Filter, Star, MapPin, DollarSign, Calendar, Wine, ShoppingCart, Heart, ChevronDown, TrendingUp, Award } from 'lucide-react'
 import { getTaiwanWinesHotBottles, type BottleWithBrand } from '@/lib/taiwan-wines'
 
@@ -257,7 +257,7 @@ export function WineRecommendationDatabase() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -272,10 +272,10 @@ export function WineRecommendationDatabase() {
         <p className="text-white/70 max-w-2xl mx-auto">
           建立結構化酒款數據庫，包含酒莊、年份、價格、評分等完整資訊，整合個人化推薦算法和用戶評價系統。
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋與篩選 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -318,7 +318,7 @@ export function WineRecommendationDatabase() {
 
         <AnimatePresence>
           {showFilters && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -360,13 +360,13 @@ export function WineRecommendationDatabase() {
                   ))}
                 </select>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
 
       {/* 統計資訊 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -374,13 +374,13 @@ export function WineRecommendationDatabase() {
       >
         <span>找到 {filteredWines.length} 支推薦酒款</span>
         <span>總計 {WINE_RECOMMENDATIONS.length} 支精選酒款</span>
-      </motion.div>
+      </m.div>
 
       {/* 酒款列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {filteredWines.map((wine, index) => (
-            <motion.div
+            <m.div
               key={wine.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -436,7 +436,7 @@ export function WineRecommendationDatabase() {
                   <ShoppingCart className="w-4 h-4 text-white/40 hover:text-emerald-400 cursor-pointer transition-colors" />
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
       </div>
@@ -444,14 +444,14 @@ export function WineRecommendationDatabase() {
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedWine && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedWine(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -630,8 +630,8 @@ export function WineRecommendationDatabase() {
                   <p className="italic">&quot;{selectedWine.expertReview.comments}&quot;</p>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

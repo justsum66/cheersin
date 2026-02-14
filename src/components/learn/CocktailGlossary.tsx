@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { Search, BookOpen, Filter, Volume2, VolumeX } from 'lucide-react';
 
 interface CocktailTerm {
@@ -843,7 +843,7 @@ export function CocktailGlossary() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -858,10 +858,10 @@ export function CocktailGlossary() {
         <p className="text-white/70 max-w-3xl mx-auto">
           收錄超過70個調酒專業術語，從基礎到高級，助您深入了解調酒文化與技法
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋與篩選 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -930,7 +930,7 @@ export function CocktailGlossary() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 術語列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -940,7 +940,7 @@ export function CocktailGlossary() {
               {letter}
             </h2>
             {terms.map((term, index) => (
-              <motion.div
+              <m.div
                 key={term.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -983,7 +983,7 @@ export function CocktailGlossary() {
                 <p className="text-white/70 text-sm line-clamp-2">
                   {term.definition}
                 </p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         ))}
@@ -992,14 +992,14 @@ export function CocktailGlossary() {
       {/* 術語詳細資訊模態框 */}
       <AnimatePresence>
         {selectedTerm && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedTerm(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -1088,8 +1088,8 @@ export function CocktailGlossary() {
                   關閉
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

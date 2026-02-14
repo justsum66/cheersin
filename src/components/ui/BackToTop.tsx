@@ -2,7 +2,7 @@
 
 /** UX_LAYOUT_200 #58：返回頂部按鈕（可選）— 捲動超過閾值顯示、平滑回頂、無障礙；R2-100 P1：從右下角滑入動畫 */
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { ChevronUp } from 'lucide-react'
 
 const SCROLL_THRESHOLD_PX = 400
@@ -28,7 +28,7 @@ export function BackToTop() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.button
+        <m.button
           type="button"
           onClick={scrollToTop}
           initial={{ opacity: 0, y: 24, x: 0 }}
@@ -40,7 +40,7 @@ export function BackToTop() {
           aria-label="返回頂部"
         >
           <ChevronUp className="w-5 h-5" aria-hidden />
-        </motion.button>
+        </m.button>
       )}
     </AnimatePresence>
   )

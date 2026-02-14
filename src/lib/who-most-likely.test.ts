@@ -5,14 +5,14 @@ import { describe, it, expect } from 'vitest'
 import { getQuestionsByCategory, CATEGORY_LABEL } from './who-most-likely'
 
 describe('getQuestionsByCategory', () => {
-  it('returns array for all', () => {
-    const list = getQuestionsByCategory('all')
+  it('returns array for all', async () => {
+    const list = await getQuestionsByCategory('all')
     expect(Array.isArray(list)).toBe(true)
     expect(list.length).toBeGreaterThan(0)
   })
 
-  it('each item has id, text, level', () => {
-    const list = getQuestionsByCategory('all')
+  it('each item has id, text, level', async () => {
+    const list = await getQuestionsByCategory('all')
     list.slice(0, 5).forEach((item) => {
       expect(typeof item.id).toBe('number')
       expect(typeof item.text).toBe('string')
@@ -21,14 +21,14 @@ describe('getQuestionsByCategory', () => {
     })
   })
 
-  it('love category returns array', () => {
-    const list = getQuestionsByCategory('love')
+  it('love category returns array', async () => {
+    const list = await getQuestionsByCategory('love')
     expect(Array.isArray(list)).toBe(true)
     expect(list.length).toBeGreaterThan(0)
   })
 
-  it('friendship category returns array', () => {
-    const list = getQuestionsByCategory('friendship')
+  it('friendship category returns array', async () => {
+    const list = await getQuestionsByCategory('friendship')
     expect(Array.isArray(list)).toBe(true)
   })
 })

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { HOME_TESTIMONIALS } from '@/data/home-testimonials'
 import { HOME_TESTIMONIALS_INTERVAL_MS } from '@/config/home.config'
@@ -78,7 +78,7 @@ export default function HomeTestimonialsCarousel() {
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={index}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -93,7 +93,7 @@ export default function HomeTestimonialsCarousel() {
                 {t.tag}
               </span>
             </div>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
 
         <div className="flex items-center justify-center gap-2 mt-4" aria-busy={isTransitioning}>

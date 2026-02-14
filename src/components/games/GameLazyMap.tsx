@@ -44,59 +44,68 @@ const GAME_LOADERS: Record<string, GameLoader> = {
   'buzz-game': () => import(/* webpackChunkName: "game-reaction-buzz-game" */ './BuzzGame'),
   'category-chain': () => import(/* webpackChunkName: "game-party-category-chain" */ './CategoryChain'),
   'two-truths-one-lie': () => import(/* webpackChunkName: "game-facetoface-two-truths-one-lie" */ './TwoTruthsOneLie'),
-  'spicy-truth-or-dare': () => import(/* webpackChunkName: "game-adult-spicy-truth-or-dare" */ './SpicyTruthOrDare'),
-  'spicy-never-have-i-ever': () => import(/* webpackChunkName: "game-adult-spicy-never-have-i-ever" */ './SpicyNeverHaveIEver'),
-  'spicy-who-most-likely': () => import(/* webpackChunkName: "game-adult-spicy-who-most-likely" */ './SpicyWhoMostLikely'),
   // Phase 2 新遊戲
 
   'between-cards': () => import(/* webpackChunkName: "game-guess-between-cards" */ './BetweenCards'),
   'russian-roulette': () => import(/* webpackChunkName: "game-party-russian-roulette" */ './RussianRoulette'),
 
   'couple-test': () => import(/* webpackChunkName: "game-facetoface-couple-test" */ './CoupleTest'),
-  'soul-mate': () => import(/* webpackChunkName: "game-facetoface-soul-mate" */ './FaceToFace/SoulMate'),
 
-  'spicy-would-you-rather': () => import(/* webpackChunkName: "game-adult-spicy-would-you-rather" */ './SpicyWouldYouRather'),
   'paranoia-game': () => import(/* webpackChunkName: "game-party-paranoia-game" */ './ParanoiaGame'),
   'secret-confession': () => import(/* webpackChunkName: "game-party-secret-confession" */ './SecretConfession'),
   'dare-cards': () => import(/* webpackChunkName: "game-party-dare-cards" */ './DareCards'),
   'mind-reading': () => import(/* webpackChunkName: "game-facetoface-mind-reading" */ './MindReading'),
-  'spicy-dice': () => import(/* webpackChunkName: "game-adult-spicy-dice" */ './SpicyDice'),
   'reaction-master': () => import(/* webpackChunkName: "game-reaction-reaction-master" */ './ReactionMaster'),
+  /** R2-140：各國喝酒文化（靜態/輕互動） */
+  'drinking-culture': () => import(/* webpackChunkName: "game-other-drinking-culture" */ './DrinkingCulture'),
+  /** R2-176：酒令（划拳/行酒令數位化） */
+  jiuling: () => import(/* webpackChunkName: "game-other-jiuling" */ './Jiuling'),
+  /** R2-178：酒類配對記憶（翻牌酒款⇄產區/風味） */
+  'wine-memory-match': () => import(/* webpackChunkName: "game-party-wine-memory-match" */ './WineMemoryMatch'),
+  /** R2-146：歷史知識問答喝酒版 */
+  'history-trivia': () => import(/* webpackChunkName: "game-guess-history-trivia" */ './HistoryTrivia'),
+  /** R2-154：真假新聞 */
+  'true-false-news': () => import(/* webpackChunkName: "game-guess-true-false-news" */ './TrueFalseNews'),
+  /** R2-158：誰說的 */
+  'who-said-it': () => import(/* webpackChunkName: "game-guess-who-said-it" */ './WhoSaidIt'),
+  /** R2-142：動漫猜謎喝酒遊戲 */
+  'anime-quiz': () => import(/* webpackChunkName: "game-guess-anime-quiz" */ './AnimeQuiz'),
+  /** R2-148：繞口令挑戰 */
+  'tongue-twister': () => import(/* webpackChunkName: "game-party-tongue-twister" */ './TongueTwister'),
+  /** R2-152：表情包大戰 */
+  'emoji-battle': () => import(/* webpackChunkName: "game-party-emoji-battle" */ './EmojiBattle'),
+  /** R2-166：模仿大賽 */
+  'impersonation': () => import(/* webpackChunkName: "game-party-impersonation" */ './Impersonation'),
+  /** R2-170：即興演講 */
+  'impromptu-speech': () => import(/* webpackChunkName: "game-party-impromptu-speech" */ './ImpromptuSpeech'),
+  /** R2-168：酒精知識王 */
+  'alcohol-trivia': () => import(/* webpackChunkName: "game-guess-alcohol-trivia" */ './AlcoholTrivia'),
+  /** R2-164：心理測驗喝酒版 */
+  'psych-quiz': () => import(/* webpackChunkName: "game-party-psych-quiz" */ './PsychQuiz'),
   'drunk-truth': () => import(/* webpackChunkName: "game-party-drunk-truth" */ './DrunkTruth'),
-  'late-night': () => import(/* webpackChunkName: "game-party-late-night" */ './LateNight'),
   'drinking-word': () => import(/* webpackChunkName: "game-party-drinking-word" */ './DrinkingWord'),
   'guess-song': () => import(/* webpackChunkName: "game-party-guess-song" */ './GuessSong'),
   'photo-guess': () => import(/* webpackChunkName: "game-party-photo-guess" */ './PhotoGuess'),
   'word-chain': () => import(/* webpackChunkName: "game-party-word-chain" */ './WordChain'),
   'team-guess': () => import(/* webpackChunkName: "game-facetoface-team-guess" */ './TeamGuess'),
-  'balance-game': () => import(/* webpackChunkName: "game-guess-balance-game" */ './BalanceGame'),
   'photo-bomb': () => import(/* webpackChunkName: "game-party-photo-bomb" */ './PhotoBomb'),
-  'draw-guess': () => import(/* webpackChunkName: "game-party-draw-guess" */ './DrawGuess'),
   'taboo': () => import(/* webpackChunkName: "game-party-taboo" */ './Taboo'),
   'spot-diff': () => import(/* webpackChunkName: "game-reaction-spot-diff" */ './SpotDiff'),
   'quick-math': () => import(/* webpackChunkName: "game-reaction-quick-math" */ './QuickMath'),
-  'color-blind': () => import(/* webpackChunkName: "game-reaction-color-blind" */ './ColorBlind'),
   'shot-roulette': () => import(/* webpackChunkName: "game-party-shot-roulette" */ './ShotRoulette'),
-  'music-chair': () => import(/* webpackChunkName: "game-party-music-chair" */ './MusicChair'),
-  'bottle-cap': () => import(/* webpackChunkName: "game-party-bottle-cap" */ './BottleCap'),
   'emotion-read': () => import(/* webpackChunkName: "game-reaction-emotion-read" */ './EmotionRead'),
-  'fast-type': () => import(/* webpackChunkName: "game-reaction-fast-type" */ './FastType'),
   'dice-war': () => import(/* webpackChunkName: "game-facetoface-dice-war" */ './DiceWar'),
   'price-guess': () => import(/* webpackChunkName: "game-guess-price-guess" */ './PriceGuess'),
-  'tongue-challenge': () => import(/* webpackChunkName: "game-party-tongue-challenge" */ './TongueChallenge'),
   'lucky-draw': () => import(/* webpackChunkName: "game-draw-lucky-draw" */ './LuckyDraw'),
   'bluffing': () => import(/* webpackChunkName: "game-party-bluffing" */ './Bluffing'),
   'telephone': () => import(/* webpackChunkName: "game-party-telephone" */ './Telephone'),
-  'finish-lyric': () => import(/* webpackChunkName: "game-party-finish-lyric" */ './FinishLyric'),
   'tic-tac-shot': () => import(/* webpackChunkName: "game-facetoface-tic-tac-shot" */ './TicTacShot'),
   'compliment-battle': () => import(/* webpackChunkName: "game-party-compliment-battle" */ './ComplimentBattle'),
   'cocktail-mix': () => import(/* webpackChunkName: "game-party-cocktail-mix" */ './CocktailMix'),
   'reverse-say': () => import(/* webpackChunkName: "game-reaction-reverse-say" */ './ReverseSay'),
   'riddle-guess': () => import(/* webpackChunkName: "game-party-riddle-guess" */ './RiddleGuess'),
   'story-chain': () => import(/* webpackChunkName: "game-party-story-chain" */ './StoryChain'),
-  'emoji-puzzle': () => import(/* webpackChunkName: "game-party-emoji-puzzle" */ './EmojiPuzzle'),
   'memory-match': () => import(/* webpackChunkName: "game-party-memory-match" */ './MemoryMatch'),
-  'rhythm-master': () => import(/* webpackChunkName: "game-party-rhythm-master" */ './RhythmMaster'),
   /* R2-011 去換皮：drinking-fist/captain-hook/count-seven/ultimate-code/support-front 已移除，與 finger-guessing/name-train/buzz-game/number-bomb/random-picker 共用組件 */
 }
 

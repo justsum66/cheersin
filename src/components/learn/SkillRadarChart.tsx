@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { loadWrongAnswers } from '@/lib/wrong-answers'
 
 interface SkillRadarChartProps {
@@ -123,7 +123,7 @@ export function SkillRadarChart({ courseId, className = '' }: SkillRadarChartPro
         </div>
       </div>
       
-      <motion.svg
+      <m.svg
         viewBox="0 0 200 200"
         className="w-full max-w-[280px] mx-auto"
         initial={{ opacity: 0 }}
@@ -158,7 +158,7 @@ export function SkillRadarChart({ courseId, className = '' }: SkillRadarChartPro
         })}
         
         {/* 數據區域 */}
-        <motion.path
+        <m.path
           d={dataPath}
           fill="rgba(139, 92, 246, 0.3)"
           stroke="rgb(139, 92, 246)"
@@ -172,7 +172,7 @@ export function SkillRadarChart({ courseId, className = '' }: SkillRadarChartPro
         {skillData.map((skill, i) => {
           const point = getPoint(i, skill.value, skill.maxValue)
           return (
-            <motion.circle
+            <m.circle
               key={i}
               cx={point.x}
               cy={point.y}
@@ -200,7 +200,7 @@ export function SkillRadarChart({ courseId, className = '' }: SkillRadarChartPro
             {pos.label}
           </text>
         ))}
-      </motion.svg>
+      </m.svg>
       
       {/* 圖例說明 */}
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs">

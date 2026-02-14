@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * 酒類知識庫 + 酒款資料庫 → Pinecone 向量化上傳
- * 使用前：設定 .env.local 的 OPENROUTER_API_KEY、PINECONE_API_URL、PINECONE_API_KEY
- * Pinecone index dimension 須為 1536（text-embedding-3-small）
+ * 使用前：設定 .env.local 的 OPENROUTER_API_KEY（或 OPENROUTER_EMBEDDING_API_KEY）、PINECONE_API_URL、PINECONE_API_KEY
+ * Embedding 模型與維度須與 src/lib/embedding.ts 一致（預設 openai/text-embedding-3-small、1536 維）。
+ * Pinecone index dimension 須為 1536（或與 EMBEDDING_DIMENSION 一致）。
  * 執行：node --env-file=.env.local scripts/seed-pinecone.mjs
  *   或：npx dotenv -e .env.local -- node scripts/seed-pinecone.mjs
  */
@@ -31,8 +32,8 @@ function loadEnvLocal() {
 }
 
 async function getEmbedding(text) {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY not set')
+  const apiKey = process.env.OPENROUTER_EMBEDDING_API_KEY || process.env.OPENROUTER_SCRIPT_API_KEY || process.env.OPENROUTER_API_KEY
+  if (!apiKey) throw new Error('OPENROUTER_EMBEDDING_API_KEY or OPENROUTER_API_KEY not set')
   const res = await fetch(OPENROUTER_EMBED, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },

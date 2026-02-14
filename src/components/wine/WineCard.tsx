@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Star, Heart, ExternalLink } from 'lucide-react'
 
 export interface WineCardData {
@@ -77,7 +77,7 @@ const WineCardInner = function WineCard({
         </div>
       )}
       {onAddToWishlist && (
-        <motion.button
+        <m.button
           type="button"
           onClick={() => onAddToWishlist(wine)}
           className={`absolute top-2 left-2 p-2 games-touch-target rounded-full transition-colors flex items-center justify-center games-focus-ring ${
@@ -89,7 +89,7 @@ const WineCardInner = function WineCard({
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
           <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} aria-hidden />
-        </motion.button>
+        </m.button>
       )}
     </div>
   )

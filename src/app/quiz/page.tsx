@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import {
   Sparkles,
   Wine,
@@ -27,7 +27,7 @@ import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import confetti from 'canvas-confetti'
 import toast from 'react-hot-toast'
 import { TOAST_COPY_SUCCESS, TOAST_COPY_ERROR } from '@/config/toast.config'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import Link from 'next/link'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -283,8 +283,10 @@ export default function QuizPage() {
   /** E2 150：測驗歷史列表；E2 歷史彈窗 */
   const [quizHistory, setQuizHistory] = useState<{ date: string; name: string; type: string }[]>([])
   const [showHistoryModal, setShowHistoryModal] = useState(false)
-  /** Quiz 頁 20 項優化 #5：尊重減少動態 */
+  /** Quiz 頁 20 項優化 #5：尊重減少動態。#16：與 #5 一致，關鍵動畫皆尊重 prefersReducedMotion。 */
   const prefersReducedMotion = usePrefersReducedMotion()
+  /** Quiz 頁 20 項優化 #18：intro 逾時 — 停留超過 N 分鐘未點開始時顯示輕量提示 */
+  const [showIdleHint, setShowIdleHint] = useState(false)
   /** P1-070：問題切換方向 — 下一題向右滑入、上一題向左滑入 */
   const [questionDirection, setQuestionDirection] = useState<'next' | 'prev'>('next')
   /** Quiz 頁 20 項優化 #3 #4：歷史彈窗焦點陷阱與 Esc 關閉用 */
@@ -299,8 +301,19 @@ export default function QuizPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'quiz_step_view', value: 1, id: step }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
+  }, [step])
+
+  /** Quiz 頁 20 項優化 #18：intro 逾時 — 停留 5 分鐘未點開始則顯示「是否繼續？」可關閉 */
+  const INTRO_IDLE_MINUTES = 5
+  useEffect(() => {
+    if (step !== 'intro') {
+      setShowIdleHint(false)
+      return
+    }
+    const t = setTimeout(() => setShowIdleHint(true), INTRO_IDLE_MINUTES * 60 * 1000)
+    return () => clearTimeout(t)
   }, [step])
 
   /** E2 150：載入測驗歷史 */
@@ -424,7 +437,7 @@ export default function QuizPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'quiz_share', value: 1, id: 'result' }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
     const text = t('quiz.shareText').replace(/\{\{\s*name\s*\}\}/g, r.name).replace(/\{\{\s*type\s*\}\}/g, r.type)
     const url = getShareBaseUrl() + '/quiz'
@@ -548,7 +561,7 @@ export default function QuizPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: 'quiz_complete', value: 1, id: user ? 'logged_in' : 'anonymous' }),
-        }).catch(() => {})
+        }).catch(() => { })
       } catch { /* noop */ }
       try {
         localStorage.removeItem(QUIZ_STORAGE_KEY)
@@ -603,7 +616,7 @@ export default function QuizPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'quiz_complete', value: 1, id: user ? 'logged_in' : 'anonymous' }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
     try {
       localStorage.removeItem(QUIZ_STORAGE_KEY)
@@ -644,7 +657,7 @@ export default function QuizPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'quiz_retake', value: 1, id: 'result' }),
-      }).catch(() => {})
+      }).catch(() => { })
     } catch { /* noop */ }
     setStep('intro')
     setPreferGamesOnly(false)
@@ -745,20 +758,27 @@ export default function QuizPage() {
   /** AUDIT #34：Intro 與結果頁背景與首頁 Hero 漸層呼應 */
   const isIntroOrResult = step === 'intro' || (step === 'result' && !!result)
 
+  /** Quiz 頁 20 項優化 #8：RWD — 360px～1920px 無橫向捲動、safe-area 一致 */
   return (
-    <div ref={mainRef} className={`min-h-screen pt-0 page-container-mobile px-4 md:px-6 md:py-8 safe-area-pb-quiz-main ${isIntroOrResult ? 'quiz-hero-echo' : ''}`} id="quiz-main" tabIndex={-1} role="main" aria-label="靈魂酒測">
+    <div ref={mainRef} className={`min-h-screen pt-0 page-container-mobile px-4 md:px-6 md:py-8 safe-area-px safe-area-pb-quiz-main overflow-x-hidden ${isIntroOrResult ? 'quiz-hero-echo' : ''}`} id="quiz-main" tabIndex={-1} role="main" aria-label="靈魂酒測">
       <div className="max-w-5xl xl:max-w-[1440px] mx-auto">
         <AnimatePresence mode="wait">
 
-          {/* Intro Step */}
+          {/* Intro Step；Quiz 頁 20 項優化 #1：首屏關鍵區，intro 保持輕量不阻塞 CTA */}
           {step === 'intro' && (
-            <motion.div
+            <m.div
               key="intro"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               className="text-center pt-0 pb-12"
             >
+              {showIdleHint && (
+                <div className="mb-4 mx-auto max-w-md flex items-center justify-between gap-3 rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-left" role="status">
+                  <p className="text-white/90 text-sm">是否繼續？點下方按鈕開始靈魂酒測。</p>
+                  <button type="button" onClick={() => setShowIdleHint(false)} className="shrink-0 text-white/60 hover:text-white text-sm font-medium games-focus-ring" aria-label="關閉提示">關閉</button>
+                </div>
+              )}
               <div className="flex justify-center mb-4">
                 <FeatureIcon icon={Sparkles} size="lg" color="secondary" />
               </div>
@@ -793,12 +813,12 @@ export default function QuizPage() {
                   </button>
                 </div>
               )}
-            </motion.div>
+            </m.div>
           )}
 
           {/* T031 P1：你這次想要？酒款推薦（含遊戲）｜只要派對遊戲推薦（不喝酒） */}
           {step === 'preference' && (
-            <motion.div
+            <m.div
               key="preference"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -844,12 +864,12 @@ export default function QuizPage() {
                   </div>
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Zodiac Selection 56-60：懸停日期、特質描述、星空背景、58 生日選擇 */}
           {step === 'zodiac' && (
-            <motion.div
+            <m.div
               key="zodiac"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -884,7 +904,7 @@ export default function QuizPage() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 relative z-10">
                 {zodiacSigns.map((zodiac, index) => (
-                  <motion.button
+                  <m.button
                     key={zodiac.id}
                     className="glass-card p-6 flex flex-col items-center justify-center gap-4 group hover:bg-white/10 min-h-[48px] games-focus-ring"
                     onClick={() => handleZodiacSelect(zodiac.id)}
@@ -902,7 +922,7 @@ export default function QuizPage() {
                       <div className="text-xs text-white/30 mt-1">{zodiac.dates}</div>
                       <div className="text-[10px] text-white/25 mt-1 group-hover:text-white/40">{ELEMENT_TRAITS[zodiac.element]}</div>
                     </div>
-                  </motion.button>
+                  </m.button>
                 ))}
               </div>
 
@@ -931,12 +951,12 @@ export default function QuizPage() {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {/* E06 / Questions 51-55：進度條固定頂部、題數與「約 30 秒」一致、再一題就完成、結果頁「查看推薦」第一 CTA */}
           {step === 'questions' && (
-            <motion.div
+            <m.div
               key={`question-${currentQuestion}`}
               initial={prefersReducedMotion ? false : { opacity: 0, x: questionDirection === 'next' ? 100 : -100 }}
               animate={{ opacity: 1, x: 0 }}
@@ -954,8 +974,8 @@ export default function QuizPage() {
                     <button
                       type="button"
                       onClick={handlePrev}
-className="inline-flex items-center justify-center gap-1 text-white/50 hover:text-white text-sm font-medium transition-colors min-h-[48px] min-w-[48px] games-focus-ring rounded"
-                    aria-label="上一題"
+                      className="inline-flex items-center justify-center gap-1 text-white/50 hover:text-white text-sm font-medium transition-colors min-h-[48px] min-w-[48px] games-focus-ring rounded"
+                      aria-label="上一題"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       上一題
@@ -965,12 +985,12 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                 {/* Quiz 頁 20 項優化 #13：進度條 aria-valuetext；#19 列印隱藏 */}
                 {/* Phase 1 C1.2: 測驗進度條動畫增強 */}
                 <div className="h-1.5 md:h-2 w-full rounded-full bg-white/10 overflow-hidden min-h-[4px] print:hidden" role="progressbar" aria-valuenow={currentQuestion + 1} aria-valuemin={1} aria-valuemax={displayQuestions.length} aria-valuetext={t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })} aria-label={t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}>
-                  <motion.div
+                  <m.div
                     className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 relative"
                     initial={false}
                     animate={{ width: `${((currentQuestion + 1) / displayQuestions.length) * 100}%` }}
-                    transition={{ 
-                      duration: 0.4, 
+                    transition={{
+                      duration: 0.4,
                       ease: [0.34, 1.56, 0.64, 1],
                       type: 'spring',
                       stiffness: 300,
@@ -979,7 +999,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                   >
                     {/* 進度條尾端光暈 */}
                     <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-r from-transparent to-white/50 rounded-r-full" />
-                  </motion.div>
+                  </m.div>
                 </div>
               </div>
 
@@ -1004,15 +1024,14 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                 aria-labelledby="quiz-question-text"
               >
                 {displayQuestions[currentQuestion].options.map((option, index) => (
-                  <motion.button
+                  <m.button
                     key={option.id}
                     type="button"
                     role="radio"
                     aria-checked={answers[currentQuestion] === option.trait}
                     aria-label={`${t('common.questionProgress', { current: currentQuestion + 1, total: displayQuestions.length })}，選項：${option.text}`}
-                    className={`glass-card-spotlight p-6 md:p-8 py-3 px-4 text-left group flex items-center gap-4 md:gap-6 min-h-[48px] rounded-xl border transition-all duration-200 border-white/10 hover:border-primary-500/40 hover:bg-white/5 active:scale-[0.98] games-focus-ring ${
-                      answers[currentQuestion] === option.trait ? 'border-primary-500 bg-primary-500/10' : ''
-                    }`}
+                    className={`glass-card-spotlight p-6 md:p-8 py-3 px-4 text-left group flex items-center gap-4 md:gap-6 min-h-[48px] rounded-xl border transition-all duration-200 border-white/10 hover:border-primary-500/40 hover:bg-white/5 active:scale-[0.98] games-focus-ring ${answers[currentQuestion] === option.trait ? 'border-primary-500 bg-primary-500/10' : ''
+                      }`}
                     onClick={() => handleAnswer(option.id, option.trait)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1026,15 +1045,15 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                     <span className="text-lg text-white group-hover:text-white/90 font-medium flex-1 text-left">
                       {option.text}
                     </span>
-                  </motion.button>
+                  </m.button>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Result 66-70：雷達圖、味覺 DNA、分享 IG、74 探索更多；T122 P1：動態內容 aria-live */}
           {step === 'result' && result && (
-            <motion.div
+            <m.div
               key="result"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1050,18 +1069,18 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
 
                 <div className="relative z-10 text-center mb-12">
                   {/* Phase 1 C2.1: 成就圖標彈出動畫 */}
-                  <motion.div 
+                  <m.div
                     className="flex justify-center mb-8 achievement-pop badge-glow"
                     initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    transition={{ 
-                      duration: 0.6, 
+                    transition={{
+                      duration: 0.6,
                       ease: [0.68, -0.55, 0.265, 1.55],
                       delay: 0.2
                     }}
                   >
                     <FeatureIcon icon={result.icon} size="lg" color="primary" />
-                  </motion.div>
+                  </m.div>
                   <span className="inline-block px-4 py-1 rounded-full border border-white/20 text-white/50 text-sm tracking-widest uppercase mb-2">
                     {t('quiz.yourSoulWine')}
                   </span>
@@ -1070,14 +1089,14 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                   <span className="inline-block px-3 py-1 rounded-full bg-secondary-500/20 text-secondary-400 border border-secondary-500/40 text-xs font-bold uppercase tracking-wider mb-4">
                     你的味覺 DNA
                   </span>
-                  <motion.h1
+                  <m.h1
                     className="text-4xl md:text-6xl font-display font-bold gradient-text mb-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.4 }}
                   >
                     {result.name}
-                  </motion.h1>
+                  </m.h1>
                   <p className="text-2xl text-white/70 font-display italic">&quot;{result.type}&quot;</p>
                   {result.shortReason && (
                     <p className="text-white/60 text-sm mt-2 max-w-lg mx-auto" aria-label="推薦理由">
@@ -1115,15 +1134,15 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {result.traits.map((t, i) => (
-                        <motion.span 
-                          key={t} 
+                        <m.span
+                          key={t}
                           className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-white/70 uppercase tracking-wider"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 + i * 0.1, duration: 0.3 }}
                         >
                           {t}
-                        </motion.span>
+                        </m.span>
                       ))}
                     </div>
                   </div>
@@ -1266,12 +1285,12 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                   </Link>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {/* T031 P1：只要遊戲推薦結果（無酒款） */}
           {step === 'result' && preferGamesOnly && gamesOnlySuggested.length > 0 && (
-            <motion.div
+            <m.div
               key="result-games"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1326,7 +1345,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -1339,7 +1358,7 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
             aria-modal="true"
             aria-labelledby="quiz-history-dialog-title"
           >
-            <motion.div
+            <m.div
               ref={historyModalRef}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1355,22 +1374,39 @@ className="inline-flex items-center justify-center gap-1 text-white/50 hover:tex
                 <ModalCloseButton ref={historyModalCloseButtonRef} onClick={() => setShowHistoryModal(false)} aria-label="關閉" className="rounded-full text-white/70" />
               </div>
               <div className="overflow-y-auto space-y-2 flex-1 min-h-0">
-                {[...quizHistory].reverse().map((item, i) => (
-                  <div
-                    key={`${item.date}-${i}`}
-                    className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
-                  >
-                    <div>
-                      <p className="font-medium text-white">{item.name}</p>
-                      <p className="text-white/50 text-sm">{item.type}</p>
-                    </div>
-                    <span className="text-white/40 text-xs shrink-0">
-                      {new Date(item.date).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                {quizHistory.length === 0 ? (
+                  /** Quiz 頁 20 項優化 #14：歷史彈窗空狀態 — 友善文案與 CTA */
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <History className="w-12 h-12 text-white/20 mb-4" aria-hidden />
+                    <p className="text-white/60 font-medium mb-1">尚無測驗記錄</p>
+                    <p className="text-white/40 text-sm mb-6">完成靈魂酒測後會顯示在這裡</p>
+                    <button
+                      type="button"
+                      onClick={() => { setShowHistoryModal(false); setStep('intro'); }}
+                      className="btn-primary min-h-[48px] min-w-[48px] games-focus-ring"
+                      aria-label="開始靈魂酒測"
+                    >
+                      開始靈魂酒測
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  [...quizHistory].reverse().map((item, i) => (
+                    <div
+                      key={`${item.date}-${i}`}
+                      className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      <div>
+                        <p className="font-medium text-white">{item.name}</p>
+                        <p className="text-white/50 text-sm">{item.type}</p>
+                      </div>
+                      <span className="text-white/40 text-xs shrink-0">
+                        {new Date(item.date).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </div>

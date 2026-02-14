@@ -6,7 +6,7 @@
  * R2-053：再來一局按鈕從底部彈入、輕微彈跳
  * i18n：預設使用 games.playAgain、gamesError.backLobby
  */
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import { ShareStoryCardButton } from './ShareStoryCardButton'
 
@@ -37,7 +37,7 @@ export function GameResultActions({
   const exitText = exitLabel ?? t('gamesError.backLobby')
   return (
     <div className={`flex flex-wrap items-center justify-center gap-3 ${className}`}>
-      <motion.button
+      <m.button
         type="button"
         onClick={onRestart}
         className="btn-primary games-touch-target px-6 py-3 rounded-xl font-bold games-focus-ring"
@@ -47,7 +47,7 @@ export function GameResultActions({
         transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
       >
         {restartText}
-      </motion.button>
+      </m.button>
       {shareStoryCard != null && (
         <ShareStoryCardButton
           resultText={shareStoryCard.resultText}

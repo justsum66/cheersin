@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Crown, Sparkles } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import type { SubscriptionTier } from '@/lib/subscription'
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription'
 import { useTranslation } from '@/contexts/I18nContext'
+import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 
 /**
  * 144 升級提示 Modal：觸及付費功能時顯示方案比較與升級按鈕；P3 無障礙；i18n Phase 3 t('upgrade.*')
@@ -94,7 +95,7 @@ export function UpgradeModal({
       {open && (
         <>
           {/* Phase 1 A3.2: 增強背景動畫 */}
-          <motion.div
+          <m.div
             className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100]"
             initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             animate={{ opacity: 1, backdropFilter: 'blur(12px)' }}
@@ -104,7 +105,7 @@ export function UpgradeModal({
             aria-hidden
           />
           {/* H89 Modal：背景模糊、動畫從底部滑入，減震曲線 - Phase 1 A3.2: Spring 物理動畫 */}
-          <motion.div
+          <m.div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
@@ -133,6 +134,10 @@ export function UpgradeModal({
                 <ModalCloseButton ref={closeButtonRef} onClick={handleClose} aria-label={t('common.close')} />
               </div>
               <p className="text-white/60 text-sm mb-6">{modalDescription}</p>
+              {/* R2-207：升級 modal 顯示社會認證「已有 X 人升級」 */}
+              <p className="text-white/50 text-xs mb-4" aria-hidden>
+                已有 {SOCIAL_PROOF_USER_COUNT.toLocaleString('zh-TW')}+ 人升級 Pro
+              </p>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
                 {tierOrder.map((tier, i) => {
                   const meta = SUBSCRIPTION_TIERS[tier]
@@ -159,7 +164,7 @@ export function UpgradeModal({
                 {t('upgrade.cta')}
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

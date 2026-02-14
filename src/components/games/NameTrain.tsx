@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
+import { DrinkingAnimation } from './DrinkingAnimation'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const TURN_SECONDS = 10
@@ -18,6 +20,7 @@ type OrderMode = 'list' | 'random'
 export default function NameTrain() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 3 ? contextPlayers : DEFAULT_PLAYERS
   const [orderMode, setOrderMode] = useState<OrderMode>('list')
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -217,18 +220,21 @@ export default function NameTrain() {
       )}
       <p className="text-white/70 text-lg mb-4">輪到 {currentPlayer}，要喊誰？</p>
       {wrong && (
-        <motion.p
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          className="text-red-400 font-bold text-lg mb-4"
-          aria-live="assertive"
-        >
-          喝！
-        </motion.p>
+        <>
+          <m.p
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            className="text-red-400 font-bold text-lg mb-4"
+            aria-live="assertive"
+          >
+            喝！
+          </m.p>
+          {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+        </>
       )}
       <div className="flex flex-wrap gap-2 justify-center">
         {players.map((name, i) => (
-          <motion.button
+          <m.button
             key={i}
             type="button"
             whileTap={{ scale: 0.96 }}
@@ -237,7 +243,7 @@ export default function NameTrain() {
             aria-label={`選 ${name}`}
           >
             {name}
-          </motion.button>
+          </m.button>
         ))}
       </div>
     </div>

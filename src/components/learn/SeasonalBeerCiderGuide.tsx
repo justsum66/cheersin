@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m , AnimatePresence } from 'framer-motion';
 import { Calendar, Sun, Cloud, Snowflake, Wind, GlassWater, Utensils, Coffee } from 'lucide-react';
 
 interface SeasonalRecommendation {
@@ -224,7 +224,7 @@ export function SeasonalBeerCiderGuide() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -239,10 +239,10 @@ export function SeasonalBeerCiderGuide() {
         <p className="text-white/70 max-w-3xl mx-auto">
           根據季節、天氣和心情選擇最適合的啤酒與蘋果酒，享受全年無休的飲用樂趣。
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 季節選擇 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -261,10 +261,10 @@ export function SeasonalBeerCiderGuide() {
             {season}
           </button>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* 天氣指南 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -273,7 +273,7 @@ export function SeasonalBeerCiderGuide() {
         {WEATHER_GUIDE.map((guide, index) => {
           const IconComponent = guide.icon;
           return (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -300,13 +300,13 @@ export function SeasonalBeerCiderGuide() {
                 </div>
                 <p className="text-white/70 text-sm">{guide.tips}</p>
               </div>
-            </motion.div>
+            </m.div>
           );
         })}
-      </motion.div>
+      </m.div>
 
       {/* 季節推薦列表 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
@@ -319,7 +319,7 @@ export function SeasonalBeerCiderGuide() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredRecommendations.map((recommendation, index) => (
-            <motion.div
+            <m.div
               key={recommendation.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -367,13 +367,13 @@ export function SeasonalBeerCiderGuide() {
                   <span className="text-xs text-amber-400">{recommendation.mood}</span>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 時間飲用指南 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
@@ -391,7 +391,7 @@ export function SeasonalBeerCiderGuide() {
             { time: '下午', period: '下午 2-6 點', beer: 'IPA 或水果酒', note: '果香或酒花香氣提升活力' },
             { time: '晚上', period: '下午 6 點以後', beer: '司陶特或三料啤酒', note: '濃郁風味，適合放鬆時刻' }
           ].map((guide, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -402,13 +402,13 @@ export function SeasonalBeerCiderGuide() {
               <p className="text-white/60 text-sm mb-2">{guide.period}</p>
               <p className="text-amber-400 font-medium mb-2">{guide.beer}</p>
               <p className="text-white/70 text-xs">{guide.note}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 配餐指南 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
@@ -446,7 +446,7 @@ export function SeasonalBeerCiderGuide() {
               pairing: '清新的啤酒與春天的新鮮食材完美搭配'
             }
           ].map((guide, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -483,22 +483,22 @@ export function SeasonalBeerCiderGuide() {
                 </div>
                 <p className="text-white/70 text-sm">{guide.pairing}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedRecommendation && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedRecommendation(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -610,8 +610,8 @@ export function SeasonalBeerCiderGuide() {
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

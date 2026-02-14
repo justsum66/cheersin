@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -103,7 +104,7 @@ export default function FastType() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -119,11 +120,11 @@ export default function FastType() {
             >
               開始打字
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'playing' && (
-          <motion.div
+          <m.div
             key="playing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -157,11 +158,11 @@ export default function FastType() {
               className="w-full px-4 py-3 rounded-xl bg-white/10 text-white text-center text-xl border border-white/20 focus:border-primary-400 outline-none"
             />
             <div className="text-white/60">進度：{typed.length}/{targetPhrase.length}</div>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && (
-          <motion.div
+          <m.div
             key="result"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -175,6 +176,7 @@ export default function FastType() {
             <div className={`text-2xl font-bold ${accuracy >= 80 ? 'text-green-400' : 'text-red-400'}`}>
               {accuracy >= 80 ? '過關！' : '失敗！喝一口！'}
             </div>
+            {accuracy < 80 && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white mt-4">
               {players.map(p => (
                 <span key={p} className="mx-2">{p}: {scores[p] || 0}分</span>
@@ -195,7 +197,7 @@ export default function FastType() {
               </button>
             </div>
             <CopyResultButton text={`打字比賽 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

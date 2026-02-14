@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { scaleIn, slideUp, staggerContainer, buttonHover, buttonTap } from '@/lib/animations'
 import { useTranslation } from '@/contexts/I18nContext'
 import { fireFullscreenConfetti } from '@/lib/celebration'
@@ -12,6 +12,8 @@ import { useGameReduceMotion } from './GameWrapper'
 import { useGameStore } from '@/store/useGameStore'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
+import ShotRoulette from './ShotRoulette'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4', '玩家 5', '玩家 6']
 const MAX_PLAYERS = 12
@@ -60,6 +62,13 @@ export default function Roulette() {
     decrementTrialRound,
     isSpectator
   } = useGameStore()
+
+  // Phase 2: Game Mode Consolidation
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'shot') {
+    return <ShotRoulette />
+  }
 
   // Use GameWrapper generic contexts if still valid
   const reducedMotion = useGameReduceMotion()
@@ -255,7 +264,7 @@ export default function Roulette() {
   const isRepeatWinner = winnerName && lastWinner && winnerName === lastWinner
 
   return (
-    <motion.div
+    <m.div
       className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px"
       role="main"
       aria-label="命運轉盤"
@@ -264,20 +273,20 @@ export default function Roulette() {
       animate="visible"
       exit="hidden"
     >
-      <motion.div variants={slideUp} className="w-full max-w-2xl text-center">
+      <m.div variants={slideUp} className="w-full max-w-2xl text-center">
         <GameRules
           rules={`轉動轉盤後，指針指向的人就是「這輪喝」的人。\n至少 2 位玩家，可於下方新增／清空玩家。可選轉動秒數（僅影響動畫）。`}
           rulesKey="roulette.rules"
         />
-      </motion.div>
+      </m.div>
       {isSpectator && (
         <p className="text-white/50 text-sm mb-2" role="status" aria-live="polite">觀戰中，僅可查看結果</p>
       )}
       {!isSpectator && !isSpinning && players.length >= 2 && (
-        <motion.div variants={slideUp} className="flex flex-wrap gap-3 md:gap-4 mb-2 justify-center" role="group" aria-label="轉動速度與主題">
+        <m.div variants={slideUp} className="flex flex-wrap gap-3 md:gap-4 mb-2 justify-center" role="group" aria-label="轉動速度與主題">
           <span className="text-white/50 text-xs self-center mr-1">速度：</span>
           {SPIN_DURATION_OPTIONS.map((s) => (
-            <motion.button
+            <m.button
               key={s}
               type="button"
               onClick={() => setSpinDuration(s)}
@@ -289,11 +298,11 @@ export default function Roulette() {
               aria-pressed={spinDuration === s}
             >
               {SPIN_DURATION_LABELS[s]}
-            </motion.button>
+            </m.button>
           ))}
           <span className="text-white/50 text-xs self-center mx-2">主題：</span>
           {WHEEL_THEMES.map((t, i) => (
-            <motion.button
+            <m.button
               key={t.name}
               type="button"
               onClick={() => setWheelThemeIndex(i)}
@@ -306,10 +315,10 @@ export default function Roulette() {
               title={t.name}
             />
           ))}
-        </motion.div>
+        </m.div>
       )}
       {/* G3D-Roulette-01/02：轉盤 3D 厚度/光影、指針 3D 立體；RWD-51 轉盤尺寸 vmin */}
-      <motion.div variants={scaleIn} className="relative w-[min(280px,85vmin)] h-[min(280px,85vmin)] sm:w-[min(320px,85vmin)] sm:h-[min(320px,85vmin)] md:w-[min(400px,85vmin)] md:h-[min(400px,85vmin)] max-w-[400px] max-h-[400px] mb-6 md:mb-10 mx-auto" aria-label="命運轉盤">
+      <m.div variants={scaleIn} className="relative w-[min(280px,85vmin)] h-[min(280px,85vmin)] sm:w-[min(320px,85vmin)] sm:h-[min(320px,85vmin)] md:w-[min(400px,85vmin)] md:h-[min(400px,85vmin)] max-w-[400px] max-h-[400px] mb-6 md:mb-10 mx-auto" aria-label="命運轉盤">
         {/* G3D-Roulette-02：指針 3D 立體、陰影與高光 */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-6 z-20">
           <div className="w-10 h-10 rotate-45 bg-gradient-to-b from-white via-gray-100 to-gray-300 border-4 border-gray-900 rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.8)] relative">
@@ -356,14 +365,14 @@ export default function Roulette() {
           {!reducedMotion && <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 animate-spin-slow opacity-80 blur-sm absolute" aria-hidden="true" />}
           <div className="w-4 h-4 rounded-full bg-white relative z-10" />
         </div>
-      </motion.div>
+      </m.div>
 
       <AnimatePresence>
         {/* T069 P2：結果有視覺文字與 aria-live；#39 減少動畫時跳過過場；#49 e2e 結果區 */}
         {winnerIndex !== null && winnerName && (
           <>
-            <motion.div variants={slideUp} className="flex flex-col sm:flex-row sm:flex-wrap items-center gap-2 mb-2">
-              <motion.p
+            <m.div variants={slideUp} className="flex flex-col sm:flex-row sm:flex-wrap items-center gap-2 mb-2">
+              <m.p
                 initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={reducedMotion ? undefined : { opacity: 0 }}
@@ -374,9 +383,10 @@ export default function Roulette() {
                 data-testid="roulette-result"
               >
                 中獎：<span className="text-xl sm:text-2xl md:text-3xl tabular-nums truncate max-w-[12rem] sm:max-w-none" title={winnerName}>{winnerName}</span>
-              </motion.p>
+              </m.p>
               <CopyResultButton text={`命運轉盤 中獎：${winnerName}`} label="複製結果" />
-            </motion.div>
+            </m.div>
+            {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             {isRepeatWinner && (
               <p className="text-amber-400 text-sm font-medium mb-2" role="alert">連續選到同一人！</p>
             )}
@@ -385,7 +395,7 @@ export default function Roulette() {
       </AnimatePresence>
       {/* G3D-Roulette-04/10：玩家名單/歷史列表排版、間距與視覺層次 */}
       {historySlice.length > 0 && (
-        <motion.div variants={slideUp} className="mb-2 w-full max-w-xs max-h-36 sm:max-h-40 overflow-y-auto rounded-xl bg-white/5 border border-white/10 p-3 space-y-2" role="region" aria-label="本局轉盤歷史">
+        <m.div variants={slideUp} className="mb-2 w-full max-w-xs max-h-36 sm:max-h-40 overflow-y-auto rounded-xl bg-white/5 border border-white/10 p-3 space-y-2" role="region" aria-label="本局轉盤歷史">
           <p className="text-white/50 text-xs mb-1 sticky top-0 bg-black/20 -m-1 p-1 rounded">最近 {HISTORY_MAX} 次（點擊複製）：</p>
           <div className="flex flex-wrap gap-2 items-center mb-1">
             <CopyResultButton
@@ -396,7 +406,7 @@ export default function Roulette() {
           </div>
           <div className="flex flex-wrap gap-2">
             {historySlice.map((name, i) => (
-              <motion.button
+              <m.button
                 key={i}
                 type="button"
                 whileHover={buttonHover}
@@ -413,13 +423,13 @@ export default function Roulette() {
                 aria-label={`複製 ${name}`}
               >
                 {name}
-              </motion.button>
+              </m.button>
             ))}
           </div>
           {!isSpectator && (
             <button type="button" onClick={() => setHistory([])} className="mt-1 min-h-[48px] min-w-[48px] px-3 py-1.5 text-white/40 hover:text-white/60 text-xs rounded-lg" aria-label="清除轉盤歷史">清除歷史</button>
           )}
-        </motion.div>
+        </m.div>
       )}
       {/* G3D-Roulette-09：空名單狀態文案精緻化 */}
       {!isSpectator && players.length < 2 && (
@@ -428,8 +438,8 @@ export default function Roulette() {
         </p>
       )}
       {!isSpectator && (
-        <motion.div variants={slideUp} className="flex flex-wrap gap-2 justify-center">
-          <motion.button
+        <m.div variants={slideUp} className="flex flex-wrap gap-2 justify-center">
+          <m.button
             type="button"
             onClick={spin}
             disabled={isSpinning || players.length < 2}
@@ -440,8 +450,8 @@ export default function Roulette() {
             data-testid="roulette-spin"
           >
             {isSpinning ? '命運轉動中...' : '轉動命運之輪'}
-          </motion.button>
-          <motion.button
+          </m.button>
+          <m.button
             type="button"
             onClick={spin}
             disabled={isSpinning || players.length < 2}
@@ -452,35 +462,35 @@ export default function Roulette() {
             title="或按 R 鍵、搖一搖手機"
           >
             再轉一次 (R)
-          </motion.button>
+          </m.button>
           {/* G3D-Roulette-11：搖一搖/鍵盤 R 觸發提示 */}
           <p className="text-white/30 text-xs w-full text-center mt-1">搖一搖或按 R 鍵可再轉</p>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Player list (scrollable when many)；觀戰者僅可看名單；RWD 75 */}
       {/* G3D-Roulette-04：玩家名單排版、間距 */}
       {players.length > 0 && (
-        <motion.div variants={slideUp} className="mt-4 w-full max-w-xs max-h-28 sm:max-h-32 overflow-y-auto rounded-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
+        <m.div variants={slideUp} className="mt-4 w-full max-w-xs max-h-28 sm:max-h-32 overflow-y-auto rounded-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
           <p className="text-white/50 text-xs mb-2 sticky top-0 bg-black/20 -m-1 p-1 rounded z-[1]">玩家名單</p>
           <ul className="flex flex-wrap gap-2">
             {players.map((p, i) => (
-              <motion.li
+              <m.li
                 key={i}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="px-2.5 py-1.5 rounded-lg bg-white/5 text-white/80 text-sm border border-white/5"
               >
                 {p}
-              </motion.li>
+              </m.li>
             ))}
           </ul>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Player Controls；GAMES_500 #255 觀戰者不顯示 */}
       {!isSpectator && !isSpinning && (
-        <motion.form variants={slideUp} onSubmit={addPlayer} className="mt-6 flex flex-wrap gap-2 w-full max-w-xs" aria-label="新增玩家">
+        <m.form variants={slideUp} onSubmit={addPlayer} className="mt-6 flex flex-wrap gap-2 w-full max-w-xs" aria-label="新增玩家">
           <div className="flex gap-2 flex-1 min-w-0 flex-wrap sm:flex-nowrap">
             <input
               type="text"
@@ -492,7 +502,7 @@ export default function Roulette() {
               aria-invalid={!!addError}
               aria-describedby={addError ? 'roulette-add-error' : undefined}
             />
-            <motion.button
+            <m.button
               whileHover={buttonHover}
               whileTap={buttonTap}
               type="submit"
@@ -501,10 +511,10 @@ export default function Roulette() {
               aria-label="新增玩家"
             >
               +
-            </motion.button>
+            </m.button>
           </div>
           {addError && <p id="roulette-add-error" className="text-red-400 text-sm w-full">{addError}</p>}
-          <motion.button
+          <m.button
             whileHover={buttonHover}
             whileTap={buttonTap}
             type="button"
@@ -513,9 +523,9 @@ export default function Roulette() {
             aria-label="清空玩家名單"
           >
             清空名單
-          </motion.button>
-        </motion.form>
+          </m.button>
+        </m.form>
       )}
-    </motion.div>
+    </m.div>
   )
 }

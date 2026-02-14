@@ -5,6 +5,9 @@ import { PageErrorContent } from '@/components/PageErrorContent'
 import { useTranslation } from '@/contexts/I18nContext'
 import { logger } from '@/lib/logger'
 
+const isChunkLoadError = (err: unknown) =>
+  err instanceof Error && (err.name === 'ChunkLoadError' || /loading chunk|chunk.*failed|failed to fetch/i.test(err.message))
+
 /** 行銷區（首頁等）錯誤邊界：單一組件崩潰不導致整站白屏 */
 export default function MarketingError({
   error,
@@ -14,22 +17,23 @@ export default function MarketingError({
   reset: () => void
 }) {
   const { t } = useTranslation()
-  const isChunkError = typeof error?.message === 'string' && /Failed to load chunk|Loading chunk \d+ failed/i.test(error.message)
+  const chunkError = isChunkLoadError(error)
+  const handleRetry = chunkError ? () => { if (typeof window !== 'undefined') window.location.reload() } : reset
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && isChunkError) {
-      logger.warn('Chunk load error (dev). Fix: run "npm run clean" then "npm run dev", or use "npm run dev:turbo" only if needed.')
-    } else {
-      logger.error('Marketing error:', { message: error instanceof Error ? error.message : String(error) })
-    }
-  }, [error, isChunkError])
+    logger.error('Marketing error', {
+      name: error?.name,
+      message: error instanceof Error ? error.message : String(error),
+      digest: error?.digest,
+    })
+  }, [error])
 
   return (
     <PageErrorContent
       title={t('error.title')}
-      description={isChunkError ? '頁面資源載入失敗，請點「重新載入」或重新整理。若在開發模式反覆出現，請執行 npm run clean 後再 npm run dev。' : t('error.description')}
-      onRetry={reset}
-      retryLabel={t('error.retry')}
+      description={chunkError ? '頁面資源載入失敗，請點下方按鈕重新整理頁面。' : t('error.description')}
+      onRetry={handleRetry}
+      retryLabel={chunkError ? '重新整理頁面' : t('error.retry')}
       links={[
         { href: '/', label: t('notFound.back') },
         { href: '/quiz', label: t('nav.quiz') },

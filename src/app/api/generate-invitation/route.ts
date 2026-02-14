@@ -3,6 +3,7 @@
  * POST body: { theme?: string, date?: string } → 回傳模板文字，供前端一鍵分享
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ text: template, ok: true })
   } catch {
-    return NextResponse.json({ error: 'Invalid request', ok: false }, { status: 400 })
+    return errorResponse(400, 'INVALID_REQUEST', { message: 'Invalid request' })
   }
 }

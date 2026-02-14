@@ -8,7 +8,9 @@ import { createServerClient } from '@/lib/supabase-server'
 import { getEmbedding } from '@/lib/embedding'
 import { upsertVectors, deleteVectors } from '@/lib/pinecone'
 import { isAdminRequest } from '@/lib/admin-auth'
-import { serverErrorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { ADMIN_ERROR, ADMIN_MESSAGE } from '@/lib/api-error-codes'
+import { ADMIN_SECRET } from '@/lib/env-config'
 import { logger } from '@/lib/logger'
 
 const NAMESPACE_KNOWLEDGE = 'knowledge'
@@ -21,14 +23,14 @@ const MAX_CONTENT_LENGTH = 100_000
 function isAdmin(request: NextRequest): boolean {
   return isAdminRequest(
     request.headers.get('x-admin-secret'),
-    process.env.ADMIN_SECRET,
+    ADMIN_SECRET,
     process.env.NODE_ENV === 'development'
   )
 }
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   try {
     const supabase = createServerClient()
@@ -47,28 +49,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   try {
     const body = (await request.json()) as import('@/types/api-bodies').AdminKnowledgePostBody
     const { title, course_id, chapter, content } = body
     if (!title?.trim() || !course_id?.trim() || !chapter?.trim() || !content?.trim()) {
-      return NextResponse.json({ error: 'title, course_id, chapter, content required' }, { status: 400 })
+      return errorResponse(400, ADMIN_ERROR.INVALID_BODY, { message: ADMIN_MESSAGE.TITLE_COURSE_CHAPTER_CONTENT })
     }
     const t = title.trim()
     const cid = course_id.trim()
     const ch = chapter.trim()
     const cnt = content.trim()
     if (t.length > MAX_TITLE_LENGTH || cid.length > MAX_COURSE_ID_LENGTH || ch.length > MAX_CHAPTER_LENGTH || cnt.length > MAX_CONTENT_LENGTH) {
-      return NextResponse.json(
-        { error: 'Field length exceeded', message: `title≤${MAX_TITLE_LENGTH}, course_id≤${MAX_COURSE_ID_LENGTH}, chapter≤${MAX_CHAPTER_LENGTH}, content≤${MAX_CONTENT_LENGTH}` },
-        { status: 400 }
-      )
+      return errorResponse(400, ADMIN_ERROR.FIELD_LENGTH_EXCEEDED, { message: `title≤${MAX_TITLE_LENGTH}, course_id≤${MAX_COURSE_ID_LENGTH}, chapter≤${MAX_CHAPTER_LENGTH}, content≤${MAX_CONTENT_LENGTH}` })
     }
     const supabase = createServerClient()
     const embedding = await getEmbedding(cnt.slice(0, 8000))
     if (!embedding?.length) {
-      return NextResponse.json({ error: 'Embedding failed' }, { status: 500 })
+      return errorResponse(500, ADMIN_ERROR.EMBEDDING_FAILED, { message: ADMIN_MESSAGE.EMBEDDING_FAILED })
     }
     const vectorId = `admin-${cid}-${ch}-${Date.now()}`.replace(/\s/g, '-')
     await upsertVectors(

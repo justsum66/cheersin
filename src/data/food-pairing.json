@@ -1,0 +1,12 @@
+{
+  "pairings": [
+    { "dish": "牛排、羊排", "wines": ["紅酒（Cabernet、Syrah）"], "note": "單寧與蛋白質平衡" },
+    { "dish": "生蠔、海鮮", "wines": ["白酒（Chablis、Sauvignon Blanc）", "香檳"], "note": "酸度與礦物感" },
+    { "dish": "義大利麵（紅醬）", "wines": ["Chianti", "Sangiovese"], "note": "酸度搭配番茄" },
+    { "dish": "壽司、生魚片", "wines": ["清酒", "Riesling", "香檳"], "note": "清爽不搶味" },
+    { "dish": "起司", "wines": ["紅酒", "波特", "白酒"], "note": "依起司類型選擇" },
+    { "dish": "甜點", "wines": ["貴腐酒", "冰酒", "Moscato"], "note": "酒甜度需等於或高於甜點" },
+    { "dish": "炸物", "wines": ["氣泡酒", "啤酒", "白酒"], "note": "氣泡與酸度解膩" },
+    { "dish": "麻辣鍋", "wines": ["啤酒", "氣泡酒", "Riesling"], "note": "低單寧、冰涼易飲" }
+  ]
+}

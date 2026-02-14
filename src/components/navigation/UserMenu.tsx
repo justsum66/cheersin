@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import { User, Settings, LogOut } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { User, Settings, LogOut, Crown } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
@@ -13,6 +14,7 @@ import { Avatar } from '@/components/ui/Avatar'
 /** P1-057：登入後導航欄頭像與下拉選單 — 個人資料、設定、登出 */
 export function UserMenu() {
   const { user } = useUser()
+  const { tier } = useSubscription()
   const supabase = useSupabase()
   const prefersReducedMotion = usePrefersReducedMotion()
   const [open, setOpen] = useState(false)
@@ -84,20 +86,22 @@ export function UserMenu() {
           alt={user.name ?? user.email}
           className="ring-2 ring-white/10 hover:ring-primary-500/50 transition-[box-shadow]"
         />
-        <span className="text-sm font-medium text-white/90 hidden sm:inline truncate max-w-[8rem]">
+        <span className="text-sm font-medium text-white/90 hidden sm:inline truncate max-w-[8rem] flex items-center gap-1.5">
           {user.name ?? user.email ?? '帳戶'}
+          {/* R2-226：Pro 徽章 — 訂閱 tier 為 premium 時顯示 */}
+          {tier === 'premium' && <Crown className="w-3.5 h-3.5 text-primary-400 shrink-0" aria-label="Pro 會員" />}
         </span>
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             className="absolute right-0 top-full mt-1 w-56 py-2 rounded-xl bg-[#1a0a2e] border border-white/10 shadow-xl z-[60]"
             role="menu"
             aria-label="用戶選單"
-            initial={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.15 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 25 }}
           >
             <Link
               href="/profile"
@@ -127,7 +131,7 @@ export function UserMenu() {
               <LogOut className="w-4 h-4" aria-hidden />
               登出
             </button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

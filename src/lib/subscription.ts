@@ -8,7 +8,8 @@ export type SubscriptionTier = 'free' | 'basic' | 'premium'
 export const SUBSCRIPTION_TIERS: Record<SubscriptionTier, { label: string; maxAICallsPerDay: number; maxRoomPlayers: number; canAccessProCourse: boolean; hasNoAds: boolean; hasProBadge: boolean }> = {
   free: {
     label: '免費',
-    maxAICallsPerDay: 10,
+    /** R2-197：免費方案 AI 侍酒師每日 5 次 */
+    maxAICallsPerDay: 5,
     maxRoomPlayers: 4,
     canAccessProCourse: false,
     hasNoAds: false,
@@ -30,6 +31,11 @@ export const SUBSCRIPTION_TIERS: Record<SubscriptionTier, { label: string; maxAI
     hasNoAds: true,
     hasProBadge: true,
   },
+}
+
+/** 是否為付費方案（basic 或 premium），供 API 權限與房間人數等判斷 */
+export function isPaidTier(tier: string | null | undefined): tier is 'basic' | 'premium' {
+  return tier === 'basic' || tier === 'premium'
 }
 
 /** 當日 AI 對話次數上限（-1 表示無限） */

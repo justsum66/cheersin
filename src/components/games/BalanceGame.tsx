@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Scale, RefreshCw, Trophy, Check, X } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -192,7 +192,7 @@ export default function BalanceGame() {
 
           <AnimatePresence mode="wait">
             {currentQuestion && (
-              <motion.div
+              <m.div
                 key={currentQuestion.question}
                 initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -203,7 +203,7 @@ export default function BalanceGame() {
 
                 {/* 天秤動畫 */}
                 <div className="relative h-32 mb-6">
-                  <motion.div
+                  <m.div
                     className="absolute inset-0 flex items-center justify-center"
                     style={{ transform: `rotate(${tiltAngle}deg)` }}
                     transition={{ type: 'spring', stiffness: 100 }}
@@ -233,7 +233,7 @@ export default function BalanceGame() {
 
                     {/* 支點 */}
                     <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 w-4 h-8 bg-white/30 rounded-b-lg" />
-                  </motion.div>
+                  </m.div>
                 </div>
 
                 {showResult && (
@@ -281,7 +281,7 @@ export default function BalanceGame() {
                     下一題
                   </button>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

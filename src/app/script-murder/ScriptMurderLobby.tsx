@@ -5,7 +5,7 @@
  * SM-01：自 page 拆出
  */
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { BookOpen, AlertCircle, Lock, ChevronLeft } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
@@ -49,7 +49,7 @@ export function ScriptMurderLobby({
         <p className="text-white/80 text-base mb-3">{t('scriptMurder.description')}</p>
         <p className="text-white/50 text-xs mb-8" role="doc-tip">{t('scriptMurder.onboardingSteps')}</p>
         {error && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 mb-4"
@@ -72,7 +72,7 @@ export function ScriptMurderLobby({
                 {t('scriptMurder.backToHome')}
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         )}
         {loadingScripts ? (
           <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label={t('scriptMurder.loadingScriptsAria')}>
@@ -81,7 +81,7 @@ export function ScriptMurderLobby({
             ))}
           </div>
         ) : scripts.length === 0 && !error ? (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="py-12 text-center p-6 rounded-xl bg-white/5 border border-white/10"
@@ -105,7 +105,7 @@ export function ScriptMurderLobby({
                 {t('scriptMurder.goToPartyGames')}
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         ) : scripts.length > 0 ? (
           <InViewAnimate y={30} amount={0.15}>
             {/* SM-50 TODO: 若劇本數 >20 可考慮虛擬捲動或分頁以優化效能 */}
@@ -114,7 +114,7 @@ export function ScriptMurderLobby({
                 const isLocked = idx >= freeScriptLimit
                 return (
                   <li key={s.id}>
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.08, duration: 0.3 }}
@@ -161,7 +161,7 @@ export function ScriptMurderLobby({
                           {t('scriptMurder.upgradeUnlock')}
                         </Link>
                       ) : (
-                        <motion.button
+                        <m.button
                           type="button"
                           disabled={creating}
                           onClick={() => createRoom(s.id)}
@@ -170,9 +170,9 @@ export function ScriptMurderLobby({
                           aria-label={t('scriptMurder.createRoomAria').replace('{{title}}', s.title)}
                         >
                           {creating ? t('scriptMurder.creating') : t('scriptMurder.createRoom')}
-                        </motion.button>
+                        </m.button>
                       )}
-                    </motion.div>
+                    </m.div>
                   </li>
                 )
               })}

@@ -61,3 +61,4 @@
 | 日期 | 摘要 |
 |------|------|
 | 2026-02-12 | 建立評分研究文件；移除 finger-guessing、coin-flip、truth-wheel、fortune-draw、finger-point；TASKS-170 新增 GAME-OPT-001～010 |
+| 2026-02 | **縮減至 85 款**：依六維評分與相似度，合併移除 7 款、低分/手機不適合移除 7 款，共 14 款下架。詳見 `docs/games-audit-85.md`。 |

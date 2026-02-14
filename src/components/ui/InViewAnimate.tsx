@@ -1,14 +1,13 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { m , useReducedMotion } from 'framer-motion'
 
-/** 元素入場動畫（115）；任務 17：prefers-reduced-motion 時無入場動畫 */
-/** Phase 1 B4.1: 增強滾動觸發淡入動畫效果 */
+/** R2-044：元素入場動畫 y:30→0；任務 17：prefers-reduced-motion 時無入場動畫 */
 export function InViewAnimate({
   children,
   className = '',
   delay = 0,
-  y = 16,
+  y = 30,
   once = true,
   amount = 0.2,
   duration = 0.5,
@@ -30,7 +29,7 @@ export function InViewAnimate({
   const initial = reducedMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y, scale: 0.97 }
   const whileInView = reducedMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, scale: 1 }
   return (
-    <motion.div
+    <m.div
       initial={initial}
       whileInView={whileInView}
       viewport={{ once, amount }}
@@ -43,6 +42,6 @@ export function InViewAnimate({
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }

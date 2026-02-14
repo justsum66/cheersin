@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Eye, RotateCcw, HelpCircle } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -103,20 +103,20 @@ export default function ParanoiaGame() {
       {!currentQ ? (
         <div className="text-center">
           <p className="text-white/70 mb-4">輪到 <span className="text-indigo-400 font-bold">{currentAsker}</span> 提問</p>
-          <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-xl games-focus-ring">
+          <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-xl games-focus-ring">
             抽題目
-          </motion.button>
+          </m.button>
         </div>
       ) : !selectedPlayer ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <p className="text-white/50">只給 <span className="text-indigo-400">{currentAsker}</span> 看</p>
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-center"
           >
             <p className="text-white text-lg">{currentQ}</p>
-          </motion.div>
+          </m.div>
           <p className="text-white/50 mt-4">選一個人：</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {otherPlayers.map(p => (
@@ -128,11 +128,11 @@ export default function ParanoiaGame() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 w-full max-w-md text-center">
-          <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-xl">
+          <m.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-xl">
             <span className="text-indigo-400 font-bold">{currentAsker}</span>
             <span className="text-white/70"> 選了 </span>
             <span className="text-purple-400 font-bold">{selectedPlayer}</span>
-          </motion.div>
+          </m.div>
 
           {!revealed ? (
             <div className="mt-4">
@@ -150,14 +150,14 @@ export default function ParanoiaGame() {
               </div>
             </div>
           ) : (
-            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mt-4">
+            <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mt-4">
               <p className="text-white/50 mb-2">問題是：</p>
               <p className="text-white text-lg p-4 rounded-xl bg-purple-500/20 border border-purple-500/30">{currentQ}</p>
               <div className="flex gap-3 mt-4 justify-center">
                 <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一輪</button>
                 <CopyResultButton text={`偏執遊戲：${currentQ}\n${currentAsker} 選了 ${selectedPlayer}`} />
               </div>
-            </motion.div>
+            </m.div>
           )}
         </div>
       )}

@@ -162,6 +162,8 @@ const PERSIST_EVENT_NAMES = new Set([
   'party_room_join',
   'party_room_cheers',
   'party_room_select_game',
+  /** AST-47：助理每輪結束（訊息數、vision/text/error） */
+  'assistant_turn',
 ])
 
 /**

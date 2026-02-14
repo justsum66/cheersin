@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Target, RotateCcw, Skull } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
@@ -89,16 +89,16 @@ export default function RussianRoulette() {
       </div>
 
       {bulletPos < 0 ? (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={startGame} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={startGame} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
           {t('games.russianRouletteLoadBullet')}
-        </motion.button>
+        </m.button>
       ) : (
         <div className="flex flex-col items-center gap-6">
           <p className="text-white/70">{t('games.russianRouletteTurn')} <span className="text-red-400 font-bold">{currentPlayer}</span></p>
           
           {/* Revolver cylinder visualization */}
           <div className="relative w-40 h-40">
-            <motion.div 
+            <m.div 
               className="absolute inset-0 rounded-full border-4 border-white/30"
               animate={spinning ? { rotate: 360 } : {}}
               transition={{ duration: 0.5 }}
@@ -114,7 +114,7 @@ export default function RussianRoulette() {
                   }}
                 />
               ))}
-            </motion.div>
+            </m.div>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white/50 text-sm">{t('common.shotProgress', { current: currentPos + 1 })}</span>
             </div>
@@ -122,7 +122,7 @@ export default function RussianRoulette() {
 
           <AnimatePresence mode="wait">
             {result === null ? (
-              <motion.button
+              <m.button
                 key="trigger"
                 whileTap={{ scale: 0.96 }}
                 onClick={pullTrigger}
@@ -130,9 +130,9 @@ export default function RussianRoulette() {
                 className="px-8 py-4 rounded-xl bg-red-500 text-white font-bold text-lg games-focus-ring disabled:opacity-50"
               >
                 {spinning ? '...' : t('games.russianRouletteTrigger')}
-              </motion.button>
+              </m.button>
             ) : (
-              <motion.div
+              <m.div
                 key="result"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -152,7 +152,7 @@ export default function RussianRoulette() {
                   </button>
                   <CopyResultButton text={`${t('games.russianRouletteTitle')}：${currentPlayer} ${result === 'boom' ? t('games.russianRouletteHit') + currentPlayer + ' ' + t('games.russianRouletteDrink') : t('games.russianRouletteSafe')}`} />
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

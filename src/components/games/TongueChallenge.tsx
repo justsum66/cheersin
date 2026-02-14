@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -93,7 +93,7 @@ export default function TongueChallenge() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -122,11 +122,11 @@ export default function TongueChallenge() {
                 重新開始
               </button>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'challenge' && currentTwister && (
-          <motion.div
+          <m.div
             key="challenge"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -147,11 +147,11 @@ export default function TongueChallenge() {
             >
               我唸完了！
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'voting' && (
-          <motion.div
+          <m.div
             key="voting"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -186,7 +186,7 @@ export default function TongueChallenge() {
               確認結果
             </button>
             <CopyResultButton text={`口技挑戰 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

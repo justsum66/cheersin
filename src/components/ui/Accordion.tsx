@@ -2,7 +2,7 @@
 
 /** P1-097：通用可摺疊 (Accordion) 組件 — FAQ、課程章節等 */
 import { useState, type ReactNode } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 export interface AccordionItemProps {
   id: string
@@ -39,7 +39,7 @@ export function AccordionItem({ id, trigger, children, defaultOpen = false }: Ac
       </button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             id={`accordion-${id}-panel`}
             role="region"
             aria-labelledby={`accordion-${id}-trigger`}
@@ -50,7 +50,7 @@ export function AccordionItem({ id, trigger, children, defaultOpen = false }: Ac
             className="overflow-hidden"
           >
             <div className="pb-4 text-white/70 text-sm">{children}</div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -95,7 +95,7 @@ export function Accordion({ items, single = false, className = '' }: AccordionPr
           </button>
           <AnimatePresence initial={false}>
             {openIds.has(item.id) && (
-              <motion.div
+              <m.div
                 id={`accordion-${item.id}-panel`}
                 role="region"
                 aria-labelledby={`accordion-${item.id}-trigger`}
@@ -106,7 +106,7 @@ export function Accordion({ items, single = false, className = '' }: AccordionPr
                 className="overflow-hidden"
               >
                 <div className="pb-4 text-white/70 text-sm">{item.children}</div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

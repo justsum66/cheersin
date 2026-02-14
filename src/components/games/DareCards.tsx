@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Sparkles, RotateCcw, Check, X } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -102,12 +102,12 @@ export default function DareCards() {
       <p className="text-white/70 mb-4">輪到 <span className="text-yellow-400 font-bold">{currentPlayer}</span></p>
 
       {!currentDare ? (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={drawCard} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={drawCard} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
           抽挑戰卡！
-        </motion.button>
+        </m.button>
       ) : result === null ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <motion.div
+          <m.div
             initial={{ rotateY: 180, opacity: 0 }}
             animate={{ rotateY: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -115,27 +115,27 @@ export default function DareCards() {
           >
             <p className="text-white text-xl font-medium">{currentDare.dare}</p>
             <p className="text-white/50 mt-2 text-sm">放棄懲罰：喝 {currentDare.penalty} 杯</p>
-          </motion.div>
+          </m.div>
 
           <div className="flex gap-4">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={complete}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold games-focus-ring"
             >
               <Check className="w-5 h-5" /> 完成！
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={drink}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-500 text-white font-bold games-focus-ring"
             >
               <X className="w-5 h-5" /> 喝酒！
-            </motion.button>
+            </m.button>
           </div>
         </div>
       ) : (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           {result === 'complete' ? (
             <p className="text-emerald-400 font-bold text-2xl">挑戰成功！👏</p>
           ) : (
@@ -145,7 +145,7 @@ export default function DareCards() {
             <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>
             <CopyResultButton text={`大膽挑戰：${currentDare.dare}\n${currentPlayer} ${result === 'complete' ? '完成挑戰' : `喝了 ${currentDare.penalty} 杯`}`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {history.length > 0 && (

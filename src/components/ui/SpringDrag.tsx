@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 /** 114 物理彈簧：可拖曳元素，釋放後以 spring 回彈至原點 */
 const spring = { type: 'spring' as const, stiffness: 400, damping: 25 }
@@ -16,9 +16,9 @@ export function SpringDrag({
   className?: string
   dragDirection?: 'x' | 'y' | boolean
   dragConstraints?: { left?: number; right?: number; top?: number; bottom?: number }
-} & Omit<React.ComponentProps<typeof motion.div>, 'dragConstraints'>) {
+} & Omit<React.ComponentProps<typeof m.div>, 'dragConstraints'>) {
   return (
-    <motion.div
+    <m.div
       drag={dragDirection}
       dragConstraints={dragConstraints}
       dragElastic={0.2}
@@ -28,6 +28,6 @@ export function SpringDrag({
       {...props}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }

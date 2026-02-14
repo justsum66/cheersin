@@ -3,7 +3,7 @@
 /** P1-031 / A11Y-006：統一 Modal — 遮罩、關閉按鈕、焦點鎖定、Esc 關閉、進出場動畫 */
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { modalOverlay, modalContent } from '@/lib/variants'
 
@@ -70,7 +70,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           variants={modalOverlay}
           initial="hidden"
           animate="visible"
@@ -82,7 +82,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
         >
-          <motion.div
+          <m.div
             ref={contentRef}
             variants={modalContent}
             initial="hidden"
@@ -120,8 +120,8 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
               </div>
             )}
             <div className="p-4">{children}</div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>,
     document.body

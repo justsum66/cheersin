@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Volume2, BookOpen, Wrench, History, TrendingUp, Globe, Award } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { logger } from '@/lib/logger';
 
 // 威士忌專業術語資料庫
@@ -333,7 +333,7 @@ export function WhiskyGlossary() {
           {CATEGORIES.map((category) => {
             const IconComponent = category.icon;
             return (
-              <motion.button
+              <m.button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -346,7 +346,7 @@ export function WhiskyGlossary() {
               >
                 <IconComponent className="w-4 h-4 inline mr-2" />
                 {category.name}
-              </motion.button>
+              </m.button>
             );
           })}
         </div>
@@ -364,7 +364,7 @@ export function WhiskyGlossary() {
             </h3>
             <div className="grid gap-3">
               {terms.map((term) => (
-                <motion.div
+                <m.div
                   key={term.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -388,7 +388,7 @@ export function WhiskyGlossary() {
                     />
                   </div>
                   <p className="text-white/60 text-sm mt-2 line-clamp-2">{term.definition}</p>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </div>
@@ -397,13 +397,13 @@ export function WhiskyGlossary() {
 
       {/* 術語詳細資訊彈窗 */}
       {selectedTerm && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedTerm(null)}
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
@@ -488,8 +488,8 @@ export function WhiskyGlossary() {
                 </div>
               );
             })()}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </div>
   );

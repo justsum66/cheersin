@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
-import { motion, LayoutGroup } from 'framer-motion'
+import { m, LayoutGroup, useReducedMotion } from 'framer-motion'
 import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, type LucideIcon } from 'lucide-react'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import { Modal } from '@/components/ui/Modal'
 import { GameCard } from './GameCard'
 import { prefetchGame } from './GameLazyMap'
@@ -27,6 +27,9 @@ import { NowPlayingCount } from './NowPlayingCount'
 import RandomBrewery from './RandomBrewery'
 import type { GameDifficulty, GameCategory } from '@/config/games.config'
 import { getGameMeta, GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
+import { createPlaylistId, type GamePlaylist } from '@/lib/games-playlists'
+import type { GameId } from '@/config/games.config'
+import { List, Play, Trash2, Plus } from 'lucide-react'
 
 export type { GameCategory }
 
@@ -67,6 +70,10 @@ interface GameOption {
   rulesSummary?: string
   /** P1-195：付費遊戲角標 */
   isPremium?: boolean
+  /** Phase 1 Task 11: 遊戲模式 */
+  modes?: { id: string; label: string; isPremium?: boolean }[]
+  /** Task 26: 標記已廢棄遊戲 */
+  deprecated?: boolean
 }
 
 /** GAMES_500 #61：猜你喜歡區塊「依你的遊玩與評分」可摺疊說明 */
@@ -174,14 +181,23 @@ interface LobbyProps {
   recentGameIds?: string[]
   /** 任務 7：本週各遊戲遊玩次數，用於「本週熱門」區塊 */
   weeklyPlayCounts?: Record<string, number>
+  /** R2-191：本週限時免費的付費遊戲 ID，用於顯示「本週免費」標籤 */
+  weeklyFreeGameIds?: string[]
   onSelect: (id: string) => void
   /** P1-122：篩選狀態保持 — 由 URL 或父層傳入，有則為受控模式 */
   displayFilter?: DisplayCategory
   onDisplayFilterChange?: (cat: DisplayCategory) => void
+  /** R2-134：自訂播放列表 — 可依序啟動 */
+  playlists?: GamePlaylist[]
+  onStartPlaylist?: (queue: GameId[]) => void
+  onSavePlaylists?: (next: GamePlaylist[]) => void
+  /** R2-288：404 搜尋後導向 /games?q= 時預填搜尋框 */
+  initialSearchQuery?: string
 }
 
-export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, onSelect, displayFilter: controlledFilter, onDisplayFilterChange }: LobbyProps) {
+export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, weeklyFreeGameIds = [], onSelect, displayFilter: controlledFilter, onDisplayFilterChange, playlists = [], onStartPlaylist, onSavePlaylists, initialSearchQuery = '' }: LobbyProps) {
   const { t } = useTranslation()
+  const reducedMotion = useReducedMotion()
   /** T051：預設「經典派對」= 熱門類型；P1-122 受控時用 props，否則用內部 state */
   const [internalFilter, setInternalFilter] = useState<DisplayCategory>('classic')
   const displayFilter = controlledFilter ?? internalFilter
@@ -206,8 +222,8 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
     () => recentGameIds.slice(0, 3).map((id) => games.find((g) => g.id === id)).filter(Boolean) as GameOption[],
     [games, recentGameIds]
   )
-  /** 79 搜尋遊戲：依名稱或描述篩選；useDeferredValue 取代手動 debounce */
-  const [searchQuery, setSearchQuery] = useState('')
+  /** 79 搜尋遊戲：依名稱或描述篩選；useDeferredValue 取代手動 debounce；R2-288 支援 initialSearchQuery */
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [searchFocused, setSearchFocused] = useState(false)
   const deferredQuery = useDeferredValue(searchQuery)
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -218,15 +234,20 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   /** PERF-006：長列表分頁，預設顯示筆數，載入更多展開 */
   const INITIAL_VISIBLE = 24
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE)
+  /** R2-134：新增播放列表 modal */
+  const [playlistModalOpen, setPlaylistModalOpen] = useState(false)
+  const [newPlaylistName, setNewPlaylistName] = useState('')
+  const [newPlaylistIds, setNewPlaylistIds] = useState<string[]>([])
 
   /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
     () => {
-      if (displayFilter === 'all') return games
-      if (displayFilter === 'couple') return games.filter((g) => g.twoPlayerFriendly === true && (g.category === 'adult' || g.category === 'party'))
-      if (displayFilter === 'two') return games.filter((g) => g.twoPlayerFriendly === true)
+      if (displayFilter === 'all') return games.filter(g => !g.deprecated)
+      if (displayFilter === 'couple') return games.filter((g) => !g.deprecated && g.twoPlayerFriendly === true && (g.category === 'adult' || g.category === 'party'))
+      if (displayFilter === 'two') return games.filter((g) => !g.deprecated && g.twoPlayerFriendly === true)
       const allowed = DISPLAY_TO_INTERNAL[displayFilter]
       return games.filter((g) => {
+        if (g.deprecated) return false
         const internal = g.category ?? 'other'
         return allowed?.includes(internal) ?? false
       })
@@ -386,7 +407,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       setDisplayFilter('two')
       categoryTabRefs.current[CATEGORY_LIST.length - 1]?.focus()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- CATEGORY_LIST 為模組級常數，穩定引用無需依賴
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- CATEGORY_LIST 為模組級常數，穩定引用無需依賴
   }, [])
 
   const handleKeyDown = useCallback(
@@ -420,26 +441,82 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       <div className="flex justify-end">
         <NowPlayingCount />
       </div>
+      {/* R2-134：自訂播放列表 — 依序啟動 */}
+      {onStartPlaylist && onSavePlaylists && (
+        <div className="mb-6" role="region" aria-label="我的播放列表">
+          <p className="text-white/50 text-sm mb-2 font-medium flex items-center gap-2">
+            <List className="w-4 h-4" aria-hidden /> 我的播放列表
+          </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {playlists.map((pl) => {
+              const validIds = pl.gameIds.filter((id) => games.some((g) => g.id === id))
+              return (
+                <div key={pl.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                  <span className="text-white text-sm truncate max-w-[120px]">{pl.name}</span>
+                  <span className="text-white/40 text-xs">({validIds.length} 款)</span>
+                  <button type="button" onClick={() => onStartPlaylist(validIds)} className="p-1.5 rounded-lg bg-primary-500/30 text-primary-300 hover:bg-primary-500/50 games-focus-ring" aria-label={`依序播放 ${pl.name}`} disabled={validIds.length === 0}>
+                    <Play className="w-4 h-4" />
+                  </button>
+                  <button type="button" onClick={() => onSavePlaylists(playlists.filter((p) => p.id !== pl.id))} className="p-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 games-focus-ring" aria-label={`刪除 ${pl.name}`}>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )
+            })}
+            <button type="button" onClick={() => { setNewPlaylistName(''); setNewPlaylistIds([]); setPlaylistModalOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white/80 text-sm games-focus-ring">
+              <Plus className="w-4 h-4" /> 新增播放列表
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* R2-134：新增播放列表 Modal */}
+      {playlistModalOpen && onSavePlaylists && (
+        <Modal open={playlistModalOpen} onClose={() => setPlaylistModalOpen(false)} title="新增播放列表">
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-white/70 text-sm block mb-1">名稱</span>
+              <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="例如：今晚派對" className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 games-focus-ring" />
+            </label>
+            <div>
+              <span className="text-white/70 text-sm block mb-2">選擇遊戲（依序播放）</span>
+              <div className="max-h-[240px] overflow-y-auto space-y-1 pr-2">
+                {games.slice(0, 40).map((g) => (
+                  <label key={g.id} className="flex items-center gap-2 py-1 cursor-pointer text-white/90 hover:text-white">
+                    <input type="checkbox" checked={newPlaylistIds.includes(g.id)} onChange={(e) => setNewPlaylistIds((prev) => e.target.checked ? [...prev, g.id] : prev.filter((id) => id !== g.id))} className="rounded border-white/30 text-primary-500" />
+                    <span className="text-sm truncate">{g.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={() => setPlaylistModalOpen(false)} className="px-4 py-2 rounded-lg bg-white/10 text-white games-focus-ring">取消</button>
+              <button type="button" onClick={() => { if (newPlaylistName.trim() && newPlaylistIds.length > 0) { onSavePlaylists([...playlists, { id: createPlaylistId(), name: newPlaylistName.trim(), gameIds: newPlaylistIds as GameId[] }]); setPlaylistModalOpen(false) } }} className="px-4 py-2 rounded-lg bg-primary-500 text-white games-focus-ring" disabled={!newPlaylistName.trim() || newPlaylistIds.length === 0}>建立</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* GAMES_500 #56 #74 #72：最近玩過僅有資料時顯示；區塊順序依 LOBBY_BLOCK_ORDER */}
       {blockOrder.map((block) => {
         if (block === 'recent' && recentGames.length > 0)
           return (
             <div key="recent" className="mb-6" role="region" aria-label="最近玩過">
               <p className="text-white/50 text-sm mb-2 font-medium" data-i18n-key={GAMES_LOBBY_RECENT_I18N_KEY}>最近玩過</p>
-          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-            {recentGames.map((game) => (
-              <button
-                key={game.id}
-                type="button"
-                onClick={() => handleSelect(game.id)}
-                className="shrink-0 w-[160px] min-h-[100px] min-w-[44px] rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left hover:bg-white/[0.08] hover:border-white/20 transition-colors flex flex-col gap-1 games-focus-ring"
-              >
-                <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
-                <span className="text-white text-sm font-medium truncate">{game.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                {recentGames.map((game) => (
+                  <button
+                    key={game.id}
+                    type="button"
+                    onClick={() => handleSelect(game.id)}
+                    className="shrink-0 w-[160px] min-h-[100px] min-w-[44px] rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left hover:bg-white/[0.08] hover:border-white/20 transition-colors flex flex-col gap-1 games-focus-ring"
+                  >
+                    <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
+                    <span className="text-white text-sm font-medium truncate">{game.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           )
         if (block === 'weekly' && weeklyHotGames.length > 0)
           return (
@@ -448,44 +525,44 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
                 <Flame className="w-4 h-4 text-secondary-400 shrink-0" aria-hidden />
                 本週熱門
               </p>
-          <p className="text-white/30 text-xs mb-2" aria-hidden>本週你玩最多次的遊戲</p>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-            {weeklyHotGames.map((game) => (
-              <button
-                key={game.id}
-                type="button"
-                onClick={() => handleSelect(game.id)}
-                className="shrink-0 w-[140px] min-h-[90px] rounded-2xl border border-secondary-500/30 bg-secondary-500/10 p-3 text-left hover:bg-secondary-500/20 transition-colors flex flex-col gap-1 games-focus-ring"
-              >
-                <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
-                <span className="text-white text-sm font-medium truncate">{game.name}</span>
-                <span className="text-secondary-400 text-xs tabular-nums" data-i18n-key={GAMES_LOBBY_WEEKLY_PLAYS_I18N_KEY}>{weeklyPlayCounts[game.id]} 次</span>
-              </button>
-            ))}
-          </div>
-        </div>
+              <p className="text-white/30 text-xs mb-2" aria-hidden>本週你玩最多次的遊戲</p>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                {weeklyHotGames.map((game) => (
+                  <button
+                    key={game.id}
+                    type="button"
+                    onClick={() => handleSelect(game.id)}
+                    className="shrink-0 w-[140px] min-h-[90px] rounded-2xl border border-secondary-500/30 bg-secondary-500/10 p-3 text-left hover:bg-secondary-500/20 transition-colors flex flex-col gap-1 games-focus-ring"
+                  >
+                    <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
+                    <span className="text-white text-sm font-medium truncate">{game.name}</span>
+                    <span className="text-secondary-400 text-xs tabular-nums" data-i18n-key={GAMES_LOBBY_WEEKLY_PLAYS_I18N_KEY}>{weeklyPlayCounts[game.id]} 次</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           )
         if (block === 'recommended' && recommendedGames.length > 0)
           return (
             <div key="recommended" className="mb-6" role="region" aria-label="猜你喜歡：熱門遊戲快速入口">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <p className="text-white/50 text-sm font-medium" data-i18n-key={GAMES_LOBBY_RECOMMENDED_I18N_KEY}>猜你喜歡</p>
-            <RecommendedDescriptionToggle />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {recommendedGames.map((game) => (
-              <button
-                key={game.id}
-                type="button"
-                onClick={() => handleSelect(game.id)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary-500/20 border border-primary-500/40 text-primary-300 hover:bg-primary-500/30 transition-colors text-sm font-medium games-touch-target games-focus-ring"
-              >
-                <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
-                {game.name}
-              </button>
-            ))}
-          </div>
-        </div>
+                <RecommendedDescriptionToggle />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {recommendedGames.map((game) => (
+                  <button
+                    key={game.id}
+                    type="button"
+                    onClick={() => handleSelect(game.id)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary-500/20 border border-primary-500/40 text-primary-300 hover:bg-primary-500/30 transition-colors text-sm font-medium games-touch-target games-focus-ring"
+                  >
+                    <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
+                    {game.name}
+                  </button>
+                ))}
+              </div>
+            </div>
           )
         return null
       })}
@@ -537,44 +614,44 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       </div>
       {/* GAMES_500 #51 #52 #53 #79 #89：分類 tab；R2-047 LayoutGroup 讓選中底線/背景平滑切換 */}
       <LayoutGroup>
-      <div
-        ref={categoryTabListRef}
-        className="flex overflow-x-auto gap-0 mb-4 justify-start sm:justify-center scrollbar-hide pb-1 -mx-1 px-1 relative"
-        role="tablist"
-        aria-label="遊戲分類篩選"
-        aria-describedby="lobby-game-count"
-      >
-        {CATEGORY_LIST.map((cat, idx) => {
-          const Icon = DISPLAY_ICONS[cat]
-          const isActive = displayFilter === cat
-          return (
-            <button
-              key={cat}
-              ref={(el) => { categoryTabRefs.current[idx] = el }}
-              type="button"
-              role="tab"
-              tabIndex={isActive ? 0 : -1}
-              onClick={() => handleFilterChange(cat)}
-              onKeyDown={(e) => handleCategoryKeyDown(e, cat)}
-              aria-selected={isActive}
-              aria-expanded={isActive}
-              className={`relative shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'text-white border-transparent' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
-            >
-              {isActive && (
-                <motion.span
-                  layoutId="lobby-category-pill"
-                  className="absolute inset-0 rounded-t-xl bg-white/15 border-b-2 border-primary-500"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <Icon className="w-4 h-4 shrink-0" aria-hidden />
-                <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{cat === 'all' ? t('games.filterAll') : DISPLAY_LABELS[cat]}</span>
-              </span>
-            </button>
-          )
-        })}
-      </div>
+        <div
+          ref={categoryTabListRef}
+          className="flex overflow-x-auto gap-0 mb-4 justify-start sm:justify-center scrollbar-hide pb-1 -mx-1 px-1 relative"
+          role="tablist"
+          aria-label="遊戲分類篩選"
+          aria-describedby="lobby-game-count"
+        >
+          {CATEGORY_LIST.map((cat, idx) => {
+            const Icon = DISPLAY_ICONS[cat]
+            const isActive = displayFilter === cat
+            return (
+              <button
+                key={cat}
+                ref={(el) => { categoryTabRefs.current[idx] = el }}
+                type="button"
+                role="tab"
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => handleFilterChange(cat)}
+                onKeyDown={(e) => handleCategoryKeyDown(e, cat)}
+                aria-selected={isActive}
+                aria-expanded={isActive}
+                className={`relative shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'text-white border-transparent' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
+              >
+                {isActive && (
+                  <m.span
+                    layoutId="lobby-category-pill"
+                    className="absolute inset-0 rounded-t-xl bg-white/15 border-b-2 border-primary-500"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden />
+                  <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{cat === 'all' ? t('games.filterAll') : DISPLAY_LABELS[cat]}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </LayoutGroup>
       {/* P1-106：適合人數與遊戲時長篩選 chip */}
       <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label="人數與時長篩選">
@@ -666,31 +743,45 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           )}
         </div>
       )}
-      {/* GAMES_500 #54 #66 #67 #69：列表 aria-busy(isPending)、grid 斷點、role list/listitem；PERF-006 分頁顯示 */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap ${isPending ? 'opacity-70 transition-opacity duration-200' : ''}`} role="list" aria-label="遊戲列表" aria-busy={isPending}>
-      {visibleGames.map((game, index) => (
-        <PrefetchOnVisible key={game.id} gameId={game.id}>
-          <GameCard
-            game={{
-              ...game,
-              isFavorite: favoriteIds.includes(game.id),
-              onToggleFavorite: handleToggleFavorite,
-              rating: ratings[game.id],
-              onRate: handleRate,
-              isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
-              twoPlayerFriendly: game.twoPlayerFriendly,
-              onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
-              isPremium: game.isPremium ?? getGameMeta(game.id)?.requiredTier === 'premium',
-            }}
-            index={index}
-            onSelect={handleSelect}
-            onKeyDown={handleKeyDown}
-            buttonRef={(el) => { buttonRefs.current[index] = el }}
-            displayLabel={game.category ? (DISPLAY_TO_INTERNAL.classic?.includes(game.category) ? DISPLAY_LABELS.classic : DISPLAY_TO_INTERNAL.vs?.includes(game.category) ? DISPLAY_LABELS.vs : DISPLAY_LABELS.random) : undefined}
-          />
-        </PrefetchOnVisible>
-      ))}
-      </div>
+      {/* R2-061：分類切換時遊戲列表淡入；GAMES_500 #54 #66 #67 #69：列表 aria-busy、grid、role list/listitem；PERF-006 分頁顯示 */}
+      <m.div
+        key={displayFilter}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap ${isPending ? 'opacity-70 transition-opacity duration-200' : ''}`}
+        role="list"
+        aria-label="遊戲列表"
+        aria-busy={isPending}
+      >
+        {visibleGames.map((game, index) => (
+          <PrefetchOnVisible key={game.id} gameId={game.id}>
+            <GameCard
+              game={{
+                ...game,
+                isFavorite: favoriteIds.includes(game.id),
+                onToggleFavorite: handleToggleFavorite,
+                rating: ratings[game.id],
+                onRate: handleRate,
+                isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
+                twoPlayerFriendly: game.twoPlayerFriendly,
+                onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
+                /** R2-199：付費遊戲皇冠圖標 — 有 requiredTier 且非 free 即顯示 */
+                isPremium: game.isPremium ?? (() => { const tier = getGameMeta(game.id)?.requiredTier; return tier != null && tier !== 'free'; })(),
+                /** R2-191：本週限時免費標籤 */
+                isWeeklyFree: weeklyFreeGameIds.includes(game.id),
+                /** Task 15: 18+ 標籤 */
+                hasAdultContent: game.category === 'adult' || game.modes?.some(m => m.id.includes('spicy') || m.id === 'adult'),
+              }}
+              index={index}
+              onSelect={handleSelect}
+              onKeyDown={handleKeyDown}
+              buttonRef={(el) => { buttonRefs.current[index] = el }}
+              displayLabel={game.category ? (DISPLAY_TO_INTERNAL.classic?.includes(game.category) ? DISPLAY_LABELS.classic : DISPLAY_TO_INTERNAL.vs?.includes(game.category) ? DISPLAY_LABELS.vs : DISPLAY_LABELS.random) : undefined}
+            />
+          </PrefetchOnVisible>
+        ))}
+      </m.div>
       {hasMoreGames && (
         <div className="mt-6 flex justify-center">
           <button

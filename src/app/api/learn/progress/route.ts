@@ -5,16 +5,18 @@
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { getCurrentUser } from '@/lib/get-current-user'
 import { getCourse, getCourseIds } from '@/lib/courses'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { LEARN_ERROR, LEARN_MESSAGE } from '@/lib/api-error-codes'
+import { requireLearnAuth } from '@/lib/require-learn-auth'
 import { LearnProgressPostBodySchema } from '@/lib/api-body-schemas'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const user = await getCurrentUser()
-  if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
+  const auth = await requireLearnAuth()
+  if (!auth.ok) return auth.response
+  const user = auth.user
   try {
     const supabase = createServerClient()
     const { data: rows, error } = await supabase
@@ -50,20 +52,21 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser()
-  if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
+  const auth = await requireLearnAuth()
+  if (!auth.ok) return auth.response
+  const user = auth.user
   let courseId: string
   let chapterId: number
   try {
     const raw = await request.json().catch(() => null)
     const parsed = LearnProgressPostBodySchema.safeParse(raw ?? {})
     if (!parsed.success) {
-      return errorResponse(400, 'Bad request', { message: 'courseId 與 chapterId 為必填且有效' })
+      return errorResponse(400, LEARN_ERROR.BAD_REQUEST, { message: LEARN_MESSAGE.BAD_REQUEST_PROGRESS })
     }
     courseId = parsed.data.courseId
     chapterId = parsed.data.chapterId
   } catch {
-    return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON' })
+    return errorResponse(400, LEARN_ERROR.INVALID_JSON, { message: LEARN_MESSAGE.INVALID_JSON_BODY })
   }
   try {
     const supabase = createServerClient()

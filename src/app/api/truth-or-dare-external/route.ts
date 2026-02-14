@@ -3,6 +3,7 @@
  * 從 api.truthordarebot.xyz 按 type=truth|dare、rating=PG|PG13|R 取得題目，伺服器端快取 5 分鐘
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import type { TruthDareLevel } from '@/lib/truth-or-dare'
 
 const EXTERNAL_API_BASE = 'https://api.truthordarebot.xyz'
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
   const rating = (searchParams.get('rating') ?? 'PG13') as string
   const count = Math.min(20, Math.max(1, Number(searchParams.get('count')) || 10))
   if (type !== 'truth' && type !== 'dare') {
-    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+    return errorResponse(400, 'INVALID_TYPE', { message: 'Invalid type' })
   }
   const items = await fetchAndCache(type, rating, count)
   return NextResponse.json({ items })

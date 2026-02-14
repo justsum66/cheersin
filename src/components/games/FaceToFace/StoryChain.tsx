@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
@@ -76,18 +76,18 @@ export default function StoryChain() {
       <p className="text-white/50 text-sm mb-2 text-center">故事接龍</p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
           onClick={startGame}
           whileTap={{ scale: 0.98 }}
         >
           開始
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'playing' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
           <p className="text-white/60 text-sm mb-2">故事：{fullStory || starter}</p>
           <p className="text-white/70 mb-2">輪到 <span className="font-bold text-primary-300">{currentName}</span> 接下一句</p>
           <div className="flex gap-2 mb-4">
@@ -114,12 +114,12 @@ export default function StoryChain() {
           >
             判定離題（此人喝）
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && offTopicIndex != null && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -131,7 +131,7 @@ export default function StoryChain() {
               className="mb-4 games-focus-ring"
             />
             <GameResultActions onRestart={nextRound} />
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

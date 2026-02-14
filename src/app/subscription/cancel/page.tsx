@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { HelpCircle, Gift, RotateCcw } from 'lucide-react';
 import { CANCELLED_AT_KEY } from '@/lib/subscription-retention';
@@ -32,7 +32,7 @@ export default function SubscriptionCancelPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-wine-950 flex items-center justify-center px-4">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="glass rounded-3xl p-12 max-w-md w-full text-center"
@@ -88,7 +88,7 @@ export default function SubscriptionCancelPage() {
           </Link>
         </div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -98,8 +98,8 @@ export default function SubscriptionCancelPage() {
             <Gift className="w-4 h-4 text-primary-400 shrink-0" aria-hidden />
             {t('subscription.specialOffer')} <span className="text-primary-500 font-bold">{t('subscription.specialOfferDiscount')}</span> {t('subscription.specialOfferSuffix')}
           </p>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </main>
   );
 }

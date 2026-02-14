@@ -3,14 +3,17 @@
 /**
  * PR-16：派對房「有房間、未結束」狀態 — 玩家列表、邀請、乾杯、房主選遊戲
  * PR-35：房主可結束房間 — 結束按鈕 + 確認 dialog
+ * R2-130：全員乾杯同步 — cheersCount 增加時觸發碰杯動畫 + 震動
  */
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Users, Sparkles, Wine, Gamepad2, Link2, Check, Crown, LogOut, DoorClosed } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
+import { useHaptic } from '@/hooks/useHaptic'
 import type { RoomPlayer } from '@/hooks/useGameRoom'
 
 export interface PartyRoomActiveProps {
@@ -61,12 +64,70 @@ export function PartyRoomActive({
   endRoomLoading = false,
 }: PartyRoomActiveProps) {
   const { t } = useTranslation()
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const { vibrate } = useHaptic()
   const [endRoomDialogOpen, setEndRoomDialogOpen] = useState(false)
+  const [showCheersBurst, setShowCheersBurst] = useState(false)
+  const prevCheersRef = useRef(partyState.cheersCount)
   const playerCount = players.length
   const remainingMs = expiresAt ? Math.max(0, new Date(expiresAt).getTime() - Date.now()) : null
 
+  /** R2-130：cheersCount 增加時觸發碰杯動畫 + 震動（含 Realtime 同步） */
+  useEffect(() => {
+    const prev = prevCheersRef.current
+    const curr = partyState.cheersCount
+    if (curr > prev && prev >= 0) {
+      prevCheersRef.current = curr
+      setShowCheersBurst(true)
+      vibrate([100, 50, 100], true)
+      const id = setTimeout(() => {
+        setShowCheersBurst(false)
+      }, 1200)
+      return () => clearTimeout(id)
+    }
+    prevCheersRef.current = curr
+  }, [partyState.cheersCount, vibrate])
+
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 px-4 py-8">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 px-4 py-8 relative">
+      {/* R2-130：全員乾杯同步碰杯動畫 */}
+      <AnimatePresence>
+        {showCheersBurst && !prefersReducedMotion && (
+          <m.div
+            key="cheers-burst"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            aria-live="polite"
+            aria-label="乾杯！"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <m.div
+                animate={{ rotate: [-8, 4, -4, 0], x: [0, -4, 0] }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              >
+                <Wine className="w-16 h-16 text-amber-400/90 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" aria-hidden />
+              </m.div>
+              <m.span
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.5, 1] }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="text-4xl font-bold text-amber-300 drop-shadow-lg"
+              >
+                乾杯！
+              </m.span>
+              <m.div
+                animate={{ rotate: [8, -4, 4, 0], x: [0, 4, 0] }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              >
+                <Wine className="w-16 h-16 text-amber-400/90 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" aria-hidden />
+              </m.div>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
       <div className="flex items-center gap-3 text-primary-400 party-room-no-print">
         <Users className="w-12 h-12" aria-hidden />
         <Sparkles className="w-8 h-8" aria-hidden />
@@ -75,7 +136,7 @@ export function PartyRoomActive({
       <p className="text-white/70 text-center max-w-md">{t('partyRoom.subtitle')}</p>
 
       {effectiveSlug && roomId && isHost && playerCount < maxPlayers && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-sm glass-card party-room-no-print"
@@ -83,19 +144,19 @@ export function PartyRoomActive({
           aria-live="polite"
         >
           <div className="flex items-center gap-2">
-            <motion.div
+            <m.div
               animate={{ scale: [1, 1.15, 1] }}
               transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
               aria-hidden
             >
               <Wine className="w-5 h-5 text-amber-400" />
-            </motion.div>
+            </m.div>
             <span>{t('partyRoom.waitingForPlayers') ?? '等待玩家加入…'}</span>
           </div>
           {playerCount >= 2 && (
             <span className="text-amber-300/90 text-xs">{t('partyRoom.startingSoon') ?? '人齊後即可開始玩'}</span>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {(error || roomError) && (
@@ -113,22 +174,22 @@ export function PartyRoomActive({
         </div>
       )}
 
-      <motion.div
+      <m.div
         key={effectiveSlug ?? 'no-room'}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
         className="w-full max-w-sm space-y-3 rounded-xl glass-card border border-white/10 p-4"
       >
-        <motion.p
+        <m.p
           className="text-white/60 text-sm font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
         >
           {t('partyRoom.roomStatus')}
-        </motion.p>
-        <motion.div
+        </m.p>
+        <m.div
           className="flex items-center gap-2 text-white/80"
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
@@ -141,9 +202,9 @@ export function PartyRoomActive({
           <span>
             {t('partyRoom.peopleCount')} <strong className="text-white tabular-nums"><AnimatedNumber value={playerCount} /></strong> / {maxPlayers} {t('partyRoom.peopleCountValue')}
           </span>
-        </motion.div>
+        </m.div>
         {remainingMs != null && remainingMs > 0 && (
-          <motion.p
+          <m.p
             className="text-white/50 text-xs tabular-nums"
             aria-live="polite"
             role="timer"
@@ -152,10 +213,10 @@ export function PartyRoomActive({
             transition={{ delay: 0.15 }}
           >
             {t('partyRoom.remainingMinutes') ?? '剩餘'} <AnimatedNumber value={Math.ceil(remainingMs / 60_000)} /> {t('partyRoom.minutes') ?? '分鐘'}
-          </motion.p>
+          </m.p>
         )}
         {players.length > 0 && (
-          <motion.div
+          <m.div
             className="flex flex-wrap gap-2 items-center"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -163,27 +224,33 @@ export function PartyRoomActive({
             role="list"
             aria-label={t('partyRoom.playersList') ?? '玩家列表'}
           >
-            {[...players].sort((a, b) => a.orderIndex - b.orderIndex).map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-1.5 shrink-0 rounded-full bg-white/10 px-2 py-1 text-white/90 text-sm"
-                role="listitem"
-                title={p.displayName}
-              >
-                <span className="w-6 h-6 rounded-full bg-primary-500/30 flex items-center justify-center text-xs font-semibold text-primary-200" aria-hidden>
-                  {p.displayName.charAt(0).toUpperCase() || '?'}
-                </span>
-                <span className="max-w-[80px] truncate">{p.displayName}</span>
-                {p.isHost && (
-                  <span className="inline-flex items-center gap-0.5 text-amber-400 text-xs shrink-0" title={t('partyRoom.host') ?? '房主'}>
-                    <Crown className="w-3.5 h-3.5" aria-hidden />
-                    <span className="sr-only">{t('partyRoom.host') ?? '房主'}</span>
-                    <span className="hidden sm:inline text-amber-300/90" aria-hidden>{t('partyRoom.host') ?? '房主'}</span>
+            <AnimatePresence mode="popLayout">
+              {[...players].sort((a, b) => a.orderIndex - b.orderIndex).map((p) => (
+                <m.div
+                  key={p.id}
+                  layout
+                  initial={{ opacity: 1, scale: 1 }}
+                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+                  transition={prefersReducedMotion ? { duration: 0.1 } : { duration: 0.3, ease: 'easeOut' }}
+                  className="flex items-center gap-1.5 shrink-0 rounded-full bg-white/10 px-2 py-1 text-white/90 text-sm"
+                  role="listitem"
+                  title={p.displayName}
+                >
+                  <span className="w-6 h-6 rounded-full bg-primary-500/30 flex items-center justify-center text-xs font-semibold text-primary-200" aria-hidden>
+                    {p.displayName.charAt(0).toUpperCase() || '?'}
                   </span>
-                )}
-              </div>
-            ))}
-          </motion.div>
+                  <span className="max-w-[80px] truncate">{p.displayName}</span>
+                  {p.isHost && (
+                    <span className="inline-flex items-center gap-0.5 text-amber-400 text-xs shrink-0" title={t('partyRoom.host') ?? '房主'}>
+                      <Crown className="w-3.5 h-3.5" aria-hidden />
+                      <span className="sr-only">{t('partyRoom.host') ?? '房主'}</span>
+                      <span className="hidden sm:inline text-amber-300/90" aria-hidden>{t('partyRoom.host') ?? '房主'}</span>
+                    </span>
+                  )}
+                </m.div>
+              ))}
+            </AnimatePresence>
+          </m.div>
         )}
         <div className="flex flex-wrap gap-2">
           {isHost && tier === 'free' && maxPlayers <= 4 && (
@@ -205,7 +272,7 @@ export function PartyRoomActive({
                 </span>
               )}
               {['truth-or-dare', 'roulette', 'liar-dice'].map((gid) => (
-                <motion.button
+                <m.button
                   key={gid}
                   type="button"
                   onClick={() => onHostSelectGame(gid)}
@@ -215,7 +282,7 @@ export function PartyRoomActive({
                   }`}
                 >
                   {gid === 'truth-or-dare' ? (t('partyRoom.gameTruthOrDare') ?? '真心話') : gid === 'roulette' ? (t('partyRoom.gameRoulette') ?? '轉盤') : (t('partyRoom.gameLiarDice') ?? '骰子')}
-                </motion.button>
+                </m.button>
               ))}
             </div>
           )}
@@ -248,7 +315,7 @@ export function PartyRoomActive({
               </Link>
             )
           )}
-          <motion.button
+          <m.button
             type="button"
             onClick={copyInvite}
             whileTap={{ scale: 0.97 }}
@@ -258,12 +325,12 @@ export function PartyRoomActive({
           >
             {inviteCopied ? <Check className="w-4 h-4 text-primary-400" aria-hidden /> : <Link2 className="w-4 h-4" aria-hidden />}
             {inviteCopied ? t('common.copied') : t('partyRoom.inviteLink')}
-          </motion.button>
+          </m.button>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* R2-130：全員乾杯同步動畫 — 目前為 client 寫入 state + confetti；多機同步需後端「同步觸發」API 後補齊 */}
-      <motion.button
+      <m.button
         type="button"
         onClick={onCheers}
         whileTap={{ scale: 0.96 }}
@@ -272,7 +339,7 @@ export function PartyRoomActive({
       >
         <Wine className="w-6 h-6" aria-hidden />
         {t('partyRoom.cheers')}
-      </motion.button>
+      </m.button>
       {partyState.cheersCount > 0 && (
         <p className="text-white/60 text-sm tabular-nums">
           {t('partyRoom.cheersCount')} <AnimatedNumber value={partyState.cheersCount} />
@@ -285,7 +352,7 @@ export function PartyRoomActive({
         {t('partyRoom.continueGames')}
       </Link>
       {myPlayerRowId && onLeave && (
-        <motion.button
+        <m.button
           type="button"
           onClick={() => void onLeave()}
           className="min-h-[48px] px-4 py-2 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white/80 text-sm font-medium games-focus-ring party-room-no-print"
@@ -293,14 +360,14 @@ export function PartyRoomActive({
         >
           <LogOut className="w-4 h-4 inline-block mr-2 align-middle" aria-hidden />
           {t('partyRoom.leaveRoom')}
-        </motion.button>
+        </m.button>
       )}
       <Link href="/" className="text-white/50 hover:text-white/80 text-sm party-room-no-print">
         {t('partyRoom.backHome')}
       </Link>
       {/* PR-35：房主可結束房間 — 確認後呼叫 onEndRoom */}
       {isHost && onEndRoom && (
-        <motion.button
+        <m.button
           type="button"
           onClick={() => setEndRoomDialogOpen(true)}
           disabled={endRoomLoading}
@@ -309,7 +376,7 @@ export function PartyRoomActive({
         >
           <DoorClosed className="w-4 h-4 inline-block mr-2 align-middle" aria-hidden />
           {endRoomLoading ? (t('common.loading') ?? '處理中…') : t('partyRoom.endRoom')}
-        </motion.button>
+        </m.button>
       )}
       {onEndRoom && (
         <ConfirmDialog

@@ -7,7 +7,8 @@ import { createServerClient } from '@/lib/supabase-server'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
-import { SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, SLUG_PATTERN } from '@/lib/games-room'
+import { ROOM_ERROR, ROOM_MESSAGE, RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes'
 import { parsePartyStatePayload } from '@/lib/games/party-state-schema'
 
 const PAYLOAD_MAX_BYTES = 50_000
@@ -23,17 +24,13 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
     const url = new URL(request.url)
     const gameId = url.searchParams.get('game_id') || GAME_ID_UP_DOWN_STAIRS
 
     try {
       const supabase = createServerClient()
-      const { data: room, error: roomError } = await supabase
-        .from('game_rooms')
-        .select('id')
-        .eq('slug', slug)
-        .single()
+      const { data: room, error: roomError } = await getRoomBySlug(supabase, slug, 'id')
       if (roomError || !room) throw roomError || new Error('Room not found')
 
       const { data: row, error: stateError } = await supabase
@@ -54,7 +51,7 @@ export async function GET(
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown error'
     if (message === 'Room not found' || (e as { code?: string })?.code === 'PGRST116') {
-      return errorResponse(404, 'Room not found', { message: '找不到該房間' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
     }
     logger.error('Game state GET failed', { error: message })
     return serverErrorResponse(e)
@@ -70,12 +67,12 @@ export async function POST(
     const ip = getClientIp(request.headers)
     if (await isRateLimitedAsync(ip, 'game_state')) {
       return NextResponse.json(
-        { error: '操作過於頻繁，請稍後再試' },
+        { error: RATE_LIMIT_MESSAGE },
         { status: 429, headers: { 'Retry-After': '60' } }
       )
     }
     const { slug } = await params
-    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
     const body = (await request.json().catch(() => ({}))) as import('@/types/api-bodies').GameStatePostBody
     const gameId = typeof body.game_id === 'string' ? body.game_id : GAME_ID_UP_DOWN_STAIRS
     const rawPayload = body.payload
@@ -103,11 +100,7 @@ export async function POST(
 
     try {
       const supabase = createServerClient()
-      const { data: room, error: roomError } = await supabase
-        .from('game_rooms')
-        .select('id')
-        .eq('slug', slug)
-        .single()
+      const { data: room, error: roomError } = await getRoomBySlug(supabase, slug, 'id')
       if (roomError || !room) throw roomError || new Error('Room not found')
 
       /** P3-53：updated_at 由 DB default / trigger 填寫，不傳入 */
@@ -128,7 +121,7 @@ export async function POST(
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown error'
     if (message === 'Room not found' || (e as { code?: string })?.code === 'PGRST116') {
-      return errorResponse(404, 'Room not found', { message: '找不到該房間' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
     }
     logger.error('Game state POST failed', { error: message })
     return serverErrorResponse(e)

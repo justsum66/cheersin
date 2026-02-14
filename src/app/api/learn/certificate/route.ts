@@ -5,18 +5,21 @@
  */
 import { NextResponse } from 'next/server'
 import { createServerClientOptional } from '@/lib/supabase-server'
-import { getCurrentUser } from '@/lib/get-current-user'
 import { getCourse } from '@/lib/courses'
 import { errorResponse } from '@/lib/api-response'
+import { LEARN_ERROR, LEARN_MESSAGE } from '@/lib/api-error-codes'
+import { requireLearnAuth } from '@/lib/require-learn-auth'
 import { LearnCertificatePostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
 
 export async function GET(request: Request) {
-  const user = await getCurrentUser()
-  if (!user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await requireLearnAuth()
+  if (!auth.ok) return auth.response
+  const user = auth.user
   const courseId = new URL(request.url).searchParams.get('courseId')?.trim()
-  if (!courseId) return NextResponse.json({ error: 'courseId required' }, { status: 400 })
+  if (!courseId) return errorResponse(400, LEARN_ERROR.COURSE_ID_REQUIRED, { message: LEARN_MESSAGE.COURSE_ID_REQUIRED })
   const supabase = createServerClientOptional()
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+  if (!supabase) return errorResponse(503, LEARN_ERROR.DB_NOT_CONFIGURED, { message: LEARN_MESSAGE.DB_NOT_CONFIGURED })
   const { data } = await supabase
     .from('certificates')
     .select('id, course_id, issued_at')
@@ -27,28 +30,27 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser()
-  if (!user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const raw = await request.json().catch(() => null)
-  if (raw === null) return errorResponse(400, 'INVALID_JSON', { message: '請求 body 必須為有效 JSON' })
-  const parsed = LearnCertificatePostBodySchema.safeParse(raw)
-  if (!parsed.success) return errorResponse(400, 'INVALID_BODY', { message: 'courseId 為必填' })
+  const auth = await requireLearnAuth()
+  if (!auth.ok) return auth.response
+  const user = auth.user
+  const parsed = await zodParseBody(request, LearnCertificatePostBodySchema, { invalidBodyMessage: 'courseId 為必填' })
+  if (!parsed.success) return parsed.response
   const courseId = parsed.data.courseId
   const course = getCourse(courseId)
-  if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+  if (!course) return errorResponse(404, LEARN_ERROR.COURSE_NOT_FOUND, { message: LEARN_MESSAGE.COURSE_NOT_FOUND })
   const totalChapters = course.chapters?.length ?? 0
-  if (totalChapters === 0) return NextResponse.json({ error: 'Course has no chapters' }, { status: 400 })
+  if (totalChapters === 0) return errorResponse(400, LEARN_ERROR.COURSE_NO_CHAPTERS, { message: LEARN_MESSAGE.COURSE_NO_CHAPTERS })
   const supabase = createServerClientOptional()
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+  if (!supabase) return errorResponse(503, LEARN_ERROR.DB_NOT_CONFIGURED, { message: LEARN_MESSAGE.DB_NOT_CONFIGURED })
   const { count, error: countErr } = await supabase
     .from('chapter_progress')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .eq('course_id', courseId)
-  if (countErr) return NextResponse.json({ error: countErr.message }, { status: 500 })
+  if (countErr) return errorResponse(500, LEARN_ERROR.DB_ERROR, { message: countErr.message })
   const completed = Math.min(count ?? 0, totalChapters)
   if (completed < totalChapters) {
-    return NextResponse.json({ error: 'Course not completed', completed, total: totalChapters }, { status: 400 })
+    return errorResponse(400, LEARN_ERROR.COURSE_NOT_COMPLETED, { message: LEARN_MESSAGE.COURSE_NOT_COMPLETED })
   }
   const { data: existing } = await supabase
     .from('certificates')
@@ -64,6 +66,6 @@ export async function POST(request: Request) {
     .insert({ user_id: user.id, course_id: courseId })
     .select('id, course_id, issued_at')
     .single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return errorResponse(500, LEARN_ERROR.DB_ERROR, { message: error.message })
   return NextResponse.json({ certificate: inserted, created: true })
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
@@ -10,11 +10,18 @@ import CopyResultButton from '../CopyResultButton'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
-/** 心跳大挑戰：選一位玩家，其他人猜其心跳（bpm）。以手機感測或模擬隨機值比對，最接近者安全、最遠者喝。 */
+/** R2-177：團隊模式 — 分兩隊，比平均猜值與真實 bpm 的差距，較遠的隊伍喝 */
+function getTeamIndex(playerIndex: number, total: number): 0 | 1 {
+  const half = Math.floor(total / 2)
+  return playerIndex < half ? 0 : 1
+}
+
+/** 心跳大挑戰：選一位玩家，其他人猜其心跳（bpm）。以手機感測或模擬隨機值比對，最接近者安全、最遠者喝。R2-177 支援團隊模式。 */
 export default function HeartbeatChallenge() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
+  const [mode, setMode] = useState<'solo' | 'team'>('solo')
   const [phase, setPhase] = useState<'idle' | 'target' | 'guess' | 'result'>('idle')
   const [targetIndex, setTargetIndex] = useState<number | null>(null)
   const [guesses, setGuesses] = useState<Record<number, number>>({})
@@ -56,15 +63,28 @@ export default function HeartbeatChallenge() {
 
   const targetName = targetIndex != null ? players[targetIndex] : ''
   const guessEntries = Object.entries(guesses).map(([i, b]) => ({ i: Number(i), b }))
-  const closest = realBpm != null && guessEntries.length > 0
+  const closest = realBpm != null && guessEntries.length > 0 && mode === 'solo'
     ? guessEntries.reduce((a, b) =>
         Math.abs(a.b - realBpm) <= Math.abs(b.b - realBpm) ? a : b
       )
     : null
-  const farthest = realBpm != null && guessEntries.length > 0
+  const farthest = realBpm != null && guessEntries.length > 0 && mode === 'solo'
     ? guessEntries.reduce((a, b) =>
         Math.abs(a.b - realBpm) >= Math.abs(b.b - realBpm) ? a : b
       )
+    : null
+  /** R2-177：團隊模式 — 兩隊平均猜值，較接近真實 bpm 的隊伍勝 */
+  const team0Guesses = mode === 'team' ? guessEntries.filter((e) => getTeamIndex(e.i, players.length) === 0) : []
+  const team1Guesses = mode === 'team' ? guessEntries.filter((e) => getTeamIndex(e.i, players.length) === 1) : []
+  const team0Avg = team0Guesses.length > 0 ? team0Guesses.reduce((sum, e) => sum + e.b, 0) / team0Guesses.length : 0
+  const team1Avg = team1Guesses.length > 0 ? team1Guesses.reduce((sum, e) => sum + e.b, 0) / team1Guesses.length : 0
+  const team0Diff = realBpm != null && mode === 'team' && team0Guesses.length > 0 ? Math.abs(team0Avg - realBpm) : Infinity
+  const team1Diff = realBpm != null && mode === 'team' && team1Guesses.length > 0 ? Math.abs(team1Avg - realBpm) : Infinity
+  const teamCloser = mode === 'team' && realBpm != null && (team0Guesses.length > 0 || team1Guesses.length > 0)
+    ? (team0Diff <= team1Diff ? 0 : 1)
+    : null
+  const teamFarther = mode === 'team' && realBpm != null && (team0Guesses.length > 0 || team1Guesses.length > 0)
+    ? (team0Diff <= team1Diff ? 1 : 0)
     : null
 
   return (
@@ -75,18 +95,36 @@ export default function HeartbeatChallenge() {
       <p className="text-white/50 text-sm mb-2 text-center">心跳大挑戰</p>
 
       {phase === 'idle' && (
-        <motion.button
-          type="button"
-          className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
-          onClick={startGame}
-          whileTap={{ scale: 0.98 }}
-        >
-          開始
-        </motion.button>
+        <>
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setMode('solo')}
+              className={`min-h-[44px] px-4 rounded-xl text-sm font-medium games-focus-ring ${mode === 'solo' ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}
+            >
+              個人
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('team')}
+              className={`min-h-[44px] px-4 rounded-xl text-sm font-medium games-focus-ring ${mode === 'team' ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}
+            >
+              團隊（兩隊比平均）
+            </button>
+          </div>
+          <m.button
+            type="button"
+            className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
+            onClick={startGame}
+            whileTap={{ scale: 0.98 }}
+          >
+            開始
+          </m.button>
+        </>
       )}
 
       {phase === 'target' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-4">被測者：<span className="font-bold text-primary-300">{targetName}</span></p>
           <p className="text-white/50 text-sm mb-4">請被測者放鬆，其他人準備猜心跳（bpm）</p>
           <button
@@ -103,12 +141,15 @@ export default function HeartbeatChallenge() {
           >
             模擬測量（隨機 bpm）
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'guess' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
           <p className="text-white/70 mb-2">猜 <span className="font-bold text-primary-300">{targetName}</span> 的心跳（每分鐘幾下）</p>
+          {mode === 'team' && (
+            <p className="text-white/50 text-xs mb-2">團隊模式：左半為 A 隊、右半為 B 隊，比兩隊平均誰更接近</p>
+          )}
           <p className="text-white/40 text-xs mb-4">輸入 50–120 的數字，或由主持人代為輸入</p>
           <div className="space-y-2 max-h-48 overflow-auto">
             {players.map((name, i) =>
@@ -150,24 +191,34 @@ export default function HeartbeatChallenge() {
               揭曉
             </button>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && realBpm != null && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
           >
             <p className="text-white/70 mb-1">真實心跳：<span className="font-bold text-primary-300">{realBpm} bpm</span></p>
-            {closest && <p className="text-green-400 font-medium mb-1">最接近：{players[closest.i]} 安全</p>}
-            {farthest && <p className="text-red-400 font-medium mb-4">離最遠：{players[farthest.i]} 喝</p>}
+            {mode === 'solo' && closest && <p className="text-green-400 font-medium mb-1">最接近：{players[closest.i]} 安全</p>}
+            {mode === 'solo' && farthest && <p className="text-red-400 font-medium mb-2">離最遠：{players[farthest.i]} 喝</p>}
+            {mode === 'team' && teamCloser !== null && (
+              <p className="text-green-400 font-medium mb-1">A 隊平均 {team0Avg.toFixed(0)}、B 隊平均 {team1Avg.toFixed(0)} — {teamCloser === 0 ? 'A 隊' : 'B 隊'} 更接近，安全</p>
+            )}
+            {mode === 'team' && teamFarther !== null && (
+              <p className="text-red-400 font-medium mb-2">離最遠的隊伍：{teamFarther === 0 ? 'A 隊' : 'B 隊'} 喝</p>
+            )}
             <span className="sr-only" aria-live="polite">
-              {`心跳大挑戰：真實 ${realBpm} bpm${closest ? `，最接近 ${players[closest.i]} 安全` : ''}${farthest ? `，離最遠 ${players[farthest.i]} 喝` : ''}`}
+              {mode === 'solo'
+                ? `心跳大挑戰：真實 ${realBpm} bpm${closest ? `，最接近 ${players[closest.i]} 安全` : ''}${farthest ? `，離最遠 ${players[farthest.i]} 喝` : ''}`
+                : `心跳大挑戰團隊：真實 ${realBpm} bpm，A 隊平均 ${team0Avg.toFixed(0)}，B 隊平均 ${team1Avg.toFixed(0)}`}
             </span>
             <CopyResultButton
-              text={`心跳大挑戰：真實 ${realBpm} bpm${closest ? `，最接近 ${players[closest.i]} 安全` : ''}${farthest ? `，離最遠 ${players[farthest.i]} 喝` : ''}`}
+              text={mode === 'solo'
+                ? `心跳大挑戰：真實 ${realBpm} bpm${closest ? `，最接近 ${players[closest.i]} 安全` : ''}${farthest ? `，離最遠 ${players[farthest.i]} 喝` : ''}`
+                : `心跳大挑戰團隊：真實 ${realBpm} bpm，A 隊平均 ${team0Avg.toFixed(0)}，B 隊平均 ${team1Avg.toFixed(0)}`}
               className="mb-4 games-focus-ring"
             />
             <button
@@ -177,7 +228,7 @@ export default function HeartbeatChallenge() {
             >
               再來一局
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

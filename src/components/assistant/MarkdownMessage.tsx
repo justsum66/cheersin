@@ -3,14 +3,12 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import rehypeSanitize from 'rehype-sanitize'
 
 // P006: Dynamic import for react-markdown to reduce initial bundle by ~40KB
 // Load only when assistant page is accessed
 const ReactMarkdown = dynamic(
-  () => import('react-markdown').then((mod) => {
-    // Also load remark-gfm in the same chunk
-    return mod.default
-  }),
+  () => import('react-markdown').then((mod) => mod.default),
   {
     loading: () => <div className="text-white/50 text-sm animate-pulse">載入中...</div>,
     ssr: true,
@@ -114,8 +112,9 @@ export function MarkdownMessage({ content, className = '' }: MarkdownMessageProp
 
   return (
     <div className={`markdown-assistant prose-invert prose-sm max-w-none min-w-0 break-words overflow-x-auto ${className}`}>
-      <ReactMarkdown 
-        remarkPlugins={remarkGfm ? [remarkGfm] : []} 
+      <ReactMarkdown
+        remarkPlugins={remarkGfm ? [remarkGfm] : []}
+        rehypePlugins={[rehypeSanitize]}
         components={markdownComponents}
       >
         {content}

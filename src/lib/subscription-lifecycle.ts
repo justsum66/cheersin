@@ -118,7 +118,7 @@ export async function validatePromoCode(
 
   try {
     const normalized = code.trim().toUpperCase()
-    const { data: row, error } = await (supabase as any)
+    const { data: row, error } = await supabase
       .from('promo_codes')
       .select('discount_percent, plan_id, valid_until, max_uses, used_count')
       .eq('code', normalized)
@@ -145,11 +145,12 @@ export async function incrementPromoCodeUsage(code: string): Promise<void> {
   if (!supabase) return
   try {
     const normalized = code.trim().toUpperCase()
-    const { data: row } = await (supabase as any).from('promo_codes').select('used_count').eq('code', normalized).single()
+    const { data: row } = await supabase.from('promo_codes').select('used_count').eq('code', normalized).single()
     if (!row) return
     const next = (row.used_count ?? 0) + 1
-    await (supabase as any).from('promo_codes').update({ used_count: next }).eq('code', normalized)
+    await supabase.from('promo_codes').update({ used_count: next }).eq('code', normalized)
   } catch {
     /* ignore */
   }
 }
+

@@ -2,7 +2,7 @@
 
 /** P1-077：輪播組件 — 支援前一張/下一張、圓點指示、鍵盤與 a11y */
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export interface CarouselProps {
@@ -48,7 +48,7 @@ export function Carousel({
     <div className={`relative overflow-hidden ${className}`} role="region" aria-label="輪播">
       <div className="relative flex items-center justify-center min-h-[120px]">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={safeIndex}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -57,7 +57,7 @@ export function Carousel({
             className="w-full"
           >
             {children[safeIndex]}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
 

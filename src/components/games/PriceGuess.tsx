@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -23,15 +24,33 @@ const ITEMS = [
   { name: '一串烤肉串', price: 30, emoji: '🍢' },
 ]
 
+/** R2-156：價格猜猜看（酒款）— 酒款專用題庫 */
+const WINE_ITEMS = [
+  { name: '一瓶台灣啤酒（330ml）', price: 35, emoji: '🍺' },
+  { name: '一瓶海尼根（330ml）', price: 55, emoji: '🍺' },
+  { name: '一瓶百威（330ml）', price: 45, emoji: '🍺' },
+  { name: '一瓶紅酒（入門款）', price: 399, emoji: '🍷' },
+  { name: '一瓶紅酒（中價位）', price: 899, emoji: '🍷' },
+  { name: '一瓶威士忌（百齡罈）', price: 650, emoji: '🥃' },
+  { name: '一瓶約翰走路黑牌', price: 899, emoji: '🥃' },
+  { name: '一瓶清酒（300ml）', price: 350, emoji: '🍶' },
+  { name: '一瓶氣泡酒', price: 499, emoji: '🍾' },
+  { name: '一瓶梅酒', price: 420, emoji: '🍶' },
+]
+
+type ItemType = (typeof ITEMS)[0]
 export default function PriceGuess() {
   const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
-  
+  /** R2-156：一般 / 酒款 模式切換 */
+  const [wineMode, setWineMode] = useState(false)
+  const pool: ItemType[] = wineMode ? WINE_ITEMS : ITEMS
+
   const [round, setRound] = useState(1)
   const [scores, setScores] = useState<Record<string, number>>({})
-  const [currentItem, setCurrentItem] = useState<typeof ITEMS[0] | null>(null)
+  const [currentItem, setCurrentItem] = useState<ItemType | null>(null)
   const [guess, setGuess] = useState('')
   const [phase, setPhase] = useState<'waiting' | 'guessing' | 'result'>('waiting')
 
@@ -39,12 +58,12 @@ export default function PriceGuess() {
   const currentPlayer = players[(round - 1) % players.length]
 
   const startRound = useCallback(() => {
-    const item = ITEMS[Math.floor(Math.random() * ITEMS.length)]
+    const item = pool[Math.floor(Math.random() * pool.length)]
     setCurrentItem(item)
     setGuess('')
     setPhase('guessing')
     play('click')
-  }, [play])
+  }, [play, pool])
 
   const submitGuess = () => {
     if (!currentItem) return
@@ -83,11 +102,30 @@ export default function PriceGuess() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main">
-      <GameRules rules="猜物品價格！誤差超過30%要喝酒！" rulesKey="price-guess.rules" />
+      <GameRules rules="猜物品價格！誤差超過30%要喝酒！酒款模式專猜酒類價格。" rulesKey="price-guess.rules" />
+
+      {phase === 'waiting' && (
+        <div className="flex gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setWineMode(false)}
+            className={`min-h-[44px] px-4 rounded-xl text-sm font-medium ${!wineMode ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}
+          >
+            一般
+          </button>
+          <button
+            type="button"
+            onClick={() => setWineMode(true)}
+            className={`min-h-[44px] px-4 rounded-xl text-sm font-medium ${wineMode ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}
+          >
+            酒款
+          </button>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -103,11 +141,11 @@ export default function PriceGuess() {
             >
               出題
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'guessing' && currentItem && (
-          <motion.div
+          <m.div
             key="guessing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -136,11 +174,11 @@ export default function PriceGuess() {
             >
               確認答案
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'result' && currentItem && (
-          <motion.div
+          <m.div
             key="result"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -157,6 +195,7 @@ export default function PriceGuess() {
             <div className={`text-2xl font-bold ${getAccuracy() >= 70 ? 'text-green-400' : 'text-red-400'}`}>
               {getAccuracy() >= 70 ? '過關！' : '失敗！喝一口！'}
             </div>
+            {getAccuracy() < 70 && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             <div className="text-white mt-4">
               {players.map(p => (
                 <span key={p} className="mx-2">{p}: {scores[p] || 0}分</span>
@@ -177,7 +216,7 @@ export default function PriceGuess() {
               </button>
             </div>
             <CopyResultButton text={`價格猜猜 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

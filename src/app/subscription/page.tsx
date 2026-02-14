@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -106,27 +106,27 @@ export default function SubscriptionPage() {
           <BrandLogo variant="compact" href="/" size={36} />
         </Link>
 
-        <motion.h1
+        <m.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-4xl md:text-5xl font-bold text-white mb-4"
         >
           升級品酒體驗
-        </motion.h1>
+        </m.h1>
 
-        <motion.p
+        <m.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="text-xl text-white/50"
         >
           解鎖完整功能，依方案選擇
-        </motion.p>
+        </m.p>
       </div>
 
       {/* R2-210：訂閱管理 — 顯示當前方案、下次扣款日、升級/取消按鈕 */}
       {currentSubscription && currentSubscription.tier !== 'free' && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-lg mx-auto mb-6 p-4 rounded-2xl bg-white/5 border border-white/10"
@@ -146,7 +146,7 @@ export default function SubscriptionPage() {
               取消訂閱
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* E41：優惠碼輸入欄；使用規則載明於 FAQ */}
@@ -211,7 +211,7 @@ export default function SubscriptionPage() {
         ) : (
           <div className="grid md:grid-cols-2 gap-8">
             {plans.map((plan, index) => (
-              <motion.div
+              <m.div
                 key={plan.id}
                 ref={(el) => { planRefs.current[plan.id] = el; }}
                 data-plan={plan.id}
@@ -285,7 +285,7 @@ export default function SubscriptionPage() {
                   )}
                 </PayPalButton>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         )}
@@ -296,7 +296,7 @@ export default function SubscriptionPage() {
         <p className="text-center text-white/50 text-sm mt-2">付款方式：PayPal。管理付款方式請至您的 PayPal 帳戶。</p>
 
         {/* T047：取消訂閱入口明顯 */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
@@ -308,10 +308,10 @@ export default function SubscriptionPage() {
           >
             已訂閱？取消訂閱請點此
           </Link>
-        </motion.div>
+        </m.div>
 
         {/* Free tier */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -329,10 +329,10 @@ export default function SubscriptionPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
-        </motion.div>
+        </m.div>
 
         {/* FAQ */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -365,7 +365,7 @@ export default function SubscriptionPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Security badge */}

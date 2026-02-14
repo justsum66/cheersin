@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { ChevronLeft, Award, Share2, Download, FileDown } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { getSommelierLevel } from '@/lib/gamification'
@@ -184,7 +184,7 @@ export default function CertificatePage() {
         )}
 
         {hasAnyComplete && (
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={reducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -284,6 +284,19 @@ export default function CertificatePage() {
               >
                 分享至 LINE
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  if (shareUrl) {
+                    navigator.clipboard?.writeText(shareUrl).then(() => trackCertificateAction('share')).catch(() => {})
+                  }
+                }}
+                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium games-focus-ring"
+                aria-label="複製證書連結"
+              >
+                <Share2 className="w-5 h-5" />
+                複製連結
+              </button>
               <Link href="/learn" className="btn-secondary min-h-[48px] inline-flex items-center justify-center gap-2 games-focus-ring rounded">
                 繼續學習
               </Link>
@@ -298,7 +311,7 @@ export default function CertificatePage() {
                 NFT 證書（即將推出）
               </button>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </main>

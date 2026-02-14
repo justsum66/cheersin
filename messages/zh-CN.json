@@ -818,7 +818,7 @@
     "roleSeer": "预言家",
     "defaultPlayer": "玩家{{n}}"
   },
-  "truthOrDare": { "levelAll": "全部", "levelMild": "亲友", "levelSpicy": "辣味", "levelAdult": "限制级" },
+  "truthOrDare": { "levelAll": "全部", "levelMild": "亲友", "levelSpicy": "辣味", "levelAdult": "限制级", "skipWithPoint": "跳过（耗 1 点）{{count}} 点", "skipWithDrink": "跳过（喝一口）", "skipWithPointAria": "跳过本题，消耗 1 点不喝酒", "skipWithDrinkAria": "跳过本题，需喝一口" },
   "admin": {
     "fillRequired": "請填寫所有欄位",
     "enterEmailOrUserId": "請輸入 email 或 user id",

@@ -88,8 +88,8 @@ export default function ScriptMurderPage() {
     () => toast.error(t('scriptMurder.copyFailed'))
   )
   const isHost = !!room && (room.hostId === user?.id || (room.hostId == null && players[0] && myPlayerRowId === players[0].id))
-  /** 免費方案可玩前 4 支劇本，其餘需升級；8 劇本時為 4 免費 / 4 鎖定 */
-  const freeScriptLimit = tier === 'free' ? 4 : Infinity
+  /** R2-227：免費方案可玩 1 支劇本，其餘需升級 */
+  const freeScriptLimit = tier === 'free' ? 1 : Infinity
 
   /** SM-03 / SM-49：離開房間，成功後清除 sessionStorage 與 myPlayerRowId 再導向大廳 */
   const handleLeave = useCallback(async () => {

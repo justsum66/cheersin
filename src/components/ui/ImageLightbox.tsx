@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { X, ZoomIn, ZoomOut, Download } from 'lucide-react'
 import Image from 'next/image'
 import { logger } from '@/lib/logger'
@@ -78,7 +78,7 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -86,7 +86,7 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
           onClick={onClose}
         >
           {/* Control bar */}
-          <motion.div
+          <m.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
@@ -127,10 +127,10 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
                 <X className="w-5 h-5" />
               </button>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Image container */}
-          <motion.div
+          <m.div
             className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={() => setIsDragging(true)}
@@ -154,10 +154,10 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
               draggable={false}
               unoptimized
             />
-          </motion.div>
+          </m.div>
 
           {/* Instructions */}
-          <motion.div
+          <m.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
@@ -165,8 +165,8 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
             className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white/60 text-xs"
           >
             滾輪或 +/- 縮放 · 拖曳移動 · Esc 關閉
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

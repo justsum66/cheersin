@@ -1,6 +1,7 @@
 /**
  * P2-409：AI 生成遊戲規則摘要 — 依遊戲 name/description 呼叫 Groq 產生一句 rulesSummary（繁中，30 字內）
  * 使用方式：GROQ_API_KEY=xxx node scripts/generate-rules-summary.mjs [--input=scripts/data/games-list.json] [--output=scripts/data/rules-summary-generated.json]
+ * 依賴：僅從環境變數讀取 GROQ_API_KEY（必填），不讀取 .env 檔案；請在 shell 或 .env.local 中設定。
  * 輸入 JSON：陣列 [{ "id", "name", "description" }]。輸出：{ "gameId": "規則摘要", ... }
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
@@ -50,9 +51,9 @@ function parseArgs() {
 }
 
 async function main() {
-  const groqKey = process.env.GROQ_API_KEY
+  const groqKey = process.env.GROQ_SCRIPT_API_KEY || process.env.GROQ_API_KEY
   if (!groqKey) {
-    console.error('Need GROQ_API_KEY')
+    console.error('Need GROQ_SCRIPT_API_KEY or GROQ_API_KEY')
     process.exit(1)
   }
   const { input, output } = parseArgs()

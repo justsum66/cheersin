@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
@@ -20,6 +20,17 @@ const QUESTIONS: string[] = [
   '最喜歡的數字？',
   '下雨天最想做什麼？',
   '最喜歡的電影類型？',
+  /** R2-153：默契大考驗更多題型 — 情境題 */
+  '如果明天是世界末日，你會先做什麼？',
+  '如果可以變成動物一天，你想當什麼？',
+  '最想擁有的超能力？',
+  '如果中樂透第一件事？',
+  '最想跟誰共進晚餐？（名人/已故皆可）',
+  '人生中最感謝的一個人？',
+  '去荒島只能帶三樣東西，你會帶？',
+  '最難忘的一次旅行？',
+  '如果可以改寫人生一個決定？',
+  '最想重來的一天？',
 ]
 
 /** 默契大考驗：兩人一組同時回答同一題，答案相同則安全，不同則喝。 */
@@ -69,18 +80,18 @@ export default function ChemistryTest() {
       <p className="text-white/50 text-sm mb-2 text-center">默契大考驗</p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
           onClick={startRound}
           whileTap={{ scale: 0.98 }}
         >
           開始
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'pair' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-2">本輪搭檔：<span className="font-bold text-primary-300">{players[pair[0]]}</span> & <span className="font-bold text-primary-300">{players[pair[1]]}</span></p>
           <p className="text-lg font-bold text-white mb-4">{question}</p>
           <button
@@ -90,11 +101,11 @@ export default function ChemistryTest() {
           >
             各自寫答案
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'answer' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
           <p className="text-white/70 mb-4">{question}</p>
           <div className="space-y-4 mb-4">
             <div>
@@ -126,12 +137,12 @@ export default function ChemistryTest() {
           >
             揭曉
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -155,7 +166,7 @@ export default function ChemistryTest() {
             >
               下一題
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

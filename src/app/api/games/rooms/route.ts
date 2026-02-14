@@ -8,6 +8,9 @@ import { logger } from '@/lib/logger'
 import { normalizePagination, buildPaginatedMeta } from '@/lib/pagination'
 import { stripHtml } from '@/lib/sanitize'
 import { GamesRoomsPostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
+import { ROOM_ERROR, ROOM_MESSAGE, RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes'
+import { isPaidTier } from '@/lib/subscription'
 
 const MAX_SLUG_ATTEMPTS = 5
 
@@ -47,11 +50,11 @@ export async function GET(request: Request) {
   }
 
   if (url.searchParams.get('host') !== 'me') {
-    return errorResponse(400, 'Bad request', { message: 'Use host=me to list your rooms or list=active for active party rooms' })
+    return errorResponse(400, ROOM_ERROR.BAD_REQUEST, { message: ROOM_MESSAGE.BAD_REQUEST_HOST_OR_LIST })
   }
   const user = await getCurrentUser()
   if (!user?.id) {
-    return errorResponse(401, 'Unauthorized', { message: '請先登入' })
+    return errorResponse(401, ROOM_ERROR.UNAUTHORIZED, { message: ROOM_MESSAGE.LOGIN_REQUIRED })
   }
   const { limit, offset } = normalizePagination({
     limit: url.searchParams.get('limit') ?? undefined,
@@ -91,7 +94,7 @@ export async function POST(request: Request) {
   const ip = getClientIp(request.headers)
   if (await isRateLimitedAsync(ip, 'create')) {
     return NextResponse.json(
-      { error: '操作過於頻繁，請稍後再試', retryAfter: 60 },
+      { error: RATE_LIMIT_MESSAGE, retryAfter: 60 },
       { status: 429, headers: { 'Retry-After': '60' } }
     )
   }
@@ -101,20 +104,21 @@ export async function POST(request: Request) {
   let partyRoom = false
   let scriptId: string | undefined
   let bodyMaxPlayers: 4 | 8 | 12 | undefined
+  const parsed = await zodParseBody(request, GamesRoomsPostBodySchema, {
+    defaultRaw: {},
+    invalidJsonMessage: '請提供有效的 JSON body',
+    invalidBodyMessage: '請提供有效的 JSON body',
+  })
+  if (!parsed.success) return parsed.response
+  const body = parsed.data
+  if (body.password !== undefined) bodyPassword = body.password
   try {
-    const raw = await request.json().catch(() => null)
-    const parsed = GamesRoomsPostBodySchema.safeParse(raw ?? {})
-    if (!parsed.success) {
-      return errorResponse(400, 'INVALID_JSON', { message: '請提供有效的 JSON body' })
-    }
-    const body = parsed.data
-    if (body.password !== undefined) bodyPassword = body.password
     if (body.anonymousMode === true) anonymousMode = true
     if (body.partyRoom === true) partyRoom = true
     if (body.maxPlayers !== undefined) bodyMaxPlayers = body.maxPlayers
     if (body.scriptId !== undefined && body.scriptId.trim()) scriptId = stripHtml(body.scriptId.trim().slice(0, 64))
   } catch {
-    return errorResponse(400, 'INVALID_JSON', { message: '請提供有效的 JSON body' })
+    return errorResponse(400, ROOM_ERROR.INVALID_BODY, { message: ROOM_MESSAGE.INVALID_JSON_BODY })
   }
   try {
     const supabase = createServerClient()
@@ -130,7 +134,7 @@ export async function POST(request: Request) {
     }
     if (!slugFree) {
       logger.warn('Game room slug collision: all attempts taken', { attempts: MAX_SLUG_ATTEMPTS })
-      return errorResponse(503, 'ROOM_CREATE_LIMIT', { message: '暫時無法建立房間，請稍後再試' })
+      return errorResponse(503, ROOM_ERROR.ROOM_CREATE_LIMIT, { message: ROOM_MESSAGE.ROOM_CREATE_LIMIT })
     }
     const user = await getCurrentUser()
     // 劇本殺房：#14 綁定 script_id，人數與過期時間依劇本
@@ -146,7 +150,7 @@ export async function POST(request: Request) {
         .eq('id', scriptId)
         .single()
       if (scriptErr || !scriptRow) {
-        return errorResponse(400, 'Invalid script', { message: '劇本不存在或無法使用' })
+        return errorResponse(400, ROOM_ERROR.INVALID_SCRIPT, { message: ROOM_MESSAGE.INVALID_SCRIPT })
       }
       const minP = (scriptRow as { min_players: number | null }).min_players ?? 4
       const maxP = (scriptRow as { max_players: number | null }).max_players ?? 8
@@ -158,11 +162,11 @@ export async function POST(request: Request) {
     } else if (partyRoom && user?.id) {
       const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single()
       const tier = (profile?.subscription_tier as string) ?? 'free'
-      const isPaid = tier === 'basic' || tier === 'premium'
+      const isPaid = isPaidTier(tier)
       const defaultMax = isPaid ? 12 : 4
       if (bodyMaxPlayers !== undefined) {
         if (!isPaid && bodyMaxPlayers > 4) {
-          return errorResponse(400, 'UPGRADE_REQUIRED', { message: '免費方案僅支援 4 人，升級可解鎖 12 人' })
+          return errorResponse(400, ROOM_ERROR.UPGRADE_REQUIRED, { message: ROOM_MESSAGE.UPGRADE_REQUIRED })
         }
         maxPlayers = bodyMaxPlayers
       } else {

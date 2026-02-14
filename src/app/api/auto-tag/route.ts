@@ -3,11 +3,11 @@
  * POST body: { type: 'wine' | 'course', name: string, description?: string }
  * 回傳: { tags: string[] }
  */
-import { NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
-import { GROQ_API_KEY } from '@/lib/env-config'
-
-const groq = new Groq({ apiKey: GROQ_API_KEY || undefined })
+import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
+import { groq, GROQ_CHAT_MODEL } from '@/lib/groq'
+import { GROQ_API_KEY, GROQ_AUTO_TAG_API_KEY, CHAT_TIMEOUT_MS } from '@/lib/env-config'
 
 export async function POST(request: Request) {
   let type: string
@@ -19,22 +19,26 @@ export async function POST(request: Request) {
     name = typeof body?.name === 'string' ? body.name.trim().slice(0, 500) : ''
     description = typeof body?.description === 'string' ? body.description.trim().slice(0, 2000) : ''
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return errorResponse(400, 'INVALID_JSON', { message: 'Invalid JSON' })
   }
   if (!type || !name || !['wine', 'course'].includes(type)) {
-    return NextResponse.json({ error: 'type must be wine or course, name required' }, { status: 400 })
+    return errorResponse(400, 'INVALID_BODY', { message: 'type must be wine or course, name required' })
   }
-  if (!GROQ_API_KEY) {
-    return NextResponse.json({ error: 'Auto-tag not configured' }, { status: 503 })
+  const autoTagKey = GROQ_AUTO_TAG_API_KEY || GROQ_API_KEY
+  if (!autoTagKey) {
+    return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Auto-tag not configured' })
   }
+  const client = GROQ_AUTO_TAG_API_KEY
+    ? new Groq({ apiKey: GROQ_AUTO_TAG_API_KEY, timeout: CHAT_TIMEOUT_MS })
+    : groq
   const prompt =
     type === 'wine'
       ? `根據以下酒款名稱與描述，輸出 3～8 個繁體中文標籤（產區、品種、風格、場合等），僅回傳 JSON 陣列字串，例如 ["紅酒","勃艮第","黑皮諾","聚餐"]。\n名稱：${name}\n描述：${description || '無'}`
       : `根據以下課程名稱與描述，輸出 3～8 個繁體中文標籤（主題、難度、類型等），僅回傳 JSON 陣列字串。\n名稱：${name}\n描述：${description || '無'}`
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
+      model: GROQ_CHAT_MODEL,
       temperature: 0.3,
       max_tokens: 200,
     })
@@ -44,6 +48,6 @@ export async function POST(request: Request) {
     const tags = Array.isArray(parsed) ? parsed.filter((t) => typeof t === 'string').slice(0, 10) : []
     return NextResponse.json({ tags })
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Tag generation failed' }, { status: 500 })
+    return errorResponse(500, 'TAG_GENERATION_FAILED', { message: e instanceof Error ? e.message : 'Tag generation failed' })
   }
 }

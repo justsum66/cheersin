@@ -1,17 +1,31 @@
 import Groq from 'groq-sdk'
+import type { ChatMessage, ChatUsage } from '@/types/chat-messages'
 import { logger } from './logger'
-import { CHAT_TIMEOUT_MS, GROQ_API_KEY, GROQ_CHAT_MODEL, GROQ_VISION_MODEL } from './env-config'
+import {
+  CHAT_TIMEOUT_MS,
+  GROQ_API_KEY,
+  GROQ_CHAT_MODEL,
+  GROQ_VISION_MODEL,
+  GROQ_VISION_API_KEY,
+  GROQ_SOUL_WINE_API_KEY,
+} from './env-config'
 import { getTaiwanWinesContext } from './taiwan-wines'
+
+/** Re-export for route/recordApiCall 使用 */
+export { GROQ_CHAT_MODEL, GROQ_VISION_MODEL }
+export type { ChatMessage, ChatUsage }
 
 export const groq = new Groq({
   apiKey: GROQ_API_KEY || undefined,
   timeout: CHAT_TIMEOUT_MS,
 })
 
-export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
+const visionClient = GROQ_VISION_API_KEY
+  ? new Groq({ apiKey: GROQ_VISION_API_KEY, timeout: CHAT_TIMEOUT_MS })
+  : groq
+const soulWineClient = GROQ_SOUL_WINE_API_KEY
+  ? new Groq({ apiKey: GROQ_SOUL_WINE_API_KEY, timeout: CHAT_TIMEOUT_MS })
+  : groq
 
 /** 品酒助手系統提示：WSET Level 4 + CMS Level 3 + MW 等級，供 API 與 lib 共用 */
 export const SOMMELIER_SYSTEM_PROMPT = `你是 Cheersin 的 AI 品酒助手「酒神」，具備 WSET Level 4 Diploma、CMS Certified Sommelier Advanced、葡萄酒大師（Master of Wine, MW）及烈酒/清酒/啤酒等各領域最高認證等級的綜合分析能力。
@@ -118,13 +132,6 @@ export function getSommelierSystemPrompt(userContext?: SommelierUserContext): st
   return systemPrompt
 }
 
-/** P2-410：Groq 回傳 usage 供 Token 追蹤 */
-export interface ChatUsage {
-  prompt_tokens: number
-  completion_tokens: number
-  total_tokens: number
-}
-
 export async function chatWithSommelier(
   messages: ChatMessage[],
   userContext?: SommelierUserContext
@@ -180,7 +187,7 @@ export async function chatWithSommelierVision(
   userContext?: SommelierUserContext
 ): Promise<string> {
   const systemPrompt = getSommelierSystemPrompt(userContext)
-  const completion = await groq.chat.completions.create({
+  const completion = await visionClient.chat.completions.create({
     messages: [{ role: 'system', content: systemPrompt }, ...messages],
     model: GROQ_VISION_MODEL,
     temperature: 0.7,
@@ -216,7 +223,7 @@ ${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
 
 只回覆 JSON，不要其他文字。`
 
-  const completion = await groq.chat.completions.create({
+  const completion = await soulWineClient.chat.completions.create({
     messages: [{ role: 'user', content: prompt }],
     model: GROQ_CHAT_MODEL,
     temperature: 0.9,

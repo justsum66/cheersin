@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Bomb, ArrowUp, ArrowDown, RotateCcw, Minus, Plus } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
@@ -137,7 +137,7 @@ export default function NumberBomb() {
       {/* 提示 */}
       <AnimatePresence mode="wait">
         {hint && !loser && (
-          <motion.div
+          <m.div
             key={hint}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export default function NumberBomb() {
           >
             {hint === 'bigger' ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
             <span className="font-bold">{hint === 'bigger' ? '太小了！往上猜' : '太大了！往下猜'}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -162,7 +162,7 @@ export default function NumberBomb() {
       {/* 爆炸動畫 */}
       <AnimatePresence>
         {explosion && (
-          <motion.div
+          <m.div
             key="explosion"
             initial={{ scale: 0.3, opacity: 1 }}
             animate={{ scale: 3, opacity: 0 }}
@@ -172,25 +172,25 @@ export default function NumberBomb() {
             aria-hidden
           >
             <div className="w-64 h-64 rounded-full bg-gradient-to-br from-orange-500 via-red-500 to-yellow-500 blur-3xl" />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* 輸家顯示 */}
       {loser && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center gap-4 mb-6"
           role="alert"
           aria-live="assertive"
         >
-          <motion.div
+          <m.div
             animate={{ rotate: [0, -10, 10, -10, 0] }}
             transition={{ duration: 0.5, repeat: reducedMotion ? 0 : 2 }}
           >
             <Bomb className="w-16 h-16 text-red-500" />
-          </motion.div>
+          </m.div>
           <p className="text-red-400 font-bold text-2xl md:text-3xl">💥 {loser} 踩到炸彈！喝！</p>
           <p className="text-white/50 text-sm">炸彈數字是 {bombNumber}</p>
           <CopyResultButton text={`數字炸彈：${loser} 踩到 ${bombNumber}，喝！`} />
@@ -202,7 +202,7 @@ export default function NumberBomb() {
             <RotateCcw className="w-5 h-5" />
             再玩一局
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {/* 猜測控制 */}
@@ -252,7 +252,7 @@ export default function NumberBomb() {
           </div>
 
           {/* 確認按鈕 */}
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={submitGuess}
@@ -261,7 +261,7 @@ export default function NumberBomb() {
           >
             <Bomb className="w-6 h-6" />
             猜 {guess}
-          </motion.button>
+          </m.button>
           
           <p className="text-white/40 text-sm">鍵盤 ↑↓ 調整，Enter 確認</p>
         </div>

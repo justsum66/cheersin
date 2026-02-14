@@ -1,6 +1,6 @@
 /**
  * UI 元件 barrel（FOLDER #15）：常用 named export 集中，可選 from '@/components/ui'
- * 含 default 的組件（如 FeatureIcon、ScrollProgress）仍建議直接 from '@/components/ui/XXX'
+ * 含 default 的組件仍建議直接 from '@/components/ui/XXX'
  */
 export { BackToTop } from './BackToTop'
 export { Badge } from './Badge'
@@ -26,6 +26,8 @@ export { Switch } from './Switch'
 export { ProgressBar } from './ProgressBar'
 export { Tooltip } from './Tooltip'
 export { ImageWithFallback } from './ImageWithFallback'
+export { InertialPicker } from './InertialPicker'
+export type { InertialPickerProps } from './InertialPicker'
 export { Accordion, AccordionItem } from './Accordion'
 export { RouteChangeProgress } from './RouteChangeProgress'
 export { Icon } from './Icon'

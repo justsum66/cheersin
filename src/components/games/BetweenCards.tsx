@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Spade, RotateCcw } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -104,28 +104,28 @@ export default function BetweenCards() {
       </div>
 
       {!card1 && (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={drawCards} className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-bold games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={drawCards} className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-bold games-focus-ring">
           抽兩張牌
-        </motion.button>
+        </m.button>
       )}
 
       {card1 && !middleCard && (
         <div className="text-center">
           <p className="text-white/50 mb-4">範圍：{card1} ~ {card2}</p>
-          <motion.button whileTap={{ scale: 0.96 }} onClick={revealMiddle} className="px-8 py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold games-focus-ring">
+          <m.button whileTap={{ scale: 0.96 }} onClick={revealMiddle} className="px-8 py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold games-focus-ring">
             翻開中間牌！
-          </motion.button>
+          </m.button>
         </div>
       )}
 
       {result && (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center mt-4">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center mt-4">
           {result === 'win' && <p className="text-emerald-400 font-bold text-2xl">過關！安全</p>}
           {result === 'lose' && <p className="text-red-400 font-bold text-2xl">沒過！{currentPlayer} 喝！</p>}
           {result === 'post' && <p className="text-red-400 font-bold text-2xl">撞柱！{currentPlayer} 喝雙倍！</p>}
           <CopyResultButton text={`射龍門：${card1} ~ ${card2}，中間 ${middleCard}，${result === 'win' ? '過關' : result === 'post' ? '撞柱喝雙倍' : '沒過喝酒'}`} />
           <button onClick={nextPlayer} className="mt-4 px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>
-        </motion.div>
+        </m.div>
       )}
 
       <button onClick={resetGame} className="absolute bottom-4 right-4 p-2 rounded-full bg-white/10 text-white/50 games-focus-ring">

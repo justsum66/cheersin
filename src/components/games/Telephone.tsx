@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, RotateCcw, Volume2 } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -118,13 +118,13 @@ export default function Telephone() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           傳話遊戲
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">悄悄話傳遞，看看訊息會變成什麼樣子！</p>
 
         <GameRules 
@@ -139,7 +139,7 @@ export default function Telephone() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -155,11 +155,11 @@ export default function Telephone() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 0.9, scale: 1 }}
@@ -178,7 +178,7 @@ export default function Telephone() {
                 </div>
                 
                 <div className="w-full bg-white/10 rounded-full h-2 mb-4">
-                  <motion.div 
+                  <m.div 
                     className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
                     initial={{ width: '0%' }}
                     animate={{ width: `${((currentPlayerIndex + 1) / players.length) * 100}%` }}
@@ -192,7 +192,7 @@ export default function Telephone() {
 
               <div className="bg-black/30 rounded-xl p-6 mb-6 min-h-[120px] flex items-center justify-center">
                 {isSpeaking ? (
-                  <motion.div
+                  <m.div
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ repeat: Infinity, duration: 1 }}
                     className="text-center"
@@ -200,9 +200,9 @@ export default function Telephone() {
                     <Volume2 className="w-12 h-12 mx-auto mb-4 text-purple-400" />
                     <p className="text-lg font-bold">正在傳話中...</p>
                     <p className="text-white/60">請其他玩家不要偷看</p>
-                  </motion.div>
+                  </m.div>
                 ) : (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-center"
@@ -222,7 +222,7 @@ export default function Telephone() {
                         </p>
                       </>
                     )}
-                  </motion.div>
+                  </m.div>
                 )}
               </div>
 
@@ -236,11 +236,11 @@ export default function Telephone() {
                   {currentPlayerIndex === 0 ? '開始傳話' : '傳給下一位'}
                 </button>
               )}
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -288,7 +288,7 @@ export default function Telephone() {
                   再玩一次
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

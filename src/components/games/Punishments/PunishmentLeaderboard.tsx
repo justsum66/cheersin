@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { usePunishment } from './PunishmentContext'
 import type { PlayerPunishmentStats } from './types'
 
@@ -30,14 +30,14 @@ export default function PunishmentLeaderboard({ maxItems = 10, className = '' }:
       {/* R2-104：排行榜名次入場動畫，名次變化時有視覺回饋 */}
       <ol className="list-decimal list-inside text-white/80 text-sm space-y-0.5">
         {top.map((p: PlayerPunishmentStats, i: number) => (
-          <motion.li
+          <m.li
             key={`${p.playerIndex}-${p.count}`}
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.06, duration: 0.2 }}
           >
             {p.playerName}：{p.count} 次
-          </motion.li>
+          </m.li>
         ))}
       </ol>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Camera, RefreshCw, Trophy, Share2 } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -141,7 +141,7 @@ export default function PhotoBomb() {
 
               <AnimatePresence mode="wait">
                 {currentChallenge && (
-                  <motion.div
+                  <m.div
                     key={currentChallenge.pose}
                     initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -152,7 +152,7 @@ export default function PhotoBomb() {
                       <h2 className="text-2xl font-bold text-white mb-2">{currentChallenge.pose}</h2>
                       <p className="text-white/60">{currentChallenge.description}</p>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
 

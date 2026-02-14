@@ -4,12 +4,14 @@
  * G2.11-G2.12：心有靈犀 - 兩人同時從選項中選一個，選一樣則安全，不一樣則喝
  */
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
 import CopyResultButton from '../CopyResultButton'
+import { DrinkingAnimation } from '../DrinkingAnimation'
+import { useGameReduceMotion } from '../GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 
@@ -29,6 +31,7 @@ const SOUL_MATE_QUESTIONS: { q: string; options: string[] }[] = [
 export default function SoulMate() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [phase, setPhase] = useState<'idle' | 'pick' | 'result'>('idle')
@@ -76,18 +79,18 @@ export default function SoulMate() {
       </p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold games-focus-ring"
           onClick={startRound}
           whileTap={{ scale: 0.98 }}
         >
           開始
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'pick' && currentQ && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-md">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-md">
           <p className="text-white/80 font-medium mb-4 text-center">{currentQ.q}</p>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
@@ -133,12 +136,12 @@ export default function SoulMate() {
           >
             揭曉
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && currentQ && pickA !== null && pickB !== null && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
@@ -152,6 +155,7 @@ export default function SoulMate() {
             <p className={`text-lg font-bold mb-4 ${match ? 'text-green-400' : 'text-red-400'}`}>
               {match ? '心有靈犀！安全' : '不一樣，兩人各喝一杯'}
             </p>
+            {!match && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto mb-4" />}
             <CopyResultButton
               text={`心有靈犀：${players[0]}「${currentQ.options[pickA]}」vs ${players[1]}「${currentQ.options[pickB]}」，${match ? '心有靈犀安全' : '不一樣兩人各喝一杯'}`}
               className="mb-4 games-focus-ring"
@@ -163,7 +167,7 @@ export default function SoulMate() {
             >
               下一題
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

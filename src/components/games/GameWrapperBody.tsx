@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Flag } from 'lucide-react'
 import Link from 'next/link'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
@@ -162,7 +162,7 @@ export default function GameWrapperBody({
 
       <AnimatePresence>
         {isPaused && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -171,7 +171,7 @@ export default function GameWrapperBody({
             role="dialog"
             aria-label="遊戲已暫停"
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -187,8 +187,8 @@ export default function GameWrapperBody({
                 繼續
               </button>
               <p className="text-white/50 text-xs mt-2">也可按 P 鍵繼續</p>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -234,7 +234,7 @@ export default function GameWrapperBody({
 
       <AnimatePresence>
         {showTrialEndModal && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -243,7 +243,7 @@ export default function GameWrapperBody({
             aria-modal="true"
             aria-labelledby="trial-end-title"
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -275,21 +275,21 @@ export default function GameWrapperBody({
                   返回大廳
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showRulesModal && rulesContent && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 sm:p-4 safe-area-px safe-area-pb"
             onClick={closeRulesModal}
           >
-            <motion.div
+            <m.div
               ref={rulesModalRef}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
@@ -317,8 +317,8 @@ export default function GameWrapperBody({
               >
                 關閉
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

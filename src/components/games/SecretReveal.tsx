@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { MessageSquare, RotateCcw, Timer, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { MessageSquare, RotateCcw, Timer, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { TypewriterText } from '@/components/ui/TypewriterText'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -42,7 +43,22 @@ export default function SecretReveal() {
   const [stats, setStats] = useState<{ told: number; correct: number; wrong: number }>({ told: 0, correct: 0, wrong: 0 })
   const tellIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const prompts = useMemo(() => getPromptsByCategory(categoryFilter), [categoryFilter])
+  /* Refactor: Async data loading */
+  const [prompts, setPrompts] = useState<SecretRevealPrompt[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      try {
+        const data = await getPromptsByCategory(categoryFilter)
+        setPrompts(data)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [categoryFilter])
   const currentPrompt = pool[currentIndex] ?? null
 
   const startRound = useCallback(() => {
@@ -130,6 +146,15 @@ export default function SecretReveal() {
     setCurrentIndex(0)
   }, [])
 
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center py-4">
+        <Loader2 className="w-8 h-8 text-primary-400 animate-spin mb-4" />
+        <p className="text-white/50 text-sm">載入題目中...</p>
+      </div>
+    )
+  }
+
   const hasPrompts = prompts.length > 0
   if (!hasPrompts) {
     return (
@@ -152,9 +177,8 @@ export default function SecretReveal() {
                 key={value}
                 type="button"
                 onClick={() => handleCategoryChange(value)}
-                className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${
-                  categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
+                className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
+                  }`}
               >
                 {label}
               </button>
@@ -174,7 +198,7 @@ export default function SecretReveal() {
       <div className="h-full flex flex-col items-center py-4 px-4">
         <GameRules rules="秘密爆料：講述者用約 60 秒講一個秘密（真或假），講完後其他人投票。" />
         <p className="text-white/50 text-sm mt-2">講述者：{players[storytellerIndex]}</p>
-        <motion.div
+        <m.div
           key={currentPrompt.id}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -200,42 +224,51 @@ export default function SecretReveal() {
           >
             講完了，開始投票
           </button>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
 
   if (phase === 'vote' && currentPrompt) {
     const voterIndices = players.map((_, i) => i).filter((i) => i !== storytellerIndex)
+    const votedCount = voterIndices.filter((i) => votes[i] !== undefined).length
     return (
       <div className="h-full flex flex-col items-center py-4 px-4">
         <p className="text-white/50 text-sm">猜猜 {players[storytellerIndex]} 講的是真是假？</p>
         <p className="text-white/80 text-lg mt-2 px-4">{currentPrompt.text}</p>
+        <p className="text-white/40 text-xs mt-2">匿名投票 — 揭曉前不顯示誰投什麼</p>
         <div className="mt-6 flex flex-wrap justify-center gap-4">
-          {voterIndices.map((i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <span className="text-white/60 text-sm">{players[i]}</span>
+          {voterIndices.map((idx, order) => (
+            <div key={idx} className="flex flex-col items-center gap-2">
+              <span className="text-white/60 text-sm">第 {order + 1} 位</span>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setVote(i, true)}
-                  className={`min-h-[48px] min-w-[48px] p-2 rounded-xl ${votes[i] === true ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'}`}
-                  title="真"
-                >
-                  <ThumbsUp className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVote(i, false)}
-                  className={`min-h-[48px] min-w-[48px] p-2 rounded-xl ${votes[i] === false ? 'bg-secondary-500 text-white' : 'bg-white/10 text-white/60'}`}
-                  title="假"
-                >
-                  <ThumbsDown className="w-5 h-5" />
-                </button>
+                {votes[idx] === undefined ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setVote(idx, true)}
+                      className="min-h-[48px] min-w-[48px] p-2 rounded-xl bg-white/10 text-white/60 hover:bg-white/20"
+                      title="真"
+                    >
+                      <ThumbsUp className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVote(idx, false)}
+                      className="min-h-[48px] min-w-[48px] p-2 rounded-xl bg-white/10 text-white/60 hover:bg-white/20"
+                      title="假"
+                    >
+                      <ThumbsDown className="w-5 h-5" />
+                    </button>
+                  </>
+                ) : (
+                  <span className="min-h-[48px] px-3 flex items-center text-white/50 text-sm">已投</span>
+                )}
               </div>
             </div>
           ))}
         </div>
+        <p className="text-white/40 text-xs mt-2">已投票 {votedCount} / {voterIndices.length}</p>
         <p className="text-white/40 text-xs mt-4">講述者點擊下方揭露真相</p>
         <div className="flex gap-4 mt-4">
           <button
@@ -263,7 +296,7 @@ export default function SecretReveal() {
     const isShocking = actualTruth === true && wrongVoters.length > voterIndices.length / 2
     return (
       <div className="h-full flex flex-col items-center py-4 px-4">
-        <motion.div
+        <m.div
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
           className="w-full max-w-lg text-center p-6 rounded-2xl bg-white/5 border border-white/10"
@@ -273,7 +306,10 @@ export default function SecretReveal() {
           )}
           <p className="text-primary-400 font-bold text-lg mb-2">真相：{actualTruth ? '真的' : '假的'}</p>
           {wrongVoters.length > 0 ? (
-            <p className="text-white/80 mb-2">猜錯的人喝一口：{wrongVoters.map((i) => players[i]).join('、')}</p>
+            <>
+              <p className="text-white/80 mb-2">猜錯的人喝一口：{wrongVoters.map((i) => players[i]).join('、')}</p>
+              {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+            </>
           ) : (
             <p className="text-white/60 mb-2">大家都猜對了！</p>
           )}
@@ -282,7 +318,7 @@ export default function SecretReveal() {
             text={`秘密爆料：真相${actualTruth ? '真的' : '假的'}，猜錯：${wrongVoters.map((i) => players[i]).join('、')}`}
             className="mt-3"
           />
-        </motion.div>
+        </m.div>
         <button
           type="button"
           onClick={nextPrompt}
@@ -298,7 +334,7 @@ export default function SecretReveal() {
     return (
       <div className="h-full flex flex-col items-center justify-center py-4 px-4">
         <GameRules rules="秘密爆料：遊戲結束" />
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md p-6 rounded-2xl bg-white/5 border border-white/10 text-center"
@@ -319,7 +355,7 @@ export default function SecretReveal() {
           >
             再玩一輪
           </button>
-        </motion.div>
+        </m.div>
       </div>
     )
   }

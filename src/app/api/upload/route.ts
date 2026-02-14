@@ -5,42 +5,33 @@
  * 僅允許 image/jpeg、image/png、image/webp，單檔最大 5MB
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
+import { validateImageUpload } from '@/lib/validate-image-upload'
 import { randomUUID } from 'crypto'
 
-/** SEC-012：白名單 MIME，禁止執行檔與任意類型 */
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
-/** SEC-012：單檔大小上限 5MB */
-const MAX_BYTES = 5 * 1024 * 1024
 const BUCKET = 'uploads'
 
 export async function POST(request: Request) {
   const ip = getClientIp(request.headers)
   if (await isRateLimitedAsync(ip, 'upload')) {
-    return NextResponse.json(
-      { error: 'Too many uploads, please try again later' },
-      { status: 429, headers: { 'Retry-After': '60' } }
-    )
+    const res = errorResponse(429, 'RATE_LIMITED', { message: 'Too many uploads, please try again later' })
+    res.headers.set('Retry-After', '60')
+    return res
   }
   try {
     const formData = await request.formData()
     const file = formData.get('file')
     if (!file || typeof file === 'string') {
-      return NextResponse.json({ error: 'Missing or invalid file field' }, {
-        status: 400,
-        headers: { 'X-Content-Type-Options': 'nosniff' },
-      })
+      return errorResponse(400, 'INVALID_FILE_FIELD', { message: 'Missing or invalid file field' })
     }
     const blob = file as Blob
+    const validation = validateImageUpload(blob)
+    if (!validation.ok) {
+      return errorResponse(validation.status, validation.code, { message: validation.message })
+    }
     const type = blob.type?.toLowerCase()
-    if (!type || !ALLOWED_TYPES.has(type)) {
-      return NextResponse.json({ error: 'Only image/jpeg, image/png, image/webp are allowed' }, { status: 400 })
-    }
-    const size = blob.size
-    if (size > MAX_BYTES) {
-      return NextResponse.json({ error: 'File too large (max 5MB)' }, { status: 400 })
-    }
     const ext = type === 'image/jpeg' ? 'jpg' : type === 'image/png' ? 'png' : 'webp'
     const randomName = `${randomUUID()}.${ext}`
 
@@ -53,26 +44,17 @@ export async function POST(request: Request) {
       })
       if (error) {
         if (error.message?.includes('Bucket not found') || error.message?.includes('not found')) {
-          return NextResponse.json(
-            { error: 'Upload not configured (bucket missing)' },
-            { status: 503 }
-          )
+          return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Upload not configured (bucket missing)' })
         }
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return errorResponse(500, 'UPLOAD_FAILED', { message: error.message })
       }
       const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path)
       return NextResponse.json({ url: urlData.publicUrl, path: data.path }, {
         headers: { 'X-Content-Type-Options': 'nosniff' },
       })
     }
-    return NextResponse.json(
-      { error: 'Upload not configured' },
-      { status: 503 }
-    )
+    return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Upload not configured' })
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Upload failed' },
-      { status: 500 }
-    )
+    return errorResponse(500, 'UPLOAD_FAILED', { message: e instanceof Error ? e.message : 'Upload failed' })
   }
 }

@@ -11,17 +11,9 @@ import { Users, Search, Loader2, RefreshCw } from 'lucide-react'
 import { SUBSCRIPTION_TIERS, type SubscriptionTier } from '@/lib/subscription'
 import { AdminSkeleton } from '../AdminSkeleton'
 import { AdminForbidden } from '../AdminForbidden'
+import type { UserProfileDetail as Profile } from '@/store/useUserStore'
 
 const API_USERS = '/api/admin/users'
-
-interface Profile {
-  id: string
-  email: string | null
-  display_name: string | null
-  subscription_tier: string | null
-  created_at: string | null
-  updated_at: string | null
-}
 
 interface SubRow {
   id: string
@@ -48,7 +40,7 @@ export default function AdminUsersPage() {
     if (queryDebounced.length < 3) return
     search(queryDebounced)
     // 僅在防抖後 query 變更時觸發搜尋，不依賴 search 避免重複請求
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryDebounced])
   const [profile, setProfile] = useState<Profile | null>(null)
   const [subscriptions, setSubscriptions] = useState<SubRow[]>([])
@@ -224,41 +216,41 @@ export default function AdminUsersPage() {
           return sortAsc ? cmp : -cmp
         })
         return (
-        <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-3">
-          <h2 className="text-lg font-medium text-white">{t('admin.subscriptions')}</h2>
-          {/* P1-175：長表格固定表頭，滾動時仍可見列名 */}
-          <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="sticky top-0 z-10 bg-[#0a0a1a] border-b border-white/10">
-                <tr className="text-white/60">
-                  {(['plan_type', 'status', 'paypal_subscription_id', 'start_date', 'end_date', 'auto_renew'] as const).map((key) => (
-                    <th
-                      key={key}
-                      className="py-2 pr-4 cursor-pointer hover:text-white select-none"
-                      onClick={() => { setSortKey(key); setSortAsc((prev) => sortKey === key ? !prev : true) }}
-                      role="columnheader"
-                      aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : undefined}
-                    >
-                      {key === 'plan_type' ? t('admin.planType') : key === 'status' ? t('admin.status') : key === 'paypal_subscription_id' ? t('admin.paypalId') : key === 'start_date' ? t('admin.startDate') : key === 'end_date' ? t('admin.endDate') : t('admin.autoRenew')}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((s) => (
-                  <tr key={s.id} className="border-b border-white/5 text-white/90">
-                    <td className="py-2 pr-4">{s.plan_type}</td>
-                    <td className="py-2 pr-4">{s.status}</td>
-                    <td className="py-2 pr-4 font-mono text-xs break-all">{s.paypal_subscription_id ?? '—'}</td>
-                    <td className="py-2 pr-4">{s.start_date ? new Date(s.start_date).toLocaleDateString() : '—'}</td>
-                    <td className="py-2 pr-4">{s.end_date ? new Date(s.end_date).toLocaleDateString() : '—'}</td>
-                    <td className="py-2">{s.auto_renew ? '是' : '否'}</td>
+          <div className="rounded-lg border border-white/10 bg-black/20 p-4 space-y-3">
+            <h2 className="text-lg font-medium text-white">{t('admin.subscriptions')}</h2>
+            {/* P1-175：長表格固定表頭，滾動時仍可見列名 */}
+            <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="sticky top-0 z-10 bg-[#0a0a1a] border-b border-white/10">
+                  <tr className="text-white/60">
+                    {(['plan_type', 'status', 'paypal_subscription_id', 'start_date', 'end_date', 'auto_renew'] as const).map((key) => (
+                      <th
+                        key={key}
+                        className="py-2 pr-4 cursor-pointer hover:text-white select-none"
+                        onClick={() => { setSortKey(key); setSortAsc((prev) => sortKey === key ? !prev : true) }}
+                        role="columnheader"
+                        aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : undefined}
+                      >
+                        {key === 'plan_type' ? t('admin.planType') : key === 'status' ? t('admin.status') : key === 'paypal_subscription_id' ? t('admin.paypalId') : key === 'start_date' ? t('admin.startDate') : key === 'end_date' ? t('admin.endDate') : t('admin.autoRenew')}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sorted.map((s) => (
+                    <tr key={s.id} className="border-b border-white/5 text-white/90">
+                      <td className="py-2 pr-4">{s.plan_type}</td>
+                      <td className="py-2 pr-4">{s.status}</td>
+                      <td className="py-2 pr-4 font-mono text-xs break-all">{s.paypal_subscription_id ?? '—'}</td>
+                      <td className="py-2 pr-4">{s.start_date ? new Date(s.start_date).toLocaleDateString() : '—'}</td>
+                      <td className="py-2 pr-4">{s.end_date ? new Date(s.end_date).toLocaleDateString() : '—'}</td>
+                      <td className="py-2">{s.auto_renew ? '是' : '否'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
         )
       })()}
 

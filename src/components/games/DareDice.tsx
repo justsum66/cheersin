@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -83,7 +83,7 @@ export default function DareDice() {
       
       {/* Phase 1 C1.1: 顯示滾動中的骰子數字 */}
       {rolling && (
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={{ 
             scale: [1, 1.2, 1],
@@ -97,14 +97,14 @@ export default function DareDice() {
           className="mb-4 w-24 h-24 rounded-2xl bg-primary-500/30 border-2 border-primary-500 flex items-center justify-center"
         >
           <span className="text-5xl font-bold text-white">{rollingValue}</span>
-        </motion.div>
+        </m.div>
       )}
       
       <button type="button" onClick={roll} disabled={rolling} className="btn-primary btn-press-scale min-h-[48px] px-8 games-focus-ring disabled:opacity-50" data-testid="dare-dice-roll" aria-label={rolling ? '擲骰中' : '擲骰'}>
         {rolling ? '擲骰中…' : '擲骰'}
       </button>
       {dice !== null && dare && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={reducedMotion ? { duration: 0 } : undefined}
@@ -116,7 +116,7 @@ export default function DareDice() {
           <p className="text-amber-300 font-bold">等級：{level}（{dice} 點）</p>
           <p className="text-white font-medium mt-2">{dare}</p>
           <CopyResultButton text={`大冒險骰：${level} － ${dare}`} label="複製結果" className="mt-2 games-focus-ring" />
-        </motion.div>
+        </m.div>
       )}
     </div>
   )

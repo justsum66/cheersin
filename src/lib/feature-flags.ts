@@ -16,9 +16,10 @@ export const clientFlags = {
   },
 }
 
-/** 服務端 */
+/** 服務端：OpenRouter 作為 chat fallback；未設或非 0/false 時為 true（預設使用） */
 export const serverFlags = {
   get useOpenRouterFallback(): boolean {
-    return getBool('USE_OPENROUTER_FALLBACK')
+    const v = env['FEATURE_USE_OPENROUTER_FALLBACK'] ?? env['NEXT_PUBLIC_FEATURE_USE_OPENROUTER_FALLBACK']
+    return v !== '0' && v !== 'false'
   },
 }

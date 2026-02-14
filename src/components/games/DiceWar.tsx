@@ -1,9 +1,10 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
@@ -93,7 +94,7 @@ export default function DiceWar() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div
+          <m.div
             key="waiting"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -109,11 +110,11 @@ export default function DiceWar() {
             >
               擲骰子！
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {(phase === 'rolling' || phase === 'result') && (
-          <motion.div
+          <m.div
             key="rolling"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -124,20 +125,20 @@ export default function DiceWar() {
             <div className="flex flex-col items-center gap-2">
               <div className="text-white font-bold">{player1}</div>
               <div className="flex gap-4">
-                <motion.div
+                <m.div
                   animate={rolling ? { rotate: 360 } : { rotate: 0 }}
                   transition={{ duration: 0.1, repeat: rolling ? Infinity : 0 }}
                   className="text-6xl"
                 >
                   {DICE_FACES[playerDice[0] - 1]}
-                </motion.div>
-                <motion.div
+                </m.div>
+                <m.div
                   animate={rolling ? { rotate: -360 } : { rotate: 0 }}
                   transition={{ duration: 0.1, repeat: rolling ? Infinity : 0 }}
                   className="text-6xl"
                 >
                   {DICE_FACES[playerDice[1] - 1]}
-                </motion.div>
+                </m.div>
               </div>
               <div className="text-accent-400 font-bold text-2xl">
                 總計：{playerDice[0] + playerDice[1]}
@@ -149,20 +150,20 @@ export default function DiceWar() {
             <div className="flex flex-col items-center gap-2">
               <div className="text-white font-bold">{player2}</div>
               <div className="flex gap-4">
-                <motion.div
+                <m.div
                   animate={rolling ? { rotate: 360 } : { rotate: 0 }}
                   transition={{ duration: 0.1, repeat: rolling ? Infinity : 0 }}
                   className="text-6xl"
                 >
                   {DICE_FACES[opponentDice[0] - 1]}
-                </motion.div>
-                <motion.div
+                </m.div>
+                <m.div
                   animate={rolling ? { rotate: -360 } : { rotate: 0 }}
                   transition={{ duration: 0.1, repeat: rolling ? Infinity : 0 }}
                   className="text-6xl"
                 >
                   {DICE_FACES[opponentDice[1] - 1]}
-                </motion.div>
+                </m.div>
               </div>
               <div className="text-accent-400 font-bold text-2xl">
                 總計：{opponentDice[0] + opponentDice[1]}
@@ -170,7 +171,7 @@ export default function DiceWar() {
             </div>
 
             {phase === 'result' && winner && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center gap-4 mt-4"
@@ -179,7 +180,10 @@ export default function DiceWar() {
                   {winner === '平手' ? '平手！再來一次！' : `${winner} 獲勝！`}
                 </div>
                 {winner !== '平手' && winner !== player1 && (
-                  <div className="text-white/60">{player1} 喝一口！</div>
+                  <>
+                    <div className="text-white/60">{player1} 喝一口！</div>
+                    {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+                  </>
                 )}
                 <div className="text-white mt-2">{resultText}</div>
                 <div className="flex gap-4 mt-4">
@@ -197,9 +201,9 @@ export default function DiceWar() {
                   </button>
                 </div>
                 <CopyResultButton text={`骰子大戰 ${resultText}`} />
-              </motion.div>
+              </m.div>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

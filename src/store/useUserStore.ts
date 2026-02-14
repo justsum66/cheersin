@@ -7,6 +7,16 @@ export interface UserProfile {
     avatarUrl?: string
 }
 
+/** Supabase profiles 表對應的詳細使用者資料 */
+export interface UserProfileDetail {
+    id: string
+    email: string | null
+    display_name: string | null
+    subscription_tier: string | null
+    created_at: string | null
+    updated_at: string | null
+}
+
 interface Subscription {
     planId: string
     status: 'active' | 'canceled' | 'past_due' | 'trialing'
@@ -16,12 +26,12 @@ interface Subscription {
 
 interface UserStore {
     user: UserProfile | null
-    profile: any | null // Replace 'any' with your Profile type
+    profile: UserProfileDetail | null
     subscription: Subscription | null
     isLoading: boolean
 
     setUser: (user: UserProfile | null) => void
-    setProfile: (profile: any) => void
+    setProfile: (profile: UserProfileDetail | null) => void
     setSubscription: (sub: Subscription | null) => void
     setLoading: (loading: boolean) => void
     logout: () => void

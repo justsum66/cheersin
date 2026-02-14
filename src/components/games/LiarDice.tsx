@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -122,7 +122,7 @@ export default function LiarDice() {
         <div className="flex gap-2 mb-4 min-h-[48px] items-center justify-center" role="group" aria-label="骰子點數">
           {rolling ? (
             Array.from({ length: DICE_COUNT }).map((_, i) => (
-              <motion.span
+              <m.span
                 key={i}
                 initial={{ scale: 0.5, opacity: 0.6 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -130,11 +130,11 @@ export default function LiarDice() {
                 className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl font-bold text-white"
               >
                 ?
-              </motion.span>
+              </m.span>
             ))
           ) : (
             dices.map((d, i) => (
-              <motion.span
+              <m.span
                 key={`${i}-${d}`}
                 initial={{ scale: 0.3, rotateX: -180 }}
                 animate={{ scale: 1, rotateX: 0 }}
@@ -142,20 +142,20 @@ export default function LiarDice() {
                 className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl font-bold text-white shadow-lg"
               >
                 {d}
-              </motion.span>
+              </m.span>
             ))
           )}
         </div>
       )}
       {result && (
         <div className="mb-4">
-          <motion.p
+          <m.p
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             className={`font-bold text-lg ${result.includes('喝') ? 'text-red-400' : 'text-green-400'}`}
           >
             {result}
-          </motion.p>
+          </m.p>
           <CopyResultButton text={lastCopyText} className="mt-2 games-focus-ring" label="複製結果" />
         </div>
       )}
@@ -186,7 +186,7 @@ export default function LiarDice() {
       )}
       {/* 85 叫／開按鈕放大 */}
       {dices.length === 0 || rolling ? (
-        <motion.button
+        <m.button
           type="button"
           whileTap={{ scale: 0.96 }}
           onClick={roll}
@@ -194,11 +194,11 @@ export default function LiarDice() {
           className="min-h-[56px] min-w-[56px] px-10 py-4 rounded-2xl bg-primary-500 hover:bg-primary-600 disabled:opacity-70 text-white font-bold text-xl games-focus-ring"
         >
           {rolling ? '擲骰中…' : '擲骰'}
-        </motion.button>
+        </m.button>
       ) : canGuess ? (
         <div className="flex gap-4">
           {(['low', 'mid', 'high'] as const).map((g) => (
-            <motion.button
+            <m.button
               key={g}
               type="button"
               whileTap={{ scale: 0.96 }}
@@ -206,18 +206,18 @@ export default function LiarDice() {
               className="min-h-[56px] min-w-[80px] px-8 py-4 rounded-2xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold text-xl games-focus-ring"
             >
               {g === 'low' ? '低' : g === 'mid' ? '中' : '高'}
-            </motion.button>
+            </m.button>
           ))}
         </div>
       ) : (
-        <motion.button
+        <m.button
           type="button"
           whileTap={{ scale: 0.96 }}
           onClick={roll}
           className="min-h-[56px] min-w-[56px] px-10 py-4 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-xl games-focus-ring"
         >
           再一局
-        </motion.button>
+        </m.button>
       )}
     </div>
   )

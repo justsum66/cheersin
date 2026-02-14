@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Type, Minus, Plus } from 'lucide-react'
 
 const FONT_SIZE_KEY = 'cheersin_font_size'
@@ -78,17 +78,16 @@ export function FontSizeControl({ className = '' }: FontSizeControlProps) {
   return (
     <div className={`flex items-center gap-1 ${className}`}>
       {/* 縮小按鈕 */}
-      <motion.button
+      <m.button
         type="button"
         onClick={() => adjustSize(-STEP)}
         disabled={isMin}
         whileHover={!isMin ? { scale: 1.1 } : {}}
         whileTap={!isMin ? { scale: 0.95 } : {}}
-        className={`p-2 rounded-lg transition-colors ${
-          isMin 
-            ? 'bg-white/5 text-white/30 cursor-not-allowed' 
+        className={`p-2 rounded-lg transition-colors ${isMin
+            ? 'bg-white/5 text-white/30 cursor-not-allowed'
             : 'bg-white/10 text-white/70 hover:bg-white/15 hover:text-white'
-        }`}
+          }`}
         aria-label="縮小字體"
         title="縮小字體"
       >
@@ -96,7 +95,7 @@ export function FontSizeControl({ className = '' }: FontSizeControlProps) {
           <Type className="w-4 h-4" />
           <Minus className="w-3 h-3" />
         </span>
-      </motion.button>
+      </m.button>
 
       {/* 目前大小指示 / 重設按鈕 */}
       <button
@@ -109,17 +108,16 @@ export function FontSizeControl({ className = '' }: FontSizeControlProps) {
       </button>
 
       {/* 放大按鈕 */}
-      <motion.button
+      <m.button
         type="button"
         onClick={() => adjustSize(STEP)}
         disabled={isMax}
         whileHover={!isMax ? { scale: 1.1 } : {}}
         whileTap={!isMax ? { scale: 0.95 } : {}}
-        className={`p-2 rounded-lg transition-colors ${
-          isMax 
-            ? 'bg-white/5 text-white/30 cursor-not-allowed' 
+        className={`p-2 rounded-lg transition-colors ${isMax
+            ? 'bg-white/5 text-white/30 cursor-not-allowed'
             : 'bg-white/10 text-white/70 hover:bg-white/15 hover:text-white'
-        }`}
+          }`}
         aria-label="放大字體"
         title="放大字體"
       >
@@ -127,7 +125,7 @@ export function FontSizeControl({ className = '' }: FontSizeControlProps) {
           <Type className="w-4 h-4" />
           <Plus className="w-3 h-3" />
         </span>
-      </motion.button>
+      </m.button>
     </div>
   )
 }
@@ -149,4 +147,4 @@ export function getStoredFontSize(): number {
   return 16
 }
 
-export default FontSizeControl
+

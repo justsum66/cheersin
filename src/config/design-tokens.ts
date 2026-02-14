@@ -1,9 +1,12 @@
 /**
- * Design Tokens - Single Source of Truth
+ * Design Tokens - Single Source of Truth (Application-Level)
  * U001: Consolidated color, spacing, typography, and animation tokens
  * 
  * This file serves as the central design system configuration
  * All UI components should reference these tokens instead of hardcoded values
+ * 
+ * NOTE: Tailwind theme tokens are in @/lib/design-tokens (themeExtend).
+ * This file contains richer tokens (animations, a11y, zIndex) for runtime use.
  */
 
 // ============================================
@@ -176,7 +179,7 @@ export const shadows = {
   md: '0 4px 24px -2px rgba(139, 0, 0, 0.12), 0 0 0 1px rgba(212, 175, 55, 0.08)',
   lg: '0 12px 40px -12px rgba(139, 0, 0, 0.2), 0 0 0 1px rgba(212, 175, 55, 0.12)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-  
+
   // Semantic shadows
   glow: {
     primary: '0 0 28px rgba(139, 0, 0, 0.35)',
@@ -250,7 +253,7 @@ export const zIndex = {
 export const a11y = {
   // Minimum touch target size (WCAG 2.5.5)
   minTouchTarget: '44px',
-  
+
   // Focus ring
   focusRing: {
     width: '2px',

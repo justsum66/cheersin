@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -81,17 +81,17 @@ export default function Bluffing() {
 
       <AnimatePresence mode="wait">
         {phase === 'waiting' && (
-          <motion.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
+          <m.div key="waiting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
             <h2 className="text-2xl font-bold text-white">{t('common.turnLabel', { n: round })}</h2>
             <p className="text-white/80">{currentPlayer} 的回合</p>
             <div className="text-white">{players.map(p => <span key={p} className="mx-2">{p}: {scores[p] || 0}分</span>)}</div>
             <button onClick={startRound} className="px-8 py-4 bg-primary-500 hover:bg-primary-600 rounded-2xl text-white font-bold text-xl transition-colors">開始吹牛</button>
             {round > 1 && <button onClick={resetGame} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-colors">重新開始</button>}
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'claiming' && currentItem && (
-          <motion.div key="claiming" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
+          <m.div key="claiming" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }} className="flex flex-col items-center gap-6">
             <div className="text-white/60">{currentPlayer} 請吹噓你的：</div>
             <div className="text-6xl">{currentItem.emoji}</div>
             <div className="text-3xl text-white font-bold">{currentItem.name}</div>
@@ -102,11 +102,11 @@ export default function Bluffing() {
               ))}
             </div>
             <button onClick={submitClaim} disabled={claimScore === 0} className="px-8 py-4 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 rounded-2xl text-white font-bold text-xl transition-colors mt-4">確認分數</button>
-          </motion.div>
+          </m.div>
         )}
 
         {phase === 'voting' && currentItem && (
-          <motion.div key="voting" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-6">
+          <m.div key="voting" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={reducedMotion ? { duration: 0 } : { duration: 0.4 }} className="flex flex-col items-center gap-6">
             <div className="text-2xl text-white font-bold">{currentPlayer} 說他的{currentItem.name}有 {claimScore} 分</div>
             <div className="text-white/60">你們相信嗎？</div>
             <div className="flex gap-6">
@@ -123,7 +123,7 @@ export default function Bluffing() {
             </div>
             <button onClick={confirmVotes} className="px-8 py-3 bg-primary-500 hover:bg-primary-600 rounded-xl text-white font-bold transition-colors mt-4">確認結果</button>
             <CopyResultButton text={`吹功大法 ${resultText}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

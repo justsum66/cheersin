@@ -5,20 +5,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUsageStatsWithSupabase } from '@/lib/api-usage'
 import { isAdminRequest } from '@/lib/admin-auth'
-import { serverErrorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { ADMIN_ERROR, ADMIN_MESSAGE } from '@/lib/api-error-codes'
+import { ADMIN_SECRET } from '@/lib/env-config'
 import { logger } from '@/lib/logger'
 
 function isAdmin(request: NextRequest): boolean {
   return isAdminRequest(
     request.headers.get('x-admin-secret'),
-    process.env.ADMIN_SECRET,
+    ADMIN_SECRET,
     process.env.NODE_ENV === 'development'
   )
 }
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   try {
     const stats = await getUsageStatsWithSupabase()

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Lock, Crown, Sparkles, X } from 'lucide-react'
 import Link from 'next/link'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -45,7 +45,7 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
 
   return (
     <>
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -54,7 +54,7 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
         aria-modal="true"
         aria-labelledby="paid-game-lock-title"
       >
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -82,7 +82,7 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
             )}
 
             {/* 鎖定圖示 */}
-            <motion.div
+            <m.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.1 }}
@@ -91,7 +91,7 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-lg">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-            </motion.div>
+            </m.div>
 
             {/* P1-187：付費牆文案 — 強調解鎖後能獲得的刺激體驗，而非「你需要付費」 */}
             <h2 id="paid-game-lock-title" className="text-2xl font-display font-bold text-white mb-2">
@@ -165,8 +165,8 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
               )}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       {/* 升級 Modal */}
       <UpgradeModal

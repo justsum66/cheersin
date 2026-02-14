@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useGameReduceMotion } from './GameWrapper'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 const CHOICES = ['剪刀', '石頭', '布'] as const
@@ -89,7 +90,7 @@ export default function FingerGuessing() {
       )}
       <AnimatePresence mode="wait">
         {p1Choice !== null && p2Choice !== null && (
-          <motion.div
+          <m.div
             key={`${p1Choice}-${p2Choice}`}
             initial={{ scale: 0.6, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -100,28 +101,28 @@ export default function FingerGuessing() {
             aria-live="polite"
           >
             {/* Phase 1 C1.3: 增強手勢動畫 - 搭配旋轉效果 */}
-            <motion.span
+            <m.span
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={reducedMotion ? { duration: 0.1 } : { delay: 0.1, type: 'spring', stiffness: 400, damping: 20 }}
               className="px-4 py-3 rounded-xl bg-white/10 text-white font-medium border border-white/20"
             >
               {players[0]}：<span className="inline-block text-3xl ml-1">{EMOJI[p1Choice]}</span> {p1Choice}
-            </motion.span>
+            </m.span>
             <span className="text-white/50 text-xl">vs</span>
-            <motion.span
+            <m.span
               initial={{ scale: 0, rotate: 45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={reducedMotion ? { duration: 0.1 } : { delay: 0.2, type: 'spring', stiffness: 400, damping: 20 }}
               className="px-4 py-3 rounded-xl bg-white/10 text-white font-medium border border-white/20"
             >
               {players[1]}：<span className="inline-block text-3xl ml-1">{EMOJI[p2Choice]}</span> {p2Choice}
-            </motion.span>
-          </motion.div>
+            </m.span>
+          </m.div>
         )}
       </AnimatePresence>
       {result && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.8, opacity: 0, y: -20 }}
           animate={{ 
             scale: [0.8, 1.1, 1],
@@ -136,7 +137,7 @@ export default function FingerGuessing() {
           className="text-center mb-4"
         >
           {/* Phase 1 C2.3: 勝利慶祝序列動畫 */}
-          <motion.div
+          <m.div
             animate={!isDraw ? {
               boxShadow: [
                 '0 0 0px rgba(139, 0, 0, 0)',
@@ -151,17 +152,18 @@ export default function FingerGuessing() {
             <p className="text-primary-300 font-bold text-lg" aria-live="polite" aria-atomic="true">
               {result}
             </p>
-          </motion.div>
+          </m.div>
           <span className="sr-only" aria-live="polite">{result}</span>
+          {!isDraw && !reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           {!isDraw && <CopyResultButton text={`猜拳：${result}`} className="mt-1 games-focus-ring" />}
           {isDraw && (
             <p className="text-white/60 text-sm">再選一次</p>
           )}
-        </motion.div>
+        </m.div>
       )}
       <div className="flex gap-3">
         {CHOICES.map((c, idx) => (
-          <motion.button
+          <m.button
             key={c}
             type="button"
             whileTap={{ scale: 0.9, rotate: [0, -5, 5, 0] }}
@@ -176,7 +178,7 @@ export default function FingerGuessing() {
           >
             <span className="block text-2xl mb-1">{EMOJI[c]}</span>
             <span className="text-sm">{c}</span>
-          </motion.button>
+          </m.button>
         ))}
       </div>
     </div>

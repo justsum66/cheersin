@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAccordion } from '@/hooks/useAccordion'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import {
   Crown,
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import FeatureIcon from '@/components/ui/FeatureIcon'
+import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import {
@@ -60,6 +60,8 @@ export default function PricingPage() {
   const [promoRemaining, setPromoRemaining] = useState<number | null>(null)
   /** R2-182：首次造訪定價頁顯示優惠彈窗（localStorage 僅顯示一次） */
   const [showFirstVisitModal, setShowFirstVisitModal] = useState(false)
+  /** R2-190：A/B 定價頁 CTA 文案 — 由 variant 切換（client 隨機或 localStorage） */
+  const [ctaVariant, setCtaVariant] = useState<0 | 1 | 2>(0)
   /** R2-203：ROI 計算器 — 每月聚會次數，估算相比實體桌遊節省 */
   const [partyCountPerMonth, setPartyCountPerMonth] = useState<number>(2)
 
@@ -86,6 +88,24 @@ export default function PricingPage() {
       }
     } catch {
       setShowFirstVisitModal(false)
+    }
+  }, [])
+
+  /** R2-190：A/B CTA variant — 讀取或隨機寫入 localStorage */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const key = 'cheersin_pricing_cta_variant'
+      const raw = localStorage.getItem(key)
+      if (raw === '0' || raw === '1' || raw === '2') {
+        setCtaVariant(Number(raw) as 0 | 1 | 2)
+      } else {
+        const v = Math.floor(Math.random() * 3) as 0 | 1 | 2
+        setCtaVariant(v)
+        localStorage.setItem(key, String(v))
+      }
+    } catch {
+      setCtaVariant(0)
     }
   }, [])
   useEffect(() => {
@@ -136,7 +156,7 @@ export default function PricingPage() {
       {/* R2-182：首次造訪定價頁優惠彈窗 — 首月半價等，僅顯示一次；A11Y-006 Esc 關閉 */}
       <AnimatePresence>
         {showFirstVisitModal && FIRST_MONTH_HALF_OFF && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -146,7 +166,7 @@ export default function PricingPage() {
             aria-modal="true"
             aria-labelledby="first-visit-modal-title"
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -168,8 +188,8 @@ export default function PricingPage() {
               >
                 查看方案
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -177,7 +197,7 @@ export default function PricingPage() {
       {promoEndMs > 0 && promoRemaining != null && promoRemaining > 0 && (
         <div className="sticky top-0 z-50 w-full py-2.5 px-4 bg-red-700 text-white text-center text-sm font-medium shadow-lg" style={{ perspective: '200px' }}>
           {t('pricing.promoCountdown')}：
-          <motion.span
+          <m.span
             key={Math.floor(promoRemaining / 1000)}
             initial={{ rotateX: -90, opacity: 0 }}
             animate={{ rotateX: 0, opacity: 1 }}
@@ -186,7 +206,7 @@ export default function PricingPage() {
             style={{ transformOrigin: '50% 70%' }}
           >
             {formatPromoRemaining(promoRemaining)}
-          </motion.span>
+          </m.span>
           · {t('pricing.promoFirstHalf')}
           <span className="block text-white/80 text-xs mt-0.5">實際優惠期限以本站公告為準</span>
         </div>
@@ -195,14 +215,14 @@ export default function PricingPage() {
 
       <div className="max-w-7xl xl:max-w-[1440px] mx-auto relative z-10">
         <div className="text-center mb-8">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary-500/30 bg-primary-500/10 text-primary-400 text-sm font-bold uppercase tracking-widest mb-3"
           >
             <Crown className="w-4 h-4" />
             {t('pricing.badge')}
-          </motion.div>
+          </m.div>
           <h1 className="home-heading-1 font-display font-bold mb-4 text-white">
             {t('pricing.heading')}<span className="gradient-text">{t('pricing.headingHighlight')}</span>
           </h1>
@@ -234,25 +254,22 @@ export default function PricingPage() {
 
           <div className="inline-flex p-1 rounded-2xl bg-white/5 border border-white/10 relative">
             <div
-              className={`absolute inset-y-1 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-[0.25s] ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                billingCycle === 'monthly' ? 'left-1 w-[calc(50%-4px)]' : 'left-[50%] w-[calc(50%-4px)]'
-              }`}
+              className={`absolute inset-y-1 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-[0.25s] ease-[cubic-bezier(0.32,0.72,0,1)] ${billingCycle === 'monthly' ? 'left-1 w-[calc(50%-4px)]' : 'left-[50%] w-[calc(50%-4px)]'
+                }`}
             />
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
-              className={`relative z-10 px-8 py-3 text-sm font-bold transition-colors min-h-[48px] min-w-[48px] inline-flex items-center justify-center games-focus-ring rounded-xl ${
-                billingCycle === 'monthly' ? 'text-white font-bold' : 'text-white/40'
-              }`}
+              className={`relative z-10 px-8 py-3 text-sm font-bold transition-colors min-h-[48px] min-w-[48px] inline-flex items-center justify-center games-focus-ring rounded-xl ${billingCycle === 'monthly' ? 'text-white font-bold' : 'text-white/40'
+                }`}
             >
               {t('pricing.monthly')}
             </button>
             <button
               type="button"
               onClick={() => setBillingCycle('yearly')}
-              className={`relative z-10 px-8 py-3 text-sm font-bold transition-colors min-h-[48px] min-w-[48px] inline-flex items-center justify-center games-focus-ring rounded-xl ${
-                billingCycle === 'yearly' ? 'text-white font-bold' : 'text-white/40'
-              }`}
+              className={`relative z-10 px-8 py-3 text-sm font-bold transition-colors min-h-[48px] min-w-[48px] inline-flex items-center justify-center games-focus-ring rounded-xl ${billingCycle === 'yearly' ? 'text-white font-bold' : 'text-white/40'
+                }`}
             >
               {t('pricing.yearly')} <span className="text-primary-400 text-[10px] ml-1">{t('pricing.yearlyBadge')}</span>
             </button>
@@ -266,8 +283,8 @@ export default function PricingPage() {
             {t('pricing.trustSecure')}
           </span>
           <span>{t('pricing.trustCancel')}</span>
-          <span className="inline-flex items-center gap-2 opacity-90 hover:opacity-100 transition-opacity duration-300">
-            <Shield className="w-4 h-4 text-primary-400 drop-shadow-[0_0_6px_rgba( var(--color-primary-400), 0.5 )]" aria-hidden />
+          <span className="inline-flex items-center gap-2 opacity-90 hover:opacity-100 transition-opacity duration-300 refund-badge-glow">
+            <Shield className="w-4 h-4 text-primary-400" aria-hidden />
             {t('pricing.trustRefund')}
           </span>
           <span className="inline-flex items-center gap-1.5 font-medium text-primary-300/90">
@@ -285,20 +302,19 @@ export default function PricingPage() {
         {/* R2-045：定價方案卡片入場 stagger（delay 依 index） */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           {plans.map((plan, index) => (
-            <motion.div
+            <m.div
               key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`relative glass-card p-8 transition-all duration-300 games-focus-ring ${
-                plan.popular
-                  ? 'bg-white/[0.05] border-2 border-primary-400 ring-2 ring-primary-400/50 shadow-glass-hover scale-105 z-10'
-                  : 'hover:shadow-lg hover:border-primary-500/30 hover:bg-white/5 hover:border-white/20'
-              }`}
+              className={`relative glass-card p-8 transition-all duration-300 games-focus-ring ${plan.popular
+                  ? 'bg-white/[0.05] border-2 border-primary-400 ring-2 ring-primary-400/50 shadow-glass-hover scale-105 z-10 focus-visible:ring-primary-400/70'
+                  : 'hover:shadow-lg hover:border-primary-500/30 hover:bg-white/5 hover:border-white/20 hover:ring-2 hover:ring-primary-400/25 focus-visible:ring-2 focus-visible:ring-primary-400/50'
+                }`}
             >
-              {/* R2-058：最受歡迎標籤金色邊框脈動 */}
+              {/* R2-058：最受歡迎標籤金色邊框脈動 + 閃爍光暈 */}
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-semibold tracking-widest shadow-lg shadow-primary-500/30 border border-primary-300/80 animate-[pulse_2.5s_ease-in-out_infinite]">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-semibold tracking-widest border border-primary-300/80 pricing-most-popular-badge">
                   {t('pricing.mostPopular')}
                 </div>
               )}
@@ -324,7 +340,7 @@ export default function PricingPage() {
                 {/* R2-072：月/年切換時價格數字平滑過渡 */}
                 <div className="flex items-baseline gap-1 flex-wrap">
                   <span className="text-xl text-white/60 font-medium">NT$</span>
-                  <motion.span
+                  <m.span
                     key={`${plan.id}-${billingCycle}-${billingCycle === 'yearly' && plan.price > 0 ? Math.round(yearlyPerMonth(plan.price)) : plan.price}`}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -334,7 +350,7 @@ export default function PricingPage() {
                     {billingCycle === 'yearly' && plan.price > 0
                       ? Math.round(yearlyPerMonth(plan.price))
                       : plan.price}
-                  </motion.span>
+                  </m.span>
                   <span className="text-white/40 text-sm">/月</span>
                 </div>
                 {billingCycle === 'yearly' && plan.price > 0 && (
@@ -381,27 +397,30 @@ export default function PricingPage() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: 'pricing_click', value: 1, id: plan.id }),
-                      }).catch(() => {});
+                      }).catch(() => { });
                     } catch { /* noop */ }
                   }
                 }}
-                className={`block w-full min-h-[48px] py-4 rounded-xl font-bold text-center transition-all duration-200 games-focus-ring ${
-                  plan.popular
+                className={`block w-full min-h-[48px] py-4 rounded-xl font-bold text-center transition-all duration-200 games-focus-ring ${plan.popular
                     ? 'btn-primary text-lg shadow-lg shadow-primary-500/25 hover:scale-[1.02] hover:shadow-primary-500/40 active:scale-[0.99]'
                     : 'btn-secondary hover:bg-white/10'
-                }`}
+                  }`}
               >
-                {plan.price === 0 ? t('pricing.startFree') : plan.id === 'pro' ? t('pricing.upgradePro') : t('pricing.trial7')}
+                {plan.price === 0
+                  ? t('pricing.startFree')
+                  : plan.id === 'pro'
+                    ? (['立即升級', '開始免費試用', '解鎖所有遊戲'][ctaVariant])
+                    : t('pricing.trial7')}
               </Link>
               <p className="text-center text-[10px] text-white/30 mt-4 uppercase tracking-wider">
                 {plan.price === 0 ? t('pricing.noCard') : t('pricing.cancelSecureRefund')}
               </p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* 181–185：功能對比表（圖標 + 灰色不包含 + title 說明） */}
-        <motion.section
+        <m.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -414,17 +433,24 @@ export default function PricingPage() {
                 <tr className="border-b border-white/10">
                   <th id="pricing-col-feature" scope="col" className="p-4 font-semibold text-white/80">{t('pricing.feature')}</th>
                   <th id="pricing-col-starter" scope="col" className="p-4 font-semibold text-white/80">{t('pricing.free')}</th>
-                  <th id="pricing-col-pro" scope="col" className="p-4 font-semibold text-primary-400">{t('pricing.proLabel')}</th>
-                  <th id="pricing-col-elite" scope="col" className="p-4 font-semibold text-accent-400">{t('pricing.vip')}</th>
+                  {/* R2-184：Pro 方案對比列圖標與視覺強化 */}
+                  <th id="pricing-col-pro" scope="col" className="p-4 font-semibold text-primary-400 inline-flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary-400" aria-hidden />
+                    {t('pricing.proLabel')}
+                  </th>
+                  <th id="pricing-col-elite" scope="col" className="p-4 font-semibold text-accent-400 inline-flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-accent-400" aria-hidden />
+                    {t('pricing.vip')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON_ROWS.map((row, i) => (
-                  <motion.tr
+                  <m.tr
                     key={row.feature}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, delay: i * 0.03 }}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: i * 0.03, ease: 'easeOut' }}
                     className={`border-b border-white/5 ${i % 2 === 0 ? 'bg-white/[0.02]' : ''}`}
                     title={row.tooltip}
                   >
@@ -432,17 +458,68 @@ export default function PricingPage() {
                     <td headers="pricing-col-starter" className={`p-4 ${row.starter === '—' ? 'text-white/40' : 'text-white/70'}`}>{row.starter}</td>
                     <td headers="pricing-col-pro" className={`p-4 ${row.pro === '—' ? 'text-white/40' : 'text-white/80'}`}>{row.pro}</td>
                     <td headers="pricing-col-elite" className={`p-4 ${row.elite === '—' ? 'text-white/40' : 'text-white/80'}`}>{row.elite}</td>
-                  </motion.tr>
+                  </m.tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.section>
+
+          {/* R2-223：定價頁對比競品 — 展示 Cheersin 相比其他派對遊戲 APP 的優勢 */}
+          <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="與其他派對遊戲比較">
+            <h3 className="text-lg font-semibold text-white mb-3 text-center">為什麼選 Cheersin？</h3>
+            <ul className="text-sm text-white/80 space-y-2">
+              <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 50+ 款遊戲一鍵開房，不需下載多款 APP</li>
+              <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 品酒學院、AI 侍酒師、劇本殺一站滿足</li>
+              <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 網頁即玩，免安裝，分享連結即可加入</li>
+              <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 隱私友善，可匿名遊玩，資料可隨時刪除</li>
+            </ul>
+          </div>
+
+          {/* R2-222：Pro 專屬客服說明 */}
+          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-primary-500/10 border border-primary-500/20" role="region" aria-label="Pro 會員權益">
+            <h3 className="text-base font-semibold text-primary-300 mb-2 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" /> Pro 專屬客服
+            </h3>
+            <p className="text-sm text-white/80">
+              訂閱 Pro 或 Elite 方案即享專屬客服管道，優先回覆訂閱與技術問題；一般用戶可透過常見問題與客服表單聯繫。
+            </p>
+          </div>
+
+          {/* R2-215：定價頁即時聊天佔位 — 可接 Crisp / Tawk 或保留佔位 */}
+          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="即時諮詢">
+            <p className="text-sm text-white/70 flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-primary-400" />
+              有問題？即時客服即將上線，目前請來信 support@cheersin.app 或至
+              <Link href="/profile/support" className="text-primary-400 underline">支援中心</Link>。
+            </p>
+          </div>
+
+          {/* R2-225：分享折扣碼 — 分享帶連結/文案，後端碼可 stub */}
+          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="分享拿折扣">
+            <h3 className="text-base font-semibold text-white mb-2">分享給朋友拿折扣</h3>
+            <p className="text-sm text-white/60 mb-3">邀請好友註冊並訂閱，你們都有機會獲得專屬折扣碼（即將推出）。</p>
+            <button
+              type="button"
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? `${window.location.origin}/pricing?ref=share` : ''
+                const text = 'Cheersin 派對助手 — 50+ 款遊戲、品酒學院、劇本殺，一站搞定派對！'
+                if (typeof navigator !== 'undefined' && navigator.share) {
+                  navigator.share({ title: 'Cheersin', url, text }).catch(() => { })
+                } else {
+                  try { navigator.clipboard?.writeText(`${text} ${url}`) } catch { /* stub */ }
+                }
+              }}
+              className="min-h-[44px] px-4 rounded-xl bg-primary-500/30 text-primary-300 text-sm font-medium games-focus-ring"
+            >
+              分享連結
+            </button>
+          </div>
+        </m.section>
 
         {/* 186–187：CTA 免費試用 7 天、不滿意全額退款 — 已整合至卡片按鈕與副文案 */}
 
         {/* 188 / D59：用戶見證輪播（頭像 + 姓名 + 評價） */}
-        <motion.section
+        <m.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -450,50 +527,64 @@ export default function PricingPage() {
         >
           <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">{t('pricing.testimonials')}</h2>
           <div className="max-w-xl mx-auto overflow-hidden" style={{ perspective: '800px' }}>
-          <motion.div
-            key={testimonialIndex}
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="p-6 rounded-2xl bg-white/5 border border-white/10"
-            whileHover={{ rotateX: 2, rotateY: -2, transition: { duration: 0.2 } }}
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
-                <Image
-                  src={TESTIMONIALS[testimonialIndex].avatar}
-                  alt={TESTIMONIALS[testimonialIndex].name}
-                  fill
-                  className="object-cover"
-                  sizes="56px"
-                />
+            <m.div
+              key={testimonialIndex}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="p-6 rounded-2xl bg-white/5 border border-white/10"
+              whileHover={{ rotateX: 2, rotateY: -2, transition: { duration: 0.2 } }}
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
+                  <Image
+                    src={TESTIMONIALS[testimonialIndex].avatar}
+                    alt={TESTIMONIALS[testimonialIndex].name}
+                    fill
+                    className="object-cover"
+                    sizes="56px"
+                  />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-white text-sm">{TESTIMONIALS[testimonialIndex].name}</p>
+                  <p className="text-white/50 text-xs">{TESTIMONIALS[testimonialIndex].role}</p>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="font-bold text-white text-sm">{TESTIMONIALS[testimonialIndex].name}</p>
-                <p className="text-white/50 text-xs">{TESTIMONIALS[testimonialIndex].role}</p>
+              <p className="text-white/90 text-center mb-4">「{TESTIMONIALS[testimonialIndex].text}」</p>
+              <div className="flex justify-center gap-2 mt-4">
+                {TESTIMONIALS.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setTestimonialIndex(i)}
+                    className={`min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full transition-colors games-focus-ring p-2 ${i === testimonialIndex ? 'bg-primary-500' : 'bg-white/30'
+                      }`}
+                    aria-label={`見證 ${i + 1}`}
+                  />
+                ))}
               </div>
-            </div>
-            <p className="text-white/90 text-center mb-4">「{TESTIMONIALS[testimonialIndex].text}」</p>
-            <div className="flex justify-center gap-2 mt-4">
-              {TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setTestimonialIndex(i)}
-                  className={`min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full transition-colors games-focus-ring p-2 ${
-                    i === testimonialIndex ? 'bg-primary-500' : 'bg-white/30'
-                  }`}
-                  aria-label={`見證 ${i + 1}`}
-                />
-              ))}
-            </div>
-          </motion.div>
+            </m.div>
           </div>
-        </motion.section>
+
+          {/* R2-229：定價頁影片見證 — 嵌入位預留 */}
+          <div className="mt-8 max-w-2xl mx-auto rounded-2xl border border-white/10 bg-black/30 overflow-hidden aspect-video flex items-center justify-center" aria-label="影片見證區">
+            <p className="text-white/40 text-sm">影片見證（即將上線）</p>
+          </div>
+
+          {/* R2-213：Pro 專屬道具預覽 */}
+          <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-primary-500/20 max-w-xl mx-auto" role="region" aria-label="Pro 專屬道具預覽">
+            <p className="text-center text-primary-400/90 text-sm font-medium mb-3">Pro 專屬</p>
+            <div className="flex flex-wrap justify-center gap-4 text-white/70 text-xs">
+              <span className="inline-flex items-center gap-1.5"><Crown className="w-4 h-4 text-primary-400" aria-hidden />專屬徽章</span>
+              <span className="inline-flex items-center gap-1.5"><Star className="w-4 h-4 text-primary-400" aria-hidden />付費主題包</span>
+              <span className="inline-flex items-center gap-1.5"><MessageCircle className="w-4 h-4 text-primary-400" aria-hidden />優先客服</span>
+            </div>
+          </div>
+        </m.section>
 
         {/* E27：常見問題 id 可錨點；付費相關 FAQ 已置頂 */}
-        <motion.section
+        <m.section
           id="faq"
           aria-labelledby="faq-heading"
           initial={{ opacity: 0, y: 20 }}
@@ -530,23 +621,23 @@ export default function PricingPage() {
                   style={{ gridTemplateRows: faqOpen === i ? '1fr' : '0fr' }}
                 >
                   <div className="overflow-hidden">
-                    <motion.div
+                    <m.div
                       initial={false}
                       animate={{ opacity: faqOpen === i ? 1 : 0.6 }}
                       transition={{ duration: 0.25 }}
                       className="px-4 pb-4 text-white/70 text-sm"
                     >
                       {item.a}
-                    </motion.div>
+                    </m.div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </motion.section>
+        </m.section>
 
         {/* 191–195：PayPal / 訂閱管理入口；EXPERT_60 P1：CTA 連到 #faq */}
-        <motion.section
+        <m.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
@@ -572,10 +663,10 @@ export default function PricingPage() {
               {t('pricing.contact')}
             </a>
           </div>
-        </motion.section>
+        </m.section>
 
         {/* 196–200：團隊方案 / 企業詢價 / 預約 Demo；EXPERT_60 P0：表單前消除疑慮文案 */}
-        <motion.section
+        <m.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65 }}
@@ -659,7 +750,7 @@ export default function PricingPage() {
               </Link>
             </div>
           </form>
-        </motion.section>
+        </m.section>
 
         {/* 190：即時客服浮動按鈕 */}
         <a

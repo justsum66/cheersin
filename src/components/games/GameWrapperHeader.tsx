@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import {
   Trophy,
   Users,
@@ -35,7 +35,6 @@ import {
 import { useGameStore } from '@/store/useGameStore'
 import { usePassPhone } from './PassPhoneContext'
 import { usePunishment } from './Punishments/PunishmentContext'
-// Removed legacy context imports
 import { useGameSound } from './GameSoundProvider'
 import type { SwitchGameItem } from './GameWrapperTypes'
 
@@ -289,9 +288,9 @@ export default function GameWrapperHeader({
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] min-w-[48px] items-center games-focus-ring"
                   aria-label={soundEnabled ? '關閉音效' : '開啟音效'}
                 >
-                  <motion.span key={soundEnabled ? 'on' : 'off'} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                  <m.span key={soundEnabled ? 'on' : 'off'} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
                     {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                  </motion.span>
+                  </m.span>
                   {soundEnabled ? '音效開' : '音效關'}
                 </button>
                 <button
@@ -408,28 +407,40 @@ export default function GameWrapperHeader({
                   </div>
                 )}
                 {shareInviteUrl ? (
-                  <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
+                  <m.div
+                    className="border-t border-white/10 pt-2 mt-2 space-y-1"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } }, hidden: {} }}
+                  >
                     <p className="px-3 py-1 text-xs text-white/50">分享房間</p>
-                    <button
+                    <m.button
                       type="button"
+                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                       onClick={() => { const u = `https://line.me/R/msg/text/?${encodeURIComponent(`${shareInviteUrl}\n\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
                       aria-label="分享到 Line"
                     >
                       <span className="text-[#00B900] font-bold">LINE</span> 分享
-                    </button>
-                    <button
+                    </m.button>
+                    <m.button
                       type="button"
+                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                       onClick={() => { const u = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareInviteUrl}\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
                       aria-label="分享到 WhatsApp"
                     >
                       <span className="text-[#25D366] font-bold">WhatsApp</span> 分享
-                    </button>
-                    <button type="button" onClick={handleCopyLink} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]">
+                    </m.button>
+                    <m.button
+                      type="button"
+                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
+                      onClick={handleCopyLink}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
+                    >
                       <Share2 className="w-4 h-4" /> 複製連結
-                    </button>
-                  </div>
+                    </m.button>
+                  </m.div>
                 ) : (
                   <button type="button" onClick={() => { handleShare(); setShowSettingsMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10">
                     <Share2 className="w-4 h-4" /> 分享
@@ -517,14 +528,14 @@ export default function GameWrapperHeader({
 
       <AnimatePresence>
         {showExitConfirm && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
             onClick={() => setShowExitConfirm(false)}
           >
-            <motion.div
+            <m.div
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="exit-confirm-title"
@@ -553,21 +564,21 @@ export default function GameWrapperHeader({
                   離開
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showSwitchConfirm && pendingSwitchGameId && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
             onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
           >
-            <motion.div
+            <m.div
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="switch-confirm-title"
@@ -600,8 +611,8 @@ export default function GameWrapperHeader({
                   確定
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

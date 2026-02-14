@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { HelpCircle, RotateCcw, Trophy, Lightbulb } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -104,13 +104,13 @@ export default function RiddleGuess() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-900 via-yellow-900 to-orange-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           猜謎語
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">考驗你的智慧和想像力！</p>
 
         <GameRules 
@@ -124,7 +124,7 @@ export default function RiddleGuess() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -150,11 +150,11 @@ export default function RiddleGuess() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && currentRiddle && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -164,7 +164,7 @@ export default function RiddleGuess() {
                 <h2 className="text-2xl font-bold mb-2 text-amber-400">{t('common.turnLabel', { n: round })}</h2>
                 <p className="text-lg mb-4">
                   目前玩家：
-                  <motion.span
+                  <m.span
                     key={currentPlayerIndex}
                     animate={{ scale: [1, 1.12, 1] }}
                     transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
@@ -172,7 +172,7 @@ export default function RiddleGuess() {
                     aria-live="polite"
                   >
                     {currentPlayer}
-                  </motion.span>
+                  </m.span>
                 </p>
                 <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg p-6">
                   <Lightbulb className="w-12 h-12 mx-auto mb-4 text-amber-400" />
@@ -196,7 +196,7 @@ export default function RiddleGuess() {
                 />
                 <div className="flex gap-2 mt-4">
                   {!hintClue && (
-                    <motion.button
+                    <m.button
                       type="button"
                       onClick={revealHint}
                       className="games-touch-target flex-1 py-3 px-4 rounded-xl bg-amber-500/40 border border-amber-400/50 font-medium text-amber-100 hover:bg-amber-500/50 transition-colors"
@@ -205,7 +205,7 @@ export default function RiddleGuess() {
                       transition={reducedMotion ? undefined : { repeat: Infinity, repeatDelay: 3, duration: 0.5 }}
                     >
                       💡 提示
-                    </motion.button>
+                    </m.button>
                   )}
                   <button
                     className="games-touch-target flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-white hover:scale-105 transition-transform"
@@ -220,11 +220,11 @@ export default function RiddleGuess() {
                   還需要 {players.length - Object.keys(playerGuesses).length} 人作答
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && currentRiddle && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -248,7 +248,7 @@ export default function RiddleGuess() {
                   const isCorrect = guess.trim() === currentRiddle.answer
                   
                   return (
-                    <motion.div
+                    <m.div
                       key={player}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -266,7 +266,7 @@ export default function RiddleGuess() {
                       {guess && (
                         <p className="text-white/80">回答：{guess}</p>
                       )}
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -298,7 +298,7 @@ export default function RiddleGuess() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

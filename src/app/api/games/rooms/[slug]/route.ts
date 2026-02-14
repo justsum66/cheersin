@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
-import { SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, SLUG_PATTERN } from '@/lib/games-room'
+import { ROOM_ERROR, ROOM_MESSAGE } from '@/lib/api-error-codes'
 import { GamesRoomsPatchBodySchema } from '@/lib/api-body-schemas'
 
 /** GET: 依 slug 取得房間與玩家名單；Supabase 失敗時 dev 用 in-memory fallback；P3-59：slug 格式驗證 */
@@ -12,7 +13,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+    if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
     try {
       const supabase = createServerClient()
       /** P3-40：一次查詢房間 + 玩家，避免 N+1 */
@@ -72,7 +73,7 @@ export async function GET(
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown error'
     if (message === 'Room not found' || (e as { code?: string })?.code === 'PGRST116') {
-      return errorResponse(404, 'Room not found', { message: '找不到該房間' })
+      return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
     }
     return serverErrorResponse(e)
   }
@@ -84,29 +85,25 @@ export async function PATCH(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
-  if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, 'Invalid slug', { message: '房間代碼格式不正確' })
+  if (!slug || !SLUG_PATTERN.test(slug)) return errorResponse(400, ROOM_ERROR.INVALID_SLUG, { message: ROOM_MESSAGE.INVALID_SLUG })
   const user = await getCurrentUser()
-  if (!user?.id) return errorResponse(401, 'Unauthorized', { message: '請先登入' })
+  if (!user?.id) return errorResponse(401, ROOM_ERROR.UNAUTHORIZED, { message: ROOM_MESSAGE.LOGIN_REQUIRED })
   let body: { anonymousMode?: boolean; endRoom?: boolean }
   try {
     const raw = await request.json().catch(() => ({}))
     const parsed = GamesRoomsPatchBodySchema.safeParse(raw ?? {})
     if (!parsed.success) {
-      return errorResponse(400, 'Invalid body', { message: '請提供有效的 JSON body' })
+      return errorResponse(400, ROOM_ERROR.INVALID_BODY, { message: ROOM_MESSAGE.INVALID_JSON_BODY })
     }
     body = parsed.data
   } catch {
-    return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
+    return errorResponse(400, ROOM_ERROR.INVALID_JSON, { message: ROOM_MESSAGE.INVALID_JSON_BODY })
   }
   try {
     const supabase = createServerClient()
-    const { data: room, error: fetchErr } = await supabase
-      .from('game_rooms')
-      .select('id, host_id, settings, expires_at')
-      .eq('slug', slug)
-      .single()
-    if (fetchErr || !room) return errorResponse(404, 'Room not found', { message: '找不到該房間' })
-    if (room.host_id !== user.id) return errorResponse(403, 'Forbidden', { message: '僅房主可修改設定' })
+    const { data: room, error: fetchErr } = await getRoomBySlug<{ id: string; host_id: string | null; settings: unknown; expires_at: string | null }>(supabase, slug, 'id, host_id, settings, expires_at')
+    if (fetchErr || !room) return errorResponse(404, ROOM_ERROR.ROOM_NOT_FOUND, { message: ROOM_MESSAGE.ROOM_NOT_FOUND })
+    if (room.host_id !== user.id) return errorResponse(403, ROOM_ERROR.FORBIDDEN, { message: ROOM_MESSAGE.FORBIDDEN })
 
     if (body.endRoom === true) {
       const now = new Date().toISOString()

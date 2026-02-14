@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Wine, Mail, Lock, Send, Eye, EyeOff } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -235,7 +235,7 @@ export default function LoginPage() {
         <div className="aurora-bg" />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md relative z-10"
@@ -439,7 +439,7 @@ export default function LoginPage() {
             {t('login.noAccount')} <Link href="/register" className="text-primary-500 hover:text-primary-400 font-medium">{t('login.registerFree')}</Link>
           </p>
         </div>
-      </motion.div>
+      </m.div>
     </main>
   )
 }

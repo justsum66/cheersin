@@ -4,7 +4,7 @@
  * R2-065：翻牌動畫 — 3D 翻轉 (rotateY 0→180deg)，適用於國王遊戲等需翻牌的遊戲
  */
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 export interface FlipCardProps {
   /** 正面內容 */
@@ -35,7 +35,7 @@ export function FlipCard({
   const showBack = flipped ?? isFlipped
 
   return (
-    <motion.div
+    <m.div
       className={`relative w-full min-h-[120px] ${className}`}
       style={{ perspective: 1000 }}
       onClick={() => {
@@ -53,7 +53,7 @@ export function FlipCard({
         }
       }}
     >
-      <motion.div
+      <m.div
         className="relative w-full h-full"
         style={{ transformStyle: 'preserve-3d' }}
         animate={{ rotateY: showBack ? 180 : 0 }}
@@ -73,7 +73,7 @@ export function FlipCard({
         >
           {back}
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }

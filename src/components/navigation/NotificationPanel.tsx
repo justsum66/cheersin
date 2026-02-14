@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import { Bell } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 interface NotificationPanelProps {
   notificationsOpen: boolean
@@ -43,17 +43,17 @@ export function NotificationPanel({
         aria-label="站內通知"
         aria-expanded={notificationsOpen}
       >
-        <motion.span
+        <m.span
           animate={hasUnread && !prefersReducedMotion ? { rotate: [0, -12, 12, -8, 8, 0] } : {}}
           transition={{ repeat: Infinity, repeatDelay: 2, duration: 0.5 }}
           className="inline-flex"
         >
           <Bell className="w-5 h-5" />
-        </motion.span>
+        </m.span>
       </button>
       <AnimatePresence>
         {notificationsOpen && (
-          <motion.div
+          <m.div
             className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-auto rounded-xl bg-[#1a0a2e] border border-white/10 py-2 shadow-xl z-[60] safe-area-px"
             role="menu"
             aria-label="通知列表"
@@ -67,7 +67,7 @@ export function NotificationPanel({
             <p id="nav-notifications-empty" className="px-4 py-2 text-white/50 text-sm">
               尚無通知
             </p>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

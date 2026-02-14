@@ -3,7 +3,7 @@
  * 維度須與 Pinecone index 一致；使用 env-config 單一來源。
  * P3-34：使用 fetchWithRetry 逾時 + 指數退避重試
  */
-import { OPENROUTER_API_KEY, EMBEDDING_DIMENSION, EMBEDDING_MODEL } from './env-config'
+import { OPENROUTER_API_KEY, OPENROUTER_EMBEDDING_API_KEY, EMBEDDING_DIMENSION, EMBEDDING_MODEL } from './env-config'
 import { fetchWithRetry } from './fetch-retry'
 
 export { EMBEDDING_DIMENSION }
@@ -12,16 +12,25 @@ export const EMBEDDING_MODEL_DEFAULT = EMBEDDING_MODEL
 /** P1-19：OpenRouter embedding 逾時 15s；P3-34 可重試 5xx */
 const EMBEDDING_TIMEOUT_MS = 15_000
 
+const getEmbeddingKey = (): string => OPENROUTER_EMBEDDING_API_KEY || OPENROUTER_API_KEY
+
 export async function getEmbedding(text: string): Promise<number[] | null> {
   if (!text?.trim()) return null
-  if (!OPENROUTER_API_KEY) return null
+  const apiKey = getEmbeddingKey()
+  if (!apiKey) {
+    if (process.env.NODE_ENV === 'development') {
+      const { logger } = await import('./logger')
+      logger.warn('[embedding] OPENROUTER_EMBEDDING_API_KEY / OPENROUTER_API_KEY not set; RAG 跳過向量查詢')
+    }
+    return null
+  }
 
   try {
     const res = await fetchWithRetry('https://openrouter.ai/api/v1/embeddings', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: EMBEDDING_MODEL,

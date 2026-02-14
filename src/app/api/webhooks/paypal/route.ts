@@ -109,6 +109,38 @@ async function insertSubscriptionAudit(
   })
 }
 
+/** R2-189：付費成功後發送感謝郵件（Resend），含訂單摘要 */
+async function sendPaymentSuccessEmailIfConfigured(
+  supabase: Awaited<ReturnType<typeof createServerClientOptional>>,
+  userId: string,
+  amount: string,
+  currency: string,
+  requestId?: string | null
+): Promise<void> {
+  if (!supabase) return
+  const apiKey = process.env.RESEND_API_KEY?.trim()
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim()
+  if (!apiKey || !fromEmail) return
+  try {
+    const { data: profile } = await supabase.from('profiles').select('email').eq('id', userId).maybeSingle()
+    const to = profile?.email
+    if (!to || typeof to !== 'string') return
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: fromEmail,
+        to,
+        subject: 'Cheersin 訂閱扣款成功 — 感謝您的支持',
+        html: `<p>您的方案已成功扣款。</p><p>金額：${amount} ${currency}</p><p>感謝您支持 Cheersin！</p><p><a href="https://cheersin.app/subscription">訂閱管理</a></p>`,
+      }),
+    })
+    if (!res.ok) logApiWarn('webhooks/paypal', `Resend payment success ${res.status}`, { action: 'payment-success-email', requestId })
+  } catch (error) {
+    logApiWarn('webhooks/paypal', error instanceof Error ? error.message : String(error), { action: 'payment-success-email', requestId })
+  }
+}
+
 /** P3-65 / E88：若已設定 Resend，發送「扣款失敗，請更新付款方式」郵件 */
 async function sendPaymentFailedEmailIfConfigured(
   supabase: Awaited<ReturnType<typeof createServerClientOptional>>,
@@ -222,6 +254,7 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
       if (error) {
         logApiError('webhooks/paypal', error, { action: 'PAYMENT.SALE.COMPLETED', requestId })
       }
+      if (userId) await sendPaymentSuccessEmailIfConfigured(supabase, userId, amount, currency, requestId)
       /** SEC-17：不記錄 subscriptionId/userId，僅記錄幣別 */
       logApiWarn('webhooks/paypal', 'Payment completed', { action: currency, requestId })
       break

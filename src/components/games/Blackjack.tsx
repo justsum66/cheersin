@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Coins, RotateCcw } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -235,7 +235,7 @@ export default function Blackjack() {
   }, [])
 
   const renderCard = (c: Card, i: number, hidden?: boolean) => (
-    <motion.span
+    <m.span
       key={`${c.suit}-${c.rank}-${i}`}
       initial={{ x: -30, y: -15, opacity: 0, scale: 0.5 }}
       animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
@@ -243,7 +243,7 @@ export default function Blackjack() {
       className="inline-flex items-center justify-center w-10 h-14 rounded-md bg-white/10 border border-white/20 text-white text-sm font-mono shadow-lg"
     >
       {hidden ? '?' : `${rankLabel(c.rank)}${suitSymbol(c.suit)}`}
-    </motion.span>
+    </m.span>
   )
 
   if (phase === 'idle') {
@@ -307,7 +307,7 @@ export default function Blackjack() {
   return (
     <div className="h-full flex flex-col items-center justify-center py-4 px-4">
       <AnimatePresence>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 mb-4"
@@ -331,7 +331,7 @@ export default function Blackjack() {
               className="mt-3"
             />
           )}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
       <button
         type="button"

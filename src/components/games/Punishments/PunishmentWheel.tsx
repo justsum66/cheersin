@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m , useSpring } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameReduceMotion } from '../GameWrapper'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -11,6 +11,7 @@ import CopyResultButton from '../CopyResultButton'
 import PunishmentEffect from './PunishmentEffect'
 import PunishmentLeaderboard from './PunishmentLeaderboard'
 import PunishmentHistory from './PunishmentHistory'
+import { DrinkingAnimation } from '../DrinkingAnimation'
 import type { PunishmentItem } from './types'
 import { PUNISHMENT_LEVEL_LABEL } from './types'
 import { SUPER_PUNISHMENTS } from './presets'
@@ -18,6 +19,21 @@ import { SUPER_PUNISHMENTS } from './presets'
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const SPIN_DURATION_MS = 2800
 const SEGMENT_COUNT = 12
+const WHEEL_WEIGHTS_STORAGE_KEY = 'punishmentWheelWeights'
+const DEFAULT_WEIGHTS = Array.from({ length: SEGMENT_COUNT }, () => 1)
+
+/** R2-145: 依權重選出 segment 索引（權重 0 視為 1） */
+function weightedSegmentIndex(weights: number[]): number {
+  const w = weights.map((x) => Math.max(1, Number(x) || 1))
+  const total = w.reduce((a, b) => a + b, 0)
+  if (total <= 0) return 0
+  let r = Math.random() * total
+  for (let i = 0; i < w.length; i++) {
+    r -= w[i]
+    if (r <= 0) return i
+  }
+  return w.length - 1
+}
 
 const LEVEL_COLORS: Record<PunishmentItem['level'], string> = {
   light: 'rgba(74,222,128,0.9)',
@@ -34,6 +50,7 @@ export default function PunishmentWheel() {
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const punishment = usePunishment()
   const [phase, setPhase] = useState<'idle' | 'pick' | 'spin' | 'result'>('idle')
+  const [spinFromTo, setSpinFromTo] = useState<{ from: number; to: number } | null>(null)
   const [loserIndex, setLoserIndex] = useState<number | null>(null)
   const [result, setResult] = useState<PunishmentItem | null>(null)
   const [effectActive, setEffectActive] = useState(false)
@@ -42,12 +59,28 @@ export default function PunishmentWheel() {
   const [showHistory, setShowHistory] = useState(false)
   const [customText, setCustomText] = useState('')
   const [customLevel, setCustomLevel] = useState<PunishmentItem['level']>('medium')
+  /** R2-145：轉盤各格權重，可自訂（localStorage） */
+  const [segmentWeights, setSegmentWeights] = useState<number[]>(() => {
+    if (typeof window === 'undefined') return DEFAULT_WEIGHTS
+    try {
+      const raw = localStorage.getItem(WHEEL_WEIGHTS_STORAGE_KEY)
+      if (!raw) return DEFAULT_WEIGHTS
+      const parsed = JSON.parse(raw) as number[]
+      if (Array.isArray(parsed) && parsed.length === SEGMENT_COUNT) return parsed.map((n) => Math.max(1, Math.min(10, Number(n) || 1)))
+      return DEFAULT_WEIGHTS
+    } catch {
+      return DEFAULT_WEIGHTS
+    }
+  })
+  const [showWeightEditor, setShowWeightEditor] = useState(false)
   /** 96-100 完成確認：玩家點「我完成了」才可進入下一輪 */
   const [resultConfirmed, setResultConfirmed] = useState(false)
   const rotationRef = useRef(0)
   const spinResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** AUDIT #26：遊戲內「簡化動畫」即時反映 */
   const reducedMotion = useGameReduceMotion()
+  /** R2-041：懲罰輪盤 useSpring 物理感 — 旋轉具減速與慣性 */
+  const springRotate = useSpring(spinFromTo?.from ?? 0, { stiffness: 30, damping: 15, mass: 1.2 })
 
   /** Q3：全部｜只看非酒精（非酒精項目 id 以 na 開頭） */
   const rawItems = punishment?.items ?? []
@@ -80,15 +113,17 @@ export default function PunishmentWheel() {
   const spin = useCallback(() => {
     if (loserIndex == null || segmentItems.length === 0 || !punishment) return
     play('click')
-    setPhase('spin')
     setResult(null)
     const segmentAngle = 360 / SEGMENT_COUNT
-    const winnerSegment = Math.floor(Math.random() * SEGMENT_COUNT)
+    const winnerSegment = weightedSegmentIndex(segmentWeights)
     const fullTurns = 5 + Math.floor(Math.random() * 2)
     const toSegment = 360 - winnerSegment * segmentAngle - segmentAngle / 2
     const addDeg = 360 * fullTurns + toSegment
-    const targetRot = rotationRef.current + addDeg
+    const fromRot = rotationRef.current
+    const targetRot = fromRot + addDeg
     rotationRef.current = targetRot
+    setSpinFromTo({ from: fromRot, to: targetRot })
+    setPhase('spin')
     const useSuper = punishment.shouldTriggerSuper(loserIndex) && superItems.length > 0
     const chosen = useSuper
       ? superItems[Math.floor(Math.random() * superItems.length)]
@@ -97,6 +132,7 @@ export default function PunishmentWheel() {
     if (spinResultTimeoutRef.current) clearTimeout(spinResultTimeoutRef.current)
     spinResultTimeoutRef.current = setTimeout(() => {
       spinResultTimeoutRef.current = null
+      setSpinFromTo(null)
       play('wrong')
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100])
       setResult(chosen)
@@ -107,7 +143,12 @@ export default function PunishmentWheel() {
       setEffectActive(actuallyPunished)
       if (useSuper) punishment.resetFailCount(loserIndex)
     }, duration)
-  }, [loserIndex, segmentItems, punishment, players, useExemptionNext, reducedMotion, play, superItems])
+  }, [loserIndex, segmentItems, segmentWeights, punishment, players, useExemptionNext, reducedMotion, play, superItems])
+
+  /** R2-041：spin 時 spring 從 from 動畫到 to */
+  useEffect(() => {
+    if (spinFromTo) springRotate.set(spinFromTo.to)
+  }, [spinFromTo, springRotate])
 
   useEffect(() => {
     return () => {
@@ -199,6 +240,59 @@ export default function PunishmentWheel() {
               </button>
             ))}
           </div>
+          {/* R2-145：命運轉盤自訂選項與權重 */}
+          <div className="mt-6 w-full max-w-md">
+            <button
+              type="button"
+              onClick={() => setShowWeightEditor((v) => !v)}
+              className="text-white/60 text-sm underline games-focus-ring"
+            >
+              {showWeightEditor ? '收起' : '轉盤權重（可編輯）'}
+            </button>
+            {showWeightEditor && (
+              <div className="mt-2 p-3 rounded-xl bg-white/5 border border-white/10">
+                <p className="text-white/50 text-xs mb-2">每格權重 1～10，數字越大越容易中</p>
+                <div className="flex flex-wrap gap-2">
+                  {segmentWeights.map((w, i) => (
+                    <label key={i} className="flex items-center gap-1 text-white/80 text-sm">
+                      <span className="w-5">{i + 1}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={w}
+                        onChange={(e) => {
+                          const v = Math.max(1, Math.min(10, Number(e.target.value) || 1))
+                          setSegmentWeights((prev) => {
+                            const next = [...prev]
+                            next[i] = v
+                            try {
+                              localStorage.setItem(WHEEL_WEIGHTS_STORAGE_KEY, JSON.stringify(next))
+                            } catch { /* ignore */ }
+                            return next
+                          })
+                        }}
+                        className="w-12 rounded bg-white/10 px-1 py-1 text-center text-white border border-white/20"
+                        aria-label={`第 ${i + 1} 格權重`}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSegmentWeights(DEFAULT_WEIGHTS)
+                    try {
+                      localStorage.setItem(WHEEL_WEIGHTS_STORAGE_KEY, JSON.stringify(DEFAULT_WEIGHTS))
+                    } catch { /* ignore */ }
+                  }}
+                  className="mt-2 text-white/50 text-xs underline games-focus-ring"
+                >
+                  還原預設
+                </button>
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -233,25 +327,32 @@ export default function PunishmentWheel() {
       {phase === 'spin' && (
         <div className="w-full max-w-[280px] aspect-square rounded-full border-4 border-white/20 overflow-hidden bg-white/5 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[24px] border-l-transparent border-r-transparent border-t-white" aria-hidden />
-          <motion.div
+          <m.div
             className="w-full h-full rounded-full"
-            style={{ background: wheelGradient }}
-            initial={{ rotate: 0 }}
-            animate={{ rotate: rotationRef.current }}
-            transition={{ duration: reducedMotion ? 0.1 : SPIN_DURATION_MS / 1000, ease: 'easeOut' }}
+            style={{
+              background: wheelGradient,
+              rotate: reducedMotion ? rotationRef.current : springRotate,
+            }}
+            initial={reducedMotion ? false : undefined}
+            animate={reducedMotion ? { rotate: rotationRef.current } : undefined}
+            transition={reducedMotion ? { duration: 0.1 } : undefined}
+            aria-hidden
           />
         </div>
       )}
 
       {phase === 'result' && result && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center max-w-md"
         >
           <p className="text-white/70 mb-1">懲罰：</p>
           <p className="text-xl font-bold text-red-300 mb-2">{result.text}</p>
-          <p className="text-white/50 text-sm mb-4">{PUNISHMENT_LEVEL_LABEL[result.level]}</p>
+          <p className="text-white/50 text-sm mb-2">{PUNISHMENT_LEVEL_LABEL[result.level]}</p>
+          {!reducedMotion && !result.id.startsWith('na') && (
+            <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />
+          )}
           {loserIndex != null && (
             <CopyResultButton
               text={`懲罰轉盤：${players[loserIndex]} → ${result.text}`}
@@ -278,7 +379,7 @@ export default function PunishmentWheel() {
               下一輪
             </button>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       <div className="mt-6 flex flex-wrap gap-2 justify-center">

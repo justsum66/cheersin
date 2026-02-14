@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Volume2, VolumeX, Loader2 } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
@@ -99,7 +99,7 @@ export function PronunciationButton({
   }
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={handlePlay}
       disabled={isLoading}
@@ -117,35 +117,35 @@ export function PronunciationButton({
     >
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <motion.div
+          <m.div
             key="loading"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
           >
             <Loader2 className={`${iconSize[size]} animate-spin`} />
-          </motion.div>
+          </m.div>
         ) : error ? (
-          <motion.div
+          <m.div
             key="error"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
           >
             <VolumeX className={iconSize[size]} />
-          </motion.div>
+          </m.div>
         ) : (
-          <motion.div
+          <m.div
             key="play"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
           >
             <Volume2 className={`${iconSize[size]} ${isPlaying ? 'animate-pulse' : ''}`} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.button>
+    </m.button>
   )
 }
 

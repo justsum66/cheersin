@@ -1,9 +1,9 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { m , useReducedMotion } from 'framer-motion'
 
-/** 頁面過渡用 motion.div：直接 import 避免 next/dynamic 回傳 undefined 導致 webpack requireModule .call 崩潰（Next 15） */
-const MotionDiv = motion.div
+/** 頁面過渡用 m.div：直接 import 避免 next/dynamic 回傳 undefined 導致 webpack requireModule .call 崩潰（Next 15） */
+const MotionDiv = m.div
 
 /** 頁面過渡動畫（111）：framer-motion layout 流暢切換；A-01 prefers-reduced-motion 時關閉動畫 */
 /** Phase 1 B1.1 & B1.3: 增強頁面轉場效果，不延遲導航 */

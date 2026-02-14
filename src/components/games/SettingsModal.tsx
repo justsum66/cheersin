@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useHaptic } from '@/hooks/useHaptic'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
-import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, type FontSize } from '@/lib/games-settings'
+import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, getNonAlcoholMode, setNonAlcoholMode, type FontSize } from '@/lib/games-settings'
 
 interface SettingsModalProps {
   onClose: () => void
@@ -17,6 +17,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const { enabled: hapticEnabled, setEnabled: setHapticEnabled } = useHaptic()
   const [fontSize, setFontSizeState] = useState<FontSize>('md')
   const [reduceMotion, setReduceMotionState] = useState(false)
+  const [nonAlcoholMode, setNonAlcoholModeState] = useState(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   /** P3 無障礙：關閉時還原焦點到開啟前的觸發元素 */
   const previousActiveElementRef = useRef<HTMLElement | null>(null)
@@ -26,6 +27,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   useEffect(() => {
     setFontSizeState(getFontSize())
     setReduceMotionState(getReduceMotion())
+    setNonAlcoholModeState(getNonAlcoholMode())
   }, [])
 
   useEffect(() => {
@@ -90,8 +92,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     setReduceMotion(v)
   }
 
+  const handleNonAlcoholMode = (v: boolean) => {
+    setNonAlcoholModeState(v)
+    setNonAlcoholMode(v)
+  }
+
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -100,7 +107,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       onClick={handleClose}
     >
       {/* Phase 1 A3.2: 增強 Spring 動畫參數 */}
-      <motion.div
+      <m.div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
@@ -127,13 +134,17 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <section aria-labelledby="settings-audio-label">
             <p id="settings-audio-label" className="text-white/70 text-sm mb-2">音效</p>
             <div className="flex items-center gap-3 flex-wrap">
-              <button
+              <m.button
                 type="button"
                 onClick={toggleSound}
+                key={soundEnabled ? 'on' : 'off'}
+                initial={false}
+                animate={soundEnabled ? { scale: [1, 1.08, 1], boxShadow: ['0 0 0 0 rgba(139,0,0,0)', '0 0 0 8px rgba(139,0,0,0.2)', '0 0 0 0 rgba(139,0,0,0)'] } : {}}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
                 className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${soundEnabled ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
               >
                 {soundEnabled ? '開' : '關'}
-              </button>
+              </m.button>
               {soundEnabled && (
                 <div className="flex-1 min-w-[120px] flex items-center gap-2">
                   <span className="text-white/50 text-xs w-8">音量</span>
@@ -196,8 +207,19 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               {hapticEnabled ? '開' : '關'}
             </button>
           </section>
+          {/* R2-151：全遊戲非酒精模式 — 懲罰文案改為「做一下」等 */}
+          <section aria-labelledby="settings-non-alcohol-label">
+            <p id="settings-non-alcohol-label" className="text-white/70 text-sm mb-2">非酒精模式（懲罰改為「做一下」）</p>
+            <button
+              type="button"
+              onClick={() => handleNonAlcoholMode(!nonAlcoholMode)}
+              className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${nonAlcoholMode ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
+            >
+              {nonAlcoholMode ? '開' : '關'}
+            </button>
+          </section>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }

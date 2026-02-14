@@ -4,7 +4,7 @@
  * R2-091：全局 Tooltip 組件 — 出現時從觸發元素方向滑入
  */
 import { useState, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right'
 
@@ -52,7 +52,7 @@ export function Tooltip({ children, content, placement = 'top', delayMs = 200, c
       {children}
       <AnimatePresence>
         {visible && (
-          <motion.div
+          <m.div
             role="tooltip"
             initial={{ opacity: 0, x: from.x ?? 0, y: from.y ?? 0 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -66,7 +66,7 @@ export function Tooltip({ children, content, placement = 'top', delayMs = 200, c
             `}
           >
             {content}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

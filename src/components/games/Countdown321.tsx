@@ -2,7 +2,7 @@
 
 /** R2-040：遊戲開始 3-2-1 倒計時 overlay，結束後呼叫 onComplete */
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 
 const STEPS = [3, 2, 1] as const
 const STEP_MS = 800
@@ -41,7 +41,7 @@ export function Countdown321({ onComplete, skip = false }: Countdown321Props) {
     >
       <AnimatePresence mode="wait">
         {step < STEPS.length ? (
-          <motion.span
+          <m.span
             key={STEPS[step]}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -50,9 +50,9 @@ export function Countdown321({ onComplete, skip = false }: Countdown321Props) {
             className="text-8xl md:text-9xl font-display font-bold text-white drop-shadow-lg tabular-nums"
           >
             {STEPS[step]}
-          </motion.span>
+          </m.span>
         ) : (
-          <motion.span
+          <m.span
             key="go"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -60,7 +60,7 @@ export function Countdown321({ onComplete, skip = false }: Countdown321Props) {
             className="text-5xl md:text-6xl font-display font-bold text-primary-400 drop-shadow-lg"
           >
             開始！
-          </motion.span>
+          </m.span>
         )}
       </AnimatePresence>
     </div>

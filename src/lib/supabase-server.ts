@@ -1,14 +1,14 @@
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js'
 import { promises as dns } from 'node:dns'
-import { normalizeEnv, normalizeUrl } from './env'
+import { NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from './env-config'
 
 /** P3-33：模組級 lazy 單例，減少每請求新建連線（serverless 仍可能每 isolate 一實例）
  * P2-304：生產環境不輸出 debug；若需除錯可設 SUPABASE_DEBUG=1 並在 createSupabaseClient options 啟用 logLevel: 'debug' */
 let serverClientSingleton: SupabaseClient | null = null
 
 function createNewServerClient(): SupabaseClient {
-    const supabaseUrl = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
-    const supabaseServiceKey = normalizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY || '')
+    const supabaseUrl = NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
         throw new Error('Missing Supabase environment variables')
@@ -50,8 +50,8 @@ export async function testSupabaseConnection(): Promise<{
     message: string
     tables?: string[]
 }> {
-    const supabaseUrl = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
-    const supabaseServiceKey = normalizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY || '')
+    const supabaseUrl = NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
         return { success: false, message: 'Missing Supabase environment variables' }

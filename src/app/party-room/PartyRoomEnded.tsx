@@ -4,7 +4,7 @@
  * PR-16：派對房「房間已結束」狀態 — 本局統計、建立新房間/返回大廳
  */
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Users, Sparkles, Wine } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 
@@ -20,7 +20,7 @@ export function PartyRoomEnded({ roomNotFound, cheersCount }: PartyRoomEndedProp
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key="room-ended"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -38,7 +38,7 @@ export function PartyRoomEnded({ roomNotFound, cheersCount }: PartyRoomEndedProp
         <p className="text-white/60 text-center max-w-md">
           {roomNotFound ? t('partyRoom.roomNotFoundDesc') : t('partyRoom.roomEndedDesc')}
         </p>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, duration: 0.25 }}
@@ -63,11 +63,11 @@ export function PartyRoomEnded({ roomNotFound, cheersCount }: PartyRoomEndedProp
               {t('partyRoom.backToLobby')}
             </Link>
           </div>
-        </motion.div>
+        </m.div>
         <Link href="/" className="text-white/50 hover:text-white/80 text-sm">
           {t('partyRoom.backHome')}
         </Link>
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   )
 }

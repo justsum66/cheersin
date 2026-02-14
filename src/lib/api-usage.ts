@@ -1,6 +1,7 @@
 /**
  * API 使用記錄：Token 追蹤（96）、每日呼叫量/成功率/延遲（99）
  * 儲存：in-memory（必寫）+ 可選 Supabase api_calls；P2-28：寫入失敗時 log
+ * 命名規範：endpoint 如 "chat"；model 如 "groq/llama-3.3-70b-versatile"、"nvidia-nim/llama"、"openrouter/fallback"、"all-failed"、"stream"。
  */
 
 import { createServerClientOptional } from './supabase-server'

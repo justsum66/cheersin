@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Brain, RotateCcw, Trophy } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -98,11 +98,11 @@ export default function MemoryGame() {
       </div>
 
       {cards.length === 0 ? (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={initGame} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={initGame} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-xl games-focus-ring">
           開始遊戲！
-        </motion.button>
+        </m.button>
       ) : gameOver ? (
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
           <p className="text-yellow-400 font-bold text-2xl">遊戲結束！</p>
           <p className="text-white mt-2">贏家：<span className="text-cyan-400 font-bold">{getWinner()}</span></p>
@@ -116,14 +116,14 @@ export default function MemoryGame() {
             <button onClick={initGame} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">再玩一次</button>
             <CopyResultButton text={`記憶大考驗：${getWinner()} 獲勝！\n${Object.entries(scores).map(([p, s]) => `${p}: ${s}對`).join('\n')}`} />
           </div>
-        </motion.div>
+        </m.div>
       ) : (
         <div className="flex flex-col items-center gap-4 w-full max-w-sm">
           <p className="text-white/70">輪到 <span className="text-cyan-400 font-bold">{currentPlayer}</span></p>
           
           <div className="grid grid-cols-4 gap-2">
             {cards.map((card, i) => (
-              <motion.button
+              <m.button
                 key={i}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => flipCard(i)}
@@ -135,7 +135,7 @@ export default function MemoryGame() {
                 disabled={card.flipped || card.matched || checking}
               >
                 {card.flipped || card.matched ? card.emoji : '?'}
-              </motion.button>
+              </m.button>
             ))}
           </div>
 

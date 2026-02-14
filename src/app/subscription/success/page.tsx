@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { CheckCircle, XCircle, Sparkles, Bot, Loader2 } from 'lucide-react';
 import { WineGlassLoading } from '@/components/ui/WineGlassLoading';
@@ -98,7 +98,7 @@ function SuccessContent() {
   }, [status, planType]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       className="glass rounded-3xl p-8 md:p-12 max-w-md w-full text-center relative overflow-hidden"
@@ -122,16 +122,16 @@ function SuccessContent() {
 
         {status === 'success' && (
           <>
-            <motion.div
+            <m.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
               className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30"
             >
               <CheckCircle className="w-12 h-12 text-white" />
-            </motion.div>
+            </m.div>
             
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -142,16 +142,16 @@ function SuccessContent() {
               </p>
               {nextBillingDate && (
                 <p className="text-white/60 text-sm mb-8">
-                  下次扣款日：<motion.span initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, duration: 0.25 }} className="font-medium text-white/80">{nextBillingDate}</motion.span>
+                  下次扣款日：<m.span initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, duration: 0.25 }} className="font-medium text-white/80">{nextBillingDate}</m.span>
                 </p>
               )}
               {!nextBillingDate && (
                 <p className="text-white/60 text-sm mb-8">下次扣款日請至訂閱管理查看</p>
               )}
-            </motion.div>
+            </m.div>
 
             {/* P0：單一主 CTA「開始測驗」，次要改為 btn-secondary 或文字連結 */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
@@ -222,16 +222,16 @@ function SuccessContent() {
                   服務條款
                 </Link>。
               </p>
-            </motion.div>
+            </m.div>
 
             {/* Confetti effect */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="absolute inset-0 pointer-events-none"
             >
               {[...Array(12)].map((_, i) => (
-                <motion.div
+                <m.div
                   key={i}
                   initial={{ 
                     y: -20, 
@@ -254,20 +254,20 @@ function SuccessContent() {
                   }`}
                 />
               ))}
-            </motion.div>
+            </m.div>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <motion.div
+            <m.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring' }}
               className="w-20 h-20 mx-auto mb-6 bg-red-500/20 rounded-full flex items-center justify-center"
             >
               <XCircle className="w-10 h-10 text-red-500" />
-            </motion.div>
+            </m.div>
             
             <h1 className="text-2xl font-bold text-white mb-2">訂閱處理失敗</h1>
             <p className="text-white/60 mb-8">
@@ -292,7 +292,7 @@ function SuccessContent() {
           </>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

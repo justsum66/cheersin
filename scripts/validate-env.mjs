@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
  * 驗證 .env.local 格式與前綴（不輸出完整 key）。
- * 執行：node scripts/validate-env.mjs
+ * 執行：npm run validate-env 或 node scripts/validate-env.mjs
+ * 整合：prestart 會自動執行（npm start 前）。
+ * 必填：GROQ_API_KEY, OPENROUTER_API_KEY, Supabase, Pinecone。
+ * 選填：NVIDIA_NIM_API_KEY, CHAT_PRIMARY, CHAT_FALLBACK_ORDER, CHAT_TIMEOUT_MS；
+ *       專用 key（見 .env.example）：OPENROUTER_EMBEDDING_*, GROQ_AUTO_TAG_*, GROQ_PARTY_DJ_*, 等。
  */
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
@@ -41,6 +45,9 @@ const checks = [
   { key: 'SUPABASE_SERVICE_ROLE_KEY', prefix: 'eyJ', minLen: 100, name: 'Supabase service key' },
   { key: 'PINECONE_API_URL', prefix: 'https://', contains: '.pinecone.io', noTrailingSlash: true, name: 'Pinecone URL' },
   { key: 'PINECONE_API_KEY', minLen: 20, name: 'Pinecone key' },
+  { key: 'CHAT_PRIMARY', oneOf: ['groq', 'nim', 'openrouter'], name: 'Chat primary provider', optional: true },
+  { key: 'CHAT_FALLBACK_ORDER', name: 'Chat fallback order (comma-separated)', optional: true },
+  { key: 'CHAT_TIMEOUT_MS', name: 'Chat timeout (ms)', optional: true, minNum: 1000 },
 ]
 
 if (!existsSync(envPath)) {
@@ -70,6 +77,17 @@ for (const c of checks) {
   if (c.minLen && val.length < c.minLen) {
     errors.push(`${c.key}: too short (${val.length} chars), expected >= ${c.minLen}`)
     continue
+  }
+  if (c.oneOf && !c.oneOf.includes(val.toLowerCase())) {
+    errors.push(`${c.key}: expected one of ${c.oneOf.join(', ')}, got ${mask(val)}`)
+    continue
+  }
+  if (c.minNum !== undefined) {
+    const n = parseInt(val, 10)
+    if (!Number.isFinite(n) || n < c.minNum) {
+      errors.push(`${c.key}: expected number >= ${c.minNum}, got ${val}`)
+      continue
+    }
   }
   if (c.noTrailingSlash && val.endsWith('/')) {
     errors.push(`${c.key}: remove trailing slash`)

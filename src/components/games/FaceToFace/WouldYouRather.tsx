@@ -1,43 +1,59 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from '../GameRules'
 import CopyResultButton from '../CopyResultButton'
+import { useGameStore } from '@/store/useGameStore'
+import CoupleTest from '../CoupleTest'
+import { getQuestionsByCategory, type WouldYouRatherItem } from '@/lib/would-you-rather'
+import { Loader2, AlertTriangle } from 'lucide-react'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
-const CHOICES: [string, string][] = [
-  ['一輩子不喝酒', '一輩子不吃甜食'],
-  ['永遠只能說真話', '永遠只能說謊話'],
-  ['每天早起運動', '每天熬夜追劇'],
-  ['只能用手機不能電腦', '只能用電腦不能手機'],
-  ['一週不洗澡', '一週不換衣服'],
-  ['失去味覺', '失去嗅覺'],
-  ['跟討厭的人同桌吃飯', '跟討厭的人一起旅行'],
-  ['一輩子單身', '一輩子窮'],
-  ['只能喝啤酒', '只能喝烈酒'],
-  ['公開社群帳號', '公開銀行餘額'],
-]
-
-/** 終極二選一：顯示兩難選擇，每人選 A 或 B，選少數的人喝。 */
+/** 終極二選一：顯示兩難選擇，每人選 A 或 B，選少數的人喝。R2-155：18+ 題庫需 Pro。 */
 export default function WouldYouRather() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  // Phase 2: Game Mode Consolidation
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'couples') {
+    return <CoupleTest />
+  }
+
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [phase, setPhase] = useState<'idle' | 'choose' | 'result'>('idle')
-  const [pair, setPair] = useState<[string, string] | null>(null)
+  const [pair, setPair] = useState<WouldYouRatherItem | null>(null)
   const [choices, setChoices] = useState<Record<number, 'A' | 'B'>>({})
+
+  const [pool, setPool] = useState<WouldYouRatherItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      try {
+        const category = selectedMode === 'spicy' ? 'adult' : 'normal'
+        const data = await getQuestionsByCategory(category)
+        setPool(data)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [selectedMode])
 
   const startRound = useCallback(() => {
     play('click')
-    const p = CHOICES[Math.floor(Math.random() * CHOICES.length)]
+    if (pool.length === 0) return
+    const p = pool[Math.floor(Math.random() * pool.length)]
     setPair(p)
     setChoices({})
     setPhase('choose')
-  }, [play])
+  }, [play, pool])
 
   const setChoice = useCallback((playerIndex: number, c: 'A' | 'B') => {
     setChoices((prev) => ({ ...prev, [playerIndex]: c }))
@@ -62,6 +78,44 @@ export default function WouldYouRather() {
 
   const allChosen = Object.keys(choices).length >= players.length
 
+  const [showWarning, setShowWarning] = useState(true)
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 text-white animate-spin mb-4" />
+        <p className="text-white/50">載入題目中...</p>
+      </div>
+    )
+  }
+
+  if (selectedMode === 'spicy' && showWarning) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px">
+        <m.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="flex flex-col items-center gap-6 max-w-md text-center"
+        >
+          <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
+            <AlertTriangle className="w-10 h-10 text-red-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">18+ 成人內容警告</h2>
+          <p className="text-white/70">
+            此遊戲包含成人向內容，僅限 18 歲以上玩家參與。
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowWarning(false)}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold games-focus-ring"
+          >
+            我已滿 18 歲，繼續
+          </button>
+        </m.div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="終極二選一">
       <GameRules
@@ -70,37 +124,35 @@ export default function WouldYouRather() {
       <p className="text-white/50 text-sm mb-2 text-center">終極二選一</p>
 
       {phase === 'idle' && (
-        <motion.button
+        <m.button
           type="button"
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold games-focus-ring"
           onClick={startRound}
           whileTap={{ scale: 0.98 }}
         >
           抽題
-        </motion.button>
+        </m.button>
       )}
 
       {phase === 'choose' && pair && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md w-full">
           <p className="text-white/70 mb-4 font-medium">你會選哪一個？</p>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <button
               type="button"
-              className={`min-h-[48px] px-4 py-3 rounded-xl border-2 text-left text-sm font-medium transition-colors games-focus-ring ${
-                choices[0] === 'A' ? 'border-primary-500 bg-primary-500/20 text-white' : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
-              }`}
-              onClick={() => {}}
+              className={`min-h-[48px] px-4 py-3 rounded-xl border-2 text-left text-sm font-medium transition-colors games-focus-ring ${choices[0] === 'A' ? 'border-primary-500 bg-primary-500/20 text-white' : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
+                }`}
+              onClick={() => { }}
             >
-              A. {pair[0]}
+              A. {pair.a}
             </button>
             <button
               type="button"
-              className={`min-h-[48px] px-4 py-3 rounded-xl border-2 text-left text-sm font-medium transition-colors games-focus-ring ${
-                choices[0] === 'B' ? 'border-primary-500 bg-primary-500/20 text-white' : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
-              }`}
-              onClick={() => {}}
+              className={`min-h-[48px] px-4 py-3 rounded-xl border-2 text-left text-sm font-medium transition-colors games-focus-ring ${choices[0] === 'B' ? 'border-primary-500 bg-primary-500/20 text-white' : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
+                }`}
+              onClick={() => { }}
             >
-              B. {pair[1]}
+              B. {pair.b}
             </button>
           </div>
           <p className="text-white/40 text-xs mb-2">每人輪流選 A 或 B（或由主持人代選）</p>
@@ -133,25 +185,25 @@ export default function WouldYouRather() {
           >
             揭曉
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {phase === 'result' && pair && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md"
           >
-            <p className="text-white/70 mb-2">A：{pair[0]}（{countA} 人）</p>
-            <p className="text-white/70 mb-4">B：{pair[1]}（{countB} 人）</p>
+            <p className="text-white/70 mb-2">A：{pair.a}（{countA} 人）</p>
+            <p className="text-white/70 mb-4">B：{pair.b}（{countB} 人）</p>
             {minority ? (
               <p className="text-red-400 font-bold mb-4">選{minority}的人喝！</p>
             ) : (
               <p className="text-green-400 font-bold mb-4">平手，大家安全</p>
             )}
             <CopyResultButton
-              text={minority ? `終極二選一：A ${pair[0]}（${countA}人）B ${pair[1]}（${countB}人）選${minority}的人喝` : `終極二選一：A ${pair[0]} B ${pair[1]} 平手大家安全`}
+              text={minority ? `終極二選一：A ${pair.a}（${countA}人）B ${pair.b}（${countB}人）選${minority}的人喝` : `終極二選一：A ${pair.a} B ${pair.b} 平手大家安全`}
               className="mb-4 games-focus-ring"
             />
             <button
@@ -161,7 +213,7 @@ export default function WouldYouRather() {
             >
               下一題
             </button>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
     </div>

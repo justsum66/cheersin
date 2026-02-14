@@ -5,7 +5,7 @@ import { QuizPageJsonLd } from '@/components/quiz/QuizPageJsonLd'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
 
-/** E50：關鍵頁 meta title/description 優化 — 含品酒、酒關鍵字 */
+/** E50：關鍵頁 meta title/description 優化 — 含品酒、酒關鍵字。Quiz 頁 20 項優化 #1：首屏關鍵區由 page intro 保持輕量不阻塞 CTA。#2：OG 圖由同路由 opengraph-image 自動產生，以下補齊 images 以利分享預覽。 */
 export const metadata: Metadata = {
   title: '靈魂酒測 | Cheersin — 30 秒測出你的命定酒款',
   description: '品酒測驗：30 秒結合星座與感官偏好，取得個人化酒款分析與推薦。葡萄酒、威士忌、清酒、派對遊戲一站滿足。',
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     title: '靈魂酒測 | Cheersin — 品酒測驗',
     description: '30 秒發現你的靈魂之酒',
     url: `${BASE}/quiz`,
+    images: [{ url: `${BASE}/quiz/opengraph-image`, width: 1200, height: 630, alt: '靈魂酒測 | Cheersin' }],
   },
 }
 

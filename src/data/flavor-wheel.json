@@ -1,0 +1,67 @@
+{
+  "categories": [
+    {
+      "id": "fruit",
+      "name": "果香",
+      "color": "#e74c3c",
+      "flavors": [
+        { "id": "citrus", "name": "柑橘", "description": "檸檬、萊姆、葡萄柚等，常見於白酒與啤酒。" },
+        { "id": "berry", "name": "漿果", "description": "草莓、黑醋栗、黑莓等，紅酒與部分威士忌常見。" },
+        { "id": "tropical", "name": "熱帶水果", "description": "百香果、芒果、鳳梨，常見於長相思與新世界白酒。" },
+        { "id": "stone-fruit", "name": "核果", "description": "桃子、杏桃、櫻桃，常見於夏多內與黑皮諾。" },
+        { "id": "dried-fruit", "name": "乾果", "description": "葡萄乾、無花果、蜜棗，常見於加烈酒與雪莉桶威士忌。" }
+      ]
+    },
+    {
+      "id": "floral",
+      "name": "花香",
+      "color": "#9b59b6",
+      "flavors": [
+        { "id": "white-flower", "name": "白花", "description": "忍冬、洋槐、白花，常見於雷司令與灰皮諾。" },
+        { "id": "rose", "name": "玫瑰", "description": "玫瑰、紫羅蘭，常見於黑皮諾與部分白酒。" },
+        { "id": "elderflower", "name": "接骨木花", "description": "接骨木花、椴花，常見於麝香與部分氣泡酒。" }
+      ]
+    },
+    {
+      "id": "spice",
+      "name": "香料",
+      "color": "#d35400",
+      "flavors": [
+        { "id": "vanilla", "name": "香草", "description": "來自橡木桶，常見於經桶陳的紅白酒與威士忌。" },
+        { "id": "pepper", "name": "胡椒", "description": "黑胡椒、白胡椒，常見於希哈與部分隆河酒。" },
+        { "id": "cinnamon", "name": "肉桂", "description": "肉桂、丁香，常見於加烈酒與雪莉桶。" },
+        { "id": "clove", "name": "丁香", "description": "丁香味，常見於桶陳酒款。" }
+      ]
+    },
+    {
+      "id": "earth",
+      "name": "土石／礦物",
+      "color": "#7f8c8d",
+      "flavors": [
+        { "id": "mineral", "name": "礦物", "description": "打火石、濕石頭，常見於夏布利與雷司令。" },
+        { "id": "mushroom", "name": "菇菌", "description": "森林地表、松露，常見於陳年勃艮第。" },
+        { "id": "leather", "name": "皮革", "description": "皮革、煙燻，常見於陳年紅酒與雪莉。" }
+      ]
+    },
+    {
+      "id": "oak",
+      "name": "橡木／桶味",
+      "color": "#8b4513",
+      "flavors": [
+        { "id": "vanilla-oak", "name": "香草橡木", "description": "美國桶常見，香草、椰子感。" },
+        { "id": "toast", "name": "烤麵包", "description": "烘烤橡木、奶油，常見於香檳與桶陳白酒。" },
+        { "id": "smoke", "name": "煙燻", "description": "泥煤、煙燻，威士忌與部分自然酒。" }
+      ]
+    },
+    {
+      "id": "sweet",
+      "name": "甜感／糖",
+      "color": "#f1c40f",
+      "flavors": [
+        { "id": "honey", "name": "蜂蜜", "description": "蜂蜜、蜜香，常見於貴腐與部分白酒。" },
+        { "id": "caramel", "name": "焦糖", "description": "焦糖、太妃糖，常見於雪莉桶威士忌與加烈酒。" },
+        { "id": "chocolate", "name": "巧克力", "description": "黑巧克力、可可，常見於濃郁紅酒與波特。" }
+      ]
+    }
+  ]
+}

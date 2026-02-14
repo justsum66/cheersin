@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Wine, RotateCcw, Trophy, Sparkles, GlassWater } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
@@ -143,13 +143,13 @@ export default function CocktailMix() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-900 via-orange-900 to-red-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           調酒大師
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">考驗你的調酒知識！</p>
 
         <GameRules 
@@ -164,7 +164,7 @@ export default function CocktailMix() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -190,11 +190,11 @@ export default function CocktailMix() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && currentCocktail && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -213,14 +213,14 @@ export default function CocktailMix() {
                 <p className="text-lg mb-4">請選擇調酒配方（可多選）：</p>
                 <div className="grid grid-cols-2 gap-3">
                   {allIngredients.map((ingredient) => (
-                    <motion.button
+                    <m.button
                       key={ingredient}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center border border-white/20 hover:border-amber-400/50 transition-all duration-300"
                     >
                       {ingredient}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
               </div>
@@ -230,11 +230,11 @@ export default function CocktailMix() {
                   還需要 {players.length - Object.keys(playerGuesses).length} 人作答
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && currentCocktail && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -266,7 +266,7 @@ export default function CocktailMix() {
                   const isCorrect = accuracy >= 80
                   
                   return (
-                    <motion.div
+                    <m.div
                       key={player}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -295,7 +295,7 @@ export default function CocktailMix() {
                           </span>
                         ))}
                       </div>
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -327,7 +327,7 @@ export default function CocktailMix() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

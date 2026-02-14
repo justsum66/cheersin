@@ -11,6 +11,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useUserStore } from '@/store/useUserStore'
 import { usePartyStore } from '@/store/usePartyStore'
 import { useRouter } from 'next/navigation'
+import { v4 as uuidv4 } from 'uuid'
 import { useTranslation } from '@/contexts/I18nContext'
 
 type Phase = { phase: string; durationMin: number; gameIds: string[]; transitionText: string }
@@ -212,12 +213,11 @@ const PartyDJPlanResult = memo(function PartyDJPlanResult({
           </button>
         )}
         <button
-          ref={startPartyRef as any}
+          ref={startPartyRef as unknown as React.RefObject<HTMLButtonElement | null>}
           type="button"
           onClick={() => {
             // Generate ID/Code and set store
-            const { v4 } = require('uuid')
-            const roomId = v4()
+            const roomId = uuidv4()
             const roomCode = roomId.slice(0, 6).toUpperCase()
             // We need to import usePartyStore to use it, but we are in a memo component.
             // Best to pass a handler from parent or access store here if safe.

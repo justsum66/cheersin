@@ -4,6 +4,7 @@
  * GET ?random=1|5 或 ?search=xxx 或 ?by_city=xxx
  */
 import { NextResponse } from 'next/server'
+import { errorResponse } from '@/lib/api-response'
 
 const BASE = 'https://api.openbrewerydb.org/v1/breweries'
 
@@ -41,15 +42,12 @@ export async function GET(request: Request) {
     }
     const res = await fetch(url, { next: { revalidate: 300 } })
     if (!res.ok) {
-      return NextResponse.json({ error: 'Brewery API error' }, { status: 502 })
+      return errorResponse(502, 'UPSTREAM_ERROR', { message: 'Brewery API error' })
     }
     const data = await res.json()
     const list = Array.isArray(data) ? data : [data]
     return NextResponse.json({ breweries: list, source: 'openbrewerydb.org' })
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Fetch failed' },
-      { status: 502 }
-    )
+    return errorResponse(502, 'UPSTREAM_ERROR', { message: e instanceof Error ? e.message : 'Fetch failed' })
   }
 }

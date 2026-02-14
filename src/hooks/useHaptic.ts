@@ -92,4 +92,3 @@ export function useHaptic() {
   return { vibrate, cancel, hasSupport: hasHapticSupport(), enabled, setEnabled }
 }
 
-export default useHaptic

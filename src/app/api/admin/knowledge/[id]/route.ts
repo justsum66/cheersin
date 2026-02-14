@@ -8,7 +8,9 @@ import { createServerClient } from '@/lib/supabase-server'
 import { getEmbedding } from '@/lib/embedding'
 import { upsertVectors, deleteVectors } from '@/lib/pinecone'
 import { isAdminRequest } from '@/lib/admin-auth'
-import { serverErrorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { ADMIN_ERROR, ADMIN_MESSAGE } from '@/lib/api-error-codes'
+import { ADMIN_SECRET } from '@/lib/env-config'
 import { logger } from '@/lib/logger'
 
 const NAMESPACE_KNOWLEDGE = 'knowledge'
@@ -16,7 +18,7 @@ const NAMESPACE_KNOWLEDGE = 'knowledge'
 function isAdmin(request: NextRequest): boolean {
   return isAdminRequest(
     request.headers.get('x-admin-secret'),
-    process.env.ADMIN_SECRET,
+    ADMIN_SECRET,
     process.env.NODE_ENV === 'development'
   )
 }
@@ -26,10 +28,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   const { id } = await params
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  if (!id) return errorResponse(400, ADMIN_ERROR.ID_REQUIRED, { message: ADMIN_MESSAGE.ID_REQUIRED })
   try {
     const body = (await request.json()) as import('@/types/api-bodies').AdminKnowledgePatchBody
     const supabase = createServerClient()
@@ -39,7 +41,7 @@ export async function PUT(
       .eq('id', id)
       .single()
     if (fetchErr || !existing) {
-      return NextResponse.json({ error: 'Doc not found' }, { status: 404 })
+      return errorResponse(404, ADMIN_ERROR.NOT_FOUND, { message: ADMIN_MESSAGE.DOC_NOT_FOUND })
     }
     const title = body.title ?? existing.title
     const course_id = body.course_id ?? existing.course_id
@@ -47,7 +49,7 @@ export async function PUT(
     const content = body.content ?? existing.content
     const embedding = await getEmbedding(content.slice(0, 8000))
     if (!embedding?.length) {
-      return NextResponse.json({ error: 'Embedding failed' }, { status: 500 })
+      return errorResponse(500, ADMIN_ERROR.EMBEDDING_FAILED, { message: ADMIN_MESSAGE.EMBEDDING_FAILED })
     }
     const vectorId = existing.vector_id ?? `admin-${id}-${Date.now()}`
     if (existing.vector_id) {
@@ -76,10 +78,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!isAdmin(_request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(401, ADMIN_ERROR.UNAUTHORIZED, { message: ADMIN_MESSAGE.UNAUTHORIZED })
   }
   const { id } = await params
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  if (!id) return errorResponse(400, ADMIN_ERROR.ID_REQUIRED, { message: ADMIN_MESSAGE.ID_REQUIRED })
   try {
     const supabase = createServerClient()
     const { data: existing, error: fetchErr } = await supabase
@@ -88,7 +90,7 @@ export async function DELETE(
       .eq('id', id)
       .single()
     if (fetchErr || !existing) {
-      return NextResponse.json({ error: 'Doc not found' }, { status: 404 })
+      return errorResponse(404, ADMIN_ERROR.NOT_FOUND, { message: ADMIN_MESSAGE.DOC_NOT_FOUND })
     }
     if (existing.vector_id) {
       await deleteVectors([existing.vector_id], NAMESPACE_KNOWLEDGE)

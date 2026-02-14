@@ -2,6 +2,7 @@
 
 import { CourseProTrialGate } from '@/components/CourseProTrialGate'
 import { LearnCourseContent } from '@/components/learn/LearnCourseContent'
+import { CourseDiscussions } from '@/components/learn/CourseDiscussions'
 import type { Chapter } from '@/lib/courses'
 
 /** 直接 import 避免 webpack requireModule/call chunk 載入錯誤 */
@@ -28,6 +29,7 @@ export function CoursePageClient({ courseId, free, title, description, learningO
         free={free}
         chapters={chapters}
       />
+      <CourseDiscussions courseId={courseId} />
     </CourseProTrialGate>
   )
 }

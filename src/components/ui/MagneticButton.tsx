@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
+import { m , useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
 
 type El = 'button' | 'span' | 'div'
 
@@ -36,7 +36,7 @@ export function MagneticButton<T extends El = 'button'>({
     y.set(0)
   }
 
-  const Comp = motion[as] as typeof motion.button
+  const Comp = m[as] as typeof m.button
   return (
     <Comp
       ref={ref as React.Ref<HTMLButtonElement>}

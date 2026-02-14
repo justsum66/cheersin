@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Lock, RotateCcw, Send } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -112,27 +112,27 @@ export default function SecretConfession() {
       {!currentPrompt ? (
         <div className="text-center">
           <p className="text-white/70 mb-4">輪到 <span className="text-rose-400 font-bold">{confessor}</span> 告白</p>
-          <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xl games-focus-ring">
+          <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xl games-focus-ring">
             抽告白題目
-          </motion.button>
+          </m.button>
         </div>
       ) : !confessed ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <p className="text-white/50">只給 <span className="text-rose-400">{confessor}</span> 看</p>
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 border border-rose-500/30 text-center"
           >
             <p className="text-white text-lg">{currentPrompt}</p>
-          </motion.div>
-          <motion.button
+          </m.div>
+          <m.button
             whileTap={{ scale: 0.96 }}
             onClick={makeConfession}
             className="flex items-center gap-2 px-8 py-4 rounded-xl bg-rose-500 text-white font-bold games-focus-ring"
           >
             <Send className="w-5 h-5" /> 我說完了
-          </motion.button>
+          </m.button>
         </div>
       ) : correctGuess === null ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md text-center">
@@ -151,7 +151,7 @@ export default function SecretConfession() {
           </div>
         </div>
       ) : (
-        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+        <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
           {correctGuess ? (
             <p className="text-emerald-400 font-bold text-xl">有人猜對了！猜錯的人喝酒！</p>
           ) : (
@@ -162,7 +162,7 @@ export default function SecretConfession() {
             <button onClick={nextRound} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一輪</button>
             <CopyResultButton text={`禁忌告白：${currentPrompt}\n告白者：${confessor}`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       <button onClick={resetGame} className="absolute bottom-4 right-4 p-2 rounded-full bg-white/10 text-white/50 games-focus-ring">

@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { usePassPhone } from './PassPhoneContext'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const INTERVAL_OPTIONS = [
@@ -19,6 +21,7 @@ const INTERVAL_OPTIONS = [
 export default function CountdownToast() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const passPhone = usePassPhone()
   const [intervalOption, setIntervalOption] = useState<'short' | 'long'>('long')
@@ -139,14 +142,14 @@ export default function CountdownToast() {
               </button>
             ))}
           </div>
-          <motion.button
+          <m.button
           type="button"
           whileTap={{ scale: 0.96 }}
           onClick={start}
           className="min-h-[48px] px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-lg games-focus-ring"
         >
           開始倒數
-        </motion.button>
+        </m.button>
         </>
       )}
       {phase === 'counting' && (
@@ -156,14 +159,14 @@ export default function CountdownToast() {
           ) : (
             <>
               <p className="text-white/70 text-lg mb-4">輪到 {players[currentPlayerIndex]} 按</p>
-              <motion.button
+              <m.button
                 type="button"
                 whileTap={{ scale: 0.96 }}
                 onClick={press}
                 className="min-h-[56px] min-w-[160px] px-8 py-4 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white font-bold text-xl games-focus-ring"
               >
                 按！
-              </motion.button>
+              </m.button>
             </>
           )}
           <button
@@ -176,13 +179,14 @@ export default function CountdownToast() {
         </>
       )}
       {phase === 'result' && loser && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
           <p className="text-white/60 text-sm mb-1">最接近 {targetSec} 秒的人喝</p>
           <p className="text-red-400 font-bold text-2xl mb-2" aria-live="polite">{loser} 喝！</p>
+          {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           {Object.keys(pressTimes).length > 0 && (
             <ul className="text-white/50 text-sm mb-3 space-y-0.5">
               {Object.entries(pressTimes)
@@ -205,7 +209,7 @@ export default function CountdownToast() {
               再一輪
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </div>
   )

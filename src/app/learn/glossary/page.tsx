@@ -20,6 +20,7 @@ const CATEGORY_LABEL: Record<Term['category'], string> = {
   general: '通用',
 }
 
+/** R2-386：詞彙表擴充 — 品酒術語，分類與搜尋沿用 */
 const GLOSSARY_TERMS: Term[] = [
   { term: '單寧', en: 'Tannin', definition: '來自葡萄皮、籽與梗的多酚，帶來澀感與結構感；紅酒中較明顯。', category: 'wine' },
   { term: '酒體', en: 'Body', definition: '酒在口中的重量感與飽滿度，常分輕、中、重。', category: 'wine' },
@@ -36,6 +37,20 @@ const GLOSSARY_TERMS: Term[] = [
   { term: 'IPA', en: 'India Pale Ale', definition: '啤酒風格之一，苦度與啤酒花香氣較明顯。', category: 'beer' },
   { term: '拉格', en: 'Lager', definition: '底層發酵、低溫儲存，口感清爽的啤酒類型。', category: 'beer' },
   { term: '艾爾', en: 'Ale', definition: '頂層發酵、常帶果香與麥香的啤酒類型。', category: 'beer' },
+  { term: '酸度', en: 'Acidity', definition: '酒中的酸感，賦予清爽與結構；白酒中尤其重要。', category: 'wine' },
+  { term: '殘糖', en: 'Residual sugar', definition: '發酵後殘留的糖分；決定酒款干型或甜型。', category: 'wine' },
+  { term: '品種', en: 'Variety', definition: '釀酒葡萄品種，如 Chardonnay、Cabernet Sauvignon。', category: 'wine' },
+  { term: '混釀', en: 'Blend', definition: '多種葡萄或酒液調和，常見於波爾多與香檳。', category: 'wine' },
+  { term: 'AOC', en: 'Appellation d\'Origine Contrôlée', definition: '法國法定產區管制，規範產區、品種與釀造方式。', category: 'wine' },
+  { term: '本釀造', en: 'Honjozo', definition: '添加少量釀造酒精的清酒，口感較辛口。', category: 'sake' },
+  { term: '吟釀', en: 'Ginjo', definition: '精米步合 60% 以下，香氣纖細。', category: 'sake' },
+  { term: '雪莉桶', en: 'Sherry cask', definition: '曾陳放雪莉酒的橡木桶，賦予威士忌果乾、堅果風味。', category: 'spirit' },
+  { term: '波本桶', en: 'Bourbon cask', definition: '美國橡木桶，常賦予香草、椰子、甜感。', category: 'spirit' },
+  { term: '調和', en: 'Blended', definition: '多種原酒調和，如調和威士忌、調和麥芽。', category: 'spirit' },
+  { term: '苦度', en: 'IBU', definition: '國際苦度單位，啤酒花帶來的苦味強度。', category: 'beer' },
+  { term: '司陶特', en: 'Stout', definition: '深色、焙麥風味濃郁的艾爾啤酒。', category: 'beer' },
+  { term: '醒酒', en: 'Decanting', definition: '將酒倒入醒酒器，接觸空氣以柔化單寧、釋放香氣。', category: 'general' },
+  { term: '適飲溫度', en: 'Serving temperature', definition: '不同酒款建議的侍酒溫度，影響香氣與口感。', category: 'general' },
 ]
 
 export default function GlossaryPage() {

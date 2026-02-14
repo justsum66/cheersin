@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Calendar, Sun, CloudSnow, Leaf, Wind, Utensils, Sparkles } from 'lucide-react';
 
 const SEASONAL_GUIDES = [
@@ -78,7 +78,7 @@ export function SeasonalWineGuide() {
       {/* 季節選擇導航 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
         {SEASONAL_GUIDES.map((season) => (
-          <motion.button
+          <m.button
             key={season.id}
             onClick={() => setActiveSeason(season.id)}
             className={`p-3 rounded-xl text-left transition-all ${
@@ -98,12 +98,12 @@ export function SeasonalWineGuide() {
             <p className={`text-xs ${activeSeason === season.id ? 'text-white/90' : 'text-white/50'}`}>
               {season.wines.length} 款推薦
             </p>
-          </motion.button>
+          </m.button>
         ))}
       </div>
 
       {/* 活動日曆 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-white/10"
@@ -114,7 +114,7 @@ export function SeasonalWineGuide() {
         </div>
         <div className="space-y-2">
           {CALENDAR_EVENTS.map((event, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -128,14 +128,14 @@ export function SeasonalWineGuide() {
                 <p className="text-white font-medium text-sm">{event.event}</p>
                 <p className="text-white/60 text-xs">{event.description}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 當前季節推薦 */}
       {SEASONAL_GUIDES.map((season) => (
-        <motion.div
+        <m.div
           key={season.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -160,7 +160,7 @@ export function SeasonalWineGuide() {
               </h4>
               <div className="grid gap-3">
                 {season.wines.map((wine, index) => (
-                  <motion.div
+                  <m.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -175,7 +175,7 @@ export function SeasonalWineGuide() {
                     </div>
                     <p className="text-sm text-white/60 mb-1">{wine.region}</p>
                     <p className="text-xs text-white/50">{wine.description}</p>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
@@ -216,11 +216,11 @@ export function SeasonalWineGuide() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       ))}
 
       {/* 季節小貼士 */}
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -247,7 +247,7 @@ export function SeasonalWineGuide() {
             </ul>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

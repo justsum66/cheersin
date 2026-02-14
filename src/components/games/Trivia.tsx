@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Check, X, Award, Loader2, Zap, HelpCircle } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useTriviaQuestions } from '@/hooks/useTriviaQuestions'
+import { unlockBadge, type BadgeId } from '@/lib/gamification'
+import { BadgeUnlockCelebration } from '@/components/profile/BadgeUnlockCelebration'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
@@ -95,6 +97,7 @@ function useTriviaQuestionsWithFallback(count: number, difficultyFilter: Difficu
 export default function Trivia() {
   const { t } = useTranslation()
   const { play } = useGameSound()
+  const prefersReducedMotion = useReducedMotion()
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all')
   const [refetchKey, setRefetchKey] = useState(0)
   const { questions: QUESTIONS } = useTriviaQuestionsWithFallback(8, difficultyFilter, refetchKey)
@@ -125,6 +128,8 @@ export default function Trivia() {
   // G3-025: Review mode - track all answered questions
   const [allAnswers, setAllAnswers] = useState<{ q: string; options: string[]; correct: number; picked: number | null; isCorrect: boolean }[]>([])
   const [showFullReview, setShowFullReview] = useState(false)
+  /** R2-137：成就解鎖 — 連續答對 5 題觸發 BadgeUnlockCelebration */
+  const [justUnlockedBadge, setJustUnlockedBadge] = useState<BadgeId | null>(null)
 
   const clearTimer = () => {
     if (timerIntervalRef.current) {
@@ -215,6 +220,7 @@ export default function Trivia() {
         setStreak((s) => {
           const next = s + 1
           setMaxStreak((m) => Math.max(m, next))
+          if (next >= 5 && unlockBadge('trivia-streak-5')) setJustUnlockedBadge('trivia-streak-5')
           // G3-022: Show combo text on streaks >= 2
           if (next >= 2) {
             setShowCombo(true)
@@ -313,20 +319,20 @@ export default function Trivia() {
   if (showResult) {
     const lowScore = QUESTIONS.length ? score <= Math.min(2, Math.ceil(QUESTIONS.length * 0.25)) : false
     return (
-      <motion.div
+      <m.div
         className="flex flex-col items-center justify-center h-full text-center"
         data-testid="trivia-result"
         initial={lowScore ? { opacity: 1 } : {}}
         animate={lowScore ? { x: [0, -8, 8, -6, 6, 0], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 60px 20px rgba(239,68,68,0.15)', '0 0 0 0 rgba(239,68,68,0)'] } : {}}
         transition={lowScore ? { duration: 0.6, ease: 'easeOut' } : {}}
       >
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-8 shadow-glow"
         >
           <Award className="w-16 h-16 text-white" />
-        </motion.div>
+        </m.div>
 
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">測驗完成！</h2>
         <div className="text-5xl md:text-6xl font-display font-bold gradient-text mb-6 tabular-nums">
@@ -361,7 +367,7 @@ export default function Trivia() {
         </button>
         <AnimatePresence>
           {showFullReview && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -390,7 +396,7 @@ export default function Trivia() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
         <CopyResultButton
@@ -415,17 +421,25 @@ export default function Trivia() {
         <button ref={restartRef} type="button" onClick={restart} className="btn-primary" autoFocus aria-label={t('games.playAgain')} data-testid="trivia-restart">
           {t('games.playAgain')}
         </button>
-      </motion.div>
+      </m.div>
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 safe-area-px" role="main" aria-label="知識問答">
-      <GameRules rules={`答對不喝、答錯請喝。\n快捷鍵：1–4 選擇選項。`} />
+    <>
+      {justUnlockedBadge && (
+        <BadgeUnlockCelebration
+          badgeId={justUnlockedBadge}
+          onComplete={() => setJustUnlockedBadge(null)}
+          prefersReducedMotion={!!prefersReducedMotion}
+        />
+      )}
+      <div className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 safe-area-px" role="main" aria-label="知識問答">
+        <GameRules rules={`答對不喝、答錯請喝。\n快捷鍵：1–4 選擇選項。`} />
       {/* 進度條；R2-120 多輪進度指示器：圓點 + 進度條 */}
       <div className="mb-2 flex items-center gap-1.5 flex-wrap">
         {QUESTIONS.map((_, i) => (
-          <motion.span
+          <m.span
             key={i}
             className={`shrink-0 w-2 h-2 rounded-full ${i < current ? 'bg-primary-500' : i === current ? 'bg-primary-400' : 'bg-white/20'}`}
             initial={false}
@@ -436,7 +450,7 @@ export default function Trivia() {
         ))}
       </div>
       <div className="mb-4 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-        <motion.div
+        <m.div
           className="h-full bg-primary-500 rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }}
@@ -471,10 +485,14 @@ export default function Trivia() {
           <button key={sec} type="button" onClick={() => setTimerSeconds(sec)} aria-pressed={timerSeconds === sec}
             className={`min-h-[48px] min-w-[48px] px-2 py-0.5 rounded text-xs games-focus-ring ${timerSeconds === sec ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/70'}`}>{sec}秒</button>
         ))}
-        {/* G3-024: 50/50 lifeline button */}
+        {/* G3-024: 50/50 lifeline button — R2-059：提示按鈕搖晃 */}
         {!fiftyFiftyUsed && !isAnswered && (
-          <button
+          <m.button
+            key={current}
             type="button"
+            initial={false}
+            animate={prefersReducedMotion ? {} : { rotate: [0, -8, 8, -5, 5, 0] }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
             onClick={() => {
               const q = QUESTIONS[current]
               if (!q || fiftyFiftyUsed) return
@@ -489,14 +507,14 @@ export default function Trivia() {
             aria-label="50/50 移除兩個錯誤答案"
           >
             <HelpCircle className="w-3 h-3" /> 50/50
-          </button>
+          </m.button>
         )}
         {fiftyFiftyUsed && (
           <span className="text-white/30 text-xs ml-1">50/50 已用</span>
         )}
       </div>
       {timerEnabled && timeLeft != null && !isAnswered && (
-        <motion.div
+        <m.div
           className="flex items-center gap-3 mb-2"
           role="timer"
           aria-live="polite"
@@ -507,7 +525,7 @@ export default function Trivia() {
           transition={timeLeft <= 5 ? { repeat: Infinity, duration: 1.2 } : {}}
         >
           {/* G3-021: Heartbeat pulsation on timer circle */}
-          <motion.span
+          <m.span
             className="relative w-10 h-10 shrink-0"
             animate={timeLeft <= 5 ? { scale: [1, 1.15, 1] } : {}}
             transition={timeLeft <= 5 ? { repeat: Infinity, duration: 0.6, ease: 'easeInOut' } : {}}
@@ -519,7 +537,7 @@ export default function Trivia() {
                 stroke="rgba(255,255,255,0.1)"
                 strokeWidth="3"
               />
-              <motion.path
+              <m.path
                 d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
                 fill="none"
                 stroke={timeLeft <= 5 ? 'rgb(248,113,113)' : 'rgb(168,85,247)'}
@@ -530,9 +548,9 @@ export default function Trivia() {
                 transition={{ duration: 0.3 }}
               />
             </svg>
-          </motion.span>
+          </m.span>
           <p className={`text-sm font-mono tabular-nums ${timeLeft <= 5 ? 'text-red-400 font-semibold' : 'text-primary-400'}`}>剩餘 {timeLeft} 秒</p>
-        </motion.div>
+        </m.div>
       )}
       <h2 className="text-lg md:text-2xl font-bold text-white mb-6 leading-relaxed" id="trivia-question">
         {QUESTIONS[current].q}
@@ -545,7 +563,7 @@ export default function Trivia() {
       {/* G3-022: Combo streak floating text */}
       <AnimatePresence>
         {showCombo && streak >= 2 && (
-          <motion.div
+          <m.div
             key={`combo-${streak}`}
             initial={{ opacity: 0, y: 20, scale: 0.8 }}
             animate={{ opacity: 1, y: -10, scale: 1.2 }}
@@ -556,7 +574,7 @@ export default function Trivia() {
             <span className="text-amber-400 font-black text-2xl drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
               <Zap className="w-5 h-5 inline mr-1" />Combo x{streak}!
             </span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -567,7 +585,7 @@ export default function Trivia() {
       )}
       <div className="grid grid-cols-1 gap-3" role="group" aria-labelledby="trivia-question">
         {QUESTIONS[current].a.map((opt, i) => (
-          <motion.button
+          <m.button
             key={i}
             ref={(el) => { optionRefs.current[i] = el }}
             type="button"
@@ -575,7 +593,13 @@ export default function Trivia() {
             disabled={isAnswered || submittingIndex != null || hiddenOptions.includes(i)}
             aria-label={submittingIndex === i ? '提交中' : `選項 ${i + 1}：${opt}`}
             initial={false}
-            animate={isAnswered && selected === i ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } } : {}}
+            animate={
+              isAnswered && selected === i
+                ? i === QUESTIONS[current].correct
+                  ? { scale: [1, 1.03, 1], transition: { duration: 0.3 } }
+                  : { x: [0, -8, 8, -6, 6, 0], transition: { duration: 0.4 } }
+                : {}
+            }
             className={`p-4 md:p-5 rounded-xl text-left text-base md:text-lg font-medium transition-colors games-focus-ring flex items-center justify-between border min-h-[48px] ${hiddenOptions.includes(i)
               ? 'opacity-20 pointer-events-none bg-white/5 border-white/5 text-white/30'
               : isAnswered && i === QUESTIONS[current].correct
@@ -592,19 +616,20 @@ export default function Trivia() {
               </span>
             )}
             {isAnswered && submittingIndex === null && i === QUESTIONS[current].correct && (
-              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+              <m.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
                 <Check className="w-5 h-5 md:w-6 md:h-6" />
-              </motion.span>
+              </m.span>
             )}
             {isAnswered && selected === i && i !== QUESTIONS[current].correct && (
-              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
+              <m.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="flex-shrink-0" aria-hidden>
                 <X className="w-5 h-5 md:w-6 md:h-6" />
-              </motion.span>
+              </m.span>
             )}
-          </motion.button>
+          </m.button>
         ))}
       </div>
       <p className="text-white/30 text-xs mt-4">快捷鍵：1–4 選擇選項</p>
-    </div>
+      </div>
+    </>
   )
 }

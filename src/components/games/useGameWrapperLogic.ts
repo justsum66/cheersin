@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { getReduceMotion } from '@/lib/games-settings'
+import { getGameMeta } from '@/config/games.config'
 import { useGameStore } from '@/store/useGameStore'
 import type { GameWrapperProps } from './GameWrapperTypes'
 
@@ -43,8 +44,21 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     setTrial,
     trial,
     decrementTrialRound,
-    resetGame
+    resetGame,
+    selectedMode,
+    setSelectedMode
   } = useGameStore()
+
+  // Phase 1 Task 14: Mode Selection Logic
+  const gameMeta = currentGameId ? getGameMeta(currentGameId) : null
+  const availableModes = gameMeta?.modes || []
+  // Show selector if modes exist AND no mode selected AND not spectator (spectators join room which has mode set in host? actually specific implementation needed for spectator sync)
+  // For now, assume host/local player needs to select mode.
+  const showModeSelector = availableModes.length > 0 && !selectedMode
+
+  const onSelectMode = useCallback((modeId: string) => {
+    setSelectedMode(modeId)
+  }, [setSelectedMode])
 
   // Derived from Store
   const isPaused = gameState === 'paused'
@@ -467,5 +481,8 @@ export function useGameWrapperLogic(props: GameWrapperProps) {
     currentGameId,
     registerSpace,
     registerDigit,
+    showModeSelector,
+    availableModes,
+    onSelectMode,
   }
 }

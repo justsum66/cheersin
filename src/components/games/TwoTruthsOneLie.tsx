@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { FileQuestion, RotateCcw, Check, Eye, EyeOff, ChevronRight, ChevronLeft, Sparkles, Timer } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import { useGamePersistence } from '@/hooks/useGamePersistence'
@@ -227,7 +228,7 @@ export default function TwoTruthsOneLie() {
         啟用猜測倒數 (30秒)
       </label>
 
-      <motion.button
+      <m.button
         type="button"
         whileTap={{ scale: 0.96 }}
         onClick={startGuessing}
@@ -236,7 +237,7 @@ export default function TwoTruthsOneLie() {
       >
         開始猜測
         <ChevronRight className="w-5 h-5" />
-      </motion.button>
+      </m.button>
     </div>
   )
 
@@ -256,13 +257,13 @@ export default function TwoTruthsOneLie() {
         </div>
         {/* G3-051: Guess timer display */}
         {guessTimerEnabled && guessTimeLeft !== null && (
-          <motion.div
+          <m.div
             className={`text-sm font-mono ${guessTimeLeft <= 5 ? 'text-red-400 font-bold' : 'text-white/60'}`}
             animate={guessTimeLeft <= 5 ? { scale: [1, 1.1, 1] } : {}}
             transition={guessTimeLeft <= 5 ? { repeat: Infinity, duration: 0.6 } : {}}
           >
             ⏱ 剩餘 {guessTimeLeft} 秒
-          </motion.div>
+          </m.div>
         )}
         {guessTimerEnabled && guessTimeLeft === 0 && (
           <p className="text-red-400 font-bold text-sm">⏰ 時間到！</p>
@@ -281,7 +282,7 @@ export default function TwoTruthsOneLie() {
         {/* 陳述列表 */}
         <div className="w-full space-y-3">
           {statements.map((s, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -300,7 +301,7 @@ export default function TwoTruthsOneLie() {
                   假話
                 </span>
               )}
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -312,7 +313,7 @@ export default function TwoTruthsOneLie() {
             </p>
             <div className="flex gap-3 justify-center">
               {[0, 1, 2].map(i => (
-                <motion.button
+                <m.button
                   key={i}
                   type="button"
                   whileTap={{ scale: 0.96 }}
@@ -320,12 +321,12 @@ export default function TwoTruthsOneLie() {
                   className="w-16 h-16 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold text-2xl games-focus-ring"
                 >
                   {i + 1}
-                </motion.button>
+                </m.button>
               ))}
             </div>
           </div>
         ) : (
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={revealAnswer}
@@ -333,7 +334,7 @@ export default function TwoTruthsOneLie() {
           >
             揭曉答案
             <Eye className="w-5 h-5" />
-          </motion.button>
+          </m.button>
         )}
 
         {/* 猜測紀錄 */}
@@ -363,31 +364,31 @@ export default function TwoTruthsOneLie() {
 
     return (
       <div className="flex flex-col items-center gap-6 w-full max-w-md">
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
           <h2 className="text-2xl font-bold text-white mb-2">答案揭曉！</h2>
           {/* G3-052: Glitch effect on lie reveal */}
-          <motion.p
+          <m.p
             className="text-white/70"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            假話是第 <motion.span
+            假話是第 <m.span
               className="text-red-400 font-bold text-xl inline-block"
               initial={{ opacity: 0, scale: 2, rotate: -10 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 500, damping: 15, delay: 0.3 }}
-            >{actualLieIndex + 1}</motion.span> 個
-          </motion.p>
-        </motion.div>
+            >{actualLieIndex + 1}</m.span> 個
+          </m.p>
+        </m.div>
 
         {/* 陳述列表（標記答案） */}
         <div className="w-full space-y-3">
           {statements.map((s, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -406,13 +407,13 @@ export default function TwoTruthsOneLie() {
                 }`}>
                 {s.isLie ? '假話' : '真話'}
               </span>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* 懲罰 */}
         {wrongGuessers.length > 0 && (
-          <motion.div
+          <m.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="text-center"
@@ -420,7 +421,8 @@ export default function TwoTruthsOneLie() {
             <p className="text-red-400 font-bold text-lg">
               {wrongGuessers.map(g => g.player).join('、')} 猜錯了，喝！
             </p>
-          </motion.div>
+            {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
+          </m.div>
         )}
 
         <CopyResultButton text={`兩真一假：${currentPlayer} 的假話是「${statements[actualLieIndex]?.text}」。${wrongGuessers.length > 0 ? `${wrongGuessers.map(g => g.player).join('、')}猜錯，喝！` : '全員猜對！'}`} />
@@ -457,7 +459,7 @@ export default function TwoTruthsOneLie() {
         )}
 
         <div className="flex gap-4">
-          <motion.button
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={nextPlayer}
@@ -465,8 +467,8 @@ export default function TwoTruthsOneLie() {
           >
             下一位
             <ChevronRight className="w-5 h-5" />
-          </motion.button>
-          <motion.button
+          </m.button>
+          <m.button
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={resetGame}
@@ -474,7 +476,7 @@ export default function TwoTruthsOneLie() {
           >
             <RotateCcw className="w-5 h-5" />
             重新開始
-          </motion.button>
+          </m.button>
         </div>
       </div>
     )
@@ -486,7 +488,7 @@ export default function TwoTruthsOneLie() {
 
       <AnimatePresence mode="wait">
         {phase === 'input' && (
-          <motion.div
+          <m.div
             key="input"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -494,10 +496,10 @@ export default function TwoTruthsOneLie() {
             className="w-full flex justify-center"
           >
             {renderInputPhase()}
-          </motion.div>
+          </m.div>
         )}
         {phase === 'guess' && (
-          <motion.div
+          <m.div
             key="guess"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -505,10 +507,10 @@ export default function TwoTruthsOneLie() {
             className="w-full flex justify-center"
           >
             {renderGuessPhase()}
-          </motion.div>
+          </m.div>
         )}
         {phase === 'reveal' && (
-          <motion.div
+          <m.div
             key="reveal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -516,7 +518,7 @@ export default function TwoTruthsOneLie() {
             className="w-full flex justify-center"
           >
             {renderRevealPhase()}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

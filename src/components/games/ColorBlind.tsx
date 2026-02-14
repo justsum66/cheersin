@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Palette, RefreshCw, Clock } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -181,7 +181,7 @@ export default function ColorBlind() {
             <p className="text-white/60 text-sm mb-4">
               {currentQuestion.correctAnswer === 'color' ? '這個字是什麼「顏色」？' : '這個字「寫什麼」？'}
             </p>
-            <motion.p
+            <m.p
               key={questionCount}
               initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -189,7 +189,7 @@ export default function ColorBlind() {
               style={{ color: currentQuestion.displayColor }}
             >
               {currentQuestion.text}
-            </motion.p>
+            </m.p>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -208,7 +208,7 @@ export default function ColorBlind() {
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -234,7 +234,7 @@ export default function ColorBlind() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

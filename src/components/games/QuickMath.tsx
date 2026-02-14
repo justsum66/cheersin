@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Calculator, RefreshCw, Clock } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -210,14 +210,14 @@ export default function QuickMath() {
             </div>
           </div>
 
-          <motion.div
+          <m.div
             key={currentQuestion.question}
             initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 rounded-2xl p-8 mb-6 border border-blue-500/30"
           >
             <p className="text-4xl font-bold text-white">{currentQuestion.question} = ?</p>
-          </motion.div>
+          </m.div>
 
           <div className="flex gap-3 justify-center">
             <input
@@ -243,7 +243,7 @@ export default function QuickMath() {
       )}
 
       {gamePhase === 'result' && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center w-full max-w-md"
@@ -269,7 +269,7 @@ export default function QuickMath() {
               label="複製"
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {leaderboard.length > 0 && (

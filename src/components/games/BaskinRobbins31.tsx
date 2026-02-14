@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
 import CopyResultButton from './CopyResultButton'
@@ -100,7 +100,7 @@ export default function BaskinRobbins31() {
       <p className="text-white/70 text-lg mb-4">輪到 {currentPlayer}</p>
       <AnimatePresence>
         {explosion && (
-          <motion.div
+          <m.div
             key="explosion"
             initial={{ scale: 0.5, opacity: 1 }}
             animate={{ scale: 2.5, opacity: 0 }}
@@ -110,11 +110,11 @@ export default function BaskinRobbins31() {
             aria-hidden
           >
             <div className="w-48 h-48 rounded-full bg-red-500/60 blur-3xl" />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       {lost && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center gap-2 mb-4"
@@ -123,13 +123,13 @@ export default function BaskinRobbins31() {
         >
           <p className="text-red-400 font-bold text-2xl md:text-3xl">{lost} 喝！</p>
           <CopyResultButton text={`31 遊戲：${lost} 喝！`} />
-        </motion.div>
+        </m.div>
       )}
       <div className="flex gap-3 flex-wrap justify-center">
         {([1, 2, 3] as const).map(
           (n) =>
             n <= maxStep && (
-              <motion.button
+              <m.button
                 key={n}
                 type="button"
                 whileTap={{ scale: 0.96 }}
@@ -139,7 +139,7 @@ export default function BaskinRobbins31() {
                 title={`鍵盤 ${n}`}
               >
                 +{n}
-              </motion.button>
+              </m.button>
             )
         )}
       </div>

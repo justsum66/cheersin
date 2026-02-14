@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { SkipForward, BarChart3 } from 'lucide-react'
 import { usePassPhone } from './PassPhoneContext'
 import PassPhoneAnimation from './PassPhoneAnimation'
@@ -98,7 +98,7 @@ export default function PassPhoneMode() {
 
   return (
     <AnimatePresence>
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -118,14 +118,14 @@ export default function PassPhoneMode() {
               {showPassTo.nextName}
             </p>
             <PassPhoneAnimation />
-            <motion.button
+            <m.button
               type="button"
               className="min-h-[56px] min-w-[200px] mt-8 px-8 py-4 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-xl"
               onClick={handleStart}
               whileTap={{ scale: 0.98 }}
             >
               我準備好了
-            </motion.button>
+            </m.button>
           </>
         ) : (
           <>
@@ -134,7 +134,7 @@ export default function PassPhoneMode() {
               {showPassTo.nextName}
             </p>
             {countdown !== null && countdown > 0 && (
-              <motion.p
+              <m.p
                 key={countdown}
                 initial={{ scale: 1.2 }}
                 animate={{ scale: 1 }}
@@ -142,7 +142,7 @@ export default function PassPhoneMode() {
                 aria-live="polite"
               >
                 {countdown}
-              </motion.p>
+              </m.p>
             )}
             <PassPhoneAnimation />
             <button
@@ -179,7 +179,7 @@ export default function PassPhoneMode() {
         </div>
 
         {showStats && ctx?.roundStats && ctx.roundStats.length > 0 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="absolute bottom-24 left-4 right-4 max-h-48 overflow-auto rounded-xl bg-black/80 border border-white/20 p-4 text-sm text-left"
@@ -193,9 +193,9 @@ export default function PassPhoneMode() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </m.div>
         )}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   )
 }

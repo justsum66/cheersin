@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Share2, Instagram, Download, X, Sparkles, Award } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
@@ -95,14 +95,14 @@ export function ShareToStory({
       {/* Modal */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -150,7 +150,7 @@ export function ShareToStory({
                   </div>
                   
                   {/* Achievement Badge */}
-                  <motion.div
+                  <m.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
@@ -159,7 +159,7 @@ export function ShareToStory({
                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-xl shadow-amber-500/30">
                       <Award className="w-10 h-10 text-white" />
                     </div>
-                  </motion.div>
+                  </m.div>
                   
                   {/* Title */}
                   <div className="mb-4">
@@ -191,7 +191,7 @@ export function ShareToStory({
                 >
                   {isGenerating ? (
                     <>
-                      <motion.div
+                      <m.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
@@ -210,8 +210,8 @@ export function ShareToStory({
               <p className="mt-4 text-center text-white/40 text-xs">
                 下載後可直接分享到 Instagram Story
               </p>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

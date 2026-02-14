@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { FileText, RefreshCw, Trophy, Lightbulb } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -168,7 +168,7 @@ export default function WordGuess() {
 
           <AnimatePresence mode="wait">
             {currentRiddle && (
-              <motion.div
+              <m.div
                 key={currentRiddle.riddle}
                 initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -233,7 +233,7 @@ export default function WordGuess() {
                     </div>
                   </>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

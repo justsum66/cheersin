@@ -3,8 +3,12 @@ import { errorResponse } from '@/lib/api-response'
 import { testSupabaseConnection } from '@/lib/supabase-server'
 import { testOpenRouterConnection } from '@/lib/openrouter'
 import { testPineconeConnection } from '@/lib/pinecone'
+import { getUsageStats } from '@/lib/api-usage'
 import { normalizeEnv } from '@/lib/env'
 import Groq from 'groq-sdk'
+import { groq, GROQ_CHAT_MODEL } from '@/lib/groq'
+import { GROQ_API_KEY, GROQ_HEALTH_API_KEY, CHAT_TIMEOUT_MS, OPENROUTER_API_KEY, OPENROUTER_HEALTH_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PINECONE_API_KEY, PINECONE_API_URL } from '@/lib/env-config'
+import { HEALTH_SERVICE, hintFor } from '@/lib/health-hints'
 
 interface ServiceStatus {
     name: string
@@ -14,36 +18,6 @@ interface ServiceStatus {
     hint?: string
     /** P2-25：不暴露內部 URL/key，僅狀態與延遲；details 可含 model/defaultModel/stats 等非敏感資訊 */
     details?: Record<string, unknown>
-}
-
-/** 依錯誤訊息回傳除錯提示（不暴露 key） */
-function hintFor(name: string, message: string): string {
-    const m = message.toLowerCase()
-    if (name === 'Supabase') {
-        if (m.includes('dns') || m.includes('enotfound') || m.includes('fetch failed')) return 'NEXT_PUBLIC_SUPABASE_URL unreachable. Use wdegandlipgdvqhgmoai.supabase.co; project may be paused (Dashboard → Restore).'
-        if (m.includes('missing') || m.includes('env')) return 'Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local'
-    }
-    if (name === 'Groq AI') {
-        if (m.includes('429') || m.includes('rate limit')) return 'Groq rate limit; chat will fallback to next provider. Retry later or upgrade Groq tier.'
-        if (m.includes('401') || m.includes('invalid') || m.includes('api key')) return 'Fix GROQ_API_KEY in .env.local (get key at console.groq.com)'
-    }
-    if (name === 'OpenRouter') {
-        if (m.includes('401') || m.includes('user not found')) return 'Fix OPENROUTER_API_KEY in .env.local (get key at openrouter.ai/keys)'
-        if (m.includes('402') || m.includes('credits')) return 'Add credits at openrouter.ai/settings/credits or reduce max_tokens'
-    }
-    if (name === 'Pinecone') {
-        if (m.includes('401') || m.includes('unauthorized')) {
-            return 'Use index HOST as PINECONE_API_URL. Ensure PINECONE_API_KEY is from same project (console → API Keys).'
-        }
-        if (m.includes('403') || m.includes('forbidden')) {
-            return 'Key valid but 403 Forbidden: API key may lack ReadWrite for this index, or key/index from different project. Create key in same project as index.'
-        }
-    }
-    if (name === 'PayPal') {
-        if (m.includes('401') || m.includes('invalid') || m.includes('unauthorized')) return 'Check PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (developer.paypal.com).'
-        if (m.includes('env') || m.includes('not set')) return 'Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in .env.local for subscription.'
-    }
-    return ''
 }
 
 /** P3-61：單一服務檢查逾時 5s，總逾時 15s */
@@ -64,9 +38,9 @@ export async function GET() {
 
         // 1. Test Supabase Connection（P3-42：未配置時標為 not_configured）
         try {
-            if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+            if (!NEXT_PUBLIC_SUPABASE_URL?.trim() || !SUPABASE_SERVICE_ROLE_KEY?.trim()) {
                 results.push({
-                    name: 'Supabase',
+                    name: HEALTH_SERVICE.SUPABASE,
                     status: 'not_configured',
                     message: 'NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set'
                 })
@@ -75,14 +49,14 @@ export async function GET() {
                 const supabaseResult = await withTimeout(
                     testSupabaseConnection(),
                     PER_SERVICE_TIMEOUT_MS,
-                    'Supabase'
+                    HEALTH_SERVICE.SUPABASE
                 )
             results.push({
-                name: 'Supabase',
+                name: HEALTH_SERVICE.SUPABASE,
                 status: supabaseResult.success ? 'connected' : 'error',
                 latency: Date.now() - supabaseStart,
                 message: supabaseResult.message,
-                ...(supabaseResult.success ? {} : { hint: hintFor('Supabase', supabaseResult.message) }),
+                ...(supabaseResult.success ? {} : { hint: hintFor(HEALTH_SERVICE.SUPABASE, supabaseResult.message) }),
                 details: { url_set: true }
             })
         }
@@ -91,67 +65,67 @@ export async function GET() {
         const msg = err.message
         const cause = err.cause != null ? String(err.cause) : undefined
         results.push({
-            name: 'Supabase',
+            name: HEALTH_SERVICE.SUPABASE,
             status: 'error',
             message: msg,
-            hint: hintFor('Supabase', msg),
-            details: cause ? { cause } : { url_set: !!process.env.NEXT_PUBLIC_SUPABASE_URL }
+            hint: hintFor(HEALTH_SERVICE.SUPABASE, msg),
+            details: cause ? { cause } : { url_set: !!NEXT_PUBLIC_SUPABASE_URL }
         })
     }
 
-    // 2. Test Groq Connection
+    // 2. Test Groq Connection（可選 GROQ_HEALTH_API_KEY，未設則用主線 groq）
     try {
         const groqStart = Date.now()
-
-        const groqKey = normalizeEnv(process.env.GROQ_API_KEY)
+        const groqKey = GROQ_HEALTH_API_KEY || GROQ_API_KEY
         if (!groqKey) {
             results.push({
-                name: 'Groq AI',
+                name: HEALTH_SERVICE.GROQ,
                 status: 'not_configured',
                 message: 'GROQ_API_KEY not set in environment'
             })
         } else {
-            const groq = new Groq({ apiKey: groqKey })
-
+            const groqClient = GROQ_HEALTH_API_KEY
+                ? new Groq({ apiKey: GROQ_HEALTH_API_KEY, timeout: CHAT_TIMEOUT_MS })
+                : groq
             const completion = await withTimeout(
-                groq.chat.completions.create({
+                groqClient.chat.completions.create({
                     messages: [{ role: 'user', content: 'Say OK' }],
-                    model: 'llama-3.3-70b-versatile',
+                    model: GROQ_CHAT_MODEL,
                     max_tokens: 10
                 }),
                 PER_SERVICE_TIMEOUT_MS,
-                'Groq'
+                HEALTH_SERVICE.GROQ
             )
 
             const response = completion.choices[0]?.message?.content || ''
 
             results.push({
-                name: 'Groq AI',
+                name: HEALTH_SERVICE.GROQ,
                 status: 'connected',
                 latency: Date.now() - groqStart,
                 message: `Model responding: "${response}"`,
                 details: {
-                    model: 'llama-3.3-70b-versatile'
+                    model: GROQ_CHAT_MODEL
                 }
             })
         }
     } catch (error) {
         const msg = error instanceof Error ? error.message : 'Unknown error'
         results.push({
-            name: 'Groq AI',
+            name: HEALTH_SERVICE.GROQ,
             status: 'error',
             message: msg,
-            hint: hintFor('Groq AI', msg)
+            hint: hintFor(HEALTH_SERVICE.GROQ, msg)
         })
     }
 
-    // 3. Test OpenRouter Connection
+    // 3. Test OpenRouter Connection（可選 OPENROUTER_HEALTH_API_KEY，未設則用主 key）
     try {
         const openrouterStart = Date.now()
-
-        if (!process.env.OPENROUTER_API_KEY) {
+        const openrouterKey = OPENROUTER_HEALTH_API_KEY || OPENROUTER_API_KEY
+        if (!openrouterKey) {
             results.push({
-                name: 'OpenRouter',
+                name: HEALTH_SERVICE.OPENROUTER,
                 status: 'not_configured',
                 message: 'OPENROUTER_API_KEY not set in environment'
             })
@@ -159,15 +133,15 @@ export async function GET() {
             const openrouterResult = await withTimeout(
                 testOpenRouterConnection(),
                 PER_SERVICE_TIMEOUT_MS,
-                'OpenRouter'
+                HEALTH_SERVICE.OPENROUTER
             )
 
             results.push({
-                name: 'OpenRouter',
+                name: HEALTH_SERVICE.OPENROUTER,
                 status: openrouterResult.success ? 'connected' : 'error',
                 latency: Date.now() - openrouterStart,
                 message: openrouterResult.message,
-                ...(openrouterResult.success ? {} : { hint: hintFor('OpenRouter', openrouterResult.message) }),
+                ...(openrouterResult.success ? {} : { hint: hintFor(HEALTH_SERVICE.OPENROUTER, openrouterResult.message) }),
                 details: {
                     defaultModel: 'anthropic/claude-3.5-sonnet'
                 }
@@ -176,10 +150,10 @@ export async function GET() {
     } catch (error) {
         const msg = error instanceof Error ? error.message : 'Unknown error'
         results.push({
-            name: 'OpenRouter',
+            name: HEALTH_SERVICE.OPENROUTER,
             status: 'error',
             message: msg,
-            hint: hintFor('OpenRouter', msg)
+            hint: hintFor(HEALTH_SERVICE.OPENROUTER, msg)
         })
     }
 
@@ -187,9 +161,9 @@ export async function GET() {
     try {
         const pineconeStart = Date.now()
 
-        if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_API_URL) {
+        if (!PINECONE_API_KEY || !PINECONE_API_URL) {
             results.push({
-                name: 'Pinecone',
+                name: HEALTH_SERVICE.PINECONE,
                 status: 'not_configured',
                 message: 'PINECONE_API_KEY or PINECONE_API_URL not set in environment'
             })
@@ -197,25 +171,25 @@ export async function GET() {
             const pineconeResult = await withTimeout(
                 testPineconeConnection(),
                 PER_SERVICE_TIMEOUT_MS,
-                'Pinecone'
+                HEALTH_SERVICE.PINECONE
             )
 
             results.push({
-                name: 'Pinecone',
+                name: HEALTH_SERVICE.PINECONE,
                 status: pineconeResult.success ? 'connected' : 'error',
                 latency: Date.now() - pineconeStart,
                 message: pineconeResult.message,
-                ...(pineconeResult.success ? {} : { hint: hintFor('Pinecone', pineconeResult.message) }),
+                ...(pineconeResult.success ? {} : { hint: hintFor(HEALTH_SERVICE.PINECONE, pineconeResult.message) }),
                 details: pineconeResult.stats
             })
         }
     } catch (error) {
         const msg = error instanceof Error ? error.message : 'Unknown error'
         results.push({
-            name: 'Pinecone',
+            name: HEALTH_SERVICE.PINECONE,
             status: 'error',
             message: msg,
-            hint: hintFor('Pinecone', msg)
+            hint: hintFor(HEALTH_SERVICE.PINECONE, msg)
         })
     }
 
@@ -226,7 +200,7 @@ export async function GET() {
         const clientSecret = normalizeEnv(process.env.PAYPAL_CLIENT_SECRET)
         if (!clientId || !clientSecret) {
             results.push({
-                name: 'PayPal',
+                name: HEALTH_SERVICE.PAYPAL,
                 status: 'not_configured',
                 message: 'PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET not set'
             })
@@ -241,21 +215,21 @@ export async function GET() {
                     body: 'grant_type=client_credentials',
                 }),
                 PAYPAL_CHECK_TIMEOUT_MS,
-                'PayPal'
+                HEALTH_SERVICE.PAYPAL
             )
             const latency = Date.now() - paypalStart
             if (!tokenRes.ok) {
                 const errText = await tokenRes.text()
                 results.push({
-                    name: 'PayPal',
+                    name: HEALTH_SERVICE.PAYPAL,
                     status: 'error',
                     latency,
                     message: `HTTP ${tokenRes.status}: ${errText.slice(0, 100)}`,
-                    hint: hintFor('PayPal', errText),
+                    hint: hintFor(HEALTH_SERVICE.PAYPAL, errText),
                 })
             } else {
                 results.push({
-                    name: 'PayPal',
+                    name: HEALTH_SERVICE.PAYPAL,
                     status: 'connected',
                     latency,
                     message: 'OAuth2 token OK',
@@ -266,10 +240,10 @@ export async function GET() {
     } catch (error) {
         const msg = error instanceof Error ? error.message : 'Unknown error'
         results.push({
-            name: 'PayPal',
+            name: HEALTH_SERVICE.PAYPAL,
             status: 'error',
             message: msg,
-            hint: hintFor('PayPal', msg),
+            hint: hintFor(HEALTH_SERVICE.PAYPAL, msg),
         })
     }
 
@@ -278,12 +252,19 @@ export async function GET() {
     const configuredCount = results.filter(r => r.status !== 'not_configured').length
     const totalTime = Date.now() - startTime
 
+    const usage = getUsageStats()
+    const chatByModel = usage.byModel
+    const chatRecentFailures = Object.fromEntries(
+      Object.entries(chatByModel).filter(([, v]) => v.calls > 0 && v.success < v.calls)
+    )
+
     return NextResponse.json({
             timestamp: new Date().toISOString(),
             totalLatency: totalTime,
             summary: `${connectedCount}/${results.length} services connected`,
             healthy: connectedCount >= 3, // At least 3 of Supabase/Groq/OpenRouter/Pinecone/PayPal
-            services: results
+            services: results,
+            chatStats: { byModel: chatByModel, recentFailuresByModel: chatRecentFailures },
         })
     }
 

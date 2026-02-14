@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Wine, RotateCcw, AlertTriangle } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -96,13 +96,13 @@ export default function DrunkTruth() {
         <AlertTriangle className="w-16 h-16 text-amber-400 mb-4" />
         <h2 className="text-xl font-bold text-white mb-2">酒後真言提醒</h2>
         <p className="text-white/60 text-center mb-6">此遊戲適合微醺狀態進行<br />請確認您已年滿 18 歲且適量飲酒</p>
-        <motion.button
+        <m.button
           whileTap={{ scale: 0.96 }}
           onClick={() => setAgeVerified(true)}
           className="px-8 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold games-focus-ring"
         >
           我已了解，開始遊戲
-        </motion.button>
+        </m.button>
       </div>
     )
   }
@@ -119,44 +119,44 @@ export default function DrunkTruth() {
       <p className="text-white/70 mb-4">輪到 <span className="text-amber-400 font-bold">{currentPlayer}</span></p>
 
       {!currentTruth ? (
-        <motion.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
+        <m.button whileTap={{ scale: 0.96 }} onClick={startRound} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
           抽真心話
-        </motion.button>
+        </m.button>
       ) : !answered ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-center"
           >
             <p className="text-white text-xl font-medium">{currentTruth}</p>
-          </motion.div>
+          </m.div>
 
           <div className="flex gap-4">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={answer}
               className="px-8 py-4 rounded-xl bg-emerald-500 text-white font-bold games-focus-ring"
             >
               我說完了
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               whileTap={{ scale: 0.96 }}
               onClick={refuse}
               className="px-8 py-4 rounded-xl bg-red-500 text-white font-bold games-focus-ring"
             >
               拒絕，喝兩杯
-            </motion.button>
+            </m.button>
           </div>
         </div>
       ) : (
-        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+        <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
           <p className="text-emerald-400 font-bold text-xl mb-4">回答完成！</p>
           <div className="flex gap-3 justify-center">
             <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>
             <CopyResultButton text={`酒後吐真言：${currentPlayer}\n「${currentTruth}」`} />
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {Object.keys(drinkCount).length > 0 && (

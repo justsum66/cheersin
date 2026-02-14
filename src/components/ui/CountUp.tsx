@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useInView } from 'framer-motion'
 
-/** 數字滾動動畫：進入視窗時從 0 滾動至 endValue，duration 毫秒；懸停顯示 title；AUDIT #16 reducedMotion 時縮短或關閉 */
+/** R2-060：useInView 確保只在進入視窗時觸發；數字從 0 滾動至 endValue；AUDIT #16 reducedMotion 時縮短 */
 interface CountUpProps {
   endValue: number
   duration?: number
@@ -20,22 +21,9 @@ function easeOutQuart(t: number): number {
 
 export function CountUp({ endValue, duration = 1500, suffix = '', className = '', title, reducedMotion }: CountUpProps) {
   const [value, setValue] = useState(0)
-  const [inView, setInView] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
   const effectiveDuration = reducedMotion ? Math.min(400, duration * 0.3) : duration
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e?.isIntersecting) setInView(true)
-      },
-      { threshold: 0.3, rootMargin: '0px' }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
+  const inView = useInView(ref, { once: true, amount: 0.3 })
 
   useEffect(() => {
     if (!inView) return

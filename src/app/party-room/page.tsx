@@ -1,4 +1,4 @@
-import PartyRoomManager from '@/components/party/PartyRoomManager'
+import PartyRoomPageClient from './PartyRoomPageClient'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function PartyRoomPage() {
         <p className="text-center text-white/50 mb-12 max-w-lg mx-auto">
           多人連線，實時同步。讓每個人的手機都成為遊戲控制器。
         </p>
-        <PartyRoomManager />
+        <PartyRoomPageClient />
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Star, ShoppingCart, Award, MapPin, TrendingUp, Heart, Eye, ChefHat } from 'lucide-react';
 
 // 威士忌例子資料庫
@@ -158,8 +158,10 @@ const WHISKY_EXAMPLES = [
   }
 ];
 
+type WhiskyExample = typeof WHISKY_EXAMPLES[number];
+
 export function WhiskyExamples() {
-  const [selectedWhisky, setSelectedWhisky] = useState<any>(null);
+  const [selectedWhisky, setSelectedWhisky] = useState<WhiskyExample | null>(null);
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'name' | 'expertRating'>('rating');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filterRegion, setFilterRegion] = useState<string>('全部');
@@ -167,17 +169,17 @@ export function WhiskyExamples() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   // 獲取唯一地區和類型選項
-  const regions = ['全部', ...new Set(WHISKY_EXAMPLES.map((w: any) => w.region))];
-  const types = ['全部', ...new Set(WHISKY_EXAMPLES.map((w: any) => w.type))];
+  const regions = ['全部', ...new Set(WHISKY_EXAMPLES.map((w) => w.region))];
+  const types = ['全部', ...new Set(WHISKY_EXAMPLES.map((w) => w.type))];
 
   // 應用篩選和排序
   const filteredAndSortedWhiskies = [...WHISKY_EXAMPLES]
     .filter(whisky => filterRegion === '全部' || whisky.region === filterRegion)
     .filter(whisky => filterType === '全部' || whisky.type === filterType)
     .sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-      
+      let aValue: string | number;
+      let bValue: string | number;
+
       switch (sortBy) {
         case 'rating':
           aValue = a.rating;
@@ -199,7 +201,7 @@ export function WhiskyExamples() {
           aValue = a.rating;
           bValue = b.rating;
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1;
       } else {
@@ -231,7 +233,7 @@ export function WhiskyExamples() {
             <option key={region} value={region}>{region}</option>
           ))}
         </select>
-        
+
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
@@ -241,13 +243,13 @@ export function WhiskyExamples() {
             <option key={type} value={type}>{type}</option>
           ))}
         </select>
-        
+
         <select
           value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [field, order] = e.target.value.split('-');
-            setSortBy(field as any);
-            setSortOrder(order as any);
+            setSortBy(field as typeof sortBy);
+            setSortOrder(order as typeof sortOrder);
           }}
           className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
@@ -265,7 +267,7 @@ export function WhiskyExamples() {
       {/* 威士忌卡片網格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAndSortedWhiskies.map((whisky, index) => (
-          <motion.div
+          <m.div
             key={whisky.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -293,8 +295,8 @@ export function WhiskyExamples() {
                 }}
                 className="text-xl"
               >
-                <Heart 
-                  className={`w-6 h-6 ${favorites.has(whisky.id) ? 'fill-red-500 text-red-500' : 'text-white/40'}`} 
+                <Heart
+                  className={`w-6 h-6 ${favorites.has(whisky.id) ? 'fill-red-500 text-red-500' : 'text-white/40'}`}
                 />
               </button>
             </div>
@@ -340,19 +342,19 @@ export function WhiskyExamples() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* 威士忌詳細資訊彈窗 */}
       {selectedWhisky && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedWhisky(null)}
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
@@ -457,7 +459,7 @@ export function WhiskyExamples() {
                 <div>
                   <h4 className="font-semibold text-amber-400 mb-2">購買資訊</h4>
                   <div className="space-y-3">
-                    {selectedWhisky.purchaseLinks.map((link: any, i: number) => (
+                    {selectedWhisky.purchaseLinks.map((link: WhiskyExample['purchaseLinks'][number], i: number) => (
                       <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                         <div>
                           <div className="font-medium text-white">{link.platform}</div>
@@ -465,9 +467,9 @@ export function WhiskyExamples() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-white">{link.price}</span>
-                          <a 
-                            href={link.url} 
-                            target="_blank" 
+                          <a
+                            href={link.url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:opacity-90 transition-opacity"
                           >
@@ -480,8 +482,8 @@ export function WhiskyExamples() {
                 </div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </div>
   );

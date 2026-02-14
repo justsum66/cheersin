@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { DrinkingAnimation } from './DrinkingAnimation'
 import { usePunishment } from './Punishments/PunishmentContext'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
@@ -94,7 +95,7 @@ export default function HotPotato() {
       <p className="text-white/50 text-sm mb-2">倒數傳手機，0 秒時拿著的人喝</p>
       {/* P1-129：計時器視覺化 — 圓形進度條 + 數字，最後 3 秒變紅 */}
       {secondsLeft !== null && (
-        <motion.div
+        <m.div
           className="mb-4 relative inline-flex items-center justify-center"
           animate={secondsLeft <= 3 ? {
             scale: [1, 1.05, 1],
@@ -127,7 +128,7 @@ export default function HotPotato() {
               />
             </svg>
           )}
-          <motion.p
+          <m.p
             className={`relative z-10 text-6xl font-mono font-bold mb-2 ${
               secondsLeft <= 3 ? 'text-red-400' : 'text-primary-300'
             }`}
@@ -147,18 +148,18 @@ export default function HotPotato() {
             }}
           >
             {secondsLeft}
-          </motion.p>
+          </m.p>
           {secondsLeft <= 3 && (
-            <motion.p
+            <m.p
               className="relative z-10 text-red-400 text-sm font-bold uppercase tracking-wider mt-1"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: [0.5, 1, 0.5], y: 0 }}
               transition={{ duration: 0.8, repeat: Infinity }}
             >
               危險！
-            </motion.p>
+            </m.p>
           )}
-        </motion.div>
+        </m.div>
       )}
       <p className="text-white/70 text-lg mb-4" aria-live="polite">目前持有：{holderName}</p>
       <div className="flex flex-wrap gap-2 justify-center">
@@ -174,7 +175,7 @@ export default function HotPotato() {
         )}
       </div>
       {loser && (
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { scale: 0.3, rotate: -15, y: -50 }}
           animate={{ 
             scale: [0.3, 1.3, 0.95, 1],
@@ -192,7 +193,7 @@ export default function HotPotato() {
           data-testid="hot-potato-result"
         >
           {/* Phase 1 C4.1: 爆炸效果 */}
-          <motion.div
+          <m.div
             animate={{
               scale: [1, 1.1, 1]
             }}
@@ -202,15 +203,16 @@ export default function HotPotato() {
               ease: "easeInOut"
             }}
           >
-            <motion.p 
+            <m.p 
               className="text-red-400 font-bold text-3xl mb-2"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.3 }}
             >
               💥 {loser} 喝！
-            </motion.p>
-          </motion.div>
+            </m.p>
+          </m.div>
+          {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
           <div className="flex flex-wrap gap-2 justify-center mt-2">
             <CopyResultButton text={`熱土豆：${loser} 喝`} label="複製結果" className="games-focus-ring" />
             {punishment && (
@@ -227,7 +229,7 @@ export default function HotPotato() {
               </button>
             )}
           </div>
-        </motion.div>
+        </m.div>
       )}
     </div>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Users, RefreshCw, Trophy, ArrowRight } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -182,12 +182,36 @@ export default function TeamGuess() {
           <div className="flex gap-4 justify-center mb-6">
             <div className={`flex-1 p-4 rounded-xl ${currentTeam === 1 ? 'bg-primary-500/20 border-2 border-primary-500' : 'bg-white/10'}`}>
               <p className="text-white/70 text-sm mb-2">隊伍 1</p>
-              <p className="text-white font-medium">{team1.join('、')}</p>
+              <div className="flex flex-wrap justify-center gap-1.5 mb-1">
+                {team1.map((name, i) => (
+                  <m.span
+                    key={name}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-white text-sm font-medium"
+                    initial={reducedMotion ? { x: 0, opacity: 1, scale: 1 } : { x: 40, opacity: 0, scale: 0.8 }}
+                    animate={{ x: 0, opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    {name}
+                  </m.span>
+                ))}
+              </div>
               <p className="text-2xl font-bold text-white mt-2">{teamScores.team1} 分</p>
             </div>
             <div className={`flex-1 p-4 rounded-xl ${currentTeam === 2 ? 'bg-secondary-500/20 border-2 border-secondary-500' : 'bg-white/10'}`}>
               <p className="text-white/70 text-sm mb-2">隊伍 2</p>
-              <p className="text-white font-medium">{team2.join('、')}</p>
+              <div className="flex flex-wrap justify-center gap-1.5 mb-1">
+                {team2.map((name, i) => (
+                  <m.span
+                    key={name}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-white text-sm font-medium"
+                    initial={reducedMotion ? { x: 0, opacity: 1, scale: 1 } : { x: -40, opacity: 0, scale: 0.8 }}
+                    animate={{ x: 0, opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    {name}
+                  </m.span>
+                ))}
+              </div>
               <p className="text-2xl font-bold text-white mt-2">{teamScores.team2} 分</p>
             </div>
           </div>
@@ -216,7 +240,7 @@ export default function TeamGuess() {
 
           <AnimatePresence mode="wait">
             {currentChallenge && currentWord && (
-              <motion.div
+              <m.div
                 key={currentWord}
                 initial={reducedMotion ? false : { opacity: 0, rotateY: 90 }}
                 animate={{ opacity: 1, rotateY: 0 }}
@@ -242,7 +266,7 @@ export default function TeamGuess() {
                 <p className="text-white/40 text-xs text-center mt-2">
                   只有比劃的人可以看題目！
                 </p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

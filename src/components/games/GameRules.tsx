@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { useGameRulesContext } from './GameWrapper'
 
@@ -41,7 +41,7 @@ export default function GameRules({ rules, title = '規則', rulesKey }: GameRul
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             key="rules-content"
             id="game-rules-content"
             role="region"
@@ -55,7 +55,7 @@ export default function GameRules({ rules, title = '規則', rulesKey }: GameRul
             <p className="games-body mt-2 px-3 py-2 text-white/60 whitespace-pre-line border border-white/10 rounded-xl bg-white/[0.02] leading-relaxed max-h-48 overflow-y-auto">
               {rules}
             </p>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </section>

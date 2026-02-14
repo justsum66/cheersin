@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { m , useReducedMotion } from 'framer-motion'
 import { Copy } from 'lucide-react'
 import { useCopyResult } from './useCopyResult'
 
@@ -19,7 +19,7 @@ export default function CopyResultButton({ text, label = '複製結果', classNa
   const prefersReducedMotion = useReducedMotion()
 
   return (
-    <motion.button
+    <m.button
       type="button"
       whileTap={{ scale: 0.96 }}
       animate={prefersReducedMotion ? undefined : { scale: [1, 1.02, 1] }}
@@ -31,6 +31,6 @@ export default function CopyResultButton({ text, label = '複製結果', classNa
     >
       <Copy className="w-4 h-4" />
       {label}
-    </motion.button>
+    </m.button>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 /** P1-161：帶平滑下劃線動畫的標籤頁，用於遊戲大廳分類等 */
 export interface TabItem {
@@ -51,7 +51,7 @@ export function Tabs({ tabs, defaultTab, onChange, className = '', tabListClassN
           >
             {tab.label}
             {activeId === tab.id && (
-              <motion.span
+              <m.span
                 layoutId="tabs-underline"
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-400 rounded-full"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -61,7 +61,7 @@ export function Tabs({ tabs, defaultTab, onChange, className = '', tabListClassN
         ))}
       </div>
       {/* R2-061：切換 Tab 時內容淡入 */}
-      <motion.div
+      <m.div
         role="tabpanel"
         id={`panel-${activeId}`}
         aria-labelledby={`tab-${activeId}`}
@@ -72,7 +72,7 @@ export function Tabs({ tabs, defaultTab, onChange, className = '', tabListClassN
         transition={{ duration: 0.2 }}
       >
         {activeTab?.content}
-      </motion.div>
+      </m.div>
     </div>
   )
 }

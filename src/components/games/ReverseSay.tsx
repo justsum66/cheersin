@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { RotateCcw, Trophy, ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
@@ -98,13 +98,13 @@ export default function ReverseSay() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-        <motion.h1 
+        <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           反向指令
-        </motion.h1>
+        </m.h1>
         <p className="text-white/80 mb-8">聽指令做相反動作！</p>
 
         <GameRules 
@@ -119,7 +119,7 @@ export default function ReverseSay() {
 
         <AnimatePresence mode="wait">
           {gameState === 'setup' && (
-            <motion.div
+            <m.div
               key="setup"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -145,11 +145,11 @@ export default function ReverseSay() {
               >
                 開始遊戲
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'playing' && currentCommand && (
-            <motion.div
+            <m.div
               key="playing"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -174,22 +174,22 @@ export default function ReverseSay() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <motion.button
+                <m.button
                   onClick={() => submitAction(currentPlayer, !shouldReverse)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="games-touch-target py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl font-bold text-white hover:shadow-lg transition-all duration-300"
                 >
                   正常執行
-                </motion.button>
-                <motion.button
+                </m.button>
+                <m.button
                   onClick={() => submitAction(currentPlayer, shouldReverse)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="games-touch-target py-4 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl font-bold text-white hover:shadow-lg transition-all duration-300"
                 >
                   反向執行
-                </motion.button>
+                </m.button>
               </div>
 
               <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg p-4">
@@ -197,11 +197,11 @@ export default function ReverseSay() {
                   還需要 {players.length - Object.keys(playerActions).length} 人作答
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {gameState === 'results' && currentCommand && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -226,7 +226,7 @@ export default function ReverseSay() {
                   const isCorrect = playerActions[player]
                   
                   return (
-                    <motion.div
+                    <m.div
                       key={player}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -245,7 +245,7 @@ export default function ReverseSay() {
                         <span>得分: {scores[player] || 0}</span>
                         <span>錯誤: {mistakes[player] || 0}</span>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -282,7 +282,7 @@ export default function ReverseSay() {
                   重新開始
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

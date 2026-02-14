@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import CopyResultButton from './CopyResultButton'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
@@ -99,7 +99,7 @@ export default function Titanic() {
       </div>
       <p className="text-white/70 text-lg mb-2">輪到 {currentPlayer}</p>
       <div className="w-full max-w-xs h-14 rounded-xl bg-white/10 border border-white/20 overflow-hidden mb-6 flex flex-col justify-end relative">
-        <motion.div
+        <m.div
           className={`w-full bg-gradient-to-b from-cyan-400 to-blue-800 ${isNearFull ? 'shadow-[0_0_16px_rgba(34,211,238,0.4)]' : ''}`}
           initial={false}
           animate={{ height: `${level}%` }}
@@ -107,7 +107,7 @@ export default function Titanic() {
         />
         <AnimatePresence>
           {justFilled && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -116,28 +116,28 @@ export default function Titanic() {
               aria-hidden
             >
               <span className="text-cyan-100 font-bold text-lg drop-shadow-lg">沉船！💧</span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
       {lost && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           className="mb-4"
         >
           <p className="text-red-400 font-bold text-xl" aria-live="assertive">{lost} 沉了，喝！</p>
           <CopyResultButton text={`鐵達尼浮杯：${lost} 沉了，喝！`} className="mt-2 games-focus-ring" />
-        </motion.div>
+        </m.div>
       )}
-      <motion.button
+      <m.button
         type="button"
         whileTap={{ scale: 0.96 }}
         onClick={add}
         className="min-h-[48px] px-8 py-3 rounded-xl bg-cyan-500/80 hover:bg-cyan-500 text-white font-bold text-lg games-focus-ring"
       >
         加一點
-      </motion.button>
+      </m.button>
     </div>
   )
 }

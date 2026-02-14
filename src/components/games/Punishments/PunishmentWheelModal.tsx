@@ -5,7 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { usePunishment } from './PunishmentContext'
 import { useGameReduceMotion } from '../GameWrapper'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -114,7 +114,7 @@ export function PunishmentWheelModal({ playerIndex, playerName, onClose }: Punis
       aria-modal="true"
       aria-label="懲罰輪盤"
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="rounded-2xl bg-[#0a0a1a] border border-white/10 p-6 max-w-sm w-full shadow-xl"
@@ -148,7 +148,7 @@ export function PunishmentWheelModal({ playerIndex, playerName, onClose }: Punis
           <div className="w-full max-w-[240px] mx-auto aspect-square rounded-full border-4 border-white/20 overflow-hidden bg-white/5 relative">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[20px] border-l-transparent border-r-transparent border-t-white" aria-hidden />
             {/* R2-041：轉盤旋轉使用 spring 過渡，減速更自然 */}
-            <motion.div
+            <m.div
               className="w-full h-full rounded-full"
               style={{ background: wheelGradient }}
               initial={{ rotate: 0 }}
@@ -159,16 +159,16 @@ export function PunishmentWheelModal({ playerIndex, playerName, onClose }: Punis
         )}
 
         {phase === 'result' && result && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
             <p className="text-white/60 text-sm mb-1">懲罰</p>
             <p className="text-xl font-bold text-red-300 mb-1">{result.text}</p>
             <p className="text-white/50 text-xs mb-4">{PUNISHMENT_LEVEL_LABEL[result.level]}</p>
             <button type="button" onClick={handleDone} className="btn-primary w-full min-h-[48px] rounded-xl games-focus-ring">
               我完成了
             </button>
-          </motion.div>
+          </m.div>
         )}
-      </motion.div>
+      </m.div>
     </div>
   )
 }

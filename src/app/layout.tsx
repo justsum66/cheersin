@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { Playfair_Display, Inter, Noto_Sans_TC } from 'next/font/google'
 import './globals.css'
 import '@/styles/base.css'
@@ -12,18 +13,18 @@ import '@/components/games/games.css'
 import { Toaster } from 'react-hot-toast'
 import Navigation from '@/components/navigation/Navigation'
 import AuroraBackground from '@/components/AuroraBackground'
-import ScrollProgress from '@/components/ui/ScrollProgress'
+import { ScrollProgress } from '@/components/ui/ScrollProgress'
 import { RouteChangeProgress } from '@/components/ui/RouteChangeProgress'
-import { BackToTop } from '@/components/ui/BackToTop'
+const BackToTop = dynamic(() => import('@/components/ui/BackToTop').then(m => m.BackToTop))
 import { ClientProviders } from '@/components/providers/ClientProviders'
-import { PageTransition } from '@/components/ui/PageTransition'
+import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper'
 import { JsonLd } from '@/components/JsonLd'
-import WebVitalsReporter from '@/components/WebVitalsReporter'
+const WebVitalsReporter = dynamic(() => import('@/components/WebVitalsReporter'))
 import DeferredAnalytics from '@/components/DeferredAnalytics'
 import NavHiddenEffect from '@/components/navigation/NavHiddenEffect'
 import AgeGate from '@/components/AgeGate'
-import CookieConsentBanner from '@/components/CookieConsentBanner'
-import { ChatWidget } from '@/components/ChatWidget'
+const CookieConsentBanner = dynamic(() => import('@/components/CookieConsentBanner'))
+const ChatWidget = dynamic(() => import('@/components/ChatWidget').then(m => m.ChatWidget))
 import MaintenanceBanner from '@/components/MaintenanceBanner'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import ExpiryBanner from '@/components/ExpiryBanner'
@@ -160,7 +161,7 @@ export default async function RootLayout({
           <AgeGate>
             <WebVitalsReporter />
             {/* P2-260：第三方分析由 DeferredAnalytics 延遲載入；若接入 GA 請用 next/script strategy="lazyOnload" */}
-        <DeferredAnalytics />
+            <DeferredAnalytics />
             <NavHiddenEffect />
             {/* A11Y-005：Skip link 鍵盤可達、聚焦時可見，跳至主內容 */}
             <a href="#main-content" className="skip-link" aria-label="跳至主內容">
@@ -177,7 +178,7 @@ export default async function RootLayout({
               <ExpiryBanner />
               <ErrorBoundaryBlock blockName="頁面" fallback={<ErrorFallback />}>
                 <Suspense fallback={<Loading />}>
-                  <PageTransition>{children}</PageTransition>
+                  <PageTransitionWrapper>{children}</PageTransitionWrapper>
                 </Suspense>
               </ErrorBoundaryBlock>
             </main>

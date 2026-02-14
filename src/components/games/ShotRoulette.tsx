@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Target, RefreshCw, Skull, AlertTriangle } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -114,7 +114,7 @@ export default function ShotRoulette() {
           <p className="text-white/60 mb-2">輪到</p>
           <p className="text-2xl font-bold text-red-400 mb-6">{currentPlayer}</p>
           
-          <motion.button
+          <m.button
             type="button"
             onClick={spin}
             whileTap={{ scale: 0.95 }}
@@ -124,37 +124,37 @@ export default function ShotRoulette() {
               <Skull className="w-16 h-16 text-white mx-auto mb-2" />
               <p className="text-white font-bold">開槍！</p>
             </div>
-          </motion.button>
+          </m.button>
         </div>
       )}
 
       {spinning && (
         <div className="text-center">
-          <motion.div
+          <m.div
             animate={{ rotate: 360 }}
             transition={{ duration: 0.5, repeat: Infinity, ease: 'linear' }}
             className="text-8xl"
           >
             🎰
-          </motion.div>
+          </m.div>
           <p className="text-white/60 mt-4">轉動中...</p>
         </div>
       )}
 
       {result && !spinning && (
         <AnimatePresence>
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center w-full max-w-md"
           >
-            <motion.p
+            <m.p
               initial={reducedMotion ? false : { y: -20 }}
               animate={{ y: 0 }}
               className="text-6xl mb-4"
             >
               {result.emoji}
-            </motion.p>
+            </m.p>
             <p className="text-2xl font-bold text-white mb-2">{result.name}</p>
 
             {result.penalty > 0 && (
@@ -198,7 +198,7 @@ export default function ShotRoulette() {
                 />
               </div>
             )}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
 

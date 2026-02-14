@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Star, Award, ShoppingCart, Flame } from 'lucide-react';
 
 interface CocktailExample {
@@ -374,18 +374,18 @@ export function CocktailExamples() {
 
   const filteredExamples = useMemo(() => {
     return COCKTAIL_EXAMPLES.filter(example => {
-      const matchesSearch = 
+      const matchesSearch =
         example.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         example.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         example.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         example.ingredients.some(ing => ing.toLowerCase().includes(searchTerm.toLowerCase())) ||
         example.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+
       const matchesCategory = selectedCategory === '全部' || example.category === selectedCategory;
       const matchesStrength = selectedStrength === '全部' || example.strength === selectedStrength;
-      const matchesOccasion = selectedOccasion === '全部' || example.occasion.includes(selectedOccasion as any);
+      const matchesOccasion = selectedOccasion === '全部' || example.occasion.includes(selectedOccasion);
       const matchesProwine = !showProwineOnly || example.isOnProwine;
-      
+
       return matchesSearch && matchesCategory && matchesStrength && matchesOccasion && matchesProwine;
     });
   }, [searchTerm, selectedCategory, selectedStrength, selectedOccasion, showProwineOnly]);
@@ -406,7 +406,7 @@ export function CocktailExamples() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <motion.div 
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -421,10 +421,10 @@ export function CocktailExamples() {
         <p className="text-white/70 max-w-3xl mx-auto">
           精選來自世界各地的代表性調酒，涵蓋經典與現代創作，展現調酒文化的豐富多樣性
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋與篩選 */}
-      <motion.div 
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -441,7 +441,7 @@ export function CocktailExamples() {
               className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
             <select
@@ -456,7 +456,7 @@ export function CocktailExamples() {
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
             <select
@@ -472,7 +472,7 @@ export function CocktailExamples() {
             </select>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
@@ -488,7 +488,7 @@ export function CocktailExamples() {
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <input
@@ -503,10 +503,10 @@ export function CocktailExamples() {
                 僅顯示 prowine.com.tw 商品
               </label>
             </div>
-            
+
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
             >
               <option value="popularity" className="bg-gray-800">人氣排序</option>
@@ -515,10 +515,10 @@ export function CocktailExamples() {
             </select>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 統計資訊 */}
-      <motion.div 
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -526,21 +526,20 @@ export function CocktailExamples() {
       >
         <span>找到 {sortedExamples.length} 款調酒</span>
         <span>總計 {COCKTAIL_EXAMPLES.length} 款調酒</span>
-      </motion.div>
+      </m.div>
 
       {/* 調酒列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedExamples.map((example, index) => (
-          <motion.div
+          <m.div
             key={example.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className={`bg-white/5 backdrop-blur-sm rounded-xl p-6 border ${
-              example.isOnProwine 
-                ? 'border-amber-500/50 hover:border-amber-500/70' 
-                : 'border-white/10 hover:border-amber-500/30'
-            } cursor-pointer transition-all duration-300 group relative`}
+            className={`bg-white/5 backdrop-blur-sm rounded-xl p-6 border ${example.isOnProwine
+              ? 'border-amber-500/50 hover:border-amber-500/70'
+              : 'border-white/10 hover:border-amber-500/30'
+              } cursor-pointer transition-all duration-300 group relative`}
             onClick={() => setSelectedExample(example)}
           >
             {example.isOnProwine && (
@@ -549,7 +548,7 @@ export function CocktailExamples() {
                 ProWine
               </div>
             )}
-            
+
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">
@@ -565,7 +564,7 @@ export function CocktailExamples() {
                 <div className="text-amber-400 text-sm font-bold">{example.price} TWD</div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full">
                 {example.category}
@@ -580,11 +579,11 @@ export function CocktailExamples() {
                 {example.origin}
               </span>
             </div>
-            
+
             <p className="text-white/70 text-sm mb-4 line-clamp-2">
               {example.description}
             </p>
-            
+
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <span>{example.baseSpirit}</span>
@@ -596,18 +595,18 @@ export function CocktailExamples() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-1 mb-4">
               {example.tags.slice(0, 3).map((tag, idx) => (
-                <span 
-                  key={idx} 
+                <span
+                  key={idx}
                   className="px-2 py-1 bg-white/10 text-white/60 text-xs rounded"
                 >
                   {tag}
                 </span>
               ))}
             </div>
-            
+
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <span>{example.availability}</span>
@@ -633,21 +632,21 @@ export function CocktailExamples() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedExample && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedExample(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -736,20 +735,20 @@ export function CocktailExamples() {
                   <h3 className="font-semibold text-white mb-3">特色標籤</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedExample.tags.map((tag, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-sm"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  
+
                   <h3 className="font-semibold text-white mb-3 mt-4">適合場合</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedExample.occasion.map((occasion, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm"
                       >
                         {occasion}
@@ -769,8 +768,8 @@ export function CocktailExamples() {
                   <h3 className="font-semibold text-white mb-3">風味特徵</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedExample.flavorProfile.map((flavor, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-sm"
                       >
                         {flavor}
@@ -778,7 +777,7 @@ export function CocktailExamples() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold text-white mb-3">調製方法</h3>
                   <p className="text-white/80 text-sm">{selectedExample.preparation}</p>
@@ -845,16 +844,16 @@ export function CocktailExamples() {
                     <span>在 ProWine 購買 - {selectedExample.price} TWD</span>
                   </a>
                 )}
-                
-                <button 
+
+                <button
                   onClick={() => setSelectedExample(null)}
                   className="flex-1 py-3 px-6 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
                 >
                   關閉
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

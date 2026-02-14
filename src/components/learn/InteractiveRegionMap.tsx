@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { MapPin, Wine, X, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
@@ -218,7 +218,7 @@ export function InteractiveRegionMap({ className = '', onRegionSelect }: Interac
 
         {/* Region Markers */}
         {WINE_REGIONS.map((region) => (
-          <motion.button
+          <m.button
             key={region.id}
             className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
             style={{ left: `${region.position.x}%`, top: `${region.position.y}%` }}
@@ -229,7 +229,7 @@ export function InteractiveRegionMap({ className = '', onRegionSelect }: Interac
             whileTap={{ scale: 0.95 }}
           >
             {/* Pulse ring */}
-            <motion.div
+            <m.div
               className="absolute inset-0 rounded-full"
               style={{ backgroundColor: region.color }}
               animate={{
@@ -253,7 +253,7 @@ export function InteractiveRegionMap({ className = '', onRegionSelect }: Interac
                 {region.name}
               </span>
             </div>
-          </motion.button>
+          </m.button>
         ))}
 
         {/* Legend */}
@@ -266,7 +266,7 @@ export function InteractiveRegionMap({ className = '', onRegionSelect }: Interac
       {/* Region Info Panel */}
       <AnimatePresence>
         {selectedRegion && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
@@ -324,7 +324,7 @@ export function InteractiveRegionMap({ className = '', onRegionSelect }: Interac
                 <ChevronRight className="w-4 h-4 text-primary-400 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

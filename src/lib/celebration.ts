@@ -46,12 +46,15 @@ export async function fireFullscreenConfetti(): Promise<void> {
   }, 200)
 }
 
+/** R2-042：失敗／平局效果 — 短震動 + 深色彩帶 + 紅色閃爍疊加 */
 /** 任務 25：失敗／平局效果 — 短震動 + 深色彩帶（可選）；P2-245 動態載入 confetti */
 export async function showFailureEffect(): Promise<void> {
   if (typeof window === 'undefined') return
   if (window.navigator?.vibrate?.(200)) {
     setTimeout(() => window.navigator.vibrate?.(100), 250)
   }
+  /** R2-042：失敗時全螢幕紅色閃爍疊加，強化情緒反饋 */
+  showFailureFlash(600)
   const confetti = await getConfetti()
   confetti({
     particleCount: 30,
@@ -60,6 +63,25 @@ export async function showFailureEffect(): Promise<void> {
     colors: ['#4a0000', '#1a1a1a', '#2d2d2d'],
     scalar: 0.8,
   })
+}
+
+/** R2-042：失敗全螢幕紅色閃爍 — 短暫疊加後淡出 */
+function showFailureFlash(durationMs = 600): void {
+  if (typeof document === 'undefined') return
+  const el = document.createElement('div')
+  el.setAttribute('aria-hidden', 'true')
+  el.style.cssText =
+    'position:fixed;inset:0;z-index:9999;background:rgba(139,0,0,0.25);pointer-events:none;opacity:0;transition:opacity 0.15s ease;'
+  document.body.appendChild(el)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.style.opacity = '1'
+    })
+  })
+  setTimeout(() => {
+    el.style.opacity = '0'
+    setTimeout(() => el.remove(), 180)
+  }, durationMs)
 }
 
 /** 供其他模組使用的 confetti 觸發（動態載入 canvas-confetti） */

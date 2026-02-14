@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  GlassWater, 
-  Star, 
-  MapPin, 
-  TrendingUp, 
-  Filter, 
-  Search, 
+import { m, AnimatePresence } from 'framer-motion';
+import {
+  GlassWater,
+  Star,
+  MapPin,
+  TrendingUp,
+  Filter,
+  Search,
   ShoppingCart,
   ExternalLink,
   Award,
@@ -313,30 +313,30 @@ export function CocktailRecommendationDatabase() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortBy, setSortBy] = useState<'popularity' | 'rating' | 'price' | 'bestMatch'>('popularity');
   const [showProwineOnly, setShowProwineOnly] = useState<boolean>(true);
-  
+
   const categories = useMemo(() => {
     const uniqueCategories = [...new Set(COCKTAIL_DATABASE.map(item => item.category))];
     return ['全部', ...uniqueCategories];
   }, []);
-  
+
   const strengths = ['全部', '輕盈', '中等', '濃烈'];
-  
+
   const filteredRecommendations = useMemo(() => {
     return COCKTAIL_DATABASE.filter(recommendation => {
       const matchesCategory = filterCategory === '全部' || recommendation.category === filterCategory;
       const matchesStrength = filterStrength === '全部' || recommendation.strength === filterStrength;
       const matchesPrice = recommendation.price >= filterPrice[0] && recommendation.price <= filterPrice[1];
-      const matchesSearch = 
+      const matchesSearch =
         recommendation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         recommendation.baseSpirit.toLowerCase().includes(searchTerm.toLowerCase()) ||
         recommendation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         recommendation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesProwine = !showProwineOnly || recommendation.isOnProwine;
-      
+
       return matchesCategory && matchesStrength && matchesPrice && matchesSearch && matchesProwine;
     });
   }, [filterCategory, filterStrength, filterPrice, searchTerm, showProwineOnly]);
-  
+
   const sortedRecommendations = useMemo(() => {
     return [...filteredRecommendations].sort((a, b) => {
       switch (sortBy) {
@@ -356,7 +356,7 @@ export function CocktailRecommendationDatabase() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* 標題區域 */}
-      <motion.div 
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
@@ -371,10 +371,10 @@ export function CocktailRecommendationDatabase() {
         <p className="text-white/70 max-w-3xl mx-auto">
           精選來自世界各地的優質調酒，特別推薦 prowine.com.tw 上的優質商品。
         </p>
-      </motion.div>
+      </m.div>
 
       {/* 搜尋和篩選 */}
-      <motion.div 
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -391,7 +391,7 @@ export function CocktailRecommendationDatabase() {
               className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-green-500/50"
             />
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
             <select
@@ -406,7 +406,7 @@ export function CocktailRecommendationDatabase() {
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
             <select
@@ -421,12 +421,12 @@ export function CocktailRecommendationDatabase() {
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-white/60" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
             >
               <option value="popularity" className="bg-gray-800">人氣排序</option>
@@ -436,7 +436,7 @@ export function CocktailRecommendationDatabase() {
             </select>
           </div>
         </div>
-        
+
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
             <label className="text-white/70 text-sm">價格範圍:</label>
@@ -450,7 +450,7 @@ export function CocktailRecommendationDatabase() {
             />
             <span className="text-white/70 text-sm">{filterPrice[0]}-{filterPrice[1]} TWD</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -465,10 +465,10 @@ export function CocktailRecommendationDatabase() {
             </label>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* 統計資訊 */}
-      <motion.div 
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -476,21 +476,20 @@ export function CocktailRecommendationDatabase() {
       >
         <span>找到 {sortedRecommendations.length} 款調酒</span>
         <span>總計 {COCKTAIL_DATABASE.length} 款調酒</span>
-      </motion.div>
+      </m.div>
 
       {/* 推薦列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedRecommendations.map((recommendation, index) => (
-          <motion.div
+          <m.div
             key={recommendation.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className={`bg-white/5 backdrop-blur-sm rounded-xl p-6 border ${
-              recommendation.isOnProwine 
-                ? 'border-green-500/50 hover:border-green-500/70' 
+            className={`bg-white/5 backdrop-blur-sm rounded-xl p-6 border ${recommendation.isOnProwine
+                ? 'border-green-500/50 hover:border-green-500/70'
                 : 'border-white/10 hover:border-green-500/30'
-            } cursor-pointer transition-all duration-300 group relative`}
+              } cursor-pointer transition-all duration-300 group relative`}
             onClick={() => setSelectedRecommendation(recommendation)}
           >
             {recommendation.isOnProwine && (
@@ -499,7 +498,7 @@ export function CocktailRecommendationDatabase() {
                 ProWine
               </div>
             )}
-            
+
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-white group-hover:text-green-400 transition-colors">
@@ -515,7 +514,7 @@ export function CocktailRecommendationDatabase() {
                 <div className="text-green-400 text-sm font-bold">{recommendation.price} TWD</div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
                 {recommendation.category}
@@ -530,11 +529,11 @@ export function CocktailRecommendationDatabase() {
                 {recommendation.origin}
               </span>
             </div>
-            
+
             <p className="text-white/70 text-sm mb-4 line-clamp-2">
               {recommendation.description}
             </p>
-            
+
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <MapPin className="w-3 h-3" />
@@ -550,18 +549,18 @@ export function CocktailRecommendationDatabase() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-1 mb-4">
               {recommendation.tags.slice(0, 3).map((tag, idx) => (
-                <span 
-                  key={idx} 
+                <span
+                  key={idx}
                   className="px-2 py-1 bg-white/10 text-white/60 text-xs rounded"
                 >
                   {tag}
                 </span>
               ))}
             </div>
-            
+
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <span>{recommendation.availability}</span>
@@ -588,21 +587,21 @@ export function CocktailRecommendationDatabase() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* 詳細資訊彈窗 */}
       <AnimatePresence>
         {selectedRecommendation && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedRecommendation(null)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -695,20 +694,20 @@ export function CocktailRecommendationDatabase() {
                   <h3 className="font-semibold text-white mb-3">特色標籤</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedRecommendation.tags.map((tag, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  
+
                   <h3 className="font-semibold text-white mb-3 mt-4">適合場合</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedRecommendation.occasion.map((occasion, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm"
                       >
                         {occasion}
@@ -728,8 +727,8 @@ export function CocktailRecommendationDatabase() {
                   <h3 className="font-semibold text-white mb-3">風味特徵</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedRecommendation.flavorProfile.map((flavor, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm"
                       >
                         {flavor}
@@ -737,7 +736,7 @@ export function CocktailRecommendationDatabase() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold text-white mb-3">調製方法</h3>
                   <p className="text-white/80 text-sm">{selectedRecommendation.preparation}</p>
@@ -799,16 +798,16 @@ export function CocktailRecommendationDatabase() {
                     <span>在 ProWine 購買 - {selectedRecommendation.price} TWD</span>
                   </a>
                 )}
-                
-                <button 
+
+                <button
                   onClick={() => setSelectedRecommendation(null)}
                   className="flex-1 py-3 px-6 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
                 >
                   關閉
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -181,3 +181,28 @@
   border-radius: 4px;
   box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.6);
 }
+
+/* R2-095：合作夥伴 Logo 無限滾動 */
+@keyframes home-partner-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.home-partner-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: home-partner-marquee 25s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-partner-marquee-track {
+    animation: none;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}

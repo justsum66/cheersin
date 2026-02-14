@@ -41,7 +41,15 @@ export default class ErrorBoundaryBlock extends Component<Props, State> {
     reportToSentry(error, context)
   }
 
+  /** ChunkLoadError 需整頁重載才能拿到新 chunk，僅 reset 無效 */
+  private isChunkLoadError = (err: Error | null) =>
+    err != null && (err.name === 'ChunkLoadError' || /loading chunk|chunk.*failed/i.test(err.message))
+
   handleReset = () => {
+    if (this.isChunkLoadError(this.state.error) && typeof window !== 'undefined') {
+      window.location.reload()
+      return
+    }
     this.setState({ hasError: false, error: null })
     this.props.onReset?.()
   }
@@ -53,7 +61,9 @@ export default class ErrorBoundaryBlock extends Component<Props, State> {
         <div className="flex flex-col items-center justify-center min-h-[120px] p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-center" role="alert" aria-live="assertive">
           <AlertTriangle className="w-8 h-8 text-red-400 mb-2" />
           <p className="text-white/80 text-sm mb-2">
-            {this.props.blockName ? `「${this.props.blockName}」` : '此區塊'}載入時發生錯誤
+            {this.isChunkLoadError(this.state.error)
+              ? '資源載入失敗，請點下方重試重新整理頁面'
+              : `${this.props.blockName ? `「${this.props.blockName}」` : '此區塊'}載入時發生錯誤`}
           </p>
           <button
             type="button"

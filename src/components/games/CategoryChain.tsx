@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m , AnimatePresence } from 'framer-motion'
 import { Link2, RotateCcw, Settings, Check, X, Clock } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
@@ -171,7 +171,7 @@ export default function CategoryChain() {
       {/* 設定面板 */}
       <AnimatePresence>
         {showSettings && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -212,7 +212,7 @@ export default function CategoryChain() {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -224,7 +224,7 @@ export default function CategoryChain() {
 
       {/* 計時器 */}
       {!loser && (
-        <motion.div
+        <m.div
           key={timeLeft}
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -234,7 +234,7 @@ export default function CategoryChain() {
         >
           <Clock className="w-4 h-4" />
           <span className="font-mono font-bold text-xl">{timeLeft}</span>
-        </motion.div>
+        </m.div>
       )}
 
       {/* 輪到誰 */}
@@ -246,7 +246,7 @@ export default function CategoryChain() {
 
       {/* 輸家顯示 */}
       {loser && (
-        <motion.div
+        <m.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center gap-4 mb-6"
@@ -264,7 +264,7 @@ export default function CategoryChain() {
             <RotateCcw className="w-5 h-5" />
             再玩一局
           </button>
-        </motion.div>
+        </m.div>
       )}
 
       {/* 輸入區 */}
@@ -280,7 +280,7 @@ export default function CategoryChain() {
               className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary-400 games-focus-ring"
               aria-label={`輸入${categoryInfo.name}`}
             />
-            <motion.button
+            <m.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={submitWord}
@@ -289,8 +289,8 @@ export default function CategoryChain() {
               aria-label="確認"
             >
               <Check className="w-5 h-5" />
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={skipTurn}
@@ -299,7 +299,7 @@ export default function CategoryChain() {
               title="放棄（Esc）"
             >
               <X className="w-5 h-5" />
-            </motion.button>
+            </m.button>
           </div>
           <p className="text-white/40 text-sm">Enter 確認 · Esc 放棄</p>
         </div>

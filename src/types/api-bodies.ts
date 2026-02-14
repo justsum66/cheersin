@@ -1,26 +1,24 @@
 /**
  * P2-30：API 請求 body 明確型別，取代 inline as { ... }，無 any
- * 供 chat、subscription、games、report、recommend、admin 等 route 使用
+ * 與 api-body-schemas Zod schema 對齊：可從 @/lib/api-body-schemas 匯入推斷型別，此處 re-export 或保留無 schema 的介面
  */
+import type {
+  ChatPostBody as ChatPostBodyInferred,
+  GamesRoomsPostBody as GamesRoomsPostBodyInferred,
+  JoinRoomBody,
+  RecommendPostBody as RecommendPostBodyInferred,
+  ReportPostBody as ReportPostBodyInferred,
+  LearnNotesPostBody as LearnNotesPostBodyInferred,
+  LearnCertificatePostBody as LearnCertificatePostBodyInferred,
+  SubscriptionPromoPostBody as SubscriptionPromoPostBodyInferred,
+  SubscriptionPostBody as SubscriptionPostBodyInferred,
+} from '@/lib/api-body-schemas'
 
-import type { ChatMessage, SommelierUserContext } from '@/lib/groq'
+/** POST /api/chat（型別與 ChatPostBodySchema 一致） */
+export type ChatPostBody = ChatPostBodyInferred
 
-/** POST /api/chat */
-export interface ChatPostBody {
-  messages: ChatMessage[]
-  userContext?: SommelierUserContext
-  last5Turns?: { role: string; content: string }[]
-  stream?: boolean
-  imageBase64?: string
-  subscriptionTier?: 'free' | 'basic' | 'premium'
-}
-
-/** POST /api/subscription */
-export interface SubscriptionPostBody {
-  action?: string
-  planType?: string
-  subscriptionId?: string
-}
+/** POST /api/subscription（型別與 SubscriptionPostBodySchema 一致） */
+export type SubscriptionPostBody = SubscriptionPostBodyInferred
 
 /** PayPal subscription links 陣列（API 回傳） */
 export interface PayPalLink {
@@ -45,32 +43,14 @@ export interface PayPalWebhookEvent {
   resource_type?: string
 }
 
-/** POST /api/report */
-export interface ReportPostBody {
-  type?: string
-  description?: string
-  context?: { roomSlug?: string; gameId?: string }
-}
+/** POST /api/report（型別與 ReportPostBodySchema 一致） */
+export type ReportPostBody = ReportPostBodyInferred
 
-/** POST /api/games/rooms — 建立房間；P0-004 匿名模式；Killer 派對房：房限與邀請；#14 劇本殺房；PR-31 參數校驗 */
-export interface GamesRoomsPostBody {
-  password?: string
-  /** 房主開啟後，所有玩家暱稱顯示為玩家A、玩家B… */
-  anonymousMode?: boolean
-  /** 派對房模式：免費 4 人/30 分鐘，付費 12 人/24 小時 */
-  partyRoom?: boolean
-  /** 劇本殺房：綁定 script_id，人數與邀請路徑依劇本 */
-  scriptId?: string
-  /** 派對房可選人數上限（4 | 8 | 12），未傳則依訂閱狀態決定 */
-  maxPlayers?: 4 | 8 | 12
-}
+/** POST /api/games/rooms — 建立房間（型別與 GamesRoomsPostBodySchema 一致） */
+export type GamesRoomsPostBody = GamesRoomsPostBodyInferred
 
-/** POST /api/games/rooms/[slug]/join */
-export interface GamesRoomJoinPostBody {
-  displayName?: string
-  password?: string
-  isSpectator?: boolean
-}
+/** POST /api/games/rooms/[slug]/join（型別與 JoinRoomBodySchema 一致） */
+export type GamesRoomJoinPostBody = JoinRoomBody
 
 /** POST /api/games/rooms/[slug]/game-state；GET 回傳 state 型別見 @/types/games PartyState / ScriptState；PR-42 集中型別 */
 export interface GameStatePostBody {
@@ -81,18 +61,8 @@ export interface GameStatePostBody {
 /** 派對房／遊戲房間與狀態型別集中於 @/types/games；此處 re-export 供 API 與前端共用 */
 export type { RoomInfo, PartyState, GamesRoomGetResponse } from './games'
 
-/** POST /api/recommend */
-export interface RecommendPostBody {
-  query?: string
-  limit?: number
-  vector?: number[]
-  topK?: number
-  namespace?: string
-  soul_wine?: string
-  soul_wine_type?: string
-  quiz_tags?: string[]
-  recentChat?: string
-}
+/** POST /api/recommend（型別與 RecommendPostBodySchema 一致） */
+export type RecommendPostBody = RecommendPostBodyInferred
 
 /** POST /api/admin/knowledge */
 export interface AdminKnowledgePostBody {
@@ -110,7 +80,11 @@ export interface AdminKnowledgePatchBody {
   content?: string
 }
 
-/** POST /api/subscription/promo */
-export interface SubscriptionPromoPostBody {
-  code?: string
-}
+/** POST /api/subscription/promo（型別與 SubscriptionPromoPostBodySchema 一致） */
+export type SubscriptionPromoPostBody = SubscriptionPromoPostBodyInferred
+
+/** POST /api/learn/notes（型別與 LearnNotesPostBodySchema 一致） */
+export type LearnNotesPostBody = LearnNotesPostBodyInferred
+
+/** POST /api/learn/certificate（型別與 LearnCertificatePostBodySchema 一致） */
+export type LearnCertificatePostBody = LearnCertificatePostBodyInferred
