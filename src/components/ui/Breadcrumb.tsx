@@ -1,5 +1,3 @@
-'use client'
-
 /** UX_LAYOUT_200 #52：麵包屑結構化與連結 — 語意 nav、aria-label、當前頁 aria-current */
 import Link from 'next/link'
 

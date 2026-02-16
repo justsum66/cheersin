@@ -43,6 +43,23 @@ describe('Games key path smoke', () => {
   beforeEach(() => {
     cleanup()
     vi.stubGlobal('localStorage', { getItem: vi.fn(), setItem: vi.fn() })
+    // Mock fetch for game data JSON files that can't resolve in JSDOM
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (typeof url === 'string' && url.includes('truthOrDare')) {
+        return { ok: true, json: async () => ({ truths: { love: [{ id: 1, text: '真心話1', level: 'mild' }], funny: [{ id: 2, text: '真心話2', level: 'normal' }], embarrassing: [], deep: [], wild: [] }, dares: { physical: [{ id: 10, text: '大冒險1', level: 'mild' }], social: [{ id: 11, text: '大冒險2', level: 'normal' }], funny: [], creative: [], wild: [] } }) }
+      }
+      if (typeof url === 'string' && url.includes('neverHaveIEver')) {
+        return { ok: true, json: async () => ({ questions: { love: [{ id: 1, text: '我從來沒有1', level: 'mild' }], work: [{ id: 2, text: '我從來沒有2', level: 'normal' }], life: [{ id: 3, text: '我從來沒有3', level: 'mild' }], dark: [{ id: 4, text: '我從來沒有4', level: 'normal' }], adult: [{ id: 5, text: '我從來沒有5', level: 'spicy' }] } }) }
+      }
+      if (typeof url === 'string' && url.includes('whoMostLikely')) {
+        return { ok: true, json: async () => ({ questions: { love: [{ id: 1, text: '誰最可能1', level: 'mild' }], friendship: [{ id: 2, text: '誰最可能2', level: 'normal' }], work: [{ id: 3, text: '誰最可能3', level: 'mild' }], life: [{ id: 4, text: '誰最可能4', level: 'normal' }], funny: [{ id: 5, text: '誰最可能5', level: 'mild' }], adult: [] } }) }
+      }
+      if (typeof url === 'string' && url.includes('secretReveal')) {
+        return { ok: true, json: async () => ({ prompts: { love: [{ id: 1, text: '秘密1', level: 'mild' }], embarrassing: [], secrets: [], confession: [], wild: [] } }) }
+      }
+      // Fallback for unknown URLs
+      return { ok: false, status: 404, json: async () => ({}) }
+    }))
   })
 
   it('Roulette renders and spin button exists', () => {
@@ -72,17 +89,21 @@ describe('Games key path smoke', () => {
 
   it('TruthOrDare shows result area after pick truth', async () => {
     render(wrap(TruthOrDare))
-    const pickTruth = screen.getByTestId('truth-or-dare-pick-truth')
+    // Wait for async data to load before interacting
+    const pickTruth = await waitFor(() => screen.getByTestId('truth-or-dare-pick-truth'), { timeout: 3000 })
     fireEvent.click(pickTruth)
     await waitFor(() => {
       expect(screen.getByTestId('truth-or-dare-result')).toBeInTheDocument()
     }, { timeout: 1000 })
-  })
+  }, 8000)
 
-  it('NeverHaveIEver shows card area when round has content', () => {
+  it('NeverHaveIEver shows card area when round has content', async () => {
     render(wrap(NeverHaveIEver))
-    expect(screen.getByTestId('never-have-i-ever-card')).toBeInTheDocument()
-  })
+    // Wait for async data to load
+    await waitFor(() => {
+      expect(screen.getByTestId('never-have-i-ever-card')).toBeInTheDocument()
+    }, { timeout: 3000 })
+  }, 8000)
 
   it('Trivia shows result area after completing all questions', async () => {
     render(wrap(Trivia))
@@ -207,16 +228,18 @@ describe('Games key path smoke', () => {
     }, { timeout: 2000 })
   }, 5000)
 
-  it('WhoMostLikely renders and start button exists', () => {
+  it('WhoMostLikely renders and start button exists', async () => {
     render(wrap(WhoMostLikely))
-    const start = screen.getByTestId('who-most-likely-start')
+    // Wait for async data to load
+    const start = await waitFor(() => screen.getByTestId('who-most-likely-start'), { timeout: 3000 })
     expect(start).toBeInTheDocument()
     expect(start).not.toBeDisabled()
-  })
+  }, 8000)
 
   it('WhoMostLikely shows result area after pointing a player', async () => {
     render(wrap(WhoMostLikely))
-    fireEvent.click(screen.getByTestId('who-most-likely-start'))
+    const start = await waitFor(() => screen.getByTestId('who-most-likely-start'), { timeout: 3000 })
+    fireEvent.click(start)
     await waitFor(() => {
       expect(screen.getByText(/大家同時指向/)).toBeInTheDocument()
     }, { timeout: 1000 })
@@ -225,7 +248,7 @@ describe('Games key path smoke', () => {
     await waitFor(() => {
       expect(screen.getByTestId('who-most-likely-result')).toBeInTheDocument()
     }, { timeout: 1000 })
-  }, 5000)
+  }, 8000)
 
   it('RhythmGuess renders and start button exists', () => {
     render(wrap(RhythmGuess))

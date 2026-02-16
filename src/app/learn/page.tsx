@@ -16,6 +16,8 @@ import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
 import { CoursePreviewModal } from '@/components/learn/CoursePreviewModal'
+import CourseListSection from './components/CourseListSection';
+import GamificationSection from './components/GamificationSection';
 import { useTranslation } from '@/contexts/I18nContext'
 
 /** 151–155：課程進度存於 localStorage，key 為 cheersin_learn_progress */
@@ -909,79 +911,36 @@ export default function LearnPage() {
           </div>
         </m.div>
 
-        {/* 57 每日任務；58 週挑戰；36 可摺疊；59 模組動畫；排版優化 */}
-        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="mb-6">
-          <button type="button" onClick={() => setTaskOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-2 py-2 rounded-lg hover:bg-white/5 transition-colors -mx-1 px-1" aria-expanded={taskOpen}>
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-              <Target className="w-5 h-5 text-primary-400 shrink-0" />
-              任務
-            </h2>
-            <span className="text-white/50 transition-transform duration-200">{taskOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</span>
-          </button>
-          <AnimatePresence initial={false}>
-          {taskOpen && (
-          <m.div
-            key="task-content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="overflow-hidden"
-          >
-          <div className="space-y-3 pt-1">
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
-            {dailyDone ? (
-              <>
-                <Check className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <span className="text-white/90">今日：完成一章</span>
-                <span className="text-primary-400 text-sm">✓</span>
-              </>
-            ) : (
-              <span className="text-white/70">今日：完成任一章節</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
-            <Flame className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <span className="text-white/90">本週：完成 3 章</span>
-            <span className={`text-sm ml-auto ${weeklyCount >= 3 ? 'text-primary-400' : 'text-white/50'}`}>
-              {weeklyCount}/3
-            </span>
-            {weeklyCount >= 3 && <Check className="w-5 h-5 text-primary-400 flex-shrink-0" />}
-          </div>
-          </div>
-          </m.div>
-          )}
-          </AnimatePresence>
-        </m.div>
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={true}
+          showAchievementSection={false}
+          showFriendSection={false}
+          showBookmarkSection={false}
+          showTimelineSection={false}
+          taskOpen={taskOpen}
+          setTaskOpen={setTaskOpen}
+          completedCourseCount={completedCourseCount}
+          dailyDone={dailyDone}
+          weeklyCount={weeklyCount}
+          dailyGoal={dailyGoal}
+          chaptersToday={chaptersToday}
+          setDailyGoal={setDailyGoal}
+        />
 
-        {/* 60 學習歷程時間軸；36 可摺疊；59 模組動畫 */}
-        {timelineEntries.length > 0 && (
-          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
-            <button type="button" onClick={() => setTimelineOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={timelineOpen}>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-                <Clock className="w-5 h-5 text-primary-400" />
-                學習歷程
-              </h2>
-              {timelineOpen ? <ChevronUp className="w-5 h-5 text-white/50" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
-            </button>
-            {timelineOpen && (
-            <div className="space-y-2">
-              {timelineEntries.map((e) => (
-                <div
-                  key={e.courseId}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/10"
-                >
-                  <span className="text-primary-400 text-sm font-medium w-24 flex-shrink-0">
-                    {e.completedAt.replace(/-/g, '/')}
-                  </span>
-                  <span className="text-white/90">{e.title}</span>
-                  <Check className="w-4 h-4 text-primary-400 ml-auto flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-            )}
-          </m.div>
-        )}
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={false}
+          showAchievementSection={false}
+          showFriendSection={false}
+          showBookmarkSection={false}
+          showTimelineSection={true}
+          timelineOpen={timelineOpen}
+          setTimelineOpen={setTimelineOpen}
+          timelineEntries={timelineEntries}
+        />
 
         {/* P3 學習推薦：有進度未完成時顯示「繼續學習」區塊 */}
         {continueLearningCourse && (
@@ -1042,27 +1001,16 @@ export default function LearnPage() {
           </div>
         </m.div>
 
-        {/* P2.C3.2 本週之星：排行榜 */}
-        {leaderboard.length > 0 && (
-          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
-            <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-400" />
-              本週之星
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {leaderboard.slice(0, 5).map((e) => (
-                <span
-                  key={e.rank}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${e.isCurrentUser ? 'bg-primary-500/30 text-primary-200 border border-primary-500/50' : 'bg-white/10 text-white/80'}`}
-                >
-                  <span className="text-white/50">#{e.rank}</span>
-                  <span>{e.name}</span>
-                  <span className="text-amber-400/90">{e.points} 分</span>
-                </span>
-              ))}
-            </div>
-          </m.div>
-        )}
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={false}
+          showAchievementSection={false}
+          showFriendSection={false}
+          showBookmarkSection={false}
+          showTimelineSection={false}
+          leaderboard={leaderboard}
+        />
 
         {/* P2.B2.3 遺忘曲線複習：艾賓浩斯 1/3/7 天建議複習 */}
         {reviewSuggestions.length > 0 && (
@@ -1125,173 +1073,51 @@ export default function LearnPage() {
           </div>
         )}
 
-        {/* 51 成就列表；89 品酒師等級認證；90 專屬會員徽章；36 可摺疊；59 模組動畫 */}
-        {(badges.length > 0 || hasProBadge(tier) || sommelierLevel) && (
-          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
-            <button type="button" onClick={() => setAchievementOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={achievementOpen}>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-                <Star className="w-5 h-5 text-primary-400" />
-                我的成就
-              </h2>
-              {achievementOpen ? <ChevronUp className="w-5 h-5 text-white/50" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
-            </button>
-            {achievementOpen && (
-            <div className="flex flex-wrap gap-2">
-              {sommelierLevel && (
-                <span className="px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-300 text-sm border border-amber-500/40" title="品酒師等級認證">
-                  {sommelierLevel}
-                </span>
-              )}
-              {hasProBadge(tier) && (
-                <span className="px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-300 text-sm" title="Pro 專屬會員">
-                  Pro 會員
-                </span>
-              )}
-              {/* Phase 1 D2.1: 成就徽章系統視覺升級 - 專業圖標 + 動畫 */}
-              {badges.map((id, index) => {
-                const badgeIcons: Record<string, typeof Trophy> = {
-                  'first-quiz': Award,
-                  'streak-7': Flame,
-                  'games-10': Trophy,
-                  'learn-1': BookOpen,
-                  'wishlist-5': Bookmark,
-                }
-                const BadgeIcon = badgeIcons[id] || Award
-                
-                return (
-                  <m.span
-                    key={id}
-                    initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    transition={{ 
-                      delay: index * 0.05,
-                      duration: 0.4,
-                      ease: [0.68, -0.55, 0.265, 1.55]
-                    }}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary-500/30 to-amber-500/30 text-primary-200 text-sm border border-primary-500/30 shadow-md hover:shadow-xl transition-shadow cursor-default"
-                    title={BADGE_LABELS[id] ?? id}
-                  >
-                    <BadgeIcon className="w-3.5 h-3.5" />
-                    {BADGE_LABELS[id] ?? id}
-                  </m.span>
-                )
-              })}
-            </div>
-            )}
-          </m.div>
-        )}
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={false}
+          showAchievementSection={true}
+          showFriendSection={false}
+          showBookmarkSection={false}
+          showTimelineSection={false}
+          achievementOpen={achievementOpen}
+          setAchievementOpen={setAchievementOpen}
+          sommelierLevel={sommelierLevel || undefined}
+          badges={badges}
+        />
 
-        {/* 56 與好友比較；36 可摺疊；59 模組動畫 */}
-        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mb-6">
-          <button type="button" onClick={() => setFriendOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={friendOpen}>
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-              <UserPlus className="w-5 h-5 text-primary-400" />
-              與好友比較
-            </h2>
-            {friendOpen ? <ChevronUp className="w-5 h-5 text-white/50" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
-          </button>
-          {friendOpen && (
-          <div className="space-y-3">
-            {friendCompare ? (
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white/90">你 vs {friendCompare.nickname}</span>
-                  <button
-                    type="button"
-                    onClick={() => { setFriendCompare(null); setFriendCompareState(null) }}
-                    className="text-white/40 hover:text-white text-xs"
-                  >
-                    移除
-                  </button>
-                </div>
-                <div className="flex gap-4 text-sm">
-                  <span className="text-primary-400">你：{completedCourseCount} 堂</span>
-                  <span className="text-white/40">|</span>
-                  <span className="text-white/70">{friendCompare.nickname}：{friendCompare.completedCourses} 堂</span>
-                </div>
-                <p className="text-white/40 text-xs mt-1">
-                  {completedCourseCount > friendCompare.completedCourses ? '你領先！' : completedCourseCount < friendCompare.completedCourses ? '加油，繼續學習！' : '平分秋色'}
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="text"
-                  value={friendNickname}
-                  onChange={(e) => setFriendNickname(e.target.value)}
-                  placeholder="好友暱稱"
-                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm w-24"
-                  aria-label="好友暱稱"
-                />
-                <input
-                  type="number"
-                  min={0}
-                  max={55}
-                  step={1}
-                  value={friendCompleted}
-                  onChange={(e) => setFriendCompleted(e.target.value)}
-                  onWheel={preventNumberScrollOnWheel}
-                  placeholder="完成堂數"
-                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 text-sm w-20"
-                  aria-label="好友完成堂數"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nick = friendNickname.trim()
-                    const cnt = parseInt(friendCompleted, 10)
-                    if (nick && Number.isFinite(cnt) && cnt >= 0) {
-                      setFriendCompare({ nickname: nick, completedCourses: cnt, updatedAt: '' })
-                      setFriendCompareState({ nickname: nick, completedCourses: cnt, updatedAt: '' })
-                      setFriendNickname('')
-                      setFriendCompleted('')
-                    }
-                  }}
-                  className="min-h-[40px] px-4 py-2 rounded-lg bg-primary-500/30 hover:bg-primary-500/50 active:scale-[0.98] text-white text-sm font-medium transition-transform"
-                >
-                  加入比較
-                </button>
-              </div>
-            )}
-            <p className="text-white/40 text-xs">邀請好友一起學，輸入好友的完成堂數來比拼（最多 55 堂）</p>
-          </div>
-          )}
-        </m.div>
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={false}
+          showAchievementSection={false}
+          showFriendSection={true}
+          showBookmarkSection={false}
+          showTimelineSection={false}
+          friendOpen={friendOpen}
+          setFriendOpen={setFriendOpen}
+          completedCourseCount={completedCourseCount}
+          friendCompare={friendCompare}
+          setFriendCompareState={setFriendCompareState}
+          friendNickname={friendNickname}
+          setFriendNickname={setFriendNickname}
+          friendCompleted={friendCompleted}
+          setFriendCompleted={setFriendCompleted}
+        />
 
-        {/* 160 我的書籤；36 可摺疊 */}
-        {bookmarks.length > 0 && (
-          <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-            <button type="button" onClick={() => setBookmarkOpen((o) => !o)} className="flex items-center justify-between w-full text-left mb-3" aria-expanded={bookmarkOpen} aria-label={bookmarkOpen ? '收合我的書籤' : '展開我的書籤'}>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-                <Bookmark className="w-5 h-5 text-primary-400" aria-hidden />
-                我的書籤
-              </h2>
-              {bookmarkOpen ? <ChevronUp className="w-5 h-5 text-white/50" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
-            </button>
-            {/* Phase 1 D3.3: 書籤快速跳轉動畫 */}
-            {bookmarkOpen && (
-            <div className="space-y-2">
-              {bookmarks.slice(0, 5).map((b, i) => (
-                <m.div
-                  key={`${b.courseId}-${b.chapterId}-${i}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05, duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                >
-                  <Link
-                    href={`/learn/${b.courseId}#ch-${b.chapterId}`}
-                    className="block p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary-500/30 text-white text-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-                  >
-                    <span className="font-medium">{b.courseTitle ?? b.courseId}</span>
-                    <span className="text-white/50"> · {t('common.chapterLabel', { n: b.chapterId })} {b.title}</span>
-                  </Link>
-                </m.div>
-              ))}
-            </div>
-            )}
-          </m.div>
-        )}
+        <GamificationSection
+          progress={progress}
+          refreshStats={refreshStats}
+          showTaskSection={false}
+          showAchievementSection={false}
+          showFriendSection={false}
+          showBookmarkSection={true}
+          showTimelineSection={false}
+          bookmarkOpen={bookmarkOpen}
+          setBookmarkOpen={setBookmarkOpen}
+          bookmarks={bookmarks}
+        />
 
         {/* 9 課程關聯圖（前置/後續）視覺化 */}
         <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -1822,271 +1648,13 @@ export default function LearnPage() {
           <p className="text-white/50 text-sm mb-5 md:mb-6" aria-live="polite">
             {isFiltering ? '篩選中…' : `共 ${filteredCourses.length} 門課程`}
           </p>
-        {/* 37 課程依等級分組；58 響應式；94 區塊間視覺分隔 */}
-        <div className="space-y-10 md:space-y-12 mb-12 divide-y divide-white/5 md:divide-y-0 md:space-y-12">
-          {(['beginner', 'intermediate', 'expert'] as const).map((level) => {
-            const levelCourses = filteredCourses.filter((c) => c.level === level)
-            if (levelCourses.length === 0) return null
-            const isExpanded = expandedLevels.has(level)
-            const visibleCourses = isExpanded ? levelCourses : levelCourses.slice(0, INITIAL_COURSES_PER_LEVEL)
-            const hasMore = levelCourses.length > INITIAL_COURSES_PER_LEVEL
-            return (
-              <section key={level} aria-labelledby={`section-${level}`} className="pt-10 md:pt-0 first:pt-0 scroll-mt-20">
-                <h2 id={`section-${level}`} className="text-lg md:text-xl font-semibold text-white mb-5 md:mb-6 flex items-center gap-3">
-                  <span className="w-1 h-6 md:h-7 rounded-full bg-primary-500 shrink-0" aria-hidden />
-                  <span>{LEVEL_LABELS[level]}（{levelCourses.length}）</span>
-                </h2>
-                <div className={viewMode === 'list' ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6'}>
-          {visibleCourses.map((course, index) => {
-            const isProCourse = !course.free
-            const hasAccess = canAccessPro || (isProCourse && tier === 'free' && proTrialAllowed)
-            /** R2-211：免費方案僅可免費學習前 FREE_LEARN_COURSES_COUNT 門課 */
-            const globalIndex = COURSES.findIndex((c) => c.id === course.id)
-            const freeTierOverLimit = tier === 'free' && globalIndex >= FREE_LEARN_COURSES_COUNT
-            const isLocked = (isProCourse && !hasAccess) || freeTierOverLimit
-            const prog = progress[course.id]
-            const totalChapters = course.lessons
-            const completed = prog ? Math.min(prog.completed, totalChapters) : 0
-            const progressPct = totalChapters > 0 ? Math.round((completed / totalChapters) * 100) : 0
-            return (
-              <InViewAnimate key={course.id} delay={Math.min(index * 0.06, 0.4)} y={20} amount={0.15}>
-              {viewMode === 'list' ? (
-                <Link
-                  href={isLocked ? '/pricing' : `/learn/${course.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors"
-                  aria-label={`${course.title}，${course.lessons} 課`}
-                >
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${course.color} shrink-0`}>
-                    <course.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-white truncate">{highlightQuery(course.title, deferredSearch)}</h3>
-                    <p className="text-white/50 text-sm truncate">{highlightQuery(course.description, deferredSearch)}</p>
-                  </div>
-                  <span className="text-white/40 text-xs shrink-0">{course.lessons} 課 · {course.estimatedMinutes ?? course.duration}</span>
-                  <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
-                </Link>
-              ) : (
-              <m.div
-                style={{ transformStyle: 'preserve-3d' }}
-                whileHover={{
-                  scale: 1.025,
-                  rotateX: 1.5,
-                  rotateY: -1.5,
-                  z: 10,
-                  boxShadow: '0 20px 40px rgba(139, 0, 0, 0.15), 0 0 30px rgba(139, 0, 0, 0.1)',
-                  transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
-                }}
-                onClick={() => !isLocked && handleCoursePreview(course)}
-                className="cursor-pointer group/card"
-              >
-                {/* P2.D3.2 快速預覽 hover：桌面版 hover 顯示描述 */}
-                {/* R2-113：懸停時顯示課程預覽與「開始學習」按鈕 */}
-                <div className="hidden sm:block absolute inset-0 z-[2] pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 rounded-2xl bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 flex flex-col justify-end">
-                  <p className="text-white/90 text-sm line-clamp-3 mb-2">{course.description}</p>
-                  <span className="text-primary-300 text-xs font-medium inline-flex items-center gap-1">
-                    開始學習
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-                {/* L05/L06：課程卡 hover 一致、focus-visible 由內層 Link 提供 */}
-                <div
-                  className={`card-interactive glass-card rounded-2xl h-full relative overflow-hidden shadow-glass-1 hover:shadow-glass-hover hover:border-white/20 transition-all duration-300 ease-out active:scale-[0.99] min-h-[120px] ${isLocked ? 'cursor-pointer' : ''}`}
-                  onClick={isLocked ? () => setShowUpgrade(true) : undefined}
-                  onKeyDown={isLocked ? (e) => e.key === 'Enter' && setShowUpgrade(true) : undefined}
-                  role={isLocked ? 'button' : undefined}
-                  tabIndex={isLocked ? 0 : undefined}
-                >
-                  {!isLocked && (
-                    <div 
-                      className="absolute inset-0 z-[1] focus:outline-none games-focus-ring focus-visible:ring-inset rounded-2xl min-h-[48px]" 
-                      aria-label={`進入課程：${course.title}，${course.lessons} 堂課、約 ${course.estimatedMinutes != null ? `${course.estimatedMinutes} 分鐘` : course.duration}`} 
-                    />
-                  )}
-                  {/* AUDIT #32：課程標籤與全站 badge 一致 — 統一 rounded-full text-xs px-2 py-1 + 語意色 */}
-                  {course.tags?.includes('essential') && (
-                    <span className="absolute top-3 left-3 learn-badge learn-badge-primary z-20">入門必讀</span>
-                  )}
-                  {course.tags?.includes('hot') && !course.tags?.includes('essential') && (
-                    <span className="absolute top-3 left-3 learn-badge learn-badge-amber z-20">熱門</span>
-                  )}
-                  {course.tags?.includes('quick') && (
-                    <span className="absolute top-3 left-3 learn-badge learn-badge-amber z-20">快速</span>
-                  )}
-                  {course.tags?.includes('new') && !course.tags?.includes('essential') && !course.tags?.includes('quick') && (
-                    <span className="absolute top-3 left-3 learn-badge learn-badge-green z-20">新上架</span>
-                  )}
-                  {/* P3-425：課程難度標籤 — 入門/進階/專家 */}
-                  <span className="absolute bottom-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-white/15 text-white/90 z-20">{LEVEL_LABELS[course.level]}</span>
-                  {CERT_MAP[course.id] && (
-                    <div className={`absolute top-3 text-[10px] px-2 py-0.5 rounded bg-slate-600/80 text-white/90 z-20 ${!course.free ? 'right-14' : 'right-3'}`}>{CERT_MAP[course.id]}</div>
-                  )}
-                  {!course.free && (
-                    <div className="absolute top-3 right-3 bg-accent-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-20" aria-label="需升級">
-                      <Lock className="w-3 h-3" aria-hidden />
-                      {tier === 'free' && proTrialAllowed && proTrialRemaining >= 0 ? `試用 ${proTrialRemaining} 次` : 'PRO'}
-                    </div>
-                  )}
-                  {/* AUDIT #2：Pro 鎖定課程 CTA「升級解鎖」與免費「開始」視覺區分 — 鎖定區主 CTA 按鈕樣式 */}
-                  {/* E20：Pro 課程未訂閱時 paywall 與 CTA 連 /pricing */}
-                  {isLocked && (
-                    <div className="absolute inset-0 bg-dark-950/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10" aria-label="需升級解鎖">
-                      <Lock className="w-8 h-8 text-primary-400" aria-hidden />
-                      <Link
-                        href="/pricing"
-                        className="inline-flex items-center justify-center min-h-[48px] min-w-[48px] px-5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm border border-primary-400/50 shadow-lg games-focus-ring"
-                      >
-                        升級解鎖
-                      </Link>
-                      {tier === 'free' && proTrialAllowed && proTrialRemaining >= 0 && (
-                        <span className="text-white/60 text-xs">試用剩餘 {proTrialRemaining} 次</span>
-                      )}
-                    </div>
-                  )}
-                  {/* Phase 1 D1.2: 課程封面 hover 播放圖示放大動畫 */}
-                  {/* 151–155：預覽圖；AUDIT #14 課程封面 previewImage 為 null 時用佔位（漸層+icon） */}
-                  <div className={`aspect-video w-full rounded-t-2xl bg-gradient-to-br ${course.color} flex items-center justify-center relative overflow-hidden group/cover`} aria-hidden>
-                    <course.icon className="w-12 h-12 text-white/80 transition-transform duration-300 group-hover/cover:scale-110" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-t-xl transition-all duration-300 group-hover/cover:bg-black/30" aria-hidden>
-                      <m.div 
-                        className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/50"
-                        whileHover={{
-                          scale: 1.15,
-                          backgroundColor: 'rgba(255,255,255,0.4)',
-                          transition: { duration: 0.2, ease: 'easeOut' }
-                        }}
-                      >
-                        <Play className="w-6 h-6 text-white ml-1" fill="currentColor" />
-                      </m.div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4">
-                    <div className={`p-2 rounded-lg bg-gradient-to-br ${course.color} shrink-0`}>
-                      <course.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="home-heading-3 text-white leading-snug">{highlightQuery(course.title, deferredSearch)}</h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">
-                          {LEVEL_LABELS[course.level]}
-                        </span>
-                        {course.level === 'expert' && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300" title="深度內容">深度</span>
-                        )}
-                        {PREREQ_MAP[course.id] && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400/90 max-w-[120px] truncate" title={`建議先完成：${PREREQ_MAP[course.id]}`}>
-                            先修：{PREREQ_MAP[course.id]}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-white/60 text-sm mb-3 line-clamp-2">{highlightQuery(course.description, deferredSearch)}</p>
-                      {/* AUDIT #41：每門課自訂「適合誰」或依 level 回退 */}
-                      <p className="text-white/40 text-xs mb-2">{course.targetAudience ?? `適合：${LEVEL_LABELS[course.level]}者`}</p>
-                      {/* 155 課程評分：來自評分資料源 getCourseRating，無則用 course.rating */}
-                      {(() => {
-                        const displayRating = getCourseRating(course.id) ?? course.rating
-                        return displayRating != null ? (
-                          <div className="flex items-center gap-1 mb-2 text-primary-400" title="學員評價">
-                            <Star className="w-4 h-4 fill-current" />
-                            <span className="text-sm font-medium">{displayRating}</span>
-                            <span className="text-white/40 text-xs">評價</span>
-                          </div>
-                        ) : null
-                      })()}
-                      <div className="flex items-center gap-3 flex-wrap text-sm text-white/60">
-                        <span className="font-medium">{course.lessons} 課</span>
-                        <span className="text-white/40">•</span>
-                        <span>預計 {course.estimatedMinutes ?? course.duration} 分鐘</span>
-                        {progressPct > 0 && (
-                          <>
-                            <span>•</span>
-                            <span className="text-primary-400 font-medium">已完成 {progressPct}%</span>
-                          </>
-                        )}
-                      </div>
-                      {/* Phase 1 D2.1: 進度環形圖與進度條動畫增強 */}
-                      {/* F72 進度環形圖；AUDIT #23 進度環 role="progressbar" aria-valuenow */}
-                      {progressPct > 0 && (
-                        <m.div 
-                          className="mt-2 flex items-center gap-2" 
-                          role="progressbar" 
-                          aria-valuenow={progressPct} 
-                          aria-valuemin={0} 
-                          aria-valuemax={100} 
-                          aria-label={`已完成 ${progressPct}%`}
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2, duration: 0.3 }}
-                        >
-                          <m.div 
-                            className="relative w-7 h-7 shrink-0" 
-                            aria-hidden
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                          >
-                            <svg className="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
-                              <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-white/10" />
-                              <m.circle 
-                                cx="16" 
-                                cy="16" 
-                                r="14" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                strokeWidth="3" 
-                                strokeDasharray={`${(progressPct / 100) * 88} 88`} 
-                                className="text-primary-500" 
-                                strokeLinecap="round"
-                                initial={{ strokeDasharray: '0 88' }}
-                                animate={{ strokeDasharray: `${(progressPct / 100) * 88} 88` }}
-                                transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
-                              />
-                            </svg>
-                            <m.span 
-                              className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white"
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.5, duration: 0.3 }}
-                            >
-                              {progressPct}%
-                            </m.span>
-                          </m.div>
-                          {progressPct < 100 && (
-                            <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                              <m.div 
-                                className="h-full rounded-full bg-gradient-to-r from-primary-500 to-secondary-500"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progressPct}%` }}
-                                transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
-                              />
-                            </div>
-                          )}
-                        </m.div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </m.div>
-              )}
-              </InViewAnimate>
-            )
-          })}
-                </div>
-                {hasMore && (
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedLevels((s) => new Set(s).add(level))}
-                      className="min-h-[48px] px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring"
-                      aria-label={`顯示更多${LEVEL_LABELS[level]}課程，共 ${levelCourses.length - INITIAL_COURSES_PER_LEVEL} 門`}
-                    >
-                      顯示更多（{levelCourses.length - INITIAL_COURSES_PER_LEVEL} 門）
-                    </button>
-                  </div>
-                )}
-              </section>
-            )
-          })}
-        </div>
+          <CourseListSection 
+            progress={progress}
+            onShowUpgrade={() => setShowUpgrade(true)}
+            courses={filteredCourses}
+            levelLabels={LEVEL_LABELS}
+            prereqMap={PREREQ_MAP}
+          />
         </div>
         </>
         )}

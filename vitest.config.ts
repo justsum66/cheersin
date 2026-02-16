@@ -10,7 +10,30 @@ export default defineConfig({
     globals: false,
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    // TEST-014：覆蓋率目標可選 — 安裝 @vitest/coverage-v8 後啟用 coverage 區塊
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        'node_modules',
+        'src/__tests__',
+        'src/**/*.test.{ts,tsx}',
+        'src/types',
+        'src/constants',
+        'src/styles',
+        'src/i18n',
+        '.*.config.*',
+        'public',
+        'dist',
+        'build',
+        'coverage',
+      ],
+      thresholds: {
+        lines: 90,
+        branches: 90,
+        functions: 90,
+        statements: 90,
+      },
+    },
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },

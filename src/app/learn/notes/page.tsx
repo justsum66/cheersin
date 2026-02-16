@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronLeft, Wine, Star, Plus, Loader2 } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -212,8 +213,14 @@ export default function TastingNotesPage() {
             >
               {item.image_url && (
                 <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-white/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image_url} alt="" className="w-full h-full object-cover" />
+                  <Image 
+                    src={item.image_url} 
+                    alt="" 
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                    unoptimized={true} // Since this is a user-uploaded image
+                  />
                 </div>
               )}
               <div className="min-w-0 flex-1">

@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { Button } from '@/components/ui/Button'
 import { GameCard } from './GameCard'
+import { VirtualizedGameGrid } from './VirtualizedGameGrid'
 import { prefetchGame } from './GameLazyMap'
 
 import {
@@ -779,127 +780,23 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
           )}
         </div>
       )}
-      {/* R2-061：分類切換時遊戲列表淡入；GAMES_500 #54 #66 #67 #69：列表 aria-busy、grid、role list/listitem；PERF-006 分頁顯示 */}
-      <m.div
-        key={displayFilter}
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.03,
-              delayChildren: 0
-            }
-          }
-        }}
-        initial="hidden"
-        animate="visible"
-        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap ${isPending ? 'opacity-70 transition-opacity duration-200' : ''}`}
-        role="list"
-        aria-label="遊戲列表"
-        aria-busy={isPending}
-      >
-        {displayFilter === 'custom' ? (
-          <>
-            <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 mb-4">
-              <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary-500/20">
-                <Plus className="w-5 h-5" />
-                Create New Game
-              </a>
-            </div>
-            {customGames.map((game, index) => {
-              // Map string iconName to Lucide component
-              const iconMap: Record<string, LucideIcon> = { Zap, Heart, Star, Smile, Beer, PartyPopper, Hash, MessageCircle, AlertTriangle, HelpCircle, Trophy }
-              const IconComp = iconMap[game.iconName] || Zap
+      {/* Virtualized game grid for better performance */}
+      {displayFilter === 'custom' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 mb-4">
+            <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary-500/20">
+              <Plus className="w-5 h-5" />
+              Create New Game
+            </a>
+          </div>
+          {customGames.map((game, index) => {
+            // Map string iconName to Lucide component
+            const iconMap: Record<string, LucideIcon> = { Zap, Heart, Star, Smile, Beer, PartyPopper, Hash, MessageCircle, AlertTriangle, HelpCircle, Trophy }
+            const IconComp = iconMap[game.iconName] || Zap
 
-              return (
-                <m.div
-                  key={game.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { type: 'spring', stiffness: 300, damping: 24 }
-                    }
-                  }}
-                  layout
-                >
-                  <GameCard
-                    game={{
-                      id: game.id,
-                      name: game.name,
-                      description: game.description,
-                      icon: IconComp,
-                      color: game.color,
-                      players: '2+ 人',
-                      category: 'party',
-                      isFavorite: favoriteIds.includes(game.id),
-                      onToggleFavorite: handleToggleFavorite,
-                      rating: 0,
-                      onRate: () => { },
-                      isGuestTrial: false,
-                      twoPlayerFriendly: true,
-                      onShowRules: (g) => setRulesModal({ name: g.name, rules: 'Custom Game' }),
-                      isPremium: true,
-                      isWeeklyFree: false,
-                      hasAdultContent: false,
-                      searchQuery: deferredQuery,
-                    }}
-                    index={index}
-                    onSelect={handleSelect}
-                    onKeyDown={handleKeyDown}
-                    buttonRef={(el) => { buttonRefs.current[index] = el }}
-                    displayLabel="Custom"
-                  />
-                  {onDeleteCustomGame && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (confirm('Are you sure you want to delete this game?')) {
-                          onDeleteCustomGame(game.id)
-                        }
-                      }}
-                      className="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 px-2"
-                    >
-                      <Trash2 className="w-3 h-3" /> Delete
-                    </button>
-                  )}
-                </m.div>
-              )
-            })}
-            {customGames.length === 0 && (
-              <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 text-center py-12 bg-white/5 rounded-3xl border border-white/10 border-dashed">
-                <PenTool className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">No Custom Games Yet</h3>
-                <p className="text-white/60 mb-6">Create your first custom drinking game!</p>
-                <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-medium">
-                  <Plus className="w-5 h-5" />
-                  Create Game
-                </a>
-              </div>
-            )}
-          </>
-        ) : (
-          visibleGames.map((game, index) => {
-            // DEBUG: 檢查重複的 game.id
-            if (process.env.NODE_ENV === 'development') {
-              const duplicateIds = visibleGames.filter((g, i) => g.id === game.id && i !== index);
-              if (duplicateIds.length > 0) {
-                console.warn(`⚠️ 重複的 game.id 發現: ${game.id}`, {
-                  game,
-                  duplicateCount: duplicateIds.length + 1,
-                  allIds: visibleGames.map(g => g.id)
-                });
-              }
-            }
-            
-            // 臨時解決方案：為重複的 key 添加索引後綴
-            const uniqueKey = `${game.id}-${index}`;
-            
             return (
-              <PrefetchOnVisible key={uniqueKey} gameId={game.id}>
               <m.div
+                key={game.id}
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: {
@@ -912,34 +809,78 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
               >
                 <GameCard
                   game={{
-                    ...game,
+                    id: game.id,
+                    name: game.name,
+                    description: game.description,
+                    icon: IconComp,
+                    color: game.color,
+                    players: '2+ 人',
+                    category: 'party',
                     isFavorite: favoriteIds.includes(game.id),
                     onToggleFavorite: handleToggleFavorite,
-                    rating: ratings[game.id],
-                    onRate: handleRate,
-                    isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
-                    twoPlayerFriendly: game.twoPlayerFriendly,
-                    onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
-                    /** R2-199：付費遊戲皇冠圖標 — 有 requiredTier 且非 free 即顯示 */
-                    isPremium: game.isPremium ?? (() => { const tier = getGameMeta(game.id)?.requiredTier; return tier != null && tier !== 'free'; })(),
-                    /** R2-191：本週限時免費標籤 */
-                    isWeeklyFree: weeklyFreeGameIds.includes(game.id),
-                    /** Task 15: 18+ 標籤 */
-                    hasAdultContent: game.category === 'adult' || game.modes?.some(m => m.id.includes('spicy') || m.id === 'adult'),
-                    /** UI-33: Pass search query for highlighting */
+                    rating: 0,
+                    onRate: () => { },
+                    isGuestTrial: false,
+                    twoPlayerFriendly: true,
+                    onShowRules: (g) => setRulesModal({ name: g.name, rules: 'Custom Game' }),
+                    isPremium: true,
+                    isWeeklyFree: false,
+                    hasAdultContent: false,
                     searchQuery: deferredQuery,
                   }}
                   index={index}
                   onSelect={handleSelect}
                   onKeyDown={handleKeyDown}
                   buttonRef={(el) => { buttonRefs.current[index] = el }}
-                  displayLabel={game.category ? (DISPLAY_TO_INTERNAL.classic?.includes(game.category) ? DISPLAY_LABELS.classic : DISPLAY_TO_INTERNAL.vs?.includes(game.category) ? DISPLAY_LABELS.vs : DISPLAY_LABELS.random) : undefined}
+                  displayLabel="Custom"
                 />
+                {onDeleteCustomGame && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (confirm('Are you sure you want to delete this game?')) {
+                        onDeleteCustomGame(game.id)
+                      }
+                    }}
+                    className="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 px-2"
+                  >
+                    <Trash2 className="w-3 h-3" /> Delete
+                  </button>
+                )}
               </m.div>
-            </PrefetchOnVisible>
-          )})
-        )}
-      </m.div>
+            )
+          })}
+          {customGames.length === 0 && (
+            <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 text-center py-12 bg-white/5 rounded-3xl border border-white/10 border-dashed">
+              <PenTool className="w-12 h-12 text-white/20 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">No Custom Games Yet</h3>
+              <p className="text-white/60 mb-6">Create your first custom drinking game!</p>
+              <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-medium">
+                <Plus className="w-5 h-5" />
+                Create Game
+              </a>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="w-full" style={{ height: `${Math.min(600, Math.ceil(sortedGames.length / 5) * 200)}px` }}>
+          <VirtualizedGameGrid
+            games={sortedGames}
+            favoriteIds={favoriteIds}
+            ratings={ratings}
+            weeklyFreeGameIds={weeklyFreeGameIds}
+            handleSelect={handleSelect}
+            handleToggleFavorite={handleToggleFavorite}
+            handleRate={handleRate}
+            setRulesModal={setRulesModal}
+            deferredQuery={deferredQuery}
+            columnCount={5} // xl:grid-cols-5
+            height={Math.min(600, Math.ceil(sortedGames.length / 5) * 200)} // Max height of 600px
+            width={800} // Use fixed width
+            itemHeight={200} // Approximate height for each row
+          />
+        </div>
+      )}
       {hasMoreGames && (
         <div className="mt-6 flex justify-center">
           <button

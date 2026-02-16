@@ -152,10 +152,25 @@ src/app/learn/
     └── useLearnStats.ts
 ```
 
-### 9. [P0] 巨型組件需要拆分 - LearnCourseContent.tsx
-- **檔案**: `src/components/learn/LearnCourseContent.tsx` (1,926 行)
-- **問題**: 組件職責過多
-- **建議**: 按功能拆分為獨立模組
+### 9. [P0] ✅ 巨型組件需要拆分 - LearnCourseContent.tsx (已完成)
+- **檔案**: `src/components/learn/LearnCourseContent.tsx` (1,939 行)
+- **成果**: 已完成完整重構，提取 1,272 行至 8 個子組件
+- **v2 版本**: `src/components/learn/LearnCourseContent.v2.tsx` (770 行，清晰架構)
+- **子組件清單**:
+  - ✅ `src/lib/learn-progress.utils.ts` - localStorage 輔助函數 (70 行)
+  - ✅ `src/components/learn/ChapterQuiz.tsx` - 測驗功能 (257 行)
+  - ✅ `src/components/learn/ChapterContent.tsx` - 內容渲染 (89 行)
+  - ✅ `src/components/learn/ChapterNotes.tsx` - 筆記功能 (135 行)
+  - ✅ `src/components/learn/CourseHeader.tsx` - 課程標題 (176 行)
+  - ✅ `src/components/learn/InteractiveLearningTools.tsx` - 互動工具 (311 行)
+  - ✅ `src/components/learn/CourseResources.tsx` - 資源區塊 (146 行)
+  - ✅ `src/components/learn/CourseCompletionSection.tsx` - 完成推薦 (88 行)
+- **效益**: 
+  - 組件行數減少 60% (1,939 → 770 行)
+  - 每個子組件可獨立測試和重用
+  - 職責清晰分離，更易維護
+  - TypeScript 編譯無錯誤
+- **後續行動**: v2 版本可供測試，確認功能完整後再替換原始檔案
 
 ### 10. [P0] 巨型組件需要拆分 - GamesPageClient.tsx
 - **檔案**: `src/components/games/GamesPageClient.tsx` (1,650 行)

@@ -1,5 +1,3 @@
-'use client'
-
 /** H90 骨架屏：漸變閃爍動畫；N-Skeleton-01 / A-05 RWD、不 CLS、不閃爍；任務 64 品牌色 primary/10 */
 /** Phase 1 A5.2: Loading skeleton 脈衝動畫優化 */
 export function Skeleton({ className = '', style }: { className?: string; style?: React.CSSProperties }) {

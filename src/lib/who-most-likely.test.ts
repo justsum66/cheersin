@@ -8,10 +8,27 @@ describe('getQuestionsByCategory', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
-      json: async () => [
-        { id: 1, text: '誰最可能 1', level: 'mild', category: 'love' },
-        { id: 2, text: '誰最可能 2', level: 'normal', category: 'friendship' },
-      ],
+      json: async () => ({
+        questions: {
+          love: [
+            { id: 1, text: '誰最可能 1', level: 'mild' },
+            { id: 2, text: '誰最可能 2', level: 'normal' },
+          ],
+          friendship: [
+            { id: 3, text: '誰最可能 3', level: 'mild' },
+          ],
+          work: [
+            { id: 4, text: '誰最可能 4', level: 'normal' },
+          ],
+          life: [
+            { id: 5, text: '誰最可能 5', level: 'mild' },
+          ],
+          funny: [
+            { id: 6, text: '誰最可能 6', level: 'mild' },
+          ],
+          adult: [],
+        },
+      }),
     })))
   })
 

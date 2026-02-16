@@ -20,8 +20,8 @@ describe('games-settings', () => {
   })
 
   describe('getFontSize / setFontSize', () => {
-    it('getFontSize returns md by default', () => {
-      expect(getFontSize()).toBe('md')
+    it('getFontSize returns medium by default', () => {
+      expect(getFontSize()).toBe('medium')
     })
 
     it('setFontSize and getFontSize round-trip', () => {
@@ -54,8 +54,8 @@ describe('games-settings', () => {
   })
 
   describe('getPassPhoneEnabled / setPassPhoneEnabled', () => {
-    it('getPassPhoneEnabled returns false by default', () => {
-      expect(getPassPhoneEnabled()).toBe(false)
+    it('getPassPhoneEnabled returns true by default', () => {
+      expect(getPassPhoneEnabled()).toBe(true)
     })
 
     it('setPassPhoneEnabled and get round-trip', () => {

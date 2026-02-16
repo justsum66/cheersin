@@ -3,8 +3,6 @@
  * 展示響應式排版系統的實際效果
  */
 
-'use client'
-
 import React from 'react'
 import { 
   FONT_FAMILIES, 

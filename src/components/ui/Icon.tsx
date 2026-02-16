@@ -1,5 +1,3 @@
-'use client'
-
 /** P1-028：Icon 組件庫 — 統一管理 lucide 圖標尺寸與顏色 */
 import type { LucideIcon } from 'lucide-react'
 import * as Lucide from 'lucide-react'

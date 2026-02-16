@@ -3,20 +3,25 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useLocalStorage } from './useLocalStorage'
 
-// Mock storage module
-const mockStore = new Map<string, string>()
-vi.mock('@/lib/storage', () => ({
-  getItem: (key: string) => mockStore.get(key) ?? null,
-  setItem: (key: string, value: string) => { mockStore.set(key, value) },
-  removeItem: (key: string) => { mockStore.delete(key) },
-  __store: mockStore,
-}))
+// Mock storage module - factory must not reference variables declared in module scope
+vi.mock('@/lib/storage', () => {
+  const store = new Map<string, string>()
+  return {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => { store.set(key, value) },
+    removeItem: (key: string) => { store.delete(key) },
+    __store: store,
+  }
+})
+
+import { useLocalStorage } from './useLocalStorage'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockStore = (await import('@/lib/storage') as any).__store as Map<string, string>
 
 describe('useLocalStorage', () => {
   beforeEach(() => {
-    mockStore.clear()
+    ;(mockStore as Map<string, string>).clear()
   })
 
   it('returns initial value when storage is empty', () => {

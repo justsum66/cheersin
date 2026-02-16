@@ -3,6 +3,7 @@
 /** AST-30：輸入列 — 上傳、textarea、語音、送出、字數/額度；AST-39 鍵盤彈起時固定於視窗底部 */
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { BookOpen, Send, Mic, Square, Image as ImageIcon, X } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { MAX_INPUT_LENGTH } from '@/config/assistant.config'
@@ -87,9 +88,14 @@ export function AssistantInputBar({
         {/* AST-15：選圖後在輸入區上方顯示縮圖與移除，確認再送出 */}
         {pendingImageDataUrl && onRemovePendingImage && (
           <div className="flex items-center gap-2 mb-2 p-2 rounded-xl bg-white/5 border border-white/10">
-            {/* AST-15：使用者選圖 data URL 預覽，非靜態資源故用 img */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={pendingImageDataUrl} alt="" className="h-12 w-12 object-cover rounded-lg shrink-0" />
+            <Image 
+              src={pendingImageDataUrl} 
+              alt="" 
+              width={48}
+              height={48}
+              className="h-12 w-12 object-cover rounded-lg shrink-0"
+              unoptimized={true} // Since this is a user-provided image URL
+            />
             <span className="text-white/60 text-sm flex-1">{t('assistant.identifyWinePrompt')}</span>
             <button
               type="button"

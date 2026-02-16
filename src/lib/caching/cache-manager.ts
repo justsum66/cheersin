@@ -1,12 +1,12 @@
 /**
- * Task 1.04: Caching Strategy Enhancement
- * Advanced caching manager with SWR pattern, service worker integration, and 70%+ cache rate
+ * Task 1.04: Advanced Caching Strategy Refinement
+ * Enhanced with cache warming, intelligent invalidation, and performance analytics
  */
 
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 
-// Cache configuration
+// Enhanced cache configuration with warming strategies
 export const CACHE_CONFIG = {
   // Time-based cache durations
   DURATIONS: {
@@ -14,30 +14,139 @@ export const CACHE_CONFIG = {
     MEDIUM: 300, // 5 minutes
     LONG: 3600, // 1 hour
     VERY_LONG: 86400, // 24 hours
-    STATIC: 31536000 // 1 year
+    STATIC: 31536000, // 1 year
+    WARMING: 1800 // 30 minutes for cache warming
   },
   
-  // Cache tags for invalidation
+  // Cache tags for intelligent invalidation
   TAGS: {
     USER: 'user',
     GAME: 'game',
     LEARN: 'learn',
     CONTENT: 'content',
-    METADATA: 'metadata'
+    METADATA: 'metadata',
+    SESSION: 'session',
+    REALTIME: 'realtime'
   },
   
-  // Cache strategies
+  // Cache strategies with warming support
   STRATEGIES: {
     SWR: 'stale-while-revalidate',
     CACHE_FIRST: 'cache-first',
     NETWORK_FIRST: 'network-first',
-    NETWORK_ONLY: 'network-only'
+    NETWORK_ONLY: 'network-only',
+    WARMING: 'cache-warming'
+  },
+  
+  // Cache warming configuration
+  WARMING: {
+    ENABLED: true,
+    INTERVAL: 900000, // 15 minutes
+    PRIORITY_TAGS: ['user', 'game', 'learn'],
+    MAX_CONCURRENT: 5
   }
 } as const
 
 /**
- * Cache key generator with consistent formatting
+ * Cache warming manager for proactive cache population
  */
+export class CacheWarmingManager {
+  private warmingTasks: Map<string, { 
+    fetcher: () => Promise<any>; 
+    interval: NodeJS.Timeout; 
+    priority: number 
+  }> = new Map()
+  private activeWarming: Set<string> = new Set()
+  
+  async addWarmingTask(
+    key: string,
+    fetcher: () => Promise<any>,
+    priority: number = 1
+  ): Promise<void> {
+    if (!CACHE_CONFIG.WARMING.ENABLED) return
+    
+    // Remove existing task if it exists
+    this.removeWarmingTask(key)
+    
+    // Add new warming task
+    const interval = setInterval(async () => {
+      if (this.activeWarming.size >= CACHE_CONFIG.WARMING.MAX_CONCURRENT) return
+      
+      this.activeWarming.add(key)
+      try {
+        console.log(`[Cache Warming] Warming cache for ${key}`)
+        await fetcher()
+        console.log(`[Cache Warming] Successfully warmed ${key}`)
+      } catch (error) {
+        console.warn(`[Cache Warming] Failed to warm ${key}:`, error)
+      } finally {
+        this.activeWarming.delete(key)
+      }
+    }, CACHE_CONFIG.WARMING.INTERVAL)
+    
+    this.warmingTasks.set(key, { fetcher, interval, priority })
+    console.log(`[Cache Warming] Added warming task for ${key}`)
+  }
+  
+  removeWarmingTask(key: string): void {
+    const task = this.warmingTasks.get(key)
+    if (task) {
+      clearInterval(task.interval)
+      this.warmingTasks.delete(key)
+      console.log(`[Cache Warming] Removed warming task for ${key}`)
+    }
+  }
+  
+  getWarmingStats(): {
+    totalTasks: number;
+    activeTasks: number;
+    priorityTasks: number;
+  } {
+    const totalTasks = this.warmingTasks.size
+    const activeTasks = this.activeWarming.size
+    const priorityTasks = Array.from(this.warmingTasks.values())
+      .filter(task => CACHE_CONFIG.WARMING.PRIORITY_TAGS.some(tag => task.fetcher.toString().includes(tag)))
+      .length
+    
+    return { totalTasks, activeTasks, priorityTasks }
+  }
+  
+  async warmAll(): Promise<void> {
+    console.log('[Cache Warming] Starting full cache warming')
+    const tasks = Array.from(this.warmingTasks.entries())
+      .sort(([, a], [, b]) => b.priority - a.priority) // Sort by priority
+      
+    // Execute warming tasks with concurrency limit
+    const chunks = this.chunkArray(tasks, CACHE_CONFIG.WARMING.MAX_CONCURRENT)
+    
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map(async ([key, task]) => {
+          try {
+            await task.fetcher()
+            console.log(`[Cache Warming] Warmed ${key}`)
+          } catch (error) {
+            console.warn(`[Cache Warming] Failed to warm ${key}:`, error)
+          }
+        })
+      )
+    }
+    
+    console.log('[Cache Warming] Full cache warming completed')
+  }
+  
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+}
+
+// Global cache warming manager
+export const cacheWarmingManager = new CacheWarmingManager()
+
 export function generateCacheKey(
   namespace: string,
   identifier: string | number,
@@ -45,38 +154,6 @@ export function generateCacheKey(
 ): string {
   const paramStr = params.length > 0 ? `:${params.join(':')}` : ''
   return `${namespace}:${identifier}${paramStr}`
-}
-
-/**
- * Advanced caching with SWR pattern
- */
-export function createCachedFunction<T, Args extends any[]>(
-  fn: (...args: Args) => Promise<T>,
-  options: {
-    key: string;
-    tags?: string[];
-    revalidate?: number;
-    strategy?: keyof typeof CACHE_CONFIG.STRATEGIES;
-  }
-) {
-  const { key, tags = [], revalidate = CACHE_CONFIG.DURATIONS.MEDIUM, strategy = 'SWR' } = options
-  
-  // Use Next.js unstable_cache for server-side caching
-  const cachedFn = unstable_cache(
-    async (...args: Args) => {
-      console.log(`[Cache] Executing ${key} with args:`, args)
-      const result = await fn(...args)
-      console.log(`[Cache] Cached ${key} result`)
-      return result
-    },
-    [key],
-    { 
-      revalidate,
-      tags 
-    }
-  )
-  
-  return cachedFn
 }
 
 /**
@@ -248,73 +325,267 @@ export class ClientCache<T> {
 }
 
 /**
+ * Enhanced client cache with warming support and advanced analytics
+ */
+export class EnhancedClientCache<T> extends ClientCache<T> {
+  constructor(defaultTtl: number = CACHE_CONFIG.DURATIONS.MEDIUM) {
+    super(defaultTtl)
+  }
+  
+  /**
+   * Get with warming support
+   */
+  async getWithWarming(
+    key: string,
+    fetcher: () => Promise<T>,
+    options: {
+      ttl?: number;
+      skipCache?: boolean;
+      enableWarming?: boolean;
+      warmingPriority?: number;
+    } = {}
+  ): Promise<T> {
+    const { enableWarming = true, warmingPriority = 1, ...cacheOptions } = options
+    
+    // Add warming task if enabled
+    if (enableWarming) {
+      cacheWarmingManager.addWarmingTask(key, fetcher, warmingPriority).catch(console.error)
+    }
+    
+    return this.get(key, fetcher, cacheOptions)
+  }
+  
+  /**
+   * Batch cache operations for better performance
+   */
+  async batchGet(
+    requests: Array<{
+      key: string;
+      fetcher: () => Promise<T>;
+      options?: { ttl?: number; skipCache?: boolean }
+    }>
+  ): Promise<T[]> {
+    const results: T[] = []
+    
+    // Process in chunks to avoid overwhelming the system
+    const chunks = this.chunkArray(requests, 10)
+    
+    for (const chunk of chunks) {
+      const chunkResults = await Promise.all(
+        chunk.map(async (request) => {
+          try {
+            return await this.get(request.key, request.fetcher, request.options)
+          } catch (error) {
+            console.error(`[Cache] Batch get failed for ${request.key}:`, error)
+            throw error
+          }
+        })
+      )
+      results.push(...chunkResults)
+    }
+    
+    return results
+  }
+  
+  /**
+   * Cache analytics and reporting
+   */
+  getDetailedStats(): {
+    basicStats: ReturnType<ClientCache<T>['getStats']>
+    performance: ReturnType<CachePerformanceMonitor['getAllMetrics']>
+    warming: ReturnType<CacheWarmingManager['getWarmingStats']>
+    cacheEfficiency: number
+  } {
+    const basicStats = this.getStats()
+    const performance = cachePerformanceMonitor.getAllMetrics()
+    const warming = cacheWarmingManager.getWarmingStats()
+    
+    // Calculate overall cache efficiency
+    const totalHits = Object.values(performance).reduce((sum, metrics) => sum + metrics.hitRate, 0)
+    const cacheEfficiency = Object.keys(performance).length > 0 
+      ? totalHits / Object.keys(performance).length 
+      : 0
+    
+    return {
+      basicStats,
+      performance,
+      warming,
+      cacheEfficiency
+    }
+  }
+  
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+}
+
+// Enhanced global cache instance
+export const enhancedClientCache = new EnhancedClientCache()
+
+/**
  * Cache performance monitoring
  */
 export class CachePerformanceMonitor {
   private metrics: Map<string, {
     hits: number;
     misses: number;
-    fetchTime: number[];
-    cacheTime: number[];
-  }> = new Map()
+    fetchTimes: number[];
+    cacheTimes: number[];
+    lastAccess: number;
+  }> = new Map();
   
-  recordHit(cacheKey: string): void {
-    this.getOrCreateMetrics(cacheKey).hits++
-  }
-  
-  recordMiss(cacheKey: string): void {
-    this.getOrCreateMetrics(cacheKey).misses++
-  }
-  
-  recordFetchTime(cacheKey: string, timeMs: number): void {
-    this.getOrCreateMetrics(cacheKey).fetchTime.push(timeMs)
-  }
-  
-  recordCacheTime(cacheKey: string, timeMs: number): void {
-    this.getOrCreateMetrics(cacheKey).cacheTime.push(timeMs)
-  }
-  
-  getMetrics(cacheKey: string): {
-    hitRate: number;
-    averageFetchTime: number;
-    averageCacheTime: number;
-    totalRequests: number;
-  } {
-    const metrics = this.metrics.get(cacheKey)
-    if (!metrics) {
-      return { hitRate: 0, averageFetchTime: 0, averageCacheTime: 0, totalRequests: 0 }
-    }
-    
-    const totalRequests = metrics.hits + metrics.misses
-    const hitRate = totalRequests > 0 ? (metrics.hits / totalRequests) * 100 : 0
-    const averageFetchTime = metrics.fetchTime.length > 0 
-      ? metrics.fetchTime.reduce((a, b) => a + b, 0) / metrics.fetchTime.length 
-      : 0
-    const averageCacheTime = metrics.cacheTime.length > 0
-      ? metrics.cacheTime.reduce((a, b) => a + b, 0) / metrics.cacheTime.length
-      : 0
-    
-    return { hitRate, averageFetchTime, averageCacheTime, totalRequests }
-  }
-  
-  getAllMetrics(): Record<string, ReturnType<CachePerformanceMonitor['getMetrics']>> {
-    const result: Record<string, any> = {}
-    for (const key of this.metrics.keys()) {
-      result[key] = this.getMetrics(key)
-    }
-    return result
-  }
-  
-  private getOrCreateMetrics(cacheKey: string) {
-    if (!this.metrics.has(cacheKey)) {
-      this.metrics.set(cacheKey, {
+  // Cache performance methods
+  recordHit(key: string) {
+    if (!this.metrics.has(key)) {
+      this.metrics.set(key, {
         hits: 0,
         misses: 0,
-        fetchTime: [],
-        cacheTime: []
-      })
+        fetchTimes: [],
+        cacheTimes: [],
+        lastAccess: Date.now()
+      });
     }
-    return this.metrics.get(cacheKey)!
+    const metric = this.metrics.get(key)!;
+    metric.hits++;
+    metric.lastAccess = Date.now();
+  }
+  
+  recordMiss(key: string) {
+    if (!this.metrics.has(key)) {
+      this.metrics.set(key, {
+        hits: 0,
+        misses: 0,
+        fetchTimes: [],
+        cacheTimes: [],
+        lastAccess: Date.now()
+      });
+    }
+    const metric = this.metrics.get(key)!;
+    metric.misses++;
+    metric.lastAccess = Date.now();
+  }
+  
+  recordFetchTime(key: string, time: number) {
+    if (!this.metrics.has(key)) {
+      this.metrics.set(key, {
+        hits: 0,
+        misses: 0,
+        fetchTimes: [],
+        cacheTimes: [],
+        lastAccess: Date.now()
+      });
+    }
+    const metric = this.metrics.get(key)!;
+    metric.fetchTimes.push(time);
+  }
+  
+  recordCacheTime(key: string, time: number) {
+    if (!this.metrics.has(key)) {
+      this.metrics.set(key, {
+        hits: 0,
+        misses: 0,
+        fetchTimes: [],
+        cacheTimes: [],
+        lastAccess: Date.now()
+      });
+    }
+    const metric = this.metrics.get(key)!;
+    metric.cacheTimes.push(time);
+  }
+  
+  getMetrics(key: string) {
+    const metric = this.metrics.get(key);
+    if (!metric) {
+      return {
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        averageFetchTime: 0,
+        averageCacheTime: 0
+      };
+    }
+    
+    const totalRequests = metric.hits + metric.misses;
+    const hitRate = totalRequests > 0 ? (metric.hits / totalRequests) * 100 : 0;
+    const averageFetchTime = metric.fetchTimes.length > 0 
+      ? metric.fetchTimes.reduce((a, b) => a + b, 0) / metric.fetchTimes.length 
+      : 0;
+    const averageCacheTime = metric.cacheTimes.length > 0 
+      ? metric.cacheTimes.reduce((a, b) => a + b, 0) / metric.cacheTimes.length 
+      : 0;
+    
+    return {
+      hits: metric.hits,
+      misses: metric.misses,
+      hitRate,
+      averageFetchTime,
+      averageCacheTime
+    };
+  }
+  
+  getAllMetrics() {
+    const result: Record<string, ReturnType<CachePerformanceMonitor['getMetrics']>> = {};
+    for (const key of this.metrics.keys()) {
+      result[key] = this.getMetrics(key);
+    }
+    return result;
+  }
+  
+  // Image performance methods (kept for backward compatibility)
+  recordLoadTime(
+    imageId: string, 
+    loadTime: number, 
+    size: number,
+    format: string = 'unknown',
+    quality: number = 75
+  ) {
+    // Store image metrics separately if needed
+    if (!this.metrics.has(imageId)) {
+      this.metrics.set(imageId, {
+        hits: 0,
+        misses: 0,
+        fetchTimes: [],
+        cacheTimes: [],
+        lastAccess: Date.now()
+      });
+    }
+    
+    // For image-specific metrics, we can add them to a separate collection
+    // but for now we'll just log them
+    console.log(`[Image Perf] ${imageId}: Load time=${loadTime}ms, Size=${size}, Format=${format}, Quality=${quality}%`);
+  }
+  
+  getAverageLoadTime(): number {
+    // This method maintains backward compatibility
+    const allFetchTimes: number[] = [];
+    this.metrics.forEach(metric => {
+      allFetchTimes.push(...metric.fetchTimes);
+    });
+    return allFetchTimes.length > 0 ? allFetchTimes.reduce((a, b) => a + b, 0) / allFetchTimes.length : 0;
+  }
+  
+  getAverageSize(): number {
+    // This method maintains backward compatibility
+    return 0; // Placeholder - would need to store size info separately
+  }
+  
+  getFormatPerformance(): Record<string, { count: number; avgLoadTime: number }> {
+    // This method maintains backward compatibility
+    return {}; // Placeholder
+  }
+  
+  getImageMetrics() {
+    return {
+      totalImages: this.metrics.size,
+      averageLoadTime: this.getAverageLoadTime(),
+      averageSize: this.getAverageSize(),
+      formatPerformance: this.getFormatPerformance(),
+      metrics: Object.fromEntries(this.metrics)
+    }
   }
 }
 
@@ -332,3 +603,32 @@ export const CACHE_KEYS = {
   LEARN_PROGRESS: (userId: string) => generateCacheKey('learn', userId, 'progress'),
   CONTENT_METADATA: (contentId: string) => generateCacheKey('content', contentId, 'metadata')
 } as const
+
+export function createCachedFunction<T, Args extends any[]>(
+  fn: (...args: Args) => Promise<T>,
+  options: {
+    key: string;
+    tags?: string[];
+    revalidate?: number;
+    strategy?: keyof typeof CACHE_CONFIG.STRATEGIES;
+  }
+) {
+  const { key, tags = [], revalidate = CACHE_CONFIG.DURATIONS.MEDIUM, strategy = 'SWR' } = options
+
+  // Use Next.js unstable_cache for server-side caching
+  const cachedFn = unstable_cache(
+    async (...args: Args) => {
+      console.log(`[Cache] Executing ${key} with args:`, args)
+      const result = await fn(...args)
+      console.log(`[Cache] Cached ${key} result`)
+      return result
+    },
+    [key],
+    { 
+      revalidate,
+      tags 
+    }
+  )
+
+  return cachedFn
+}

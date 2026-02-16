@@ -1,5 +1,3 @@
-'use client'
-
 /**
  * UX_LAYOUT_200 #83：錯誤訊息 id 與 input aria-describedby 關聯
  * 用法：<input aria-describedby={error ? 'field-email-error' : undefined} />

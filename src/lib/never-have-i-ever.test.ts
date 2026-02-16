@@ -8,13 +8,25 @@ describe('getStatementsByCategory', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
-      json: async () => [
-        { text: '我從來沒有 1', category: 'love' },
-        { text: '我從來沒有 2', category: 'work' },
-        { text: '我從來沒有 3', category: 'life' },
-        { text: '我從來沒有 4', category: 'dark' },
-        { text: '我從來沒有 5', category: 'adult' },
-      ],
+      json: async () => ({
+        questions: {
+          love: [
+            { id: 1, text: '我從來沒有 1', level: 'mild' },
+          ],
+          work: [
+            { id: 2, text: '我從來沒有 2', level: 'normal' },
+          ],
+          life: [
+            { id: 3, text: '我從來沒有 3', level: 'mild' },
+          ],
+          dark: [
+            { id: 4, text: '我從來沒有 4', level: 'normal' },
+          ],
+          adult: [
+            { id: 5, text: '我從來沒有 5', level: 'spicy' },
+          ],
+        },
+      }),
     })))
   })
 

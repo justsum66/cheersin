@@ -35,17 +35,18 @@ export function validatePointAward(
   action: string,
   points: number
 ): { valid: boolean; expectedPoints: number; reason?: string } {
+  const expected = POINT_ACTIONS[action as PointAction]
+
   if (!Number.isFinite(points) || points <= 0) {
-    return { valid: false, expectedPoints: 0, reason: 'Points must be a positive finite number' }
+    return { valid: false, expectedPoints: expected ?? 0, reason: 'Points must be a positive finite number' }
+  }
+
+  if (expected === undefined) {
+    return { valid: false, expectedPoints: 0, reason: `Unknown action: ${action}` }
   }
 
   if (points > MAX_POINTS_PER_ACTION) {
-    return { valid: false, expectedPoints: 0, reason: `Points exceed maximum per action (${MAX_POINTS_PER_ACTION})` }
-  }
-
-  const expected = POINT_ACTIONS[action as PointAction]
-  if (expected === undefined) {
-    return { valid: false, expectedPoints: 0, reason: `Unknown action: ${action}` }
+    return { valid: false, expectedPoints: expected, reason: `Points exceed maximum per action (${MAX_POINTS_PER_ACTION})` }
   }
 
   if (points !== expected) {

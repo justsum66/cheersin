@@ -19,13 +19,9 @@ import type { DisplayCategory } from '@/components/games/Lobby'
 /** P0-018：非首屏遊戲列表懶加載，降低大廳首屏 bundle */
 const Lobby = lazy(() => import('@/components/games/Lobby').then((m) => ({ default: m.default })))
 import GameErrorBoundary from '@/components/games/GameErrorBoundary'
-import SettingsModal from '@/components/games/SettingsModal'
 
 import { RoomJoinForm } from '@/components/games/RoomJoinForm'
 import { CreateRoomForm } from '@/components/games/CreateRoomForm'
-import { GameRatingModal } from '@/components/games/GameRatingModal'
-import { InviteModal } from '@/components/games/InviteModal'
-import { PlayerManagementModal } from '@/components/games/PlayerManagementModal'
 import AgeGate from '@/components/AgeGate'
 import { getAgeGatePassed } from '@/components/AgeGate'
 import { PullToRefresh } from '@/components/PullToRefresh'
@@ -39,7 +35,6 @@ import { LazyGame } from '@/components/games/GameLazyMap'
 import { gamesWithCategory, getGameMeta, GUEST_TRIAL_GAME_IDS, type GameId } from '@/config/games.config'
 import type { GamePlaylist } from '@/modules/games/data/playlists'
 import { isFreeGame, canPlayGame, getWeeklyFreeGameIds } from '@/modules/games/stats/weekly-free'
-import { PaidGameLock } from '@/components/games/PaidGameLock'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { STORAGE_KEYS } from '@/lib/constants'
 import { useGameRoomConnection, ConnectionStatusIndicator } from '@/lib/games/room/connection-manager'
@@ -50,6 +45,16 @@ import { getLastSessionGameId } from '@/modules/games/user/history'
 
 import { migrateGameStats } from '@/lib/migrations/game-stats-migration'
 import { useCustomGames } from '@/lib/custom-games'
+
+// Import subcomponents
+import {
+  GamesHeader,
+  GamesTutorial,
+  GamesUpgradePrompts,
+  GamesFab,
+  GamesModals
+} from '@/components/games/subcomponents'
+
 const STORAGE_KEY = 'cheersin_games_players'
 const ROOM_JOINED_KEY = 'cheersin_room_joined'
 
@@ -630,271 +635,70 @@ function GamesPageContent() {
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: LOBBY_GAME_TRANSITION_MS / 1000 }}
               >
-                {/* 任務 28：首次教學 overlay；AUDIT #47 可加「跳過」與「不再顯示」勾選 */}
-                {showTutorial && (!roomSlug || joinedDisplayName) && (
-                  <GlassCard variant="layer-2" className="mb-6 p-5 text-left border-primary-500/40" role="region" aria-label="使用教學">
-                    <p className="text-white font-medium mb-2">歡迎來到派對遊樂場！</p>
-                    <ul className="text-white/80 text-sm space-y-1 mb-4 list-disc list-inside">
-                      <li>點選下方遊戲卡片即可開始</li>
-                      <li>右上角「設定」可調音量與字級</li>
-                      <li>「管理玩家」可新增名單，供轉盤等遊戲使用</li>
-                    </ul>
-                    <label className="flex items-center gap-2 text-white/70 text-sm mb-4 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={tutorialDontShowAgain}
-                        onChange={(e) => setTutorialDontShowAgain(e.target.checked)}
-                        className="rounded border-white/30 text-primary-500 focus:ring-primary-400"
-                        aria-label="不再顯示此教學"
-                      />
-                      不再顯示此教學
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          if (tutorialDontShowAgain) {
-                            try { localStorage.setItem(TUTORIAL_DONE_KEY, '1') } catch { /* ignore */ }
-                          }
-                          setShowTutorial(false)
-                        }}
-                        size="sm"
-                      >
-                        知道了
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => setShowTutorial(false)}
-                        variant="ghost"
-                        size="sm"
-                        aria-label="跳過教學"
-                      >
-                        跳過
-                      </Button>
-                    </div>
-                  </GlassCard>
-                )}
+                <GamesTutorial
+                  showTutorial={showTutorial}
+                  roomSlug={roomSlug}
+                  joinedDisplayName={joinedDisplayName}
+                  tutorialDontShowAgain={tutorialDontShowAgain}
+                  setTutorialDontShowAgain={setTutorialDontShowAgain}
+                  setShowTutorial={setShowTutorial}
+                />
 
-                {/* Header */}
-                <div className="text-center mb-4">
-                  <div className="flex justify-center mb-2">
-                    <FeatureIcon icon={Gamepad2} size="lg" color="white" />
-                  </div>
-                  <h1 className="text-5xl md:text-7xl font-display font-bold mb-3" id="games-page-title">
-                    派對<span className="gradient-text">遊樂場</span>
-                  </h1>
-                  <p className="text-white/50 text-xl max-w-lg mx-auto mb-4">
-                    你的 AI 派對靈魂伴侶，點燃聚會氣氛。
-                  </p>
-                  <p className="text-white/30 text-xs mb-4" aria-hidden>多人同機？設定內可開啟「傳手機接力」</p>
-                  <p className="mb-4">
-                    <Link href="/script-murder" className="text-primary-400 hover:text-primary-300 text-sm underline underline-offset-2">
-                      酒局劇本殺 — 4–8 人秘密角色、投票懲罰
-                    </Link>
-                  </p>
+                <GamesHeader
+                  roomSlug={roomSlug}
+                  joinedDisplayName={joinedDisplayName}
+                  joinedAsSpectator={joinedAsSpectator}
+                  players={players}
+                  roomPlayers={roomPlayers}
+                  maxPlayers={maxPlayers}
+                  isInRoomMode={isInRoomMode}
+                  roomLoading={roomLoading}
+                  roomError={roomError}
+                  roomFull={roomFull}
+                  roomAnonymousMode={roomAnonymousMode}
+                  roomRetryCooldown={roomRetryCooldown}
+                  setRoomRetryCooldown={setRoomRetryCooldown}
+                  fetchRoom={fetchRoom}
+                  handleJoinRoom={handleJoinRoom}
+                  handleJoinAsSpectator={handleJoinAsSpectator}
+                  handleLeaveRoom={handleLeaveRoom}
+                  handleCreateRoom={handleCreateRoom}
+                  handlePlayAgain={handlePlayAgain}
+                  handleRandomGame={handleRandomGame}
+                  setShowSettingsModal={setShowSettingsModal}
+                  setShowPlayerModal={setShowPlayerModal}
+                  setRoomCreatePassword={setRoomCreatePassword}
+                  setRoomCreateAnonymous={setRoomCreateAnonymous}
+                  creatingRoom={creatingRoom}
+                  createRoomError={createRoomError}
+                  roomCreatePassword={roomCreatePassword}
+                  roomCreateAnonymous={roomCreateAnonymous}
+                  roomJoinError={roomJoinError}
+                  setRoomJoinError={setRoomJoinError}
+                  createRoomSectionRef={createRoomSectionRef}
+                  activeGame={activeGame}
+                  roomInviteUrl={roomInviteUrl}
+                  isRoomHost={isRoomHost}
+                  setRoomAnonymousMode={setRoomAnonymousMode}
+                  router={router}
+                  onJoin={handleJoinRoom}
+                  onJoinSpectator={handleJoinAsSpectator}
+                />
 
-                  {/* P1-116：房間人數顯示 — 在房間內頂部顯示目前人數/上限 */}
-                  {roomSlug && joinedDisplayName && (
-                    <p className="mb-4 px-4 py-2 rounded-xl bg-white/5 border border-white/10 inline-flex items-center gap-2 text-white/80 text-sm" role="status" aria-label={`房間人數 ${roomPlayers.length} ／${maxPlayers} 人`}>
-                      <Users className="w-4 h-4 text-primary-400" aria-hidden />
-                      <span>目前 {roomPlayers.length}/{maxPlayers} 人</span>
-                    </p>
-                  )}
-
-                  {/* Room: loading / error / join form；GAMES_500 #166 房間 loading skeleton */}
-                  {roomSlug && roomLoading && (
-                    <GlassCard className="mb-4 p-4 max-w-md mx-auto animate-pulse" role="status" aria-label="載入房間中">
-                      <div className="h-5 bg-white/10 rounded w-1/3 mb-3" />
-                      <div className="h-4 bg-white/10 rounded w-full mb-2" />
-                      <div className="h-12 bg-white/10 rounded w-full" />
-                    </GlassCard>
-                  )}
-                  {/* GAMES_500 #23 #29：房間不存在／slug 無效時友善錯誤頁 + 回首頁 CTA */}
-                  {roomSlug && !roomLoading && roomError && (
-                    <GlassCard className="mb-4 p-4 border-red-500/50 bg-red-500/10 text-red-300" role="alert" aria-live="assertive">
-                      <p>{roomError}</p>
-                      <p className="text-white/60 text-xs mt-1">請確認連結是否正確，或返回遊樂場使用本機名單。</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            if (!roomSlug || roomRetryCooldown) return
-                            setRoomRetryCooldown(true)
-                            setTimeout(() => {
-                              fetchRoom(roomSlug)
-                              setRoomRetryCooldown(false)
-                            }, 1500)
-                          }}
-                          disabled={roomRetryCooldown}
-                          size="sm"
-                          className="bg-white/10 hover:bg-white/20 text-white"
-                          aria-label="重試載入房間（約 1.5 秒後）"
-                        >
-                          {roomRetryCooldown ? '重試中…' : '重試'}
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => router.replace('/games')}
-                          size="sm"
-                          className="bg-white/10 text-white"
-                          aria-label="回首頁或使用本機名單"
-                        >
-                          回首頁
-                        </Button>
-                      </div>
-                    </GlassCard>
-                  )}
-                  {/* AUDIT #6：加入房間表單與建立房間區塊視覺層級分明 */
-                    roomSlug && !roomLoading && !roomError && !joinedDisplayName && (
-                      <RoomJoinForm
-                        roomFull={roomFull}
-                        currentPlayersCount={roomPlayers.length}
-                        maxPlayers={maxPlayers}
-                        onJoin={handleJoinRoom}
-                        onJoinSpectator={handleJoinAsSpectator}
-                        error={roomJoinError}
-                        setError={setRoomJoinError}
-                        t={t}
-                      />
-                    )}
-
-                  <div className="flex flex-wrap gap-3 justify-center items-start" ref={createRoomSectionRef}>
-                    <Button
-                      type="button"
-                      onClick={() => setShowSettingsModal(true)}
-                      variant="ghost"
-                      className="gap-2 rounded-full"
-                      leftIcon={<Settings className="w-5 h-5" />}
-                      aria-label="設定"
-                    >
-                      <span>設定</span>
-                    </Button>
-                    <Button
-                      ref={playerModalTriggerRef}
-                      onClick={() => setShowPlayerModal(true)}
-                      variant="ghost"
-                      className="gap-3 rounded-full"
-                      leftIcon={<Users className="w-5 h-5" />}
-                      rightIcon={<UserPlus className="w-4 h-4 text-primary-400" />}
-                      aria-label="管理玩家名單"
-                    >
-                      <span>管理玩家 ({players.length})</span>
-                    </Button>
-                    <CreateRoomForm
-                      isInRoomMode={isInRoomMode}
-                      activeGameId={activeGame}
-                      password={roomCreatePassword}
-                      setPassword={setRoomCreatePassword}
-                      isAnonymous={roomCreateAnonymous}
-                      setIsAnonymous={setRoomCreateAnonymous}
-                      isCreating={creatingRoom}
-                      onCreate={handleCreateRoom}
-                      error={createRoomError}
-                      currentPlayersCount={players.length}
-                      maxPlayers={maxPlayers}
-                      onLeaveRoom={isInRoomMode ? handleLeaveRoom : undefined}
-                    />
-                  </div>
-                  {players.length === 0 && !roomSlug && (
-                    <p className="text-white/40 text-sm mt-2">先新增玩家，命運轉盤等遊戲會自動帶入名單</p>
-                  )}
-                  {isInRoomMode && (
-                    <>
-                      {/* GAMES_500 #178：房間內玩家變更時 aria-live 通知 */}
-                      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">目前 {roomPlayers.length} 位玩家</p>
-                      <p className="text-white/40 text-sm mt-2" role="status">
-                        房間模式：{joinedDisplayName}
-                        {joinedAsSpectator && '（觀戰中）'}
-                        {players.length > 0 && (
-                          <> · {players.slice(0, 3).join('、')}{players.length > 3 ? ` +${players.length - 3} 人` : ''}，共 {players.length} 人</>
-                        )}
-                        （名單會自動同步）
-                      </p>
-                    </>
-                  )}
-                </div>
-
-                {/* E90 P2：新遊戲上線預告橫幅 — announcements.config 有 type=game 時顯示 */}
-                {(!roomSlug || joinedDisplayName) && getActiveLaunchAnnouncements().filter((a) => a.type === 'game').map((a) => {
-                  const id = a.id
-                  const meta = typeof id === 'string' ? getGameMeta(id) : null
-                  return meta ? (
-                    <GlassCard key={a.id} className="mb-4 p-4 border-accent-500/20 bg-accent-500/10" role="region" aria-label="新作上線">
-                      <p className="text-accent-300 text-sm font-medium">{a.label}：{meta.name}</p>
-                      <p className="text-white/60 text-xs mt-1">快去試玩</p>
-                    </GlassCard>
-                  ) : null
-                })}
-
-                {/* 任務 23：存檔恢復橫幅 — 意外關閉後可恢復上次遊戲 */}
-                {(!roomSlug || joinedDisplayName) && lastSession && showRestoreBanner && getGameMeta(lastSession.gameId) && (
-                  <GlassCard className="mb-4 p-4 border-primary-500/30 bg-primary-500/15 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="恢復上次遊戲">
-                    <p className="text-white/90 text-sm">
-                      是否恢復上次的遊戲？<span className="font-medium text-primary-300">{getGameMeta(lastSession.gameId)?.name}</span>
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        onClick={() => { clearLastSession(); setLastSession(null); setShowRestoreBanner(false); }}
-                        variant="ghost"
-                        size="sm"
-                        className="bg-white/10 hover:bg-white/15"
-                      >
-                        不用
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => { startGame(lastSession.gameId) }}
-                        size="sm"
-                      >
-                        恢復
-                      </Button>
-                    </div>
-                  </GlassCard>
-                )}
-
-                {/* P1-258 + Task 12：免費用戶「>4人？升級 Pro」upsell banner */}
-                {(!roomSlug || joinedDisplayName) && tier === 'free' && (
-                  <GlassCard gradient="glow" className="mb-4 p-4 border-primary-500/30 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="升級 Pro 解鎖更多">
-                    <div>
-                      <p className="text-white/90 text-sm font-medium">超過 4 人？升級 Pro 暢玩 12 人大房</p>
-                      <p className="text-white/50 text-xs mt-0.5">解鎖辣味題庫 · 18+ 專屬 · 全部 50+ 遊戲</p>
-                    </div>
-                    <Link
-                      href="/pricing"
-                      className="inline-flex items-center gap-2 min-h-[48px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity games-focus-ring shadow-hero-glow"
-                      aria-label="升級 Pro 解鎖 12 人大房間和全部遊戲"
-                    >
-                      <Crown className="w-4 h-4" aria-hidden />
-                      升級 Pro
-                    </Link>
-                  </GlassCard>
-                )}
-                {/* R2-181：玩了 3 局後提示升級解鎖 18+ 與更多遊戲；可關閉 */}
-                {(!roomSlug || joinedDisplayName) && tier === 'free' && freeGamesPlayedCount >= 3 && !upgradePromptDismissed && (
-                  <GlassCard className="mb-4 p-4 border-primary-500/30 bg-primary-500/15 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="升級 Pro 解鎖更多">
-                    <p className="text-white/90 text-sm">
-                      升級到 Pro 解鎖 18+ 模式和 50+ 遊戲
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href="/pricing"
-                        className="inline-flex items-center justify-center min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium games-focus-ring shadow-lg shadow-primary-500/20"
-                      >
-                        升級
-                      </Link>
-                      <Button
-                        type="button"
-                        onClick={() => setUpgradePromptDismissed(true)}
-                        className="bg-white/10 hover:bg-white/15 px-3 rounded-xl"
-                        size="sm"
-                        aria-label="關閉"
-                      >
-                        <X className="w-4 h-4" aria-hidden />
-                      </Button>
-                    </div>
-                  </GlassCard>
-                )}
+                <GamesUpgradePrompts
+                  roomSlug={roomSlug}
+                  joinedDisplayName={joinedDisplayName}
+                  tier={tier}
+                  freeGamesPlayedCount={freeGamesPlayedCount}
+                  upgradePromptDismissed={upgradePromptDismissed}
+                  setUpgradePromptDismissed={setUpgradePromptDismissed}
+                  lastSession={lastSession}
+                  setLastSession={setLastSession}
+                  showRestoreBanner={showRestoreBanner}
+                  setShowRestoreBanner={setShowRestoreBanner}
+                  clearLastSession={clearLastSession}
+                  startGame={startGame}
+                />
                 {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
                 {(!roomSlug || joinedDisplayName) && (
                   <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
@@ -1007,72 +811,19 @@ function GamesPageContent() {
 
           {/* P1-169：移動端浮動操作按鈕 — 創建房間、隨機遊戲 */}
           {!activeGame && (
-            <div className="fixed bottom-20 right-4 z-30 md:hidden flex flex-col items-end gap-2">
-              <AnimatePresence>
-                {fabOpen && (
-                  <>
-                    <m.button
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      type="button"
-                      onClick={() => { createRoomSectionRef.current?.scrollIntoView({ behavior: 'smooth' }); setFabOpen(false) }}
-                      className="min-h-[48px] px-4 py-2 rounded-full bg-primary-500/90 hover:bg-primary-500 text-white text-sm font-medium shadow-lg flex items-center gap-2"
-                      aria-label="捲動至建立房間"
-                    >
-                      <Users className="w-4 h-4" /> 創建房間
-                    </m.button>
-                    <m.button
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      type="button"
-                      onClick={handleRandomGame}
-                      disabled={gamesWithCategory.length === 0}
-                      className="min-h-[48px] px-4 py-2 rounded-full bg-white/90 hover:bg-white text-[#0a0a1a] text-sm font-medium shadow-lg flex items-center gap-2 disabled:opacity-50"
-                      aria-label="隨機選一個遊戲"
-                    >
-                      <Shuffle className="w-4 h-4" /> 隨機來一個
-                    </m.button>
-                  </>
-                )}
-              </AnimatePresence>
-              <m.button
-                type="button"
-                onClick={() => setFabOpen((o) => !o)}
-                className="min-h-[56px] min-w-[56px] rounded-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg flex items-center justify-center games-focus-ring"
-                aria-label={fabOpen ? '關閉快捷選單' : '開啟快捷選單'}
-                aria-expanded={fabOpen}
-              >
-                <Plus className={`w-6 h-6 transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
-              </m.button>
-            </div>
+            <GamesFab
+              activeGame={activeGame}
+              fabOpen={fabOpen}
+              setFabOpen={setFabOpen}
+              createRoomSectionRef={createRoomSectionRef}
+              handleRandomGame={handleRandomGame}
+              gamesWithCategory={gamesWithCategory}
+            />
           )}
 
-          {/* Settings Modal：獨立 AnimatePresence，不與 mode="wait" 混用 */}
-          <AnimatePresence>
-            {showSettingsModal && (
-              <SettingsModal key="settings-modal" onClose={() => setShowSettingsModal(false)} />
-            )}
-          </AnimatePresence>
 
-          {/* R2-191：付費遊戲未訂閱時顯示付費牆 */}
-          <AnimatePresence>
-            {paidLockGame && (
-              <m.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
-              >
-                <PaidGameLock
-                  gameName={paidLockGame.name}
-                  requiredTier="premium"
-                  onClose={() => setPaidLockGame(null)}
-                />
-              </m.div>
-            )}
-          </AnimatePresence>
+
+
 
           {/* P0-009：訪客試玩 3 次後強制登入 modal */}
           <AnimatePresence>
@@ -1119,45 +870,35 @@ function GamesPageContent() {
             )}
           </AnimatePresence>
         </div>
-
-        {/* Player Management Modal */}
-        <PlayerManagementModal
-          isOpen={showPlayerModal}
-          onClose={closePlayerModal}
+        
+        {/* Render subcomponents */}
+        <GamesModals
+          showSettingsModal={showSettingsModal}
+          setShowSettingsModal={setShowSettingsModal}
+          paidLockGame={paidLockGame}
+          setPaidLockGame={setPaidLockGame}
+          showGuestTrialLimitModal={showGuestTrialLimitModal}
+          setShowGuestTrialLimitModal={setShowGuestTrialLimitModal}
+          gameIdToRate={gameIdToRate}
+          setGameIdToRate={setGameIdToRate}
+          ratingVariant={ratingVariant}
+          createInvite={createInvite}
+          setCreateInvite={setCreateInvite}
+          showPlayerModal={showPlayerModal}
+          setShowPlayerModal={setShowPlayerModal}
+          closePlayerModal={closePlayerModal}
           isInRoomMode={isInRoomMode}
           players={players}
           roomPlayers={roomPlayers}
           maxPlayers={maxPlayers}
-          onAddPlayer={addPlayer}
-          onRemovePlayer={removePlayer}
-          onReorderPlayers={reorderPlayers}
-          onLoadLastSaved={loadLastSavedList}
-          tier={tier}
+          setActiveGame={setActiveGame}
         />
 
-        {/* 任務 10：離開遊戲後彈出 1–5 星評分；R2-192 Pro 統計預覽；R2-209 下一款推薦 */}
-        <AnimatePresence>
-          {gameIdToRate && (
-            <GameRatingModal
-              gameId={gameIdToRate}
-              ratingVariant={ratingVariant}
-              onClose={() => setGameIdToRate(null)}
-              onPlayNext={(id) => setActiveGame(id)}
-              tier={tier}
-            />
-          )}
-        </AnimatePresence>
 
-        {/* Invite Link + QR Modal (after create room) */}
-        <AnimatePresence>
-          {createInvite && (
-            <InviteModal
-              slug={createInvite.slug}
-              inviteUrl={createInvite.inviteUrl}
-              onClose={() => setCreateInvite(null)}
-            />
-          )}
-        </AnimatePresence>
+
+
+
+
       </div>
     </PullToRefresh>
   )
