@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -44,13 +44,13 @@ export default function SoundSleuth() {
   const playSound = () => {
     const category = SOUND_CATEGORIES[Math.floor(Math.random() * SOUND_CATEGORIES.length)]
     const sound = category.sounds[Math.floor(Math.random() * category.sounds.length)]
-    
+
     setCurrentCategory(category)
     setCurrentSound(sound)
     setGuesses({})
     setCurrentPlayerIndex(0)
     play('click')
-    
+
     // 模擬播放聲音（這裡用視覺提示代替）
     setTimeout(() => {
       setGameState('guessing')
@@ -64,7 +64,7 @@ export default function SoundSleuth() {
       [currentPlayer]: guess
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -83,7 +83,7 @@ export default function SoundSleuth() {
         }))
       }
     })
-    
+
     // 表演者得分（如果有猜對的人）
     const correctGuesses = Object.values(guesses).filter(g => g === currentSound).length
     if (correctGuesses > 0) {
@@ -92,7 +92,7 @@ export default function SoundSleuth() {
         [currentPlayer]: (prev[currentPlayer] || 0) + correctGuesses
       }))
     }
-    
+
     setGameState('results')
     play('win')
   }
@@ -133,7 +133,7 @@ export default function SoundSleuth() {
             <h1 className="text-2xl font-bold text-white">聲音偵探</h1>
           </div>
           <p className="text-white/80 mb-6">考驗你的聽力，辨識各種聲音！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -144,8 +144,8 @@ export default function SoundSleuth() {
               <li>• 進行5輪比賽</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -163,14 +163,14 @@ export default function SoundSleuth() {
           <h2 className="text-xl font-bold text-white mb-4">
             {currentPlayer} 的回合
           </h2>
-          
+
           <div className="text-8xl mb-6">
             🎧
           </div>
-          
+
           <p className="text-white/80 mb-6">準備播放神秘聲音</p>
-          
-          <button 
+
+          <button
             onClick={playSound}
             className="games-touch-target w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white py-3 rounded-xl font-bold"
           >
@@ -214,7 +214,7 @@ export default function SoundSleuth() {
                     </div>
                   )}
                 </div>
-                
+
                 {currentPlayer !== player ? (
                   <div className="space-y-2">
                     {currentCategory?.sounds.map((sound) => (
@@ -247,7 +247,7 @@ export default function SoundSleuth() {
   }
 
   if (gameState === 'results') {
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -260,7 +260,7 @@ export default function SoundSleuth() {
               {round < 5 ? '回合結果' : '最終結果'}
             </h1>
           </div>
-          
+
           {round < 5 && currentSound && (
             <div className="bg-white/10 rounded-lg p-4 mb-6 text-center">
               <p className="text-4xl mb-2">🎧</p>
@@ -268,7 +268,7 @@ export default function SoundSleuth() {
               <p className="text-white/60 text-sm">類別：{currentCategory?.name}</p>
             </div>
           )}
-          
+
           <div className="space-y-3 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -282,16 +282,16 @@ export default function SoundSleuth() {
               </div>
             ))}
           </div>
-          
+
           {round < 5 ? (
-            <button 
+            <button
               onClick={nextRound}
               className="games-touch-target w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white py-3 rounded-xl font-bold"
             >
               下一輪
             </button>
           ) : (
-            <button 
+            <button
               onClick={restartGame}
               className="games-touch-target w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white py-3 rounded-xl font-bold"
             >

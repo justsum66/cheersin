@@ -23,9 +23,13 @@ export const PartyPlanSchema = z.object({
 export type PartyPlanInput = z.infer<typeof PartyPlanSchema>
 
 export interface GeneratePartyPlanResult {
-  plan: { phases?: unknown[]; totalMin?: number; [k: string]: unknown }
+  plan: { phases?: unknown[]; totalMin?: number;[k: string]: unknown }
   peopleCount: number
   durationMin: number
+  /** Phase 1 Task 15：免費方案浮水印 */
+  showWatermark: boolean
+  /** Phase 1 Task 17：免費方案禁止下載 PDF */
+  canDownloadPdf: boolean
 }
 
 /**
@@ -37,7 +41,9 @@ export async function generatePartyPlan(body: unknown): Promise<GeneratePartyPla
   const parsed = PartyPlanSchema.parse(body)
   let { peopleCount, durationMin, mood, allow18, useAiTransition, subscriptionTier } = parsed
 
-  if (!subscriptionTier || subscriptionTier === 'free') {
+  const isFree = !subscriptionTier || subscriptionTier === 'free'
+
+  if (isFree) {
     durationMin = Math.min(durationMin, 30)
   }
 
@@ -86,7 +92,7 @@ export async function generatePartyPlan(body: unknown): Promise<GeneratePartyPla
   })
 
   const rawContent = completion.choices[0]?.message?.content || '{}'
-  let plan: { phases?: unknown[]; totalMin?: number; [k: string]: unknown }
+  let plan: { phases?: unknown[]; totalMin?: number;[k: string]: unknown }
   try {
     plan = JSON.parse(rawContent) as typeof plan
   } catch (e) {
@@ -94,5 +100,11 @@ export async function generatePartyPlan(body: unknown): Promise<GeneratePartyPla
     throw new Error('Invalid JSON response from AI')
   }
 
-  return { plan, peopleCount, durationMin }
+  return {
+    plan,
+    peopleCount,
+    durationMin,
+    showWatermark: isFree,
+    canDownloadPdf: !isFree,
+  }
 }

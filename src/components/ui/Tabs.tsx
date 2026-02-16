@@ -47,16 +47,16 @@ export function Tabs({ tabs, defaultTab, onChange, className = '', tabListClassN
             aria-controls={`panel-${tab.id}`}
             id={`tab-${tab.id}`}
             onClick={() => handleSelect(tab.id)}
-            className="relative px-4 py-3 text-sm font-medium text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 rounded-t"
+            className={`relative px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 rounded-full z-10 ${activeId === tab.id ? 'text-white' : 'text-white/60 hover:text-white/90'}`}
           >
-            {tab.label}
             {activeId === tab.id && (
               <m.span
-                layoutId="tabs-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-400 rounded-full"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                layoutId="active-tab-pill"
+                className="absolute inset-0 bg-white/10 rounded-full -z-10 backdrop-blur-sm border border-white/5"
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
             )}
+            {tab.label}
           </button>
         ))}
       </div>

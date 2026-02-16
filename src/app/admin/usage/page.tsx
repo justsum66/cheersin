@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, BarChart3, Activity, Download } from 'lucide-react'
-import { AdminSkeleton } from '../AdminSkeleton'
-import { AdminForbidden } from '../AdminForbidden'
+import { AdminSkeleton } from '@/components/admin/AdminSkeleton'
+import { AdminForbidden } from '@/components/admin/AdminForbidden'
 
 interface DayStat {
   calls: number

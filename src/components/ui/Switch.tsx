@@ -50,7 +50,7 @@ export function Switch({
           border-2 border-transparent
           transition-colors duration-200 ease-out
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]
-          ${checked ? 'bg-primary-500' : 'bg-white/20'}
+          ${checked ? 'bg-primary-500 shadow-[0_0_12px_rgba(139,0,0,0.6)]' : 'bg-white/20'}
           ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
         `}
       >

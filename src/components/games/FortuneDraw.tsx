@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
-import { Ticket, RefreshCw, Trophy, Sparkles } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { RefreshCw, Trophy, Sparkles } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'

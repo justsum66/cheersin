@@ -1,5 +1,5 @@
-'use client'
 
+import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
 
 /**
@@ -34,13 +34,20 @@ export function Badge({
   size = 'md',
   className = '',
   title,
-}: BadgeProps) {
+  shimmer = false,
+}: BadgeProps & { shimmer?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full border ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={cn(
+        `inline-flex items-center font-medium rounded-full border relative overflow-hidden ${variantClasses[variant]} ${sizeClasses[size]}`,
+        className
+      )}
       role="status"
       title={title}
     >
+      {shimmer && (
+        <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      )}
       {children}
     </span>
   )

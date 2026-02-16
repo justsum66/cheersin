@@ -34,7 +34,7 @@ export default function VocalWar() {
   const [scores, setScores] = useState<Record<string, number>>({})
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
-  const audioRef = useRef<HTMLAudioElement>(null)
+
 
   const currentPlayer = players[currentPlayerIndex]
   const otherPlayers = players.filter(p => p !== currentPlayer)
@@ -68,7 +68,7 @@ export default function VocalWar() {
       [currentPlayer]: score
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -84,7 +84,7 @@ export default function VocalWar() {
       [currentPlayer]: candidate
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -99,7 +99,7 @@ export default function VocalWar() {
     Object.values(votes).forEach(voted => {
       voteCounts[voted] = (voteCounts[voted] || 0) + 1
     })
-    
+
     // 給分（演唱分數 + 投票分數）
     Object.entries(performances).forEach(([player, score]) => {
       setScores(prev => ({
@@ -107,14 +107,14 @@ export default function VocalWar() {
         [player]: (prev[player] || 0) + Math.floor(score / 10) // 演唱分數
       }))
     })
-    
+
     Object.entries(voteCounts).forEach(([player, votes]) => {
       setScores(prev => ({
         ...prev,
         [player]: (prev[player] || 0) + votes * 2 // 投票分數
       }))
     })
-    
+
     setGameState('results')
     play('win')
   }
@@ -155,7 +155,7 @@ export default function VocalWar() {
             <h1 className="text-2xl font-bold text-white">歌喉戰</h1>
           </div>
           <p className="text-white/80 mb-6">展現你的歌喉，爭奪歌王寶座！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -166,8 +166,8 @@ export default function VocalWar() {
               <li>• 進行3輪比賽</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -201,7 +201,7 @@ export default function VocalWar() {
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-bold text-white mb-4">準備開始</h2>
               <p className="text-white/80 mb-6">{currentPlayer} 請準備演唱</p>
-              <button 
+              <button
                 onClick={startSinging}
                 className="games-touch-target bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 px-8 rounded-xl font-bold"
               >
@@ -217,27 +217,27 @@ export default function VocalWar() {
                   <p className="text-white/80">難度：{currentSong.difficulty}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
-                <button 
+                <button
                   onClick={() => finishSinging(95)}
                   className="games-touch-target bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 rounded-xl font-bold"
                 >
                   完美演唱 (95分)
                 </button>
-                <button 
+                <button
                   onClick={() => finishSinging(85)}
                   className="games-touch-target bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-4 rounded-xl font-bold"
                 >
                   優秀演唱 (85分)
                 </button>
-                <button 
+                <button
                   onClick={() => finishSinging(75)}
                   className="games-touch-target bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white py-4 rounded-xl font-bold"
                 >
                   一般演唱 (75分)
                 </button>
-                <button 
+                <button
                   onClick={() => finishSinging(65)}
                   className="games-touch-target bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-4 rounded-xl font-bold"
                 >
@@ -274,22 +274,22 @@ export default function VocalWar() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-2">
                     {performances[player] >= 90 ? '🎤' :
-                     performances[player] >= 80 ? '🎵' :
-                     performances[player] >= 70 ? '🎶' :
-                     performances[player] >= 60 ? '🎼' : '🎵'}
+                      performances[player] >= 80 ? '🎵' :
+                        performances[player] >= 70 ? '🎶' :
+                          performances[player] >= 60 ? '🎼' : '🎵'}
                   </div>
                   <p className="text-white/80">{performances[player]} 分</p>
                   <p className="text-white/60 text-sm mt-1">
                     {currentSong?.title}
                   </p>
                 </div>
-                
+
                 {currentPlayer !== player && (
-                  <button 
+                  <button
                     onClick={() => castVote(player)}
                     className="games-touch-target w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-2 rounded-lg font-medium"
                   >
@@ -305,7 +305,7 @@ export default function VocalWar() {
   }
 
   if (gameState === 'results') {
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -318,13 +318,13 @@ export default function VocalWar() {
               {round < 3 ? '回合結果' : '最終結果'}
             </h1>
           </div>
-          
+
           {round < 3 && currentSong && (
             <div className="bg-white/10 rounded-lg p-4 mb-6 text-center">
               <p className="text-white">本輪歌曲：{currentSong.title}</p>
             </div>
           )}
-          
+
           <div className="space-y-3 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -338,16 +338,16 @@ export default function VocalWar() {
               </div>
             ))}
           </div>
-          
+
           {round < 3 ? (
-            <button 
+            <button
               onClick={nextRound}
               className="games-touch-target w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 rounded-xl font-bold"
             >
               下一輪
             </button>
           ) : (
-            <button 
+            <button
               onClick={restartGame}
               className="games-touch-target w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 rounded-xl font-bold"
             >

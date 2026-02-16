@@ -5,7 +5,7 @@
 export function Skeleton({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <div
-      className={`rounded-xl bg-primary-500/10 skeleton-shimmer-enhanced min-h-[1rem] ${className}`}
+      className={`rounded-xl bg-white/5 animate-pulse min-h-[1rem] ${className}`}
       style={style}
       aria-hidden
     />

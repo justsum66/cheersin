@@ -73,6 +73,10 @@ import {
 /** 任務 8：遊戲難度標籤 */
 export type GameDifficulty = 'easy' | 'medium' | 'hard'
 
+/** 任務 14：隨機暱稱候選（酒桌風） */
+export const RANDOM_NICKNAMES = ['酒神', '派對王', '乾杯俠', '骰子手', '轉盤王', '真心話王', '冒險家', '幸運星', '夜貓子', '派對動物', '酒桌霸主', '乾杯達人', '遊戲王', '歡樂製造機', '氣氛擔當']
+
+
 /** 單一遊戲 metadata（不含 component）；任務 8/9：難度、時長預估；T072：兩人友善；GAMES_500 #127：規則摘要 hover 預覽 */
 export interface GameMeta {
   id: string
@@ -100,6 +104,8 @@ export interface GameMeta {
   isNew?: boolean
   /** Phase 1 Task 11: 遊戲模式（用於合併變體，如辣味/情侶版） */
   modes?: GameMode[]
+  /** Task 45: 錦標賽模式相容（通常為 1v1 對戰類） */
+  tournamentCompatible?: boolean
   /** Task 26: 標記已廢棄遊戲（Lobby 不顯示，但路由保留） */
   deprecated?: boolean
 }
@@ -295,7 +301,6 @@ export const GAMES_META: GameMeta[] = [
   { id: 'buzz-game', name: 'Buzz禁語', description: '遇到特定數字的倍數或包含該數字時要說 Buzz，說錯的人喝！', icon: Ban, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 5, searchKeys: 'buzz jinyu forbidden', twoPlayerFriendly: true, rulesSummary: '遇到禁語數字的倍數或包含它時要說 Buzz。' },
   { id: 'category-chain', name: '分類接龍', description: '選定分類（動物/食物/明星）輪流說同類的詞，不能重複！卡住喝。', icon: Link2, color: 'secondary', players: '2-8 人', popular: true, difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'fenleijielongd category chain', twoPlayerFriendly: true, rulesSummary: '選分類輪流說同類詞，不能重複卡住喝。' },
   { id: 'two-truths-one-lie', name: '兩真一假', description: '說兩件真事一件假事，其他人猜哪個是假的，猜錯喝！', icon: FileQuestion, color: 'primary', players: '3-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'liangzhenyijia two truths lie', rulesSummary: '說兩真一假，其他人猜假話，猜錯喝。' },
-  { id: 'two-truths-one-lie', name: '兩真一假', description: '說兩件真事一件假事，其他人猜哪個是假的，猜錯喝！', icon: FileQuestion, color: 'primary', players: '3-10 人', popular: true, difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'liangzhenyijia two truths lie', rulesSummary: '說兩真一假，其他人猜假話，猜錯喝。' },
   { id: 'spicy-truth-or-dare', name: '辣味真心話大冒險', description: '🔞 18+ 成人版真心話大冒險，更勁爆更刺激！', icon: Flame, color: 'primary', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 15, searchKeys: 'spicy truth dare 18+ adult lawei', rulesSummary: '18+ 成人版真心話大冒險。', deprecated: true },
   { id: 'spicy-never-have-i-ever', name: '辣味我從來沒有', description: '🔞 18+ 成人版我從來沒有，做過的人喝！', icon: Flame, color: 'accent', players: '3-10 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'spicy never have ever 18+ adult lawei', rulesSummary: '18+ 我從來沒有，做過喝。', deprecated: true },
   { id: 'spicy-who-most-likely', name: '辣味誰最可能', description: '🔞 18+ 成人版誰最可能，被最多人指的喝！', icon: Flame, color: 'secondary', players: '3-10 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'spicy who likely 18+ adult lawei', rulesSummary: '18+ 誰最可能，被指最多喝。', deprecated: true },
@@ -311,9 +316,9 @@ export const GAMES_META: GameMeta[] = [
   { id: 'mind-reading', name: '讀心術', description: '猜測他人的選擇！猜錯喝酒！', icon: Sparkles, color: 'primary', players: '3-8 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'duxinshu mind reading guess', rulesSummary: '猜對方選擇，猜錯喝。' },
   { id: 'spicy-dice', name: '情趣骰子', description: '🔞 18+ 情侶專屬骰子！擲骰決定動作！', icon: Dice6, color: 'accent', players: '2 人', difficulty: 'easy', estimatedMinutes: 15, searchKeys: 'qingqu shaizi spicy dice 18+ adult', twoPlayerFriendly: true, rulesSummary: '18+ 情侶骰子，擲骰決定動作。', deprecated: true },
   // Phase 3 新遊戲
-  { id: 'reaction-master', name: '反應大師', description: '看到顏色快速點擊！最慢或點錯喝酒！', icon: Activity, color: 'accent', players: '2-4 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'fanying dashi reaction master color', twoPlayerFriendly: true, rulesSummary: '看到顏色快點，最慢或錯誤喝。' },
+  { id: 'reaction-master', name: '反應大師', description: '看到顏色快速點擊！最慢或點錯喝酒！', icon: Activity, color: 'accent', players: '2-4 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'fanying dashi reaction master color', twoPlayerFriendly: true, rulesSummary: '看到顏色快點，最慢或錯誤喝。', tournamentCompatible: true },
   { id: 'drinking-culture', name: '各國喝酒文化', description: '認識各地酒桌文化與禮儀，點選國家看小知識。', icon: Wine, color: 'secondary', players: '1+ 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'geguo hejiu wenhua culture', twoPlayerFriendly: true, rulesSummary: '各國喝酒文化小知識。' },
-  { id: 'jiuling', name: '酒令', description: '中國傳統酒令數位化，抽酒令或划拳對決，輸的喝。', icon: Wine, color: 'primary', players: '2+ 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'jiuling huaguang xingjiuling', twoPlayerFriendly: true, rulesSummary: '抽酒令或石頭剪刀布划拳，輸的喝。' },
+  { id: 'jiuling', name: '酒令', description: '中國傳統酒令數位化，抽酒令或划拳對決，輸的喝。', icon: Wine, color: 'primary', players: '2+ 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'jiuling huaguang xingjiuling', twoPlayerFriendly: true, rulesSummary: '抽酒令或石頭剪刀布划拳，輸的喝。', tournamentCompatible: true },
   { id: 'wine-memory-match', name: '酒類配對記憶', description: '翻牌配對酒款與產區/風味，配錯喝一口。', icon: Wine, color: 'secondary', players: '1+ 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'jiulei peidui jiyi wine memory', twoPlayerFriendly: true, rulesSummary: '翻牌配對酒款與產區，配錯喝一口。' },
   { id: 'history-trivia', name: '歷史知識問答', description: '歷史冷知識選擇題，答錯喝一口。', icon: BookOpen, color: 'primary', players: '1+ 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'lishi zhishi wenda history trivia', twoPlayerFriendly: true, rulesSummary: '歷史冷知識答錯喝。' },
   { id: 'true-false-news', name: '真假新聞', description: '看新聞標題猜真或假，答錯喝一口。', icon: Newspaper, color: 'secondary', players: '1+ 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'zhenjia xinwen true false news', twoPlayerFriendly: true, rulesSummary: '猜新聞真假，答錯喝。' },
@@ -350,7 +355,7 @@ export const GAMES_META: GameMeta[] = [
   // Phase 6 新遊戲
 
   { id: 'emotion-read', name: '表情讀心', description: '看表情猜情緒！選錯的人喝酒！', icon: Smile, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'biaoqing duxin emotion read', twoPlayerFriendly: true, rulesSummary: '看表情猜情緒。' },
-  { id: 'dice-war', name: '骰子大戰', description: '雙方各擲兩顆骰子，點數大的獲勝！輸的喝酒！', icon: Dices, color: 'accent', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'touzi dazhan dice war', twoPlayerFriendly: true, rulesSummary: '擲骰子比大小。' },
+  { id: 'dice-war', name: '骰子大戰', description: '雙方各擲兩顆骰子，點數大的獲勝！輸的喝酒！', icon: Dices, color: 'accent', players: '2 人', difficulty: 'easy', estimatedMinutes: 5, searchKeys: 'touzi dazhan dice war', twoPlayerFriendly: true, rulesSummary: '擲骰子比大小。', tournamentCompatible: true },
   { id: 'price-guess', name: '價格猜猜', description: '猜物品價格！誤差超過30%要喝酒！', icon: DollarSign, color: 'primary', players: '2-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'jiage caicai price guess', twoPlayerFriendly: true, rulesSummary: '猜物品價格。' },
   // REMOVED: imitate-me (quality 3.0/10)
 
@@ -360,7 +365,7 @@ export const GAMES_META: GameMeta[] = [
   { id: 'bluffing', name: '吹功大法', description: '吹噓自己的能力！其他人投票是否相信！被拆穿就喝酒！', icon: Star, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'chuigong dafa bluffing', rulesSummary: '吹噓能力，被質疑喝酒。' },
   // Phase 7 新遊戲
   { id: 'telephone', name: '傳話遊戲', description: '悄悄話傳遞，看看訊息會變成什麼樣子！', icon: MessageCircle, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 10, searchKeys: 'chuanhua youxi telephone message', rulesSummary: '悄悄話傳遞遊戲。' },
-  { id: 'tic-tac-shot', name: '井字射擊', description: '射中目標獲勝，射空安全！', icon: Target, color: 'secondary', players: '2 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'jingzi sheji tic tac shot', twoPlayerFriendly: true, rulesSummary: '井字棋射擊版。' },
+  { id: 'tic-tac-shot', name: '井字射擊', description: '射中目標獲勝，射空安全！', icon: Target, color: 'secondary', players: '2 人', difficulty: 'easy', estimatedMinutes: 8, searchKeys: 'jingzi sheji tic tac shot', twoPlayerFriendly: true, rulesSummary: '井字棋射擊版。', tournamentCompatible: true },
   { id: 'compliment-battle', name: '讚美大戰', description: '互相讚美，由大家投票選出最棒的！', icon: Heart, color: 'primary', players: '3-8 人', difficulty: 'easy', estimatedMinutes: 15, searchKeys: 'zanmei dazhan compliment battle', rulesSummary: '互相讚美投票遊戲。' },
   { id: 'cocktail-mix', name: '調酒大師', description: '考驗你的調酒知識！', icon: Wine, color: 'accent', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 12, searchKeys: 'tiaojiao dashi cocktail mix', twoPlayerFriendly: true, rulesSummary: '調酒知識問答。' },
   { id: 'reverse-say', name: '反向指令', description: '聽指令做相反動作！', icon: RotateCcw, color: 'secondary', players: '2-8 人', difficulty: 'medium', estimatedMinutes: 10, searchKeys: 'fanxiang zhiling reverse say', twoPlayerFriendly: true, rulesSummary: '反向執行指令。' },

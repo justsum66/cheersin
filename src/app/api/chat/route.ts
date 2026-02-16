@@ -320,8 +320,8 @@ export async function POST(request: NextRequest) {
     const clientIp = getClientIp(request.headers)
     const tier = subscriptionTier === 'basic' || subscriptionTier === 'premium' ? 'pro' as const : 'free' as const
     const rateLimitResult = hasUpstashRedis()
-      ? (await checkRateLimitUpstash(`chat:${clientIp}`, { tier })) ?? checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, max: limitPerMin })
-      : checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, max: limitPerMin })
+      ? (await checkRateLimitUpstash(`chat:${clientIp}`, { tier })) ?? checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, maxRequests: limitPerMin })
+      : checkRateLimit(`chat:${clientIp}`, { windowMs: 60000, maxRequests: limitPerMin })
 
     if (!rateLimitResult.success) {
       return NextResponse.json(

@@ -5,7 +5,8 @@ import { useEffect, useRef } from 'react'
 /** 30 Hero 動態酒液流動粒子：深酒紅/香檳金氣泡；任務 9：prefers-reduced-motion 時停用 */
 /** Phase 1 A1.4: 增強粒子效果 - 更多色彩、微妙發光 */
 /** absolute：用於 Hero 區內，填滿父層（absolute inset-0）；預設 fixed 全螢幕 */
-const WINE_COLORS = ['rgba(139,0,0,', 'rgba(212,175,55,', 'rgba(255,255,255,', 'rgba(138,43,226,']
+/** 30 Hero 動態酒液流動粒子：派對霓虹配色 (Purple, Pink, Gold, Cyan) */
+const WINE_COLORS = ['rgba(147,51,234,', 'rgba(236,72,153,', 'rgba(234,179,8,', 'rgba(34,211,238,']
 const PARTICLE_COUNT = 40
 
 export default function ParticleBubbles({ reducedMotion = false, absolute = false }: { reducedMotion?: boolean; absolute?: boolean }) {
@@ -62,7 +63,7 @@ export default function ParticleBubbles({ reducedMotion = false, absolute = fals
         if (b.x < -b.r || b.x > canvas.width + b.r) b.vx *= -1
         if (b.y < -b.r) b.y = canvas.height + b.r
         if (b.y > canvas.height + b.r) b.y = -b.r
-        
+
         // Phase 1 A1.4: 增加粒子發光效果
         const prefix = WINE_COLORS[b.colorIdx]
         // 外層發光
@@ -100,18 +101,18 @@ export default function ParticleBubbles({ reducedMotion = false, absolute = fals
 
   return (
     <div ref={containerRef} className={absolute ? 'absolute inset-0 pointer-events-none z-[2]' : 'contents'}>
-    <canvas
-      ref={canvasRef}
-      className={absolute ? 'absolute inset-0 w-full h-full pointer-events-none' : 'fixed inset-0 pointer-events-none z-0'}
-      data-print-skip
-      style={{
-        opacity: reducedMotion ? 0 : 0.7,
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-      }}
-      aria-hidden
-    />
+      <canvas
+        ref={canvasRef}
+        className={absolute ? 'absolute inset-0 w-full h-full pointer-events-none' : 'fixed inset-0 pointer-events-none z-0'}
+        data-print-skip
+        style={{
+          opacity: reducedMotion ? 0 : 0.7,
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+        }}
+        aria-hidden
+      />
     </div>
   )
 }

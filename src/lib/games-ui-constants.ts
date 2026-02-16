@@ -1,54 +1,64 @@
 /**
- * GAMES_500 #270 #252 #279 #284 #292：遊戲內共用文案與常數，供各遊戲一致使用。
+ * 遊戲 UI 常量
  */
 
-/** 載入中按鈕顯示文字 */
-export const GAME_LOADING_BUTTON_TEXT = '載入中…'
-
-/** 載入中按鈕 aria-label（螢幕閱讀器） */
-export const GAME_BUTTON_LOADING_ARIA = '載入中'
-
-/** GAMES_500 #252：遊戲結束 CTA 統一用詞 */
-export const GAME_CTA_PLAY_AGAIN = '再玩一次'
-export const GAME_CTA_CHANGE_GAME = '換遊戲'
-export const GAME_CTA_BACK_LOBBY = '回大廳'
-
-/** GAMES_500 #279：空狀態（無玩家等）友善文案 */
-export const GAME_EMPTY_PLAYERS_TEXT = '請新增至少 2 位玩家'
-export const GAME_EMPTY_LIST_TEXT = '尚無項目'
-
-/** GAMES_500 #292：無效輸入提示 */
-export const GAME_INVALID_INPUT_PLAYERS = '請新增至少 2 位玩家'
-export const GAME_INVALID_INPUT_EMPTY = '請輸入內容'
-
-/** GAMES_500 #284：Toast 顯示時長（ms），遊戲內一致 */
-export const GAME_TOAST_DURATION_MS = 2500
-
-/** GAMES_500 #34 #60 #117：多語系 key 預留（目前繁中）；標題／描述／本週熱門 N 次／人數文案 */
-export const GAMES_TITLE_I18N_KEY = 'games.title'
-export const GAMES_DESCRIPTION_I18N_KEY = 'games.description'
-export const GAMES_LOBBY_WEEKLY_PLAYS_I18N_KEY = 'games.lobby.weeklyPlays'
+/** 遊戲卡片玩家數 i18n 鍵 */
 export const GAMES_CARD_PLAYERS_I18N_KEY = 'games.card.players'
 
-/** GAMES_500 #131：RTL 佈局預留（多語系含 RTL 時設為 true） */
-export const GAMES_RTL = false
+/** 遊戲難度標籤 i18n 鍵 */
+export const GAMES_DIFFICULTY_I18N_KEYS = {
+  easy: 'games.difficulty.easy',
+  medium: 'games.difficulty.medium',
+  hard: 'games.difficulty.hard',
+} as const
 
-/** GAMES_500 #72：Lobby 區塊順序可 A/B（'default' | 'variant_b'）；目前僅 default */
-export const LOBBY_BLOCK_ORDER: 'default' | 'variant_b' = 'default'
+/** 遊戲類別 i18n 鍵 */
+export const GAMES_CATEGORY_I18N_KEYS = {
+  drinking: 'games.category.drinking',
+  party: 'games.category.party',
+  skill: 'games.category.skill',
+  cards: 'games.category.cards',
+  team: 'games.category.team',
+} as const
 
-/** GAMES_500 #241：各遊戲規則內文統一結構（目標／人數／流程／懲罰）— 供子遊戲對齊 */
-export const GAMES_RULES_SECTIONS = ['目標', '人數', '流程', '懲罰'] as const
+/** 遊戲狀態 i18n 鍵 */
+export const GAMES_STATUS_I18N_KEYS = {
+  waiting: 'games.status.waiting',
+  playing: 'games.status.playing',
+  paused: 'games.status.paused',
+  finished: 'games.status.finished',
+} as const
 
-/** GAMES_500 #243：規則內文可在地化 key 前綴 */
-export const GAMES_RULES_I18N_KEY_PREFIX = 'games.rules.'
+/** 遊戲動作按鈕 i18n 鍵 */
+export const GAMES_ACTION_I18N_KEYS = {
+  start: 'games.action.start',
+  pause: 'games.action.pause',
+  resume: 'games.action.resume',
+  end: 'games.action.end',
+  restart: 'games.action.restart',
+  next: 'games.action.next',
+  skip: 'games.action.skip',
+} as const
 
-/** GAMES_500 #92：Lobby 可見文案 i18n key（搜尋、區塊標題、分類 tab） */
-export const GAMES_LOBBY_SEARCH_PLACEHOLDER_I18N_KEY = 'games.lobby.searchPlaceholder'
-export const GAMES_LOBBY_RECENT_I18N_KEY = 'games.lobby.recent'
-export const GAMES_LOBBY_WEEKLY_I18N_KEY = 'games.lobby.weeklyHot'
-export const GAMES_LOBBY_RECOMMENDED_I18N_KEY = 'games.lobby.recommended'
-export const GAMES_LOBBY_CATEGORY_ALL_I18N_KEY = 'games.lobby.category.all'
-export const GAMES_LOBBY_CATEGORY_CLASSIC_I18N_KEY = 'games.lobby.category.classic'
-export const GAMES_LOBBY_CATEGORY_VS_I18N_KEY = 'games.lobby.category.vs'
-export const GAMES_LOBBY_CATEGORY_RANDOM_I18N_KEY = 'games.lobby.category.random'
-export const GAMES_LOBBY_CATEGORY_TWO_I18N_KEY = 'games.lobby.category.two'
+/** 預設遊戲顏色 */
+export const DEFAULT_GAME_COLORS = {
+  primary: '#FF6B6B',
+  secondary: '#4ECDC4',
+  accent: '#FFE66D',
+  background: '#2C3E50',
+} as const
+
+/** 遊戲卡片尺寸 */
+export const GAME_CARD_SIZES = {
+  sm: { width: 200, height: 280 },
+  md: { width: 280, height: 360 },
+  lg: { width: 360, height: 440 },
+} as const
+
+/** 動畫時長 (毫秒) */
+export const ANIMATION_DURATIONS = {
+  fast: 150,
+  normal: 300,
+  slow: 500,
+  verySlow: 1000,
+} as const

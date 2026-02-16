@@ -8,9 +8,9 @@ export type SubscriptionTier = 'free' | 'basic' | 'premium'
 export const SUBSCRIPTION_TIERS: Record<SubscriptionTier, { label: string; maxAICallsPerDay: number; maxRoomPlayers: number; canAccessProCourse: boolean; hasNoAds: boolean; hasProBadge: boolean }> = {
   free: {
     label: '免費',
-    /** R2-197：免費方案 AI 侍酒師每日 5 次 */
-    maxAICallsPerDay: 5,
-    maxRoomPlayers: 4,
+    /** R2-197：免費方案 AI 侍酒師每日 3 次 */
+    maxAICallsPerDay: 3,
+    maxRoomPlayers: 2,
     canAccessProCourse: false,
     hasNoAds: false,
     hasProBadge: false,

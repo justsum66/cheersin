@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { z } from 'zod'
 import type { ChatMessage, ChatUsage } from '@/types/chat-messages'
 import { logger } from './logger'
 import {
@@ -79,6 +80,19 @@ export interface SommelierUserContext {
 const PERSONALITY_PRO = `請以「嚴謹專業」侍酒師風格回答：用詞精準、少用口語與表情符號、著重產區與品種、適時引用專業術語。`
 const PERSONALITY_FUN = `請以「幽默輕鬆」風格回答：可適時使用表情符號、口語化、穿插酒類冷知識或趣味比喻。`
 
+/**
+ * 清理用戶輸入，防止 prompt injection：
+ * 移除可能改變 AI 行為的指令性前綴、角色宣告，並限制長度。
+ */
+function sanitizeContextField(value: string, maxLen = 200): string {
+  return value
+    .replace(/[\r\n]+/g, ' ')                               // 移除換行（防止注入新 section）
+    .replace(/^(ignore|system|assistant|user|human)[\s:：]/gi, '') // 移除角色前綴
+    .replace(/```[\s\S]*?```/g, '')                          // 移除 code blocks
+    .trim()
+    .slice(0, maxLen)
+}
+
 /** P2-396：AI 人格設定 — 依 userContext.personality 切換專業/幽默風格，單一來源供所有 chat 路徑使用 */
 /** 依 userContext 建出完整系統提示（單一來源）；140 台灣在地酒款資料庫一併注入 */
 export function getSommelierSystemPrompt(userContext?: SommelierUserContext): string {
@@ -94,16 +108,31 @@ export function getSommelierSystemPrompt(userContext?: SommelierUserContext): st
   }
   if (!userContext) return systemPrompt
   systemPrompt += `\n\n用戶背景資訊：`
-  if (userContext.zodiac) systemPrompt += `\n- 星座：${userContext.zodiac}`
-  if (userContext.mbti) systemPrompt += `\n- MBTI：${userContext.mbti}`
-  if (userContext.soulWine) systemPrompt += `\n- 靈魂酒款（靈魂酒測結果）：${userContext.soulWine}，推薦時請優先考慮此偏好`
-  if (userContext.occasion) systemPrompt += `\n- 場合：${userContext.occasion}`
-  if (userContext.budget) systemPrompt += `\n- 預算：${userContext.budget}`
+  if (userContext.zodiac) systemPrompt += `\n- 星座：${sanitizeContextField(userContext.zodiac, 20)}`
+  if (userContext.mbti) systemPrompt += `\n- MBTI：${sanitizeContextField(userContext.mbti, 10)}`
+  if (userContext.soulWine) systemPrompt += `\n- 靈魂酒款（靈魂酒測結果）：${sanitizeContextField(userContext.soulWine, 100)}，推薦時請優先考慮此偏好`
+  if (userContext.occasion) systemPrompt += `\n- 場合：${sanitizeContextField(userContext.occasion, 50)}`
+  if (userContext.budget) systemPrompt += `\n- 預算：${sanitizeContextField(userContext.budget, 50)}`
   if (userContext.preferredWineTypes?.length) {
-    systemPrompt += `\n- 偏好酒類：${userContext.preferredWineTypes.join('、')}`
+    // 對每個偏好酒類進行 sanitize，防止陣列元素被注入
+    const sanitizedTypes = userContext.preferredWineTypes
+      .slice(0, 10)
+      .map(t => sanitizeContextField(t, 30))
+      .filter(Boolean)
+    if (sanitizedTypes.length) {
+      systemPrompt += `\n- 偏好酒類：${sanitizedTypes.join('、')}`
+    }
   }
   if (userContext.recentTurns?.length) {
-    systemPrompt += `\n\n近期對話（請延續上下文）：\n${userContext.recentTurns.map((t) => `${t.role}: ${t.content}`).join('\n')}`
+    // 限制近期對話輪數（防止 prompt 過長），並 sanitize role 值
+    const validRoles = new Set(['user', 'assistant'])
+    const safeTurns = userContext.recentTurns
+      .slice(-10) // 最多保留最近 10 輪
+      .filter(t => validRoles.has(t.role))
+      .map(t => `${t.role}: ${t.content.slice(0, 500)}`)
+    if (safeTurns.length) {
+      systemPrompt += `\n\n近期對話（請延續上下文）：\n${safeTurns.join('\n')}`
+    }
   }
   if (userContext.ragContext) {
     systemPrompt += `\n\n參考以下內容回答，並在引用處標注來源編號 [1]、[2] 等：\n${userContext.ragContext}`
@@ -159,22 +188,29 @@ export async function chatWithSommelier(
   return { text, usage }
 }
 
-/** Groq streaming：逐 token 回傳，供打字機效果使用 */
+/** Groq streaming：逐 token 回傳，供打字機效果使用；含錯誤處理 */
 export async function* chatWithSommelierStream(
   messages: ChatMessage[],
   userContext?: SommelierUserContext
 ): AsyncGenerator<string> {
   const systemPrompt = getSommelierSystemPrompt(userContext)
-  const stream = await groq.chat.completions.create({
-    messages: [{ role: 'system', content: systemPrompt }, ...messages],
-    model: GROQ_CHAT_MODEL,
-    temperature: 0.8,
-    max_tokens: 1024,
-    stream: true,
-  })
-  for await (const chunk of stream as AsyncIterable<{ choices?: { delta?: { content?: string } }[] }>) {
-    const content = chunk.choices?.[0]?.delta?.content
-    if (typeof content === 'string') yield content
+  try {
+    const stream = await groq.chat.completions.create({
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
+      model: GROQ_CHAT_MODEL,
+      temperature: 0.8,
+      max_tokens: 1024,
+      stream: true,
+    })
+    for await (const chunk of stream as AsyncIterable<{ choices?: { delta?: { content?: string } }[] }>) {
+      const content = chunk.choices?.[0]?.delta?.content
+      if (typeof content === 'string') yield content
+    }
+  } catch (err) {
+    logger.error('chatWithSommelierStream failed', {
+      err: err instanceof Error ? err.message : String(err),
+    })
+    yield '抱歉，AI 回覆時發生錯誤，請稍後再試。'
   }
 }
 
@@ -196,6 +232,14 @@ export async function chatWithSommelierVision(
   return completion.choices[0]?.message?.content ?? '無法辨識圖片，請稍後再試。'
 }
 
+/** T28: 有效星座白名單，防止 prompt injection */
+const VALID_ZODIACS = new Set([
+  '白羊', '金牛', '雙子', '巨蟹', '獅子', '處女',
+  '天秤', '天蠍', '射手', '摩羯', '水瓶', '雙魚',
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+])
+
 // 生成靈魂酒款結果
 export async function generateSoulWineResult(
   answers: Record<string, string>,
@@ -207,10 +251,18 @@ export async function generateSoulWineResult(
   traits: string[]
   recommendation: string
 }> {
-  const prompt = `根據以下測驗答案，為這位${zodiac}座的用戶生成「靈魂酒款」分析結果。
+  // T28: 驗證 zodiac 值是否在白名單中，防止 prompt injection
+  const safeZodiac = VALID_ZODIACS.has(zodiac) ? zodiac : '白羊'
+  // 同時限制 answers 數量和長度
+  const safeAnswers = Object.entries(answers)
+    .slice(0, 20)
+    .map(([q, a]) => `${sanitizeContextField(q, 100)}: ${sanitizeContextField(a, 200)}`)
+    .join('\n')
+
+  const prompt = `根據以下測驗答案，為這位${safeZodiac}座的用戶生成「靈魂酒款」分析結果。
 
 測驗答案：
-${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
+${safeAnswers}
 
 請以 JSON 格式回覆，包含：
 {
@@ -232,11 +284,25 @@ ${Object.entries(answers).map(([q, a]) => `${q}: ${a}`).join('\n')}
 
   const content = completion.choices[0]?.message?.content || ''
 
+  /** Zod schema 確保 LLM 回傳結構符合預期，防止欄位注入或型別錯誤 */
+  const SoulWineSchema = z.object({
+    wineType: z.string().max(50),
+    wineName: z.string().max(100),
+    description: z.string().max(500),
+    traits: z.array(z.string().max(30)).max(5),
+    recommendation: z.string().max(200),
+  })
+
   try {
     // 嘗試解析 JSON
     const jsonMatch = content.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
+      const raw = JSON.parse(jsonMatch[0])
+      const parsed = SoulWineSchema.safeParse(raw)
+      if (parsed.success) {
+        return parsed.data
+      }
+      logger.warn('Soul wine result schema mismatch', { issues: parsed.error.issues })
     }
   } catch (e) {
     logger.error('Failed to parse soul wine result', { err: e instanceof Error ? e.message : String(e) })

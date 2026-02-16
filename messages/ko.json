@@ -8,7 +8,10 @@
   "common": {
     "appName": "Cheersin",
     "tagline": "당신의 소울 와인을 찾아보세요",
+    "subtitle": "스마트폰으로 즐기는 파티 게임",
     "cta": "테스트 시작",
+    "emergency": "파티 긴급 버튼",
+    "secondaryCta": "더 알아보기",
     "ctaVariant0": "테스트 시작",
     "ctaVariant1": "30초에 나의 와인 찾기",
     "heroTitle1": "당신의",
@@ -18,7 +21,9 @@
     "save": "저장",
     "cancel": "취소",
     "close": "닫기",
-    "back": "Back",
+    "back": "뒤로",
+    "unlockAll": "모든 게임 잠금 해제",
+    "unlockAllDesc": "Pro로 업그레이드하여 무제한 플레이",
     "share": "Share",
     "copied": "Copied",
     "errorNetwork": "네트워크 오류. 연결을 확인한 후 다시 시도해 주세요.",
@@ -47,7 +52,15 @@
     "turnOf": "{{name}} 的回合",
     "roundStart": "第 {{n}} 輪 - 開始！",
     "requiredField": "請填寫必填欄位",
-    "formValidationError": "請檢查表單內容"
+    "formValidationError": "양식 내용을 확인해 주세요"
+  },
+  "trivia": {
+    "t1": "상식: 샴페인 거품은 알코올 흡수를 빠르게 해서 빨리 취해요!",
+    "t2": "파티 팁: 게임 전에 물을 많이 준비해 두세요. 수분 보충이 중요해요.",
+    "t3": "알고 있었나요? 세계 최장 파티는 58시간이나 계속됐어요.",
+    "t4": "숙취 해소: 자기 전에 물 한 잔 마시면 다음 날 머리가 덜 아파요.",
+    "t5": "파티 전문가가 말하길: 음악은 파티의 영혼이니 플레이리스트를 잘 골라요!",
+    "t6": "음주 운전은 절대 안 돼요. Cheersin이 여러분을 생각합니다."
   },
   "nav": {
     "home": "홈",
@@ -130,7 +143,44 @@
     "faq5q": "프로모 코드?",
     "faq5a": "제공 시 결제·요금 페이지에 적용 플랜과 규칙 표시. 결제 시 입력하여 적용.",
     "faq6q": "벌칙 커스텀·비알코올 가능?",
-    "faq6a": "네. 파티 게임 벌칙은 커스텀 가능하며, 술 없이도 즐길 수 있습니다. 게임 내 비알코올 선택 가능."
+    "faq6a": "네. 파티 게임 벌칙은 커스텀 가능하며, 술 없이도 즐길 수 있습니다. 게임 내 비알코올 선택 가능.",
+    "whyPay": {
+      "title": "왜 Pro가 필요한가요?",
+      "subtitle": "지루한 파티로 평판을 잃지 마세요",
+      "badParty": "일반 파티",
+      "goodParty": "Cheersin 파티",
+      "vibe": "분위기",
+      "wine": "와인 선택",
+      "host": "당신의 역할",
+      "free": {
+        "vibe": "어색한 침묵 30분",
+        "wine": "대충 사서 실패 확률 높음",
+        "host": "모두 챙기느라 본인은 못 즐김"
+      },
+      "pro": {
+        "vibe": "30초 만에 분위기 폭발",
+        "wine": "AI 소믈리에가 정확히 추천",
+        "host": "우아하게 즐기는 파티 레전드"
+      }
+    },
+    "roiHighlight": "칵테일 한 잔도 안 되는 가격!",
+    "partyHost": {
+      "title": "파티 주최자 여러분에게",
+      "subtitle": "더 이상 분위기 다운 걱정은 그만",
+      "card1": {
+        "title": "게임 찾기가 바늘 찾기?",
+        "desc": "100개 사이트 검색할 필요 없어요. Cheersin에 50+ 인기 파티 게임, 원터치로 시작."
+      },
+      "card2": {
+        "title": "다들 스마트폰만 보고 있나요?",
+        "desc": "어색해? 30초 아이스브레이킹 게임으로 모두가 폰을 내려놓고 즐깁니다."
+      },
+      "card3": {
+        "title": "어떤 술을 사야 할지 모르겠다면?",
+        "desc": "예산은 한정인데 실패가 두렵다면? AI 소믈리에가 상황과 취향에 맞춰 정확히 추천."
+      },
+      "cta": "파티 히어로가 되기"
+    }
   },
   "login": {
     "title": "로그인",
@@ -793,7 +843,17 @@
     "description": "This feature requires a higher plan. Upgrade for more AI chats, players, and advanced courses.",
     "cta": "View plans & upgrade",
     "infinite": "Unlimited",
-    "perDay": "/day"
+    "perDay": "/일"
+  },
+  "truthOrDare": {
+    "levelAll": "전체",
+    "levelMild": "친구 & 가족",
+    "levelSpicy": "매운맛",
+    "levelAdult": "성인용",
+    "skipWithPoint": "건너뛰기 (1pt 소모) {{count}}pt 남음",
+    "skipWithDrink": "건너뛰기 (한 모금 마시기)",
+    "skipWithPointAria": "이 질문을 건너뛰고 1포인트를 소모합니다",
+    "skipWithDrinkAria": "이 질문을 건너뛰고 한 모금 마십니다"
   },
   "admin": {
     "fillRequired": "請填寫所有欄位",

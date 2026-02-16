@@ -1,6 +1,8 @@
 import { STORAGE_KEYS } from '@/lib/constants'
-import type { WeeklyData } from '@/lib/games-weekly'
-import type { GamePlaylist } from '@/lib/games-playlists'
+import { getWeeklyPlayCounts, incrementWeeklyPlay, type WeeklyData } from '@/modules/games/stats/weekly'
+import { getFavorites, isFavorite, addFavorite, removeFavorite } from '@/modules/games/user/favorites'
+import { getLastSessionGameId, setLastSessionGameId } from '@/modules/games/user/history'
+import { getAllPlaylists, getPlaylistById, type GamePlaylist } from '@/modules/games/data/playlists'
 
 /**
  * Phase 1 Task 13: 統計數據遷移腳本

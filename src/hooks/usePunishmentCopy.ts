@@ -3,7 +3,7 @@
  * 遊戲內懲罰文字使用此 hook 即可依設定切換。
  */
 import { useState, useEffect } from 'react'
-import { getNonAlcoholMode } from '@/lib/games-settings'
+import { getNonAlcoholMode } from '@/modules/games/settings'
 
 export interface PunishmentCopy {
   /** 喝一口 / 做一下 */

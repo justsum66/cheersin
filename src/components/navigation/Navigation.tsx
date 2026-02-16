@@ -83,7 +83,10 @@ export default function Navigation() {
     [scrollY]
   )
   const navCompact = scrollY > SCROLL_COMPACT_PX
-  const navBg = navCompact ? `rgba(26,10,46,${Math.max(0.92, navOpacity)})` : 'transparent'
+
+  /* L80: 滾動後背景更深，確保對比度；配合 backdrop-blur-3xl */
+  // Optimization Task 6: Premium Glassmorphism - lower opacity, higher blur
+  const navBg = navCompact ? `rgba(15, 5, 24, ${Math.max(0.6, navOpacity)})` : 'transparent'
 
   /** N09：滾動 throttle 減少重繪 */
   const setScroll = useCallback((y: number) => setScrollY(y), [])
@@ -138,7 +141,7 @@ export default function Navigation() {
         />
       )}
       <m.nav
-        className="fixed top-0 left-0 right-0 backdrop-blur-2xl print:hidden safe-area-pt"
+        className="fixed top-0 left-0 right-0 backdrop-blur-3xl print:hidden safe-area-pt"
         style={{
           zIndex: Z_NAV_TOP,
           paddingTop: navCompact ? 6 : 10,
@@ -251,15 +254,22 @@ export default function Navigation() {
                 href={tier === 'free' ? '/pricing' : '/subscription'}
                 aria-label={tier === 'free' ? '升級 Pro 方案' : '訂閱管理'}
                 aria-current={(pathname === '/pricing' || pathname === '/subscription') ? 'page' : undefined}
-                className="nav-cta-ux icon-interact icon-glow games-focus-ring rounded-lg flex items-center gap-2 text-xs font-bold uppercase tracking-wider games-touch-target justify-center"
+                className={`games-focus-ring flex items-center gap-2 text-xs font-bold uppercase tracking-wider games-touch-target justify-center transition-all relative overflow-hidden ${tier === 'free'
+                  ? 'bg-gradient-to-r from-[#FFD700] via-[#FDB931] to-[#FFD700] bg-[length:200%_auto] animate-shimmer text-[#1a0a2e] px-4 py-2 rounded-full shadow-[0_0_12px_rgba(255,215,0,0.4)] hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:scale-105 active:scale-95'
+                  : 'nav-cta-ux icon-interact icon-glow rounded-lg text-primary-400 hover:text-primary-300'
+                  }`}
               >
                 <m.span
-                  className={tier === 'free' ? 'text-secondary-500 hover:text-secondary-400' : 'text-primary-400 hover:text-primary-300'}
+                  className="flex items-center gap-1.5 relative z-10"
                   whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
                 >
-                  <Crown className="w-5 h-5" aria-hidden />
+                  <Crown className={`w-4 h-4 ${tier === 'free' ? 'fill-[#1a0a2e]' : ''}`} aria-hidden />
                   {tierLabel}
                 </m.span>
+                {/* Shine effect overlay */}
+                {tier === 'free' && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 translate-x-[-200%] animate-[shine_3s_infinite]" />
+                )}
               </Link>
               <div className="h-6 w-px flex-shrink-0 bg-white/10" role="separator" aria-hidden />
 
@@ -314,7 +324,7 @@ export default function Navigation() {
       {/* N21 / UX-013：底部導航 z-index、safe-area、aria-current、巢狀路由高亮；UX-004 ref 供鍵盤彈起時 scrollIntoView */}
       <nav
         ref={bottomNavRef}
-        className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#0a0a1a]/95 backdrop-blur-xl safe-area-pb print:hidden"
+        className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#0a0a1a]/80 backdrop-blur-2xl safe-area-pb print:hidden"
         style={{ zIndex: Z_NAV_BOTTOM }}
         aria-label="底部導航"
       >
@@ -330,78 +340,86 @@ export default function Navigation() {
                 aria-label={label}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <item.icon className={`w-6 h-6 shrink-0 ${isActive ? 'fill-primary-400/30' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                <m.div
+                  animate={isActive && !prefersReducedMotion ? { y: [0, -4, 0], scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                  style={isActive ? { filter: 'drop-shadow(0 0 6px rgba(167, 139, 250, 0.5))' } : undefined}
+                >
+                  <item.icon className={`w-6 h-6 shrink-0 ${isActive ? 'fill-primary-400/30' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                </m.div>
                 <span className="text-[10px] mt-0.5 truncate max-w-[4rem]">{label}</span>
               </Link>
             )
           })}
         </div>
-      </nav>
+      </nav >
 
       {/* N15：行動選單 overlay 點擊關閉；N07 id；N19 順序與桌面一致 */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <m.div
-            ref={mobileMenuRef}
-            id={MOBILE_MENU_ID}
-            className="fixed inset-0 md:hidden bg-[#1a0a2e]/90 backdrop-blur-xl"
-            style={{ zIndex: Z_MOBILE_MENU }}
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: [0.32, 0.72, 0, 1] }}
-            onClick={() => setIsMobileMenuOpen(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setIsMobileMenuOpen(false)
-                setTimeout(() => menuButtonRef.current?.focus(), 0)
-              }
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-label="導航選單"
-          >
-            <div className="flex flex-col items-center justify-center h-full gap-8" onClick={(e) => e.stopPropagation()}>
-              {NAV_ITEMS.map((item, index) => {
-                const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
-                return (
-                  <m.div
-                    key={item.href}
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.05 + index * 0.05 }}
-                  >
-                    <Link
-                      ref={index === 0 ? mobileMenuFirstLinkRef : undefined}
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex items-center gap-4 text-2xl font-display font-bold games-focus-ring rounded-lg py-2 min-h-[48px] ${isActive ? 'text-primary-400' : 'text-white'}`}
+        {
+          isMobileMenuOpen && (
+            <m.div
+              ref={mobileMenuRef}
+              id={MOBILE_MENU_ID}
+              className="fixed inset-0 md:hidden bg-[#1a0a2e]/90 backdrop-blur-xl"
+              style={{ zIndex: Z_MOBILE_MENU }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: '-100%' }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: [0.32, 0.72, 0, 1] }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setIsMobileMenuOpen(false)
+                  setTimeout(() => menuButtonRef.current?.focus(), 0)
+                }
+              }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="導航選單"
+            >
+              <div className="flex flex-col items-center justify-center h-full gap-8" onClick={(e) => e.stopPropagation()}>
+                {NAV_ITEMS.map((item, index) => {
+                  const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
+                  return (
+                    <m.div
+                      key={item.href}
+                      initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.05 + index * 0.05 }}
                     >
-                      <item.icon className={`w-8 h-8 ${isActive ? 'text-primary-400/80' : 'text-white/50'}`} />
-                      {t(`nav.${item.navKey}`)}
-                    </Link>
-                  </m.div>
-                )
-              })}
+                      <Link
+                        ref={index === 0 ? mobileMenuFirstLinkRef : undefined}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`flex items-center gap-4 text-2xl font-display font-bold games-focus-ring rounded-lg py-2 min-h-[48px] ${isActive ? 'text-primary-400' : 'text-white'}`}
+                      >
+                        <item.icon className={`w-8 h-8 ${isActive ? 'text-primary-400/80' : 'text-white/50'}`} />
+                        {t(`nav.${item.navKey}`)}
+                      </Link>
+                    </m.div>
+                  )
+                })}
 
-              <div className="w-16 h-[1px] bg-white/10 my-4" aria-hidden />
+                <div className="w-16 h-[1px] bg-white/10 my-4" aria-hidden />
 
-              <m.div
-                initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.3 }}
-              >
-                <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>
-                  <button type="button" className="btn-primary min-h-[48px] games-focus-ring">
-                    {CTA_UNLOCK_PRO}
-                  </button>
-                </Link>
-              </m.div>
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
+                <m.div
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: MOBILE_MENU_DURATION_MS / 1000, ease: 'easeOut', delay: 0.3 }}
+                >
+                  <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button type="button" className="btn-primary min-h-[48px] games-focus-ring">
+                      {CTA_UNLOCK_PRO}
+                    </button>
+                  </Link>
+                </m.div>
+              </div>
+            </m.div>
+          )
+        }
+      </AnimatePresence >
     </>
   )
 }

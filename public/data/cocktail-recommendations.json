@@ -1,0 +1,453 @@
+[
+    {
+        "id": "manhattan",
+        "name": "曼哈頓",
+        "category": "古典",
+        "baseSpirit": "黑麥威士忌",
+        "ingredients": [
+            "黑麥威士忌",
+            "甜苦艾酒",
+            "安格斯特拉苦精"
+        ],
+        "garnish": "馬拉斯奇諾櫻桃",
+        "preparation": "將所有材料與冰塊放入調酒杯中攪拌，過濾倒入馬丁尼杯中，以櫻桃裝飾。",
+        "glassware": "馬丁尼杯",
+        "strength": "濃烈",
+        "complexity": "簡單",
+        "flavorProfile": [
+            "濃郁",
+            "甜潤",
+            "香料味",
+            "複雜"
+        ],
+        "occasion": [
+            "正式晚宴",
+            "雞尾酒時光",
+            "浪漫約會"
+        ],
+        "rating": 4.8,
+        "price": 450,
+        "description": "起源於19世紀末紐約曼哈頓俱樂部的經典調酒，以其濃郁複雜的風味聞名。",
+        "origin": "美國紐約",
+        "popularity": 92,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/manhattan-kit",
+        "tags": [
+            "經典",
+            "威士忌",
+            "甜味",
+            "苦精"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 95,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大冰塊攪拌"
+    },
+    {
+        "id": "margarita",
+        "name": "瑪格麗特",
+        "category": "經典",
+        "baseSpirit": "龍舌蘭",
+        "ingredients": [
+            "龍舌蘭",
+            "橙味利口酒",
+            "青檸汁"
+        ],
+        "garnish": "鹽邊、青檸角",
+        "preparation": "將杯緣沾濕後蘸鹽，將所有材料與冰塊放入搖酒器中搖和，過濾倒入杯中。",
+        "glassware": "瑪格麗特杯",
+        "strength": "中等",
+        "complexity": "中等",
+        "flavorProfile": [
+            "酸甜",
+            "清新",
+            "柑橘",
+            "平衡"
+        ],
+        "occasion": [
+            "派對",
+            "海灘度假",
+            "夏日聚會"
+        ],
+        "rating": 4.7,
+        "price": 420,
+        "description": "墨西哥最具代表性的調酒之一，以其完美的酸甜平衡和鹽邊風味聞名。",
+        "origin": "墨西哥",
+        "popularity": 95,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/margarita-set",
+        "tags": [
+            "龍舌蘭",
+            "酸甜",
+            "鹽邊",
+            "清新"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 92,
+        "servingTemp": "冰鎮",
+        "iceMethod": "碎冰搖和"
+    },
+    {
+        "id": "negroni",
+        "name": "內格羅尼",
+        "category": "經典",
+        "baseSpirit": "琴酒",
+        "ingredients": [
+            "琴酒",
+            "金巴利",
+            "甜苦艾酒"
+        ],
+        "garnish": "橙皮",
+        "preparation": "將所有材料與冰塊放入岩石杯中攪拌，加入大冰塊，以橙皮裝飾。",
+        "glassware": "岩石杯",
+        "strength": "濃烈",
+        "complexity": "簡單",
+        "flavorProfile": [
+            "苦甜",
+            "草本",
+            "複雜",
+            "平衡"
+        ],
+        "occasion": [
+            "餐前酒",
+            "下班放鬆",
+            "品味時光"
+        ],
+        "rating": 4.6,
+        "price": 480,
+        "description": "義大利經典調酒，以其完美的苦甜平衡和草本風味聞名。",
+        "origin": "義大利佛羅倫斯",
+        "popularity": 88,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/negroni-gin",
+        "tags": [
+            "琴酒",
+            "苦甜",
+            "草本",
+            "餐前酒"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 90,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大冰塊"
+    },
+    {
+        "id": "mojito",
+        "name": "莫希托",
+        "category": "熱帶",
+        "baseSpirit": "白朗姆酒",
+        "ingredients": [
+            "白朗姆酒",
+            "青檸汁",
+            "糖",
+            "薄荷葉",
+            "蘇打水"
+        ],
+        "garnish": "薄荷枝、青檸角",
+        "preparation": "在杯中搗碎薄荷葉和糖，加入青檸汁和朗姆酒，加冰攪拌，倒入蘇打水，以薄荷枝裝飾。",
+        "glassware": "高球杯",
+        "strength": "輕盈",
+        "complexity": "中等",
+        "flavorProfile": [
+            "清新",
+            "薄荷",
+            "柑橘",
+            "氣泡"
+        ],
+        "occasion": [
+            "夏日派對",
+            "海灘",
+            "輕鬆聚會"
+        ],
+        "rating": 4.5,
+        "price": 380,
+        "description": "古巴最具代表性的調酒，以其清新薄荷風味和氣泡感聞名。",
+        "origin": "古巴哈瓦那",
+        "popularity": 90,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/mojito-kit",
+        "tags": [
+            "朗姆酒",
+            "薄荷",
+            "清新",
+            "夏日"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 88,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大量冰塊"
+    },
+    {
+        "id": "old-fashioned",
+        "name": "古典",
+        "category": "古典",
+        "baseSpirit": "波本威士忌",
+        "ingredients": [
+            "波本威士忌",
+            "方糖",
+            "水",
+            "安格斯特拉苦精"
+        ],
+        "garnish": "橙皮",
+        "preparation": "在岩石杯中溶解方糖於水中，加入苦精，倒入威士忌和冰塊，以橙皮裝飾。",
+        "glassware": "岩石杯",
+        "strength": "濃烈",
+        "complexity": "簡單",
+        "flavorProfile": [
+            "濃郁",
+            "甜潤",
+            "橡木",
+            "溫暖"
+        ],
+        "occasion": [
+            "正式場合",
+            "下班放鬆",
+            "品味威士忌"
+        ],
+        "rating": 4.7,
+        "price": 460,
+        "description": "美國最古老的調酒之一，以其純粹的威士忌風味和經典調製方法聞名。",
+        "origin": "美國肯塔基州",
+        "popularity": 87,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/old-fashioned-set",
+        "tags": [
+            "威士忌",
+            "古典",
+            "濃郁",
+            "純粹"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 89,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大冰塊"
+    },
+    {
+        "id": "cosmopolitan",
+        "name": "都會",
+        "category": "現代",
+        "baseSpirit": "伏特加",
+        "ingredients": [
+            "伏特加",
+            "蔓越莓汁",
+            "青檸汁",
+            "君度橙酒"
+        ],
+        "garnish": "青檸片",
+        "preparation": "將所有材料與冰塊放入搖酒器中搖和，過濾倒入馬丁尼杯中，以青檸片裝飾。",
+        "glassware": "馬丁尼杯",
+        "strength": "中等",
+        "complexity": "中等",
+        "flavorProfile": [
+            "酸甜",
+            "果味",
+            "清新",
+            "女性化"
+        ],
+        "occasion": [
+            "女孩之夜",
+            "時尚派對",
+            "都市生活"
+        ],
+        "rating": 4.4,
+        "price": 430,
+        "description": "1970年代調製的現代經典，因影集「慾望城市」而風靡全球。",
+        "origin": "美國康乃狄克州",
+        "popularity": 85,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/cosmopolitan-vodka",
+        "tags": [
+            "伏特加",
+            "果味",
+            "女性",
+            "時尚"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 85,
+        "servingTemp": "冰鎮",
+        "iceMethod": "細冰搖和"
+    },
+    {
+        "id": "maitai",
+        "name": "邁泰",
+        "category": "熱帶",
+        "baseSpirit": "白朗姆酒",
+        "ingredients": [
+            "白朗姆酒",
+            "黑朗姆酒",
+            "杏仁糖漿",
+            "青檸汁",
+            "橙味利口酒"
+        ],
+        "garnish": "鳳梨片、薄荷枝",
+        "preparation": "將所有材料與冰塊放入搖酒器中搖和，倒入柯林斯杯中加冰，以鳳梨片和薄荷枝裝飾。",
+        "glassware": "柯林斯杯",
+        "strength": "中等",
+        "complexity": "複雜",
+        "flavorProfile": [
+            "熱帶",
+            "果味",
+            "平衡",
+            "複雜"
+        ],
+        "occasion": [
+            "海灘派對",
+            "度假",
+            "夏威夷風格"
+        ],
+        "rating": 4.5,
+        "price": 480,
+        "description": "提基文化的代表調酒，以其複雜的朗姆酒風味和熱帶風情聞名。",
+        "origin": "美國加州",
+        "popularity": 82,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/tiki-cocktail",
+        "tags": [
+            "朗姆酒",
+            "熱帶",
+            "複雜",
+            "提基"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 87,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大量碎冰"
+    },
+    {
+        "id": "sidecar",
+        "name": "邊車",
+        "category": "古典",
+        "baseSpirit": "白蘭地",
+        "ingredients": [
+            "白蘭地",
+            "君度橙酒",
+            "檸檬汁"
+        ],
+        "garnish": "糖邊",
+        "preparation": "將杯緣沾檸檬汁後蘸糖，將所有材料與冰塊放入搖酒器中搖和，過濾倒入杯中。",
+        "glassware": "邊車杯",
+        "strength": "濃烈",
+        "complexity": "中等",
+        "flavorProfile": [
+            "酸甜",
+            "柑橘",
+            "烈酒",
+            "平衡"
+        ],
+        "occasion": [
+            "正式晚宴",
+            "餐後酒",
+            "品味時光"
+        ],
+        "rating": 4.6,
+        "price": 470,
+        "description": "以完美酸甜平衡聞名的經典調酒，是白蘭地調酒的典範。",
+        "origin": "法國巴黎",
+        "popularity": 78,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/brandy-cocktails",
+        "tags": [
+            "白蘭地",
+            "酸甜",
+            "經典",
+            "平衡"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 84,
+        "servingTemp": "冰鎮",
+        "iceMethod": "細冰搖和"
+    },
+    {
+        "id": "bloody-mary",
+        "name": "血腥瑪麗",
+        "category": "創意",
+        "baseSpirit": "伏特加",
+        "ingredients": [
+            "伏特加",
+            "番茄汁",
+            "檸檬汁",
+            "伍斯特醬",
+            "塔巴斯科醬",
+            "胡椒",
+            "鹽"
+        ],
+        "garnish": "芹菜棒、青檸角",
+        "preparation": "將所有材料與冰塊放入調酒器中攪拌，倒入高球杯中，以芹菜棒和青檸角裝飾。",
+        "glassware": "高球杯",
+        "strength": "中等",
+        "complexity": "複雜",
+        "flavorProfile": [
+            "鹹味",
+            "辛辣",
+            "蔬菜",
+            "早餐風"
+        ],
+        "occasion": [
+            "早午餐",
+            "解宿醉",
+            "週末放鬆"
+        ],
+        "rating": 4.3,
+        "price": 400,
+        "description": "以其複雜的調料組合和獨特風味聞名的早餐調酒。",
+        "origin": "法國巴黎",
+        "popularity": 80,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/breakfast-cocktails",
+        "tags": [
+            "伏特加",
+            "鹹味",
+            "辛辣",
+            "早餐"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 82,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大量冰塊"
+    },
+    {
+        "id": "whiskey-sour",
+        "name": "威士忌酸",
+        "category": "古典",
+        "baseSpirit": "波本威士忌",
+        "ingredients": [
+            "波本威士忌",
+            "檸檬汁",
+            "糖漿",
+            "蛋白(可選)"
+        ],
+        "garnish": "檸檬片、紅櫻桃",
+        "preparation": "將所有材料放入搖酒器中乾搖(不加冰)，再加冰搖和，過濾倒入岩石杯中，以檸檬片和櫻桃裝飾。",
+        "glassware": "岩石杯",
+        "strength": "中等",
+        "complexity": "中等",
+        "flavorProfile": [
+            "酸甜",
+            "威士忌",
+            "平衡",
+            "綿密"
+        ],
+        "occasion": [
+            "餐後酒",
+            "品味威士忌",
+            "輕鬆聚會"
+        ],
+        "rating": 4.6,
+        "price": 440,
+        "description": "酸甜平衡的經典威士忌調酒，以其綿密的蛋白質感聞名。",
+        "origin": "美國肯塔基州",
+        "popularity": 84,
+        "isOnProwine": true,
+        "prowineUrl": "https://www.prowine.com.tw/whiskey-sour-kit",
+        "tags": [
+            "威士忌",
+            "酸甜",
+            "蛋白",
+            "平衡"
+        ],
+        "availability": "普遍",
+        "bestMatchPercentage": 86,
+        "servingTemp": "冰鎮",
+        "iceMethod": "大冰塊"
+    }
+]

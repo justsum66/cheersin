@@ -22,8 +22,10 @@ export const CATEGORY_LABEL: Record<SecretRevealCategory, string> = {
 
 async function loadPromptsFromJson(): Promise<Record<SecretRevealCategory, SecretRevealPrompt[]>> {
   try {
-    const mod = await import('@/data/secretReveal.json')
-    const p = (mod.default as { prompts?: Record<string, Array<{ id: number; text: string; level: string }>> }).prompts
+    const res = await fetch('/data/secretReveal.json')
+    if (!res.ok) throw new Error('Failed to fetch data')
+    const mod = await res.json()
+    const p = (mod as { prompts?: Record<string, Array<{ id: number; text: string; level: string }>> }).prompts
 
     if (!p || typeof p !== 'object') {
       return CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {} as Record<SecretRevealCategory, SecretRevealPrompt[]>)

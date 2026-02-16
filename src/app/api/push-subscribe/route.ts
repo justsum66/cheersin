@@ -1,6 +1,7 @@
 /**
  * PWA.3：儲存 Web Push 訂閱，供後端發送推播
  * POST body: { subscription: PushSubscriptionJSON }
+ * P0-03: Zod 校驗 | P0-22: 限流
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
@@ -8,28 +9,24 @@ import { cookies } from 'next/headers'
 import { getCurrentUser } from '@/lib/get-current-user'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { normalizeEnv, normalizeUrl } from '@/lib/env'
-
-const MAX_ENDPOINT_LENGTH = 2048
-const MAX_KEY_LENGTH = 256
+import { PushSubscribePostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request.headers)
+  if (await isRateLimitedAsync(ip, 'push_subscribe')) {
+    return errorResponse(429, 'RATE_LIMITED', { message: '請求過於頻繁，請稍後再試' })
+  }
+
   try {
-    let body: { subscription?: { endpoint?: string; keys?: { p256dh?: string; auth?: string } } }
-    try {
-      body = await request.json()
-    } catch {
-      return errorResponse(400, 'Invalid JSON', { message: '請提供有效的 JSON body' })
-    }
-    const sub = body?.subscription
-    if (!sub?.endpoint || typeof sub.endpoint !== 'string') {
-      return errorResponse(400, 'Missing subscription', { message: 'subscription.endpoint 必填' })
-    }
-    const p256dh = sub.keys?.p256dh && typeof sub.keys.p256dh === 'string' ? sub.keys.p256dh.slice(0, MAX_KEY_LENGTH) : ''
-    const auth = sub.keys?.auth && typeof sub.keys.auth === 'string' ? sub.keys.auth.slice(0, MAX_KEY_LENGTH) : ''
-    if (!p256dh || !auth) {
-      return errorResponse(400, 'Missing keys', { message: 'subscription.keys.p256dh 與 keys.auth 必填' })
-    }
-    const endpoint = sub.endpoint.slice(0, MAX_ENDPOINT_LENGTH)
+    const parsed = await zodParseBody(request, PushSubscribePostBodySchema)
+    if (!parsed.success) return parsed.response
+
+    const { subscription } = parsed.data
+    const endpoint = subscription.endpoint
+    const p256dh = subscription.keys.p256dh
+    const auth = subscription.keys.auth
 
     const user = await getCurrentUser()
     const supabaseUrl = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
@@ -56,7 +53,7 @@ export async function POST(request: NextRequest) {
       { onConflict: 'endpoint', ignoreDuplicates: false }
     )
     if (error) {
-      return errorResponse(500, 'Insert failed', { message: '無法儲存訂閱' })
+      return serverErrorResponse(error)
     }
     return NextResponse.json({ ok: true })
   } catch (e) {

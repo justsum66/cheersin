@@ -158,7 +158,7 @@ function initialDiceValues(count: DiceCount): number[] {
   return Array.from({ length: count }, () => Math.ceil(Math.random() * 6))
 }
 
-export default function Dice() {
+function StandardDice() {
   const [diceCount, setDiceCount] = useState<DiceCount>(2)
   const [displayMode, setDisplayMode] = useState<DisplayMode>('sum')
   const [diceStyle, setDiceStyle] = useState<DiceStyle>('standard')
@@ -183,16 +183,6 @@ export default function Dice() {
   const predictionResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // const trial = useGameTrial() // Replaced
 
-  // Phase 2: Game Mode Consolidation
-  const { selectedMode } = useGameStore()
-
-  if (selectedMode === 'spicy') {
-    return <SpicyDice />
-  }
-
-  if (selectedMode === 'dare') {
-    return <DareDice />
-  }
 
   const roll = useCallback(() => {
     play('click')
@@ -516,4 +506,19 @@ export default function Dice() {
       </div>
     </m.div>
   )
+}
+
+export default function Dice() {
+  // Phase 2: Game Mode Consolidation
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'spicy') {
+    return <SpicyDice />
+  }
+
+  if (selectedMode === 'dare') {
+    return <DareDice />
+  }
+
+  return <StandardDice />
 }

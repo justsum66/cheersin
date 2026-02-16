@@ -1,0 +1,1022 @@
+[
+    {
+        "id": "cocktail",
+        "term": "調酒",
+        "english": "Cocktail",
+        "category": "基本術語",
+        "definition": "混合兩種或多種飲料，通常包含烈酒、果汁或其他調味品的飲料。",
+        "pronunciation": "/ˈkɒktaɪl/",
+        "example": "經典調酒如曼哈頓、馬丁尼等。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容混合飲料",
+        "relatedTerms": [
+            "mixology",
+            "bartending",
+            "spirits"
+        ]
+    },
+    {
+        "id": "shaking",
+        "term": "搖和",
+        "english": "Shaking",
+        "category": "調製技法",
+        "definition": "將調酒材料放入雪克杯中加冰搖晃的調製方法，常用於含有果汁、蛋液或糖漿的調酒。",
+        "pronunciation": "/ˈʃeɪkɪŋ/",
+        "example": "莫希托需要搖和以充分混合薄荷葉的香味。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調製過程",
+        "relatedTerms": [
+            "stirring",
+            "muddling",
+            "straining"
+        ]
+    },
+    {
+        "id": "stirring",
+        "term": "攪拌",
+        "english": "Stirring",
+        "category": "調製技法",
+        "definition": "將調酒材料在調酒杯中用吧匙攪拌的調製方法，適用於純烈酒類調酒。",
+        "pronunciation": "/ˈstɜːrɪŋ/",
+        "example": "馬丁尼通常採用攪拌方式以保持清澈的外觀。",
+        "origin": "英國",
+        "complexity": "中級",
+        "usage": "形容調製過程",
+        "relatedTerms": [
+            "shaking",
+            "barspoon",
+            "mixing"
+        ]
+    },
+    {
+        "id": "muddling",
+        "term": "搗碎",
+        "english": "Muddling",
+        "category": "調製技法",
+        "definition": "使用搗棒輕壓水果、香草等材料以釋放其風味的調製技巧。",
+        "pronunciation": "/ˈmʌdlɪŋ/",
+        "example": "莫希托需搗碎薄荷葉以釋放香味。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調製過程",
+        "relatedTerms": [
+            "muddler",
+            "crushing",
+            "infusing"
+        ]
+    },
+    {
+        "id": "jigger",
+        "term": "量酒器",
+        "english": "Jigger",
+        "category": "調酒器具",
+        "definition": "用來精確量取酒類份量的量杯工具。",
+        "pronunciation": "/ˈdʒɪɡər/",
+        "example": "專業調酒師使用量酒器確保調酒比例準確。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容量取工具",
+        "relatedTerms": [
+            "measure",
+            "pourer",
+            "shot"
+        ]
+    },
+    {
+        "id": "muddler",
+        "term": "搗棒",
+        "english": "Muddler",
+        "category": "調酒器具",
+        "definition": "用來搗碎水果、香草以釋放風味的調酒工具。",
+        "pronunciation": "/ˈmʌdlər/",
+        "example": "搗棒可用於搗碎青檸角或薄荷葉。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容搗碎工具",
+        "relatedTerms": [
+            "muddling",
+            "pestle",
+            "crushing"
+        ]
+    },
+    {
+        "id": "barspoon",
+        "term": "吧匙",
+        "english": "Bar Spoon",
+        "category": "調酒器具",
+        "definition": "長柄吧匙，用於攪拌調酒或分層調酒技巧。",
+        "pronunciation": "/bɑːr spuːn/",
+        "example": "吧匙常用於攪拌古典調酒。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容攪拌工具",
+        "relatedTerms": [
+            "stirring",
+            "swizzle",
+            "layering"
+        ]
+    },
+    {
+        "id": "strainer",
+        "term": "濾網",
+        "english": "Strainer",
+        "category": "調酒器具",
+        "definition": "用於過濾冰塊或固體物質，將液體倒入杯中的工具。",
+        "pronunciation": "/ˈstreɪnər/",
+        "example": "霍桑濾網常用於搖和後的過濾。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容過濾工具",
+        "relatedTerms": [
+            "hawthorne",
+            "julep",
+            "fine strainer"
+        ]
+    },
+    {
+        "id": "highball",
+        "term": "海波杯",
+        "english": "Highball Glass",
+        "category": "酒杯類型",
+        "definition": "高而直的杯子，通常用於盛裝含氣泡水的長飲調酒。",
+        "pronunciation": "/ˈhaɪbɔːl/",
+        "example": "湯姆柯林斯使用海波杯盛裝。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容酒杯",
+        "relatedTerms": [
+            "collins",
+            "tumbler",
+            "goblet"
+        ]
+    },
+    {
+        "id": "martini",
+        "term": "馬丁尼杯",
+        "english": "Martini Glass",
+        "category": "酒杯類型",
+        "definition": "三角錐形的杯子，專門用於盛裝馬丁尼等短飲調酒。",
+        "pronunciation": "/mɑːrˈtiːni/",
+        "example": "經典馬丁尼使用此類杯型。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容酒杯",
+        "relatedTerms": [
+            "coupe",
+            "chalice",
+            "stemmed"
+        ]
+    },
+    {
+        "id": "rocks",
+        "term": "古典杯",
+        "english": "Rocks Glass",
+        "category": "酒杯類型",
+        "definition": "矮胖的杯子，通常用於盛裝加冰的威士忌或古典調酒。",
+        "pronunciation": "/rɒks/",
+        "example": "古典威士忌使用古典杯盛裝。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容酒杯",
+        "relatedTerms": [
+            "old fashioned",
+            "tumbler",
+            "lowball"
+        ]
+    },
+    {
+        "id": "coupe",
+        "term": "古典香檳杯",
+        "english": "Coupe Glass",
+        "category": "酒杯類型",
+        "definition": "淺碗形的杯子，最初設計用於香檳，現多用於特定調酒。",
+        "pronunciation": "/kuːp/",
+        "example": "邊車常使用古典香檳杯盛裝。",
+        "origin": "法國",
+        "complexity": "中級",
+        "usage": "形容酒杯",
+        "relatedTerms": [
+            "champagne",
+            "martini",
+            "saucer"
+        ]
+    },
+    {
+        "id": "sour",
+        "term": "酸酒",
+        "english": "Sour",
+        "category": "調酒類型",
+        "definition": "以烈酒、酸味成分（如檸檬汁）和甜味成分組成的基本調酒結構。",
+        "pronunciation": "/saʊər/",
+        "example": "威士忌酸是典型的酸酒調酒。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調酒結構",
+        "relatedTerms": [
+            "whiskey sour",
+            "acidic",
+            "sweet-sour"
+        ]
+    },
+    {
+        "id": "fizz",
+        "term": "菲士",
+        "english": "Fizz",
+        "category": "調酒類型",
+        "definition": "含有氣泡水的調酒，通常是酸酒結構加上氣泡水。",
+        "pronunciation": "/fɪz/",
+        "example": "金菲士是經典的菲士調酒。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調酒類型",
+        "relatedTerms": [
+            "soda water",
+            "sparkling",
+            "collins"
+        ]
+    },
+    {
+        "id": "tiki",
+        "term": "提基",
+        "english": "Tiki",
+        "category": "調酒類型",
+        "definition": "模仿熱帶風味的複雜調酒，通常使用多種朗姆酒和熱帶水果。",
+        "pronunciation": "/ˈtiːki/",
+        "example": "邁泰是提基文化的代表調酒。",
+        "origin": "美國",
+        "complexity": "高級",
+        "usage": "形容調酒風格",
+        "relatedTerms": [
+            "rum",
+            "tropical",
+            "polynesian"
+        ]
+    },
+    {
+        "id": "craft",
+        "term": "工藝調酒",
+        "english": "Craft Cocktail",
+        "category": "調酒風格",
+        "definition": "精心製作的調酒，注重原料品質、調製技巧和創意。",
+        "pronunciation": "/kræft kɒktaɪl/",
+        "example": "現代工藝調酒使用自製糖漿和苦精。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調酒品質",
+        "relatedTerms": [
+            "artisanal",
+            "small-batch",
+            "premium"
+        ]
+    },
+    {
+        "id": "speakeasy",
+        "term": "地下酒吧",
+        "english": "Speakeasy",
+        "category": "酒吧文化",
+        "definition": "禁酒令時期的秘密酒吧，現代復古風格酒吧的靈感來源。",
+        "pronunciation": "/ˈspiːkezi/",
+        "example": "現代地下酒吧模仿1920年代的神秘氛圍。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容酒吧風格",
+        "relatedTerms": [
+            "prohibition",
+            "secret",
+            "hidden"
+        ]
+    },
+    {
+        "id": "mixologist",
+        "term": "調酒師",
+        "english": "Mixologist",
+        "category": "職業稱呼",
+        "definition": "專業研究和調製雞尾酒的人，超越一般調酒師的技能。",
+        "pronunciation": "/ˌmɪksəˈlɒdʒɪst/",
+        "example": "專業調酒師掌握各種調製技巧和風味搭配。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容職業",
+        "relatedTerms": [
+            "bartender",
+            "flair",
+            "technique"
+        ]
+    },
+    {
+        "id": "bitters",
+        "term": "苦精",
+        "english": "Bitters",
+        "category": "調酒原料",
+        "definition": "高度濃縮的苦味酒精飲料，用於增添調酒的複雜度。",
+        "pronunciation": "/ˈbɪtərz/",
+        "example": "安格斯特拉苦精是調酒中最常用的苦精。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調味品",
+        "relatedTerms": [
+            "aromatic",
+            "angostura",
+            "dash"
+        ]
+    },
+    {
+        "id": "cordial",
+        "term": "糖漿",
+        "english": "Cordial",
+        "category": "調酒原料",
+        "definition": "甜味調味液，可用於增添調酒的甜度和風味。",
+        "pronunciation": "/ˈkɔːdiəl/",
+        "example": "簡單糖漿是最基本的調酒糖漿。",
+        "origin": "英國",
+        "complexity": "初級",
+        "usage": "形容甜味劑",
+        "relatedTerms": [
+            "syrup",
+            "sweetener",
+            "flavored"
+        ]
+    },
+    {
+        "id": "neat",
+        "term": "純飲",
+        "english": "Neat",
+        "category": "飲用方式",
+        "definition": "不加冰塊直接飲用純烈酒的方式。",
+        "pronunciation": "/niːt/",
+        "example": "高品質威士忌適合純飲以品嚐原味。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容飲用方式",
+        "relatedTerms": [
+            "straight",
+            "undiluted",
+            "room temperature"
+        ]
+    },
+    {
+        "id": "on-the-rocks",
+        "term": "加冰",
+        "english": "On the Rocks",
+        "category": "飲用方式",
+        "definition": "在杯中加入冰塊後倒入烈酒的飲用方式。",
+        "pronunciation": "/ɒn ðə rɒks/",
+        "example": "波本威士忌常加冰飲用。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容飲用方式",
+        "relatedTerms": [
+            "ice cube",
+            "chilled",
+            "cooled"
+        ]
+    },
+    {
+        "id": "up",
+        "term": "加搖凍",
+        "english": "Up",
+        "category": "飲用方式",
+        "definition": "將調酒搖和或攪拌後倒入冰凍的杯子中，不加冰塊。",
+        "pronunciation": "/ʌp/",
+        "example": "馬丁尼通常加搖凍飲用。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容飲用方式",
+        "relatedTerms": [
+            "chilled",
+            "frozen",
+            "without ice"
+        ]
+    },
+    {
+        "id": "dirty",
+        "term": "混濁",
+        "english": "Dirty",
+        "category": "調酒變化",
+        "definition": "在調酒中加入橄欖汁，使原本清澈的調酒變混濁。",
+        "pronunciation": "/ˈdɜːti/",
+        "example": "混濁馬丁尼加入橄欖汁。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調酒變化",
+        "relatedTerms": [
+            "olive juice",
+            "cloudy",
+            "variation"
+        ]
+    },
+    {
+        "id": "dry",
+        "term": "乾杯",
+        "english": "Dry",
+        "category": "調酒變化",
+        "definition": "減少或不加甜味劑的調酒，味道偏苦或酸。",
+        "pronunciation": "/draɪ/",
+        "example": "三倍乾馬丁尼使用很少甚至沒有甜苦艾酒。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調酒變化",
+        "relatedTerms": [
+            "sweet",
+            "sweetness",
+            "aromatic"
+        ]
+    },
+    {
+        "id": "sour",
+        "term": "酸味",
+        "english": "Sour",
+        "category": "風味描述",
+        "definition": "酸味是調酒中重要的風味元素，通常來自柑橘類水果。",
+        "pronunciation": "/saʊər/",
+        "example": "檸檬汁提供調酒的酸味平衡。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容風味",
+        "relatedTerms": [
+            "acidic",
+            "citrus",
+            "balance"
+        ]
+    },
+    {
+        "id": "sweet",
+        "term": "甜味",
+        "english": "Sweet",
+        "category": "風味描述",
+        "definition": "甜味平衡調酒中的酸味和苦味，提供圓潤口感。",
+        "pronunciation": "/swiːt/",
+        "example": "君度橙酒提供調酒的甜味。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容風味",
+        "relatedTerms": [
+            "sugar",
+            "syrup",
+            "honey"
+        ]
+    },
+    {
+        "id": "spirit",
+        "term": "烈酒",
+        "english": "Spirits",
+        "category": "基酒類型",
+        "definition": "蒸餾酒類，是調酒的主要酒精成分。",
+        "pronunciation": "/ˈspɪrɪts/",
+        "example": "琴酒、威士忌、伏特加都是烈酒。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容酒精基底",
+        "relatedTerms": [
+            "liquor",
+            "alcohol",
+            "base"
+        ]
+    },
+    {
+        "id": "base-spirit",
+        "term": "基酒",
+        "english": "Base Spirit",
+        "category": "調酒成分",
+        "definition": "調酒中主要的烈酒成分，決定調酒的基本風味。",
+        "pronunciation": "/beɪs ˈspɪrɪt/",
+        "example": "馬丁尼的基酒是琴酒或伏特加。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容主要成分",
+        "relatedTerms": [
+            "foundation",
+            "primary",
+            "alcohol"
+        ]
+    },
+    {
+        "id": "garnish",
+        "term": "裝飾",
+        "english": "Garnish",
+        "category": "調酒配件",
+        "definition": "用於裝飾調酒並增添風味的配料。",
+        "pronunciation": "/ˈɡɑːnɪʃ/",
+        "example": "馬丁尼使用橄欖或檸檬皮作為裝飾。",
+        "origin": "英國",
+        "complexity": "初級",
+        "usage": "形容裝飾物",
+        "relatedTerms": [
+            "decoration",
+            "flavor",
+            "finish"
+        ]
+    },
+    {
+        "id": "dilution",
+        "term": "稀釋",
+        "english": "Dilution",
+        "category": "調製原理",
+        "definition": "冰塊融化後稀釋調酒，降低酒精濃度並平衡風味。",
+        "pronunciation": "/ˌdaɪljʊˈeɪʃn/",
+        "example": "適當稀釋是調酒美味的關鍵。",
+        "origin": "通用",
+        "complexity": "高級",
+        "usage": "形容調製過程",
+        "relatedTerms": [
+            "water",
+            "melting",
+            "balance"
+        ]
+    },
+    {
+        "id": "balance",
+        "term": "平衡",
+        "english": "Balance",
+        "category": "調酒原則",
+        "definition": "調酒中甜、酸、苦、酒精等風味的和諧搭配。",
+        "pronunciation": "/ˈbæləns/",
+        "example": "完美的調酒需要風味平衡。",
+        "origin": "通用",
+        "complexity": "高級",
+        "usage": "形容調酒品質",
+        "relatedTerms": [
+            "harmony",
+            "proportion",
+            "blend"
+        ]
+    },
+    {
+        "id": "shake",
+        "term": "雪克",
+        "english": "Shake",
+        "category": "調製技法",
+        "definition": "將調酒材料與冰塊一起在雪克杯中搖晃的技法。",
+        "pronunciation": "/ʃeɪk/",
+        "example": "含有果汁的調酒通常需要雪克。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容調製動作",
+        "relatedTerms": [
+            "shaker",
+            "mixing",
+            "agitation"
+        ]
+    },
+    {
+        "id": "stir",
+        "term": "攪",
+        "english": "Stir",
+        "category": "調製技法",
+        "definition": "用吧匙在調酒杯中輕柔攪拌調酒材料的技法。",
+        "pronunciation": "/stɜːr/",
+        "example": "純烈酒調酒適合攪拌而非雪克。",
+        "origin": "英國",
+        "complexity": "初級",
+        "usage": "形容調製動作",
+        "relatedTerms": [
+            "barspoon",
+            "mixing",
+            "gentle"
+        ]
+    },
+    {
+        "id": "build",
+        "term": "構建",
+        "english": "Build",
+        "category": "調製技法",
+        "definition": "直接在杯中依次加入材料和冰塊的調製方法。",
+        "pronunciation": "/bɪld/",
+        "example": "長島冰茶使用構建技法。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調製方法",
+        "relatedTerms": [
+            "direct",
+            "layer",
+            "simple"
+        ]
+    },
+    {
+        "id": "layer",
+        "term": "分層",
+        "english": "Layer",
+        "category": "調製技法",
+        "definition": "利用不同密度的液體製作出分層效果的調製技巧。",
+        "pronunciation": "/ˈleɪər/",
+        "example": "彩虹酒使用分層技法。",
+        "origin": "美國",
+        "complexity": "高級",
+        "usage": "形容調製技巧",
+        "relatedTerms": [
+            "density",
+            "gradient",
+            "visual"
+        ]
+    },
+    {
+        "id": "muddle",
+        "term": "搗壓",
+        "english": "Muddle",
+        "category": "調製技法",
+        "definition": "使用搗棒輕壓材料以釋放風味的調製技巧。",
+        "pronunciation": "/ˈmʌdl/",
+        "example": "莫希托需要搗壓薄荷葉。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調製動作",
+        "relatedTerms": [
+            "press",
+            "crush",
+            "release"
+        ]
+    },
+    {
+        "id": "strain",
+        "term": "過濾",
+        "english": "Strain",
+        "category": "調製技法",
+        "definition": "將調好的酒液過濾掉冰塊或固體物質的步驟。",
+        "pronunciation": "/streɪn/",
+        "example": "雪克後需要過濾倒入杯中。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容調製步驟",
+        "relatedTerms": [
+            "filter",
+            "separate",
+            "pour"
+        ]
+    },
+    {
+        "id": "swizzle",
+        "term": "斯威澤",
+        "english": "Swizzle",
+        "category": "調製技法",
+        "definition": "使用斯威澤棒快速攪拌調酒的技法，起源於加勒比海。",
+        "pronunciation": "/ˈswɪzl/",
+        "example": "維珍群島史威瑟使用斯威澤技法。",
+        "origin": "加勒比海",
+        "complexity": "高級",
+        "usage": "形容調製技法",
+        "relatedTerms": [
+            "stir",
+            "mix",
+            "traditional"
+        ]
+    },
+    {
+        "id": "dash",
+        "term": "滴",
+        "english": "Dash",
+        "category": "計量單位",
+        "definition": "少量的液體調料，通常用苦精。",
+        "pronunciation": "/dæʃ/",
+        "example": "調酒中加入幾滴苦精。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容份量",
+        "relatedTerms": [
+            "drop",
+            "pinch",
+            "trace"
+        ]
+    },
+    {
+        "id": "splash",
+        "term": "灑",
+        "english": "Splash",
+        "category": "計量單位",
+        "definition": "不精確的小量液體，通常用於氣泡水或果汁。",
+        "pronunciation": "/splæʃ/",
+        "example": "加入一點氣泡水。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容份量",
+        "relatedTerms": [
+            "pour",
+            "glug",
+            "handful"
+        ]
+    },
+    {
+        "id": "ounce",
+        "term": "盎司",
+        "english": "Ounce",
+        "category": "計量單位",
+        "definition": "調酒中常用的容量單位，1盎司約等於30毫升。",
+        "pronunciation": "/ˈaʊns/",
+        "example": "調酒配方中的基本計量單位。",
+        "origin": "英國",
+        "complexity": "初級",
+        "usage": "形容份量",
+        "relatedTerms": [
+            "measurement",
+            "volume",
+            "portion"
+        ]
+    },
+    {
+        "id": "part",
+        "term": "份",
+        "english": "Part",
+        "category": "計量單位",
+        "definition": "表示調酒材料相對比例的單位。",
+        "pronunciation": "/pɑːrt/",
+        "example": "1份琴酒加2份通寧水。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容比例",
+        "relatedTerms": [
+            "ratio",
+            "proportion",
+            "relationship"
+        ]
+    },
+    {
+        "id": "proof",
+        "term": "酒精度",
+        "english": "Proof",
+        "category": "酒精濃度",
+        "definition": "表示酒精濃度的單位，美國體系中酒精度數的兩倍。",
+        "pronunciation": "/pruːf/",
+        "example": "80度的威士忌是40%酒精。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容酒精含量",
+        "relatedTerms": [
+            "alcohol",
+            "strength",
+            "percentage"
+        ]
+    },
+    {
+        "id": "abv",
+        "term": "酒精濃度",
+        "english": "ABV",
+        "category": "酒精濃度",
+        "definition": "Alcohol By Volume的縮寫，表示酒精體積百分比。",
+        "pronunciation": "/ˌeɪ biː ˈviː/",
+        "example": "威士忌通常有40% ABV。",
+        "origin": "通用",
+        "complexity": "中級",
+        "usage": "形容酒精含量",
+        "relatedTerms": [
+            "percentage",
+            "alcohol",
+            "concentration"
+        ]
+    },
+    {
+        "id": "chill",
+        "term": "冰鎮",
+        "english": "Chill",
+        "category": "溫度處理",
+        "definition": "將調酒或杯子降至低溫的處理方式。",
+        "pronunciation": "/tʃɪl/",
+        "example": "馬丁尼需要冰鎮後飲用。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容溫度處理",
+        "relatedTerms": [
+            "cold",
+            "frost",
+            "freeze"
+        ]
+    },
+    {
+        "id": "room-temperature",
+        "term": "室溫",
+        "english": "Room Temperature",
+        "category": "溫度處理",
+        "definition": "接近室溫的溫度，某些烈酒適合室溫飲用。",
+        "pronunciation": "/ruːm ˈtemprətʃər/",
+        "example": "某些威士忌在室溫下風味更佳。",
+        "origin": "通用",
+        "complexity": "初級",
+        "usage": "形容溫度",
+        "relatedTerms": [
+            "ambient",
+            "normal",
+            "standard"
+        ]
+    },
+    {
+        "id": "chaser",
+        "term": "追水",
+        "english": "Chaser",
+        "category": "飲用配件",
+        "definition": "與烈酒一起提供的飲料，用於沖淡烈酒的濃度。",
+        "pronunciation": "/ˈtʃeɪsər/",
+        "example": "威士忌通常搭配水或蘇打水。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容搭配飲料",
+        "relatedTerms": [
+            "water",
+            "mixer",
+            "dilute"
+        ]
+    },
+    {
+        "id": "mixer",
+        "term": "調料",
+        "english": "Mixer",
+        "category": "調酒原料",
+        "definition": "與烈酒混合的非酒精飲料。",
+        "pronunciation": "/ˈmɪksər/",
+        "example": "通寧水、蘇打水都是常見的調料。",
+        "origin": "美國",
+        "complexity": "初級",
+        "usage": "形容混合飲料",
+        "relatedTerms": [
+            "tonic",
+            "soda",
+            "juice"
+        ]
+    },
+    {
+        "id": "aperitif",
+        "term": "餐前酒",
+        "english": "Aperitif",
+        "category": "飲用時機",
+        "definition": "餐前飲用的酒類，刺激食慾。",
+        "pronunciation": "/əˈperətɪf/",
+        "example": "內格羅尼是經典的餐前酒。",
+        "origin": "法國/義大利",
+        "complexity": "中級",
+        "usage": "形容飲用時機",
+        "relatedTerms": [
+            "before meal",
+            "stimulate",
+            "appetizer"
+        ]
+    },
+    {
+        "id": "digestif",
+        "term": "餐後酒",
+        "english": "Digestif",
+        "category": "飲用時機",
+        "definition": "餐後飲用的酒類，幫助消化。",
+        "pronunciation": "/ˈdʒaɪdʒɪstɪf/",
+        "example": "白蘭地是常見的餐後酒。",
+        "origin": "法國",
+        "complexity": "中級",
+        "usage": "形容飲用時機",
+        "relatedTerms": [
+            "after meal",
+            "aid digestion",
+            "dessert wine"
+        ]
+    },
+    {
+        "id": "classic",
+        "term": "經典調酒",
+        "english": "Classic Cocktail",
+        "category": "調酒分類",
+        "definition": "歷史悠久且廣受認可的調酒配方。",
+        "pronunciation": "/ˈklæsɪk kɒktaɪl/",
+        "example": "曼哈頓、古典、內格羅尼都是經典調酒。",
+        "origin": "通用",
+        "complexity": "中級",
+        "usage": "形容調酒地位",
+        "relatedTerms": [
+            "traditional",
+            "historical",
+            "standard"
+        ]
+    },
+    {
+        "id": "contemporary",
+        "term": "現代調酒",
+        "english": "Contemporary Cocktail",
+        "category": "調酒分類",
+        "definition": "現代創新調酒，使用新穎原料或技法。",
+        "pronunciation": "/kənˈtempəreri kɒktaɪl/",
+        "example": "分子調酒、風味調酒屬於現代調酒。",
+        "origin": "現代",
+        "complexity": "高級",
+        "usage": "形容調酒風格",
+        "relatedTerms": [
+            "modern",
+            "innovation",
+            "creative"
+        ]
+    },
+    {
+        "id": "suspension",
+        "term": "懸浮",
+        "english": "Suspension",
+        "category": "調酒技巧",
+        "definition": "在調酒中創造視覺懸浮效果的技巧。",
+        "pronunciation": "/səˈspenʃn/",
+        "example": "某些創意調酒會使用懸浮技巧。",
+        "origin": "現代",
+        "complexity": "高級",
+        "usage": "形容視覺效果",
+        "relatedTerms": [
+            "visual",
+            "presentation",
+            "artistic"
+        ]
+    },
+    {
+        "id": "infusion",
+        "term": "浸漬",
+        "english": "Infusion",
+        "category": "調酒技巧",
+        "definition": "將香料、水果或香草浸泡在烈酒中以增添風味。",
+        "pronunciation": "/ɪnˈfjuːʒn/",
+        "example": "自製辣椒伏特加使用浸漬技巧。",
+        "origin": "通用",
+        "complexity": "中級",
+        "usage": "形容風味添加",
+        "relatedTerms": [
+            "steeping",
+            "soaking",
+            "flavoring"
+        ]
+    },
+    {
+        "id": "fat-washing",
+        "term": "油脂洗滌",
+        "english": "Fat Washing",
+        "category": "調酒技巧",
+        "definition": "將油脂與烈酒混合後分離，為烈酒增添風味。",
+        "pronunciation": "/fæt ˈwɒʃɪŋ/",
+        "example": "培根威士忌使用油脂洗滌技巧。",
+        "origin": "現代",
+        "complexity": "高級",
+        "usage": "形容特殊技巧",
+        "relatedTerms": [
+            "fat",
+            "oil",
+            "flavor extraction"
+        ]
+    },
+    {
+        "id": "smoke",
+        "term": "煙燻",
+        "english": "Smoke",
+        "category": "調酒技巧",
+        "definition": "為調酒增添煙燻風味的技巧。",
+        "pronunciation": "/sməʊk/",
+        "example": "某些調酒會使用煙燻技巧增加層次。",
+        "origin": "現代",
+        "complexity": "高級",
+        "usage": "形容風味技巧",
+        "relatedTerms": [
+            "aroma",
+            "wood",
+            "flavor enhancement"
+        ]
+    },
+    {
+        "id": "nitro",
+        "term": "氮氣",
+        "english": "Nitro",
+        "category": "調酒技巧",
+        "definition": "使用氮氣為調酒增添綿密口感的技巧。",
+        "pronunciation": "/ˈnaɪtroʊ/",
+        "example": "氮氣馬丁尼具有獨特的口感。",
+        "origin": "現代",
+        "complexity": "高級",
+        "usage": "形容特殊效果",
+        "relatedTerms": [
+            "nitrogen",
+            "creamy",
+            "texture"
+        ]
+    },
+    {
+        "id": "flair",
+        "term": "花式調酒",
+        "english": "Flair Bartending",
+        "category": "調酒表演",
+        "definition": "結合調酒技巧與表演藝術的花式調酒。",
+        "pronunciation": "/fleər ˈbɑːrtendɪŋ/",
+        "example": "花式調酒師進行瓶身旋轉等表演。",
+        "origin": "美國",
+        "complexity": "高級",
+        "usage": "形容表演技巧",
+        "relatedTerms": [
+            "performance",
+            "show",
+            "entertainment"
+        ]
+    },
+    {
+        "id": "speed",
+        "term": "快調",
+        "english": "Speed Pouring",
+        "category": "調酒技巧",
+        "definition": "快速準確倒酒的技巧。",
+        "pronunciation": "/spiːd ˈpɔːrɪŋ/",
+        "example": "繁忙時段需要快調技巧。",
+        "origin": "美國",
+        "complexity": "中級",
+        "usage": "形容調製效率",
+        "relatedTerms": [
+            "efficiency",
+            "accuracy",
+            "flow"
+        ]
+    }
+]

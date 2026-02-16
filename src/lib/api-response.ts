@@ -18,6 +18,12 @@ export interface SuccessResponseBody<T = unknown> {
   data: T
 }
 
+/** T40: 所有 API 回應共用的安全 headers — 防止 CDN/瀏覽器快取敏感資料 */
+const API_HEADERS: HeadersInit = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Pragma': 'no-cache',
+}
+
 /**
  * 回傳統一格式的成功 JSON 與 status (預設 200)
  */
@@ -26,7 +32,7 @@ export function successResponse<T>(data: T, status = 200): NextResponse {
     success: true,
     data,
   }
-  return NextResponse.json(body, { status })
+  return NextResponse.json(body, { status, headers: API_HEADERS })
 }
 
 /**
@@ -44,7 +50,7 @@ export function errorResponse(
     success: false,
     error: { code, message: options?.message ?? code },
   }
-  return NextResponse.json(body, { status })
+  return NextResponse.json(body, { status, headers: API_HEADERS })
 }
 
 /** P3-74 / R2-019：500 時回傳通用訊息；自動 log 錯誤供日誌聚合 */
@@ -58,7 +64,7 @@ export function serverErrorResponse(caught?: unknown): NextResponse {
     success: false,
     error: { code: 'INTERNAL_ERROR', message: '請稍後再試' },
   }
-  return NextResponse.json(body, { status: 500 })
+  return NextResponse.json(body, { status: 500, headers: API_HEADERS })
 }
 
 /**

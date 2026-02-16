@@ -2,13 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { m } from 'framer-motion'
-import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
-const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 const DARE_LEVELS: Record<number, string> = { 1: '輕', 2: '輕', 3: '中', 4: '中', 5: '重', 6: '重' }
 const DARES: Record<string, string[]> = {
   輕: ['學狗叫三聲', '做鬼臉 10 秒', '說一個自己的糗事', '唱一句歌', '誇獎左手邊的人'],
@@ -19,10 +17,8 @@ const DARES: Record<string, string[]> = {
 /** 大冒險骰：擲 1～6 對應懲罰等級，抽一題大冒險。 */
 /** Phase 1 C1.1: 增強骰子滾動物理效果 */
 export default function DareDice() {
-  const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
-  const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [dice, setDice] = useState<number | null>(null)
   const [dare, setDare] = useState<string | null>(null)
   const [rolling, setRolling] = useState(false)
@@ -39,7 +35,7 @@ export default function DareDice() {
     const pool = DARES[level] ?? DARES['中']
     const chosen = pool[Math.floor(Math.random() * pool.length)]
     const durationMs = reducedMotion ? 100 : 800
-    
+
     // Phase 1 C1.1: 骰子快速滾動動畫
     if (!reducedMotion) {
       if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
@@ -47,7 +43,7 @@ export default function DareDice() {
         setRollingValue(Math.floor(Math.random() * 6) + 1)
       }, 80)
     }
-    
+
     if (rollTimeoutRef.current) clearTimeout(rollTimeoutRef.current)
     rollTimeoutRef.current = setTimeout(() => {
       if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
@@ -80,16 +76,16 @@ export default function DareDice() {
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="大冒險骰">
       <GameRules rules={`擲 1～6 對應懲罰等級（輕／中／重），抽一題大冒險執行。\n可約定擲到誰就誰執行。`} />
       <p className="text-white/50 text-sm mb-2">擲骰決定等級，抽一題大冒險</p>
-      
+
       {/* Phase 1 C1.1: 顯示滾動中的骰子數字 */}
       {rolling && (
         <m.div
           initial={{ scale: 0 }}
-          animate={{ 
+          animate={{
             scale: [1, 1.2, 1],
             rotate: [0, 180, 360]
           }}
-          transition={{ 
+          transition={{
             duration: 0.8,
             repeat: Infinity,
             ease: "easeInOut"
@@ -99,7 +95,7 @@ export default function DareDice() {
           <span className="text-5xl font-bold text-white">{rollingValue}</span>
         </m.div>
       )}
-      
+
       <button type="button" onClick={roll} disabled={rolling} className="btn-primary btn-press-scale min-h-[48px] px-8 games-focus-ring disabled:opacity-50" data-testid="dare-dice-roll" aria-label={rolling ? '擲骰中' : '擲骰'}>
         {rolling ? '擲骰中…' : '擲骰'}
       </button>

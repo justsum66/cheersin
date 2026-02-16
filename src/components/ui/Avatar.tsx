@@ -16,8 +16,16 @@ export interface AvatarProps {
 
 const sizeMap = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' } as const
 
-export function Avatar({ src, alt = '', fallback = '?', size = 'md', online, className = '' }: AvatarProps) {
+const statusColorMap = {
+  online: 'bg-success border-success/30 ring-success/20',
+  offline: 'bg-white/30 border-white/10 ring-white/5',
+  spectator: 'bg-blue-400 border-blue-400/30 ring-blue-400/20',
+  busy: 'bg-warning border-warning/30 ring-warning/20',
+}
+
+export function Avatar({ src, alt = '', fallback = '?', size = 'md', online, status, className = '' }: AvatarProps & { status?: keyof typeof statusColorMap }) {
   const sizeClass = sizeMap[size]
+  const currentStatus = status ?? (online ? 'online' : undefined)
 
   return (
     <div className={`relative inline-flex shrink-0 ${className}`}>
@@ -37,11 +45,11 @@ export function Avatar({ src, alt = '', fallback = '?', size = 'md', online, cla
           {fallback.charAt(0).toUpperCase()}
         </span>
       )}
-      {online != null && (
-        <span
-          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-[var(--background)] ${online ? 'bg-success' : 'bg-white/30'}`}
-          aria-hidden
-        />
+      {currentStatus && (
+        <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusColorMap[currentStatus].split(' ')[0]}`}></span>
+          <span className={`relative inline-flex rounded-full h-3 w-3 border-2 border-[var(--background)] ${statusColorMap[currentStatus].split(' ')[0]}`}></span>
+        </span>
       )}
     </div>
   )

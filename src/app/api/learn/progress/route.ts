@@ -2,6 +2,7 @@
  * P3-411：課程進度同步 — GET 回傳後端進度，POST 寫入章節完成
  * GET: 需登入，回傳 { [courseId]: { completed, total, completedAt? } }
  * POST: body { courseId: string, chapterId: number }，寫入 chapter_progress
+ * P0-21: 限流
  */
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
@@ -10,6 +11,7 @@ import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { LEARN_ERROR, LEARN_MESSAGE } from '@/lib/api-error-codes'
 import { requireLearnAuth } from '@/lib/require-learn-auth'
 import { LearnProgressPostBodySchema } from '@/lib/api-body-schemas'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,6 +54,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request.headers)
+  if (await isRateLimitedAsync(ip, 'learn_progress')) {
+    return errorResponse(429, 'RATE_LIMITED', { message: '請求過於頻繁，請稍後再試' })
+  }
+
   const auth = await requireLearnAuth()
   if (!auth.ok) return auth.response
   const user = auth.user

@@ -5,26 +5,37 @@
 /* UX-005：設計 token 一致 — 間距、圓角、陰影請使用 :root 變數，避免 magic number；詳見 docs/DESIGN_SYSTEM.md */
 
 :root {
-  /* 品牌色：深酒紅 #8B0000、香檳金 #D4AF37 */
-  --background: 10 10 10;
+  /* 品牌色：奢華極簡 (Luxury Minimal) - Black, Gold, Silver */
+  --background: 0 0 0;
+  /* #000000 Pure Black (OLED) for Infinite Contrast */
   --foreground: 255 255 255;
-  --primary: 139 0 0;
-  --secondary: 212 175 55;
-  --accent: 138 43 226;
-  /* 背景漸層：深紫 #1a0a2e → 黑 #0a0a0a */
-  --background-start: 26 10 46;
-  --background-end: 10 10 10;
-  /* 文字層次：純白 > 白/70 > 白/50 > 白/30 */
+  --primary: 212 175 55;
+  /* #D4AF37 Metallic Gold */
+  --secondary: 229 228 226;
+  /* #E5E4E2 Platinum */
+  --accent: 255 46 99;
+  /* #FF2E63 Neon Red (Reserved for 'Emergency' buttons only) */
+  /* 背景漸層：極致深黑 */
+  --background-start: 10 10 10;
+  --background-end: 0 0 0;
+  /* 文字層次：純白 > 白/70 > 白/40 */
   --text-primary: 255 255 255;
   --text-secondary: 255 255 255 / 0.7;
-  --text-muted: 255 255 255 / 0.5;
-  --text-subtle: 255 255 255 / 0.3;
+  --text-muted: 255 255 255 / 0.4;
+  --text-subtle: 255 255 255 / 0.2;
   /* 語義色 */
-  --error: 185 28 28;
-  --success: 4 120 87;
-  --warning: 194 65 12;
+  --error: 255 77 77;
+  --success: 0 255 157;
+  --warning: 255 183 0;
+  /* UX-001: Glassmorphism Semantic Tokens - More vibrant */
+  --glass-1: 255 255 255 / 0.05;
+  --glass-2: 255 255 255 / 0.1;
+  --glass-3: 255 255 255 / 0.2;
+  --glass-border-1: 255 255 255 / 0.15;
+  --glass-border-2: 255 255 255 / 0.25;
+  --glass-shine: 255 255 255 / 0.15;
   /* P3 任務 61：字體由 layout next/font 注入，font-display: swap；fallback 為 system-ui, sans-serif */
-  --font-display: 'Playfair Display', Georgia, serif;
+  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-sans: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
   --text-scale: 1;
   --focus-ring: 0 0 0 3px rgba(139, 0, 0, 0.6);
@@ -83,6 +94,99 @@
   --hero-cta-delay: 0.75s;
 }
 
+/* EXPERT_OPTIMIZATION: UI-02 Gold Foil & Text Shimmer */
+.text-shimmer {
+  background: linear-gradient(to right,
+      #bf953f 0%,
+      #fcf6ba 25%,
+      #b38728 50%,
+      #fbf5b7 75%,
+      #aa771c 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.bg-vantablack-depth {
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+}
+
+/* UI-01: Vantablack Floating Particles */
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(10px, -20px);
+  }
+}
+
+@keyframes float-medium {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(-15px, -10px);
+  }
+}
+
+@keyframes float-fast {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(5px, -15px);
+  }
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1) translateX(-50%);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1) translateX(-50%);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 15s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 10s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 7s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+
 /* @layer base 已遷至 src/styles/base.css (R2-002 Phase 9) */
 
 /* @layer components 已遷至 src/styles/components.css (R2-002 Phase 6) */
@@ -106,3 +210,20 @@
 /* 列印樣式已遷至 src/styles/print.css (R2-002 Phase 8) */
 
 /* pro-gradient-border、text-fluid-*、dark img、RTL 已遷至 styles/shared.css (R2-002 Phase 5) */
+
+/* UX-004: Neon Border & Text */
+.neon-border {
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3), inset 0 0 5px rgba(212, 175, 55, 0.1);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.neon-border:hover {
+  border-color: rgba(212, 175, 55, 0.8);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.neon-text {
+  color: #fff;
+  text-shadow: 0 0 5px rgba(139, 0, 0, 0.8), 0 0 10px rgba(139, 0, 0, 0.5);
+}

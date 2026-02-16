@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { flushSync } from 'react-dom'
 import { m, AnimatePresence } from 'framer-motion'
 import { scaleIn, slideUp, staggerContainer, buttonHover, buttonTap } from '@/lib/animations'
-import { Heart, Flame, SkipForward, RotateCcw, Star, Plus, Trash2, Loader2 } from 'lucide-react'
+import { Heart, Flame, SkipForward, RotateCcw, Star, Plus, Trash2, Loader2, Crown, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -61,13 +61,18 @@ function pickFromPool(
 }
 
 /** GAME-OPT-001：親友/辣味可選 — level filter 依 i18n 顯示 */
-function getLevelFilterOptions(t: (k: string) => string): { value: TruthDareLevel | 'all'; label: string }[] {
+function getLevelFilterOptions(t: (k: string) => string): { value: TruthDareLevel | 'all'; label: string; isPremium?: boolean }[] {
   return [
     { value: 'all', label: t('truthOrDare.levelAll') },
     { value: 'mild', label: t('truthOrDare.levelMild') },
-    { value: 'spicy', label: t('truthOrDare.levelSpicy') },
-    { value: 'adult', label: t('truthOrDare.levelAdult') },
+    { value: 'spicy', label: t('truthOrDare.levelSpicy'), isPremium: true },
+    { value: 'adult', label: t('truthOrDare.levelAdult'), isPremium: true },
   ]
+}
+
+/** Phase 1 Tasks 8-9：免費用戶只能用 mild 等級 */
+function isPremiumLevel(level: TruthDareLevel | 'all'): boolean {
+  return level === 'spicy' || level === 'adult'
 }
 
 export default function TruthOrDare() {
@@ -365,21 +370,35 @@ export default function TruthOrDare() {
                   <>
                     <p className="text-white/60 text-sm mb-2">難度分類</p>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {levelFilterOptions.map(({ value, label }) => (
-                        <m.button
-                          key={value}
-                          type="button"
-                          whileHover={buttonHover}
-                          whileTap={buttonTap}
-                          onClick={() => setLevelFilter(value)}
-                          aria-pressed={levelFilter === value}
-                          aria-label={label}
-                          className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-xl text-sm font-medium transition-colors games-focus-ring ${levelFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
-                        >
-                          {label}
-                        </m.button>
-                      ))}
+                      {levelFilterOptions.map(({ value, label, isPremium: isLevelPremium }) => {
+                        const locked = isLevelPremium && tier === 'free'
+                        return (
+                          <m.button
+                            key={value}
+                            type="button"
+                            whileHover={locked ? undefined : buttonHover}
+                            whileTap={locked ? undefined : buttonTap}
+                            onClick={() => {
+                              if (locked) {
+                                toast('升級 Pro 解鎖辣味題目 🔥', { icon: '👑' })
+                                return
+                              }
+                              setLevelFilter(value)
+                            }}
+                            aria-pressed={levelFilter === value}
+                            aria-label={locked ? `${label}（需升級 Pro）` : label}
+                            className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-xl text-sm font-medium transition-colors games-focus-ring ${locked ? 'bg-white/5 text-white/30 cursor-not-allowed' : levelFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              {label}
+                              {locked && <Lock className="w-3 h-3" aria-hidden />}
+                            </span>
+                          </m.button>)
+                      })}
                     </div>
+                    {tier === 'free' && (
+                      <p className="text-white/40 text-xs mt-2 text-center">辣味 & 成人題目為 Pro 專屬 <a href="/pricing" className="text-primary-400 hover:underline">升級解鎖</a></p>
+                    )}
                   </>
                 )}
                 {selectedMode && selectedMode !== 'classic' && (

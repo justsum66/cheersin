@@ -2,12 +2,16 @@
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
 import { m, LayoutGroup, useReducedMotion } from 'framer-motion'
-import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, type LucideIcon } from 'lucide-react'
+import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, PenTool, Trash2, Plus, Edit, Zap, Star, Smile, Beer, PartyPopper, Hash, MessageCircle, AlertTriangle, HelpCircle, Trophy, type LucideIcon } from 'lucide-react'
+import type { CustomGame } from '@/lib/custom-games'
+import { GUEST_TRIAL_GAME_IDS, getGameMeta, type GameCategory, type GameId, type GameDifficulty } from '@/config/games.config'
 import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import { Modal } from '@/components/ui/Modal'
+import { GlassCard } from '@/components/ui/GlassCard'
+import { Button } from '@/components/ui/Button'
 import { GameCard } from './GameCard'
 import { prefetchGame } from './GameLazyMap'
-import { getFavoriteGameIds, toggleFavorite, getGameRatings, setGameRating } from '@/lib/games-favorites'
+
 import {
   GAMES_RTL,
   GAMES_LOBBY_WEEKLY_PLAYS_I18N_KEY,
@@ -21,15 +25,30 @@ import {
   GAMES_LOBBY_CATEGORY_VS_I18N_KEY,
   GAMES_LOBBY_CATEGORY_RANDOM_I18N_KEY,
   GAMES_LOBBY_CATEGORY_TWO_I18N_KEY,
-} from '@/lib/games-ui-constants'
+} from '@/modules/games/constants'
 import { useTranslation } from '@/contexts/I18nContext'
 import { NowPlayingCount } from './NowPlayingCount'
 import RandomBrewery from './RandomBrewery'
-import type { GameDifficulty, GameCategory } from '@/config/games.config'
-import { getGameMeta, GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
-import { createPlaylistId, type GamePlaylist } from '@/lib/games-playlists'
-import type { GameId } from '@/config/games.config'
-import { List, Play, Trash2, Plus } from 'lucide-react'
+import {
+  toggleFavorite,
+  getFavorites,
+  isFavorite,
+  addFavorite,
+  removeFavorite,
+  getFavoriteGameIds,
+  getGameRatings,
+  setGameRating,
+} from '@/modules/games/user/favorites'
+import { getWeeklyPlayCounts } from '@/modules/games/stats/weekly'
+import { getLastSessionGameId } from '@/modules/games/user/history'
+import {
+  PLAYLISTS,
+  getPlaylistById,
+  getAllPlaylists,
+  createPlaylistId,
+  type GamePlaylist,
+} from '@/modules/games/data/playlists'
+import { List, Play } from 'lucide-react'
 
 export type { GameCategory }
 
@@ -109,9 +128,9 @@ const CATEGORY_LABELS: Record<GameCategory, string> = {
 
 /** 76 遊戲分類標籤：P0-003 情侶模式 / 經典派對 / 競技對決 / 隨機選人 / T072 2 人（兩人友善） */
 /** Grace 色盲友善：分類加 icon，不單靠顏色區分 */
-export type DisplayCategory = 'couple' | 'all' | 'classic' | 'vs' | 'random' | 'two'
+export type DisplayCategory = 'couple' | 'all' | 'classic' | 'vs' | 'random' | 'two' | 'custom'
 /** GAMES_500 #51：穩定引用供鍵盤與 map 使用；P0-003 情侶模式置頂 */
-const CATEGORY_LIST: readonly DisplayCategory[] = ['couple', 'all', 'classic', 'vs', 'random', 'two']
+const CATEGORY_LIST: readonly DisplayCategory[] = ['couple', 'all', 'classic', 'vs', 'random', 'two', 'custom']
 const DISPLAY_LABELS: Record<DisplayCategory, string> = {
   couple: '情侶模式',
   all: '全部',
@@ -119,6 +138,7 @@ const DISPLAY_LABELS: Record<DisplayCategory, string> = {
   vs: '競技對決',
   random: '隨機選人',
   two: '2 人',
+  custom: '我的遊戲',
 }
 const DISPLAY_ICONS: Record<DisplayCategory, LucideIcon> = {
   couple: Heart,
@@ -127,6 +147,7 @@ const DISPLAY_ICONS: Record<DisplayCategory, LucideIcon> = {
   vs: Swords,
   random: Shuffle,
   two: Users,
+  custom: PenTool,
 }
 /** P1-106：解析 players 字串取得 min/max 人數 */
 function parsePlayersRange(players: string): { min: number; max: number } {
@@ -164,6 +185,7 @@ const DISPLAY_TO_INTERNAL: Record<DisplayCategory, GameCategory[] | null> = {
   vs: ['reaction', 'guess'],
   random: ['draw', 'other'],
   two: null,
+  custom: null,
 }
 
 /** GAMES_500 #92：分類 tab 對應 i18n key；P0-003 情侶模式無 i18n 則用 label */
@@ -174,10 +196,13 @@ const DISPLAY_I18N_KEYS: Record<DisplayCategory, string> = {
   vs: GAMES_LOBBY_CATEGORY_VS_I18N_KEY,
   random: GAMES_LOBBY_CATEGORY_RANDOM_I18N_KEY,
   two: GAMES_LOBBY_CATEGORY_TWO_I18N_KEY,
+  custom: 'lobby.category.custom',
 }
 
 interface LobbyProps {
   games: GameOption[]
+  customGames?: CustomGame[]
+  onDeleteCustomGame?: (id: string) => void
   recentGameIds?: string[]
   /** 任務 7：本週各遊戲遊玩次數，用於「本週熱門」區塊 */
   weeklyPlayCounts?: Record<string, number>
@@ -195,7 +220,7 @@ interface LobbyProps {
   initialSearchQuery?: string
 }
 
-export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}, weeklyFreeGameIds = [], onSelect, displayFilter: controlledFilter, onDisplayFilterChange, playlists = [], onStartPlaylist, onSavePlaylists, initialSearchQuery = '' }: LobbyProps) {
+export default function Lobby({ games, customGames = [], onDeleteCustomGame, recentGameIds = [], weeklyPlayCounts = {}, weeklyFreeGameIds = [], onSelect, displayFilter: controlledFilter, onDisplayFilterChange, playlists = [], onStartPlaylist, onSavePlaylists, initialSearchQuery = '' }: LobbyProps) {
   const { t } = useTranslation()
   const reducedMotion = useReducedMotion()
   /** T051：預設「經典派對」= 熱門類型；P1-122 受控時用 props，否則用內部 state */
@@ -242,6 +267,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
   /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
     () => {
+      if (displayFilter === 'custom') return [] // Handled separately in render
       if (displayFilter === 'all') return games.filter(g => !g.deprecated)
       if (displayFilter === 'couple') return games.filter((g) => !g.deprecated && g.twoPlayerFriendly === true && (g.category === 'adult' || g.category === 'party'))
       if (displayFilter === 'two') return games.filter((g) => !g.deprecated && g.twoPlayerFriendly === true)
@@ -254,6 +280,7 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
     },
     [games, displayFilter]
   )
+
 
   /** P1-106：適合人數與時長篩選；人數解析 players 字串、時長依 estimatedMinutes */
   const filteredBySecondary = useMemo(() => {
@@ -505,15 +532,16 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               <p className="text-white/50 text-sm mb-2 font-medium" data-i18n-key={GAMES_LOBBY_RECENT_I18N_KEY}>最近玩過</p>
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
                 {recentGames.map((game) => (
-                  <button
+                  <GlassCard
+                    as="button"
                     key={game.id}
                     type="button"
                     onClick={() => handleSelect(game.id)}
-                    className="shrink-0 w-[160px] min-h-[100px] min-w-[44px] rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left hover:bg-white/[0.08] hover:border-white/20 transition-colors flex flex-col gap-1 games-focus-ring"
+                    className="shrink-0 w-[160px] min-h-[100px] min-w-[44px] p-3 text-left hover:bg-white/[0.08] hover:border-white/20 transition-colors flex flex-col gap-1 games-focus-ring"
                   >
                     <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
                     <span className="text-white text-sm font-medium truncate">{game.name}</span>
-                  </button>
+                  </GlassCard>
                 ))}
               </div>
             </div>
@@ -528,16 +556,17 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               <p className="text-white/30 text-xs mb-2" aria-hidden>本週你玩最多次的遊戲</p>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
                 {weeklyHotGames.map((game) => (
-                  <button
+                  <GlassCard
+                    as="button"
                     key={game.id}
                     type="button"
                     onClick={() => handleSelect(game.id)}
-                    className="shrink-0 w-[140px] min-h-[90px] rounded-2xl border border-secondary-500/30 bg-secondary-500/10 p-3 text-left hover:bg-secondary-500/20 transition-colors flex flex-col gap-1 games-focus-ring"
+                    className="shrink-0 w-[140px] min-h-[90px] border-secondary-500/30 bg-secondary-500/10 p-3 text-left hover:bg-secondary-500/20 transition-colors flex flex-col gap-1 games-focus-ring"
                   >
                     <FeatureIcon icon={game.icon} size="sm" color={game.color as 'primary' | 'secondary' | 'accent' | 'white'} />
                     <span className="text-white text-sm font-medium truncate">{game.name}</span>
                     <span className="text-secondary-400 text-xs tabular-nums" data-i18n-key={GAMES_LOBBY_WEEKLY_PLAYS_I18N_KEY}>{weeklyPlayCounts[game.id]} 次</span>
-                  </button>
+                  </GlassCard>
                 ))}
               </div>
             </div>
@@ -569,8 +598,10 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
 
       {/* GAMES_500 #46 #47 #48 #70 #78 #88 #92：搜尋 placeholder/aria、min 2 字提示、搜尋中、Esc 清除、autocomplete、清除按鈕、i18n key；R2-101 搜尋框 focus 時寬度過渡 */}
       <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-center">
-        <div
-          className={`relative w-full flex-1 rounded-xl border border-white/10 overflow-hidden transition-[max-width] duration-300 ease-out ${searchFocused ? 'sm:max-w-md' : 'sm:max-w-sm'}`}
+        <m.div
+          layout
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className={`relative w-full flex-1 rounded-xl border border-white/10 overflow-hidden ${searchFocused ? 'sm:max-w-xl shadow-glass-3' : 'sm:max-w-sm shadow-glass-1'}`}
         >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none" aria-hidden />
           <input
@@ -610,49 +641,53 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
               <span className="text-lg leading-none">×</span>
             </button>
           )}
-        </div>
+        </m.div>
       </div>
       {/* GAMES_500 #51 #52 #53 #79 #89：分類 tab；R2-047 LayoutGroup 讓選中底線/背景平滑切換 */}
-      <LayoutGroup>
-        <div
-          ref={categoryTabListRef}
-          className="flex overflow-x-auto gap-0 mb-4 justify-start sm:justify-center scrollbar-hide pb-1 -mx-1 px-1 relative"
-          role="tablist"
-          aria-label="遊戲分類篩選"
-          aria-describedby="lobby-game-count"
-        >
-          {CATEGORY_LIST.map((cat, idx) => {
-            const Icon = DISPLAY_ICONS[cat]
-            const isActive = displayFilter === cat
-            return (
-              <button
-                key={cat}
-                ref={(el) => { categoryTabRefs.current[idx] = el }}
-                type="button"
-                role="tab"
-                tabIndex={isActive ? 0 : -1}
-                onClick={() => handleFilterChange(cat)}
-                onKeyDown={(e) => handleCategoryKeyDown(e, cat)}
-                aria-selected={isActive}
-                aria-expanded={isActive}
-                className={`relative shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'text-white border-transparent' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
-              >
-                {isActive && (
-                  <m.span
-                    layoutId="lobby-category-pill"
-                    className="absolute inset-0 rounded-t-xl bg-white/15 border-b-2 border-primary-500"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-2">
-                  <Icon className="w-4 h-4 shrink-0" aria-hidden />
-                  <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{cat === 'all' ? t('games.filterAll') : DISPLAY_LABELS[cat]}</span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </LayoutGroup>
+      {/* UI-34 Sticky Headers, UI-32 Mask */}
+      <div className="sticky top-[64px] z-30 -mx-4 px-4 bg-[#0a0a1a]/95 backdrop-blur-md pt-2 pb-1 transition-all duration-300">
+        <LayoutGroup>
+          <div
+            ref={categoryTabListRef}
+            className="flex overflow-x-auto gap-0 justify-start sm:justify-center scrollbar-hide pb-2 -mx-1 px-1 relative mask-linear-to-r"
+            role="tablist"
+            aria-label="遊戲分類篩選"
+            aria-describedby="lobby-game-count"
+          >
+            {CATEGORY_LIST.map((cat, idx) => {
+              const Icon = DISPLAY_ICONS[cat]
+              const isActive = displayFilter === cat
+              return (
+                <button
+                  key={cat}
+                  ref={(el) => { categoryTabRefs.current[idx] = el }}
+                  type="button"
+                  role="tab"
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => handleFilterChange(cat)}
+                  onKeyDown={(e) => handleCategoryKeyDown(e, cat)}
+                  aria-selected={isActive}
+                  aria-expanded={isActive}
+                  className={`relative shrink-0 inline-flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-t-xl text-sm font-medium transition-colors border-b-2 ${isActive ? 'text-white border-transparent' : 'bg-transparent text-white/60 hover:text-white border-transparent hover:bg-white/5'}`}
+                >
+                  {isActive && (
+                    <m.span
+                      layoutId="lobby-category-pill"
+                      className="absolute inset-0 rounded-t-xl bg-white/15 border-b-2 border-primary-500"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon className="w-4 h-4 shrink-0" aria-hidden />
+                    <span data-i18n-key={DISPLAY_I18N_KEYS[cat]}>{cat === 'all' ? t('games.filterAll') : DISPLAY_LABELS[cat]}</span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </LayoutGroup>
+      </div>
+
       {/* P1-106：適合人數與遊戲時長篩選 chip */}
       <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label="人數與時長篩選">
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -690,18 +725,19 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
           {(t('games.gameCountTemplate') ?? '').replace(/\{\{total\}\}/g, String(games.length))}{sortedGames.length !== games.length ? (t('games.gameCountFilteredTemplate') ?? '').replace(/\{\{count\}\}/g, String(sortedGames.length)) : ''}
         </p>
         {sortedGames.length > 0 && (
-          <button
+          <Button
             type="button"
             onClick={() => {
               const idx = Math.floor(Math.random() * sortedGames.length)
               onSelect(sortedGames[idx].id)
             }}
-            className="min-h-[44px] px-3 py-1.5 rounded-xl bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 text-sm font-medium flex items-center gap-1.5 games-focus-ring"
+            size="sm"
+            className="bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 gap-1.5"
             aria-label={t('games.randomPickAria') ?? undefined}
           >
             <Shuffle className="w-4 h-4 shrink-0" aria-hidden />
             {t('games.randomPick')}
-          </button>
+          </Button>
         )}
       </div>
       {/* GAMES_500 #49 #63 #64 #87：空狀態建議關鍵字／清除搜尋；建立房間為同頁區塊；I18N-05 */}
@@ -746,41 +782,163 @@ export default function Lobby({ games, recentGameIds = [], weeklyPlayCounts = {}
       {/* R2-061：分類切換時遊戲列表淡入；GAMES_500 #54 #66 #67 #69：列表 aria-busy、grid、role list/listitem；PERF-006 分頁顯示 */}
       <m.div
         key={displayFilter}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={reducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.03,
+              delayChildren: 0
+            }
+          }
+        }}
+        initial="hidden"
+        animate="visible"
         className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap ${isPending ? 'opacity-70 transition-opacity duration-200' : ''}`}
         role="list"
         aria-label="遊戲列表"
         aria-busy={isPending}
       >
-        {visibleGames.map((game, index) => (
-          <PrefetchOnVisible key={game.id} gameId={game.id}>
-            <GameCard
-              game={{
-                ...game,
-                isFavorite: favoriteIds.includes(game.id),
-                onToggleFavorite: handleToggleFavorite,
-                rating: ratings[game.id],
-                onRate: handleRate,
-                isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
-                twoPlayerFriendly: game.twoPlayerFriendly,
-                onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
-                /** R2-199：付費遊戲皇冠圖標 — 有 requiredTier 且非 free 即顯示 */
-                isPremium: game.isPremium ?? (() => { const tier = getGameMeta(game.id)?.requiredTier; return tier != null && tier !== 'free'; })(),
-                /** R2-191：本週限時免費標籤 */
-                isWeeklyFree: weeklyFreeGameIds.includes(game.id),
-                /** Task 15: 18+ 標籤 */
-                hasAdultContent: game.category === 'adult' || game.modes?.some(m => m.id.includes('spicy') || m.id === 'adult'),
-              }}
-              index={index}
-              onSelect={handleSelect}
-              onKeyDown={handleKeyDown}
-              buttonRef={(el) => { buttonRefs.current[index] = el }}
-              displayLabel={game.category ? (DISPLAY_TO_INTERNAL.classic?.includes(game.category) ? DISPLAY_LABELS.classic : DISPLAY_TO_INTERNAL.vs?.includes(game.category) ? DISPLAY_LABELS.vs : DISPLAY_LABELS.random) : undefined}
-            />
-          </PrefetchOnVisible>
-        ))}
+        {displayFilter === 'custom' ? (
+          <>
+            <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 mb-4">
+              <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary-500/20">
+                <Plus className="w-5 h-5" />
+                Create New Game
+              </a>
+            </div>
+            {customGames.map((game, index) => {
+              // Map string iconName to Lucide component
+              const iconMap: Record<string, LucideIcon> = { Zap, Heart, Star, Smile, Beer, PartyPopper, Hash, MessageCircle, AlertTriangle, HelpCircle, Trophy }
+              const IconComp = iconMap[game.iconName] || Zap
+
+              return (
+                <m.div
+                  key={game.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { type: 'spring', stiffness: 300, damping: 24 }
+                    }
+                  }}
+                  layout
+                >
+                  <GameCard
+                    game={{
+                      id: game.id,
+                      name: game.name,
+                      description: game.description,
+                      icon: IconComp,
+                      color: game.color,
+                      players: '2+ 人',
+                      category: 'party',
+                      isFavorite: favoriteIds.includes(game.id),
+                      onToggleFavorite: handleToggleFavorite,
+                      rating: 0,
+                      onRate: () => { },
+                      isGuestTrial: false,
+                      twoPlayerFriendly: true,
+                      onShowRules: (g) => setRulesModal({ name: g.name, rules: 'Custom Game' }),
+                      isPremium: true,
+                      isWeeklyFree: false,
+                      hasAdultContent: false,
+                      searchQuery: deferredQuery,
+                    }}
+                    index={index}
+                    onSelect={handleSelect}
+                    onKeyDown={handleKeyDown}
+                    buttonRef={(el) => { buttonRefs.current[index] = el }}
+                    displayLabel="Custom"
+                  />
+                  {onDeleteCustomGame && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (confirm('Are you sure you want to delete this game?')) {
+                          onDeleteCustomGame(game.id)
+                        }
+                      }}
+                      className="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 px-2"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  )}
+                </m.div>
+              )
+            })}
+            {customGames.length === 0 && (
+              <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 text-center py-12 bg-white/5 rounded-3xl border border-white/10 border-dashed">
+                <PenTool className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No Custom Games Yet</h3>
+                <p className="text-white/60 mb-6">Create your first custom drinking game!</p>
+                <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-medium">
+                  <Plus className="w-5 h-5" />
+                  Create Game
+                </a>
+              </div>
+            )}
+          </>
+        ) : (
+          visibleGames.map((game, index) => {
+            // DEBUG: 檢查重複的 game.id
+            if (process.env.NODE_ENV === 'development') {
+              const duplicateIds = visibleGames.filter((g, i) => g.id === game.id && i !== index);
+              if (duplicateIds.length > 0) {
+                console.warn(`⚠️ 重複的 game.id 發現: ${game.id}`, {
+                  game,
+                  duplicateCount: duplicateIds.length + 1,
+                  allIds: visibleGames.map(g => g.id)
+                });
+              }
+            }
+            
+            // 臨時解決方案：為重複的 key 添加索引後綴
+            const uniqueKey = `${game.id}-${index}`;
+            
+            return (
+              <PrefetchOnVisible key={uniqueKey} gameId={game.id}>
+              <m.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { type: 'spring', stiffness: 300, damping: 24 }
+                  }
+                }}
+                layout
+              >
+                <GameCard
+                  game={{
+                    ...game,
+                    isFavorite: favoriteIds.includes(game.id),
+                    onToggleFavorite: handleToggleFavorite,
+                    rating: ratings[game.id],
+                    onRate: handleRate,
+                    isGuestTrial: GUEST_TRIAL_GAME_IDS.includes(game.id),
+                    twoPlayerFriendly: game.twoPlayerFriendly,
+                    onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? (t('games.rulesSummaryFallback') ?? '') }),
+                    /** R2-199：付費遊戲皇冠圖標 — 有 requiredTier 且非 free 即顯示 */
+                    isPremium: game.isPremium ?? (() => { const tier = getGameMeta(game.id)?.requiredTier; return tier != null && tier !== 'free'; })(),
+                    /** R2-191：本週限時免費標籤 */
+                    isWeeklyFree: weeklyFreeGameIds.includes(game.id),
+                    /** Task 15: 18+ 標籤 */
+                    hasAdultContent: game.category === 'adult' || game.modes?.some(m => m.id.includes('spicy') || m.id === 'adult'),
+                    /** UI-33: Pass search query for highlighting */
+                    searchQuery: deferredQuery,
+                  }}
+                  index={index}
+                  onSelect={handleSelect}
+                  onKeyDown={handleKeyDown}
+                  buttonRef={(el) => { buttonRefs.current[index] = el }}
+                  displayLabel={game.category ? (DISPLAY_TO_INTERNAL.classic?.includes(game.category) ? DISPLAY_LABELS.classic : DISPLAY_TO_INTERNAL.vs?.includes(game.category) ? DISPLAY_LABELS.vs : DISPLAY_LABELS.random) : undefined}
+                />
+              </m.div>
+            </PrefetchOnVisible>
+          )})
+        )}
       </m.div>
       {hasMoreGames && (
         <div className="mt-6 flex justify-center">

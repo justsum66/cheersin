@@ -4,9 +4,11 @@ import { createServerClientOptional } from '@/lib/supabase-server'
 import { getPersistEventNames } from '@/config/analytics.config'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 /** E29 需 Node runtime 以使用 Supabase server client 寫入 analytics_events */
 /** R2-018：Zod 校驗 body；R2-027：結構化日誌 requestId、duration */
+/** P0-22: 限流 */
 
 const AnalyticsBodySchema = z.object({
   name: z.string().min(1).max(128).trim(),
@@ -17,6 +19,11 @@ const AnalyticsBodySchema = z.object({
 
 /** RUM：接收 web-vitals 指標與關鍵轉換事件；E29 持久化至 Supabase analytics_events */
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request.headers)
+  if (await isRateLimitedAsync(ip, 'analytics')) {
+    return errorResponse(429, 'RATE_LIMITED', { message: '請求過於頻繁，請稍後再試' })
+  }
+
   const requestId = request.headers.get('x-request-id') ?? request.headers.get('x-vercel-id') ?? undefined
   const start = Date.now()
   try {

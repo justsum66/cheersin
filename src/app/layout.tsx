@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { Playfair_Display, Inter, Noto_Sans_TC } from 'next/font/google'
+import { Outfit, Inter, Noto_Sans_TC } from 'next/font/google'
 import './globals.css'
 import '@/styles/base.css'
 import '@/styles/shared.css'
@@ -12,6 +12,7 @@ import '@/styles/print.css'
 import '@/components/games/games.css'
 import { Toaster } from 'react-hot-toast'
 import Navigation from '@/components/navigation/Navigation'
+import { GameStickyFooter } from '@/components/games/GameStickyFooter'
 import AuroraBackground from '@/components/AuroraBackground'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
 import { RouteChangeProgress } from '@/components/ui/RouteChangeProgress'
@@ -20,7 +21,9 @@ import { ClientProviders } from '@/components/providers/ClientProviders'
 import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper'
 import { JsonLd } from '@/components/JsonLd'
 const WebVitalsReporter = dynamic(() => import('@/components/WebVitalsReporter'))
+import { WebVitalsTracker } from '@/components/performance/WebVitalsTracker'
 import DeferredAnalytics from '@/components/DeferredAnalytics'
+import { CacheManager } from '@/components/caching/CacheManager'
 import NavHiddenEffect from '@/components/navigation/NavHiddenEffect'
 import AgeGate from '@/components/AgeGate'
 const CookieConsentBanner = dynamic(() => import('@/components/CookieConsentBanner'))
@@ -36,14 +39,15 @@ import { getRootMeta } from '@/lib/i18n/server-meta'
 import { COOKIE_KEY } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
 
-/** 11 標題字體：Playfair Display 高級感；PERF-012：display: swap 避免 FOIT 阻塞 */
-const playfair = Playfair_Display({
+/** 11 標題字體：Outfit 現代幾何無襯線（Party/Tech 感）；PERF-012：display: swap 避免 FOIT 阻塞 */
+const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-display',
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
-  // Phase 1 E1.5: 字型子集化優化 - 預載常用字元範圍
+  weight: ['400', '500', '600', '700', '900'],
   preload: true,
+  // Phase 1 Optimization: 字型子集化減少載入時間
+  adjustFontFallback: false,
 })
 
 /** 12 內文字體：Inter + Noto Sans TC 確保中文 */
@@ -54,14 +58,18 @@ const inter = Inter({
   weight: ['300', '400', '500', '700'],
   // Phase 1 E1.5: 字型子集化優化
   preload: true,
+  adjustFontFallback: false,
 })
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
   variable: '--font-noto',
   display: 'swap',
-  weight: ['300', '400', '500', '700'],
-  // Phase 1 E1.5: 字型子集化優化 - 保持 latin 子集但優化預載
+  weight: ['400', '700'],
+  // CJK 字型由 Google Fonts 自動按 unicode-range 分片載入；
+  // 僅預載 latin subset，減少首屏阻塞；中文字元按需載入。
+  // 只保留 400/700 兩個字重以大幅減少 CJK 字型下載量
   preload: true,
+  adjustFontFallback: false,
 })
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
@@ -80,7 +88,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: meta.title, template: '%s | Cheersin' },
     description: meta.description,
-    keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', '台灣'],
+    keywords: ['AI 派對靈魂伴侶', '酒類教育', '品酒', 'AI侍酒師', '葡萄酒', '威士忌', '派對遊戲', 'Drinking Games', 'Icebreakers', '真心話大冒險', '台灣', 'Party App'],
     authors: [{ name: 'Cheersin Team', url: BASE }],
     metadataBase: new URL(BASE),
     alternates: { canonical: BASE },
@@ -127,7 +135,7 @@ export default async function RootLayout({
   const locale: Locale = LOCALES.includes(localeRaw as Locale) ? (localeRaw as Locale) : 'zh-TW'
   const dir = RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr'
   return (
-    <html lang={locale} dir={dir} className={`${playfair.variable} ${inter.variable} ${notoSansTC.variable}`} suppressHydrationWarning>
+    <html lang={locale} dir={dir} className={`${outfit.variable} ${inter.variable} ${notoSansTC.variable}`} suppressHydrationWarning>
       <head>
         {/* 26 preconnect 外部資源 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -139,16 +147,29 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://api.pinecone.io" />
         {/* P031: LCP optimization - preload critical hero image with fetchpriority */}
         <link rel="preload" href="/logo_monochrome_gold.png" as="image" fetchPriority="high" />
-        {/* Phase 1 E1.2: Preload critical fonts for LCP */}
-        <link
-          rel="preload"
-          href="/_next/static/media/playfair-display-latin-400-normal.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        {/* P031: Preconnect to critical origins */}
-        <link rel="preconnect" href="https://wdegandlipgdvqhgmoai.supabase.co" crossOrigin="anonymous" />
+        {/* Task 1.01: Core Web Vitals Optimization - Preload critical fonts */}
+        <>
+          <link
+            rel="preload"
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;900&display=swap"
+            as="style"
+            fetchPriority="high"
+          />
+          <link
+            rel="preload"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap"
+            as="style"
+            fetchPriority="high"
+          />
+          <link
+            rel="preload"
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap"
+            as="style"
+            fetchPriority="high"
+          />
+        </>
+        {/* P031: dns-prefetch for Sentry (補充缺失的第三方 prefetch) */}
+        <link rel="dns-prefetch" href="https://o4509427018883072.ingest.us.sentry.io" />
         {/* PWA 73–74：iOS 加入主畫面時全螢幕、狀態列樣式 */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -160,12 +181,14 @@ export default async function RootLayout({
         <ClientProviders>
           <AgeGate>
             <WebVitalsReporter />
+            <WebVitalsTracker />
+            <CacheManager />
             {/* P2-260：第三方分析由 DeferredAnalytics 延遲載入；若接入 GA 請用 next/script strategy="lazyOnload" */}
             <DeferredAnalytics />
             <NavHiddenEffect />
-            {/* A11Y-005：Skip link 鍵盤可達、聚焦時可見，跳至主內容 */}
-            <a href="#main-content" className="skip-link" aria-label="跳至主內容">
-              跳至主內容
+            {/* T21: Skip link 依 locale 顯示對應語言；A11Y-005：鍵盤可達、聚焦時可見 */}
+            <a href="#main-content" className="skip-link" aria-label={locale === 'en' ? 'Skip to main content' : locale === 'ja' ? 'メインコンテンツへスキップ' : locale === 'ko' ? '본문으로 건너뛰기' : '跳至主內容'}>
+              {locale === 'en' ? 'Skip to content' : locale === 'ja' ? 'コンテンツへ' : locale === 'ko' ? '본문으로' : '跳至主內容'}
             </a>
             <AuroraBackground />
             <MaintenanceBanner />
@@ -197,12 +220,13 @@ export default async function RootLayout({
             className: 'toast-enter-anim',
             style: {
               pointerEvents: 'auto',
-              background: 'rgba(26, 10, 46, 0.95)',
+              background: 'rgba(26, 10, 46, 0.7)',
               color: '#fff',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '12px',
-              boxShadow: '0 4px 24px -2px rgba(139, 0, 0, 0.12), 0 0 0 1px rgba(212, 175, 55, 0.08)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '50px',
+              padding: '8px 16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
             },
             success: {
               duration: TOAST_DURATION_SUCCESS,
@@ -221,6 +245,7 @@ export default async function RootLayout({
             },
           }}
         />
+        <GameStickyFooter />
       </body>
     </html>
   )

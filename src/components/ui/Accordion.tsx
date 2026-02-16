@@ -2,7 +2,7 @@
 
 /** P1-097：通用可摺疊 (Accordion) 組件 — FAQ、課程章節等 */
 import { useState, type ReactNode } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 export interface AccordionItemProps {
   id: string
@@ -98,6 +98,7 @@ export function Accordion({ items, single = false, className = '' }: AccordionPr
               <m.div
                 id={`accordion-${item.id}-panel`}
                 role="region"
+                layout
                 aria-labelledby={`accordion-${item.id}-trigger`}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}

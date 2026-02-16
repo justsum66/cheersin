@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
-import { Target, RefreshCw, Skull, AlertTriangle } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { Target, RefreshCw, Skull } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -42,7 +42,7 @@ export default function ShotRoulette() {
     // 模擬轉動
     let spins = 0
     const maxSpins = 10 + Math.floor(Math.random() * 10)
-    
+
     const spinInterval = setInterval(() => {
       spins++
       if (spins >= maxSpins) {
@@ -51,7 +51,7 @@ export default function ShotRoulette() {
         setResult(shotResult)
         setSpinning(false)
         setChambersFired(c => c + 1)
-        
+
         if (shotResult.penalty > 0) {
           play('wrong')
           setDrinkCount(prev => ({
@@ -113,7 +113,7 @@ export default function ShotRoulette() {
         <div className="text-center w-full max-w-md">
           <p className="text-white/60 mb-2">輪到</p>
           <p className="text-2xl font-bold text-red-400 mb-6">{currentPlayer}</p>
-          
+
           <m.button
             type="button"
             onClick={spin}

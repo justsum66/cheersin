@@ -1,10 +1,27 @@
 /**
  * 我從來沒有題庫單元測試：getStatementsByCategory、CATEGORY_LABEL
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getStatementsByCategory, CATEGORY_LABEL } from './never-have-i-ever'
 
 describe('getStatementsByCategory', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => [
+        { text: '我從來沒有 1', category: 'love' },
+        { text: '我從來沒有 2', category: 'work' },
+        { text: '我從來沒有 3', category: 'life' },
+        { text: '我從來沒有 4', category: 'dark' },
+        { text: '我從來沒有 5', category: 'adult' },
+      ],
+    })))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('returns array for all', async () => {
     const list = await getStatementsByCategory('all')
     expect(Array.isArray(list)).toBe(true)

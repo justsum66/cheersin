@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getCurrentUser } from '@/lib/get-current-user'
-import { getRoomBySlug, SLUG_PATTERN } from '@/lib/games-room'
+import { getRoomBySlug, SLUG_PATTERN } from '@/modules/games/room'
 import { ROOM_ERROR, ROOM_MESSAGE } from '@/lib/api-error-codes'
 import { GamesRoomsPatchBodySchema } from '@/lib/api-body-schemas'
 

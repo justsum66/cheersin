@@ -164,6 +164,7 @@ export default function AssistantPage() {
   const [activeCategory, setActiveCategory] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeReason, setUpgradeReason] = useState<string | null>(null)
   /** 134 清除對話確認 */
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   /** 137 場合、138 預算、139 口味偏好 */
@@ -199,7 +200,10 @@ export default function AssistantPage() {
     occasion,
     budget,
     preferredWineTypes,
-    setShowUpgradeModal,
+    setShowUpgradeModal: (show, reason) => {
+      setShowUpgradeModal(show)
+      if (reason) setUpgradeReason(reason)
+    },
     clearInput: () => setInput(''),
   })
 
@@ -1019,8 +1023,8 @@ export default function AssistantPage() {
       <UpgradeModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        title={t('assistant.limitReachedTitle')}
-        description={t('assistant.limitReachedDesc')}
+        title={upgradeReason === 'daily_limit' ? t('assistant.dailyLimitReachedTitle') : undefined}
+        description={upgradeReason === 'daily_limit' ? t('assistant.dailyLimitReachedDesc') : undefined}
         requiredTier="basic"
       />
     </main>

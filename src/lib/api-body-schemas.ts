@@ -130,4 +130,79 @@ export type SubscriptionPostBody = z.infer<typeof SubscriptionPostBodySchema>
 export type ChatPostBody = z.infer<typeof ChatPostBodySchema>
 export type VerifyTurnstileBody = z.infer<typeof VerifyTurnstileBodySchema>
 
+/** P0-01: POST /api/chat/feedback — AI 回答反饋 */
+export const ChatFeedbackPostBodySchema = z.object({
+  messageId: z.string().min(1, 'messageId required').trim(),
+  helpful: z.boolean(),
+  comment: z.string().max(2000).optional(),
+})
+
+/** P0-02: POST /api/learn/discussions — 課程討論 */
+export const LearnDiscussionsPostBodySchema = z.object({
+  courseId: z.string().trim().min(1, 'courseId required'),
+  content: z.string().trim().min(1, 'content required').max(5000),
+})
+
+/** P0-03: POST /api/push-subscribe — Web Push 訂閱 */
+export const PushSubscribePostBodySchema = z.object({
+  subscription: z.object({
+    endpoint: z.string().min(1).max(2048),
+    keys: z.object({
+      p256dh: z.string().min(1).max(256),
+      auth: z.string().min(1).max(256),
+    }),
+  }),
+})
+
+/** P0-04: POST /api/admin/knowledge — 新增知識庫文檔 */
+export const AdminKnowledgePostBodySchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  course_id: z.string().trim().min(1).max(100),
+  chapter: z.string().trim().min(1).max(100),
+  content: z.string().trim().min(1).max(100_000),
+})
+
+/** P0-05: PATCH /api/admin/users — 更新用戶訂閱 */
+export const AdminUsersPatchBodySchema = z.object({
+  userId: z.string().min(1, 'userId required').trim(),
+  subscription_tier: z.enum(['free', 'basic', 'premium']),
+})
+
+/** P0-06: POST /api/auto-tag — AI 自動標籤 */
+export const AutoTagPostBodySchema = z.object({
+  type: z.enum(['wine', 'course']),
+  name: z.string().trim().min(1).max(500),
+  description: z.string().trim().max(2000).optional(),
+})
+
+/** P0-07: POST /api/generate-invitation — 派對邀請函 */
+export const GenerateInvitationPostBodySchema = z.object({
+  theme: z.string().trim().max(100).optional(),
+  date: z.string().trim().max(50).optional(),
+})
+
+/** P0-08: POST /api/learn/tasting-notes — 品鑑筆記 */
+export const TastingNotesPostBodySchema = z.object({
+  wine_name: z.string().trim().min(1, 'wine_name required').max(500),
+  wine_type: z.string().trim().max(100).optional(),
+  notes: z.string().trim().max(5000).optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+  image_url: z.string().trim().max(2048).optional(),
+})
+
+/** P0-09: POST /api/notifications/onesignal-user — OneSignal 用戶建立 */
+export const OneSignalUserPostBodySchema = z.object({
+  external_id: z.string().trim().min(1, 'external_id required'),
+})
+
+export type ChatFeedbackPostBody = z.infer<typeof ChatFeedbackPostBodySchema>
+export type LearnDiscussionsPostBody = z.infer<typeof LearnDiscussionsPostBodySchema>
+export type PushSubscribePostBody = z.infer<typeof PushSubscribePostBodySchema>
+export type AdminKnowledgePostBody = z.infer<typeof AdminKnowledgePostBodySchema>
+export type AdminUsersPatchBody = z.infer<typeof AdminUsersPatchBodySchema>
+export type AutoTagPostBody = z.infer<typeof AutoTagPostBodySchema>
+export type GenerateInvitationPostBody = z.infer<typeof GenerateInvitationPostBodySchema>
+export type TastingNotesPostBody = z.infer<typeof TastingNotesPostBodySchema>
+export type OneSignalUserPostBody = z.infer<typeof OneSignalUserPostBodySchema>
+
 export { MAX_DISPLAY_NAME_LENGTH }

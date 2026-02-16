@@ -1,10 +1,24 @@
 /**
  * 真心話大冒險題庫單元測試：getTruthPool、getDarePool
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getTruthPool, getDarePool } from './truth-or-dare'
 
 describe('getTruthPool', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => [
+        { text: 'Truth 1', level: 'mild', type: 'truth' },
+        { text: 'Truth 2', level: 'spicy', type: 'truth' },
+      ],
+    })))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('returns array', async () => {
     const pool = await getTruthPool()
     expect(Array.isArray(pool)).toBe(true)
@@ -21,6 +35,20 @@ describe('getTruthPool', () => {
 })
 
 describe('getDarePool', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => [
+        { text: 'Dare 1', level: 'mild', type: 'dare' },
+        { text: 'Dare 2', level: 'spicy', type: 'dare' },
+      ],
+    })))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('returns array', async () => {
     const pool = await getDarePool()
     expect(Array.isArray(pool)).toBe(true)

@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Flag } from 'lucide-react'
 import Link from 'next/link'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import { stripHtml } from '@/lib/games-sanitize'
 import BrandWatermark from './BrandWatermark'
 import { Countdown321 } from './Countdown321'
+import { Button } from '@/components/ui/Button'
+import { GlassCard } from '@/components/ui/GlassCard'
 
 export interface GameWrapperBodyProps {
   showReportModal: boolean
@@ -109,7 +111,7 @@ export default function GameWrapperBody({
       )}
       {showReportModal && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-label="檢舉">
-          <div className="w-full max-w-sm rounded-2xl bg-[#0a0a1a] border border-white/10 p-6 shadow-xl">
+          <GlassCard variant="layer-2" className="w-full max-w-sm rounded-2xl p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Flag className="w-5 h-5 text-primary-400" /> 檢舉
@@ -140,7 +142,7 @@ export default function GameWrapperBody({
               >
                 <div>
                   <label htmlFor="report-type" className="block text-white/70 text-sm mb-1">類型</label>
-                  <select id="report-type" value={reportType} onChange={(e) => setReportType(e.target.value)} className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-sm" aria-label="檢舉類型">
+                  <select id="report-type" value={reportType} onChange={(e) => setReportType(e.target.value)} className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50" aria-label="檢舉類型">
                     <option value="不當內容">不當內容</option>
                     <option value="騷擾">騷擾</option>
                     <option value="作弊或濫用">作弊或濫用</option>
@@ -149,14 +151,14 @@ export default function GameWrapperBody({
                 </div>
                 <div>
                   <label htmlFor="report-desc" className="block text-white/70 text-sm mb-1">說明（選填）</label>
-                  <textarea id="report-desc" value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={3} maxLength={500} placeholder="簡述情況" className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/30 text-sm resize-none" aria-label="檢舉說明" />
+                  <textarea id="report-desc" value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={3} maxLength={500} placeholder="簡述情況" className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/30 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/50" aria-label="檢舉說明" />
                 </div>
-                <button type="submit" disabled={reportSending} className="w-full games-touch-target rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white font-medium">
+                <Button type="submit" disabled={reportSending} variant="primary" className="w-full">
                   {reportSending ? '送出中…' : '送出'}
-                </button>
+                </Button>
               </form>
             )}
-          </div>
+          </GlassCard>
         </div>
       )}
 
@@ -179,13 +181,14 @@ export default function GameWrapperBody({
               className="text-center"
             >
               <p className="text-white text-xl font-bold mb-4">遊戲已暫停</p>
-              <button
+              <Button
                 type="button"
                 onClick={togglePause}
-                className="games-touch-target px-8 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold"
+                className="px-8 font-bold"
+                variant="primary"
               >
                 繼續
-              </button>
+              </Button>
               <p className="text-white/50 text-xs mt-2">也可按 P 鍵繼續</p>
             </m.div>
           </m.div>
@@ -247,34 +250,36 @@ export default function GameWrapperBody({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-sm rounded-2xl bg-[#0a0a1a] border border-white/10 p-6 shadow-xl text-center"
+              className="w-full max-w-sm safe-area-px"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 id="trial-end-title" className="text-xl font-bold text-white mb-2">試玩限 3 局已結束</h2>
-              <p className="text-white/70 text-sm mb-6">登入以繼續玩、開房間、保存進度。升級方案可解鎖更多局數。</p>
-              <div className="flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  className="min-h-[48px] flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
-                  onClick={() => setShowTrialEndModal(false)}
-                >
-                  登入
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="min-h-[48px] flex items-center justify-center rounded-xl bg-accent-500/20 hover:bg-accent-500/30 border border-accent-500/40 text-accent-300 font-medium"
-                  onClick={() => setShowTrialEndModal(false)}
-                >
-                  升級方案
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => { setShowTrialEndModal(false); onExit(); }}
-                  className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium"
-                >
-                  返回大廳
-                </button>
-              </div>
+              <GlassCard className="p-6 text-center rounded-2xl shadow-xl" variant="layer-2">
+                <h2 id="trial-end-title" className="text-xl font-bold text-white mb-2">試玩限 3 局已結束</h2>
+                <p className="text-white/70 text-sm mb-6">登入以繼續玩、開房間、保存進度。升級方案可解鎖更多局數。</p>
+                <div className="flex flex-col gap-3">
+                  <Link
+                    href="/login"
+                    className="contents" // Wrapper for Button if needed, or pass Link directly
+                    onClick={() => setShowTrialEndModal(false)}
+                  >
+                    <Button variant="primary" className="w-full justify-center">登入</Button>
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="contents"
+                    onClick={() => setShowTrialEndModal(false)}
+                  >
+                    <Button variant="secondary" className="w-full justify-center">升級方案</Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    onClick={() => { setShowTrialEndModal(false); onExit(); }}
+                    className="w-full justify-center"
+                  >
+                    返回大廳
+                  </Button>
+                </div>
+              </GlassCard>
             </m.div>
           </m.div>
         )}
@@ -295,28 +300,31 @@ export default function GameWrapperBody({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="glass-card p-6 rounded-t-3xl sm:rounded-2xl max-w-lg w-full max-h-[85vh] sm:max-h-[70vh] overflow-y-auto safe-area-pb safe-area-px"
+              className="w-full max-w-lg max-h-[85vh] sm:max-h-[70vh] safe-area-pb safe-area-px outline-none"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-1 rounded-full bg-white/30 mx-auto mb-4 sm:hidden" aria-hidden />
-              {/* COPY-006：遊戲說明可於遊戲內查看 — 規則按鈕開啟此 modal */}
-              <h2 id="rules-modal-heading" className="text-lg font-bold text-white mb-3">規則說明</h2>
-              <div className="games-body text-white/80 space-y-2" role="region" aria-labelledby="rules-modal-heading">
-                {(stripHtml(rulesContent) || '')
-                  .split(/\n\n+/)
-                  .filter((p) => p.trim())
-                  .map((para, i) => (
-                    <p key={i} className="whitespace-pre-line">{para.trim()}</p>
-                  ))}
-              </div>
-              <button
-                type="button"
-                onClick={closeRulesModal}
-                className="mt-4 games-touch-target px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium games-focus-ring"
-                aria-label="關閉規則"
-              >
-                關閉
-              </button>
+              <GlassCard className="p-6 h-full overflow-y-auto rounded-t-3xl sm:rounded-2xl" variant="layer-2">
+                <div className="w-12 h-1 rounded-full bg-white/30 mx-auto mb-4 sm:hidden" aria-hidden />
+                {/* COPY-006：遊戲說明可於遊戲內查看 — 規則按鈕開啟此 modal */}
+                <h2 id="rules-modal-heading" className="text-lg font-bold text-white mb-3">規則說明</h2>
+                <div className="games-body text-white/80 space-y-2" role="region" aria-labelledby="rules-modal-heading">
+                  {(stripHtml(rulesContent) || '')
+                    .split(/\n\n+/)
+                    .filter((p) => p.trim())
+                    .map((para, i) => (
+                      <p key={i} className="whitespace-pre-line">{para.trim()}</p>
+                    ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeRulesModal}
+                  className="mt-4 w-full justify-center"
+                  aria-label="關閉規則"
+                >
+                  關閉
+                </Button>
+              </GlassCard>
             </m.div>
           </m.div>
         )}

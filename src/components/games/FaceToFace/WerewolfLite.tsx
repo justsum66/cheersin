@@ -31,8 +31,6 @@ export default function WerewolfLite() {
   const [nightTarget, setNightTarget] = useState<number | null>(null)
   const [voteTarget, setVoteTarget] = useState<number | null>(null)
   const [round, setRound] = useState(0)
-  /** R2-141：女巫是否已用解藥救今夜被害人 */
-  const [witchSaved, setWitchSaved] = useState(false)
   /** R2-141：獵人被投出/殺死時可帶走一人，記錄帶走目標 */
   const [hunterRevengeTarget, setHunterRevengeTarget] = useState<number | null>(null)
   /** R2-102：角色揭曉 FlipCard — 進入 result 後延遲翻面 */
@@ -73,7 +71,7 @@ export default function WerewolfLite() {
     setNightTarget(null)
     setVoteTarget(null)
     setHunterRevengeTarget(null)
-    setWitchSaved(false)
+
     setRound(1)
     setPhase('night')
   }, [n, wolfCount, hasSeer, hasWitch, hasHunter, play])
@@ -93,14 +91,14 @@ export default function WerewolfLite() {
   /** R2-141：女巫救人 — 今夜無人死亡，進入白天 */
   const witchSave = useCallback(() => {
     play('click')
-    setWitchSaved(true)
+
     setNightTarget(null)
     setPhase('day')
   }, [play])
   /** R2-141：女巫不救 — 今夜被害人出局，進入白天（保留 nightTarget 供 day 顯示） */
   const witchNoSave = useCallback(() => {
     play('click')
-    setWitchSaved(true)
+
     setPhase('day')
     setAlive((prev) => {
       const next = new Set(prev)
@@ -259,13 +257,12 @@ export default function WerewolfLite() {
                   </div>
                 }
                 back={
-                  <div className={`flex flex-col items-center justify-center h-full min-h-[120px] rounded-xl p-4 ${
-                    roles[voteTarget] === 'wolf' ? 'bg-red-500/20 border-red-500/40' :
+                  <div className={`flex flex-col items-center justify-center h-full min-h-[120px] rounded-xl p-4 ${roles[voteTarget] === 'wolf' ? 'bg-red-500/20 border-red-500/40' :
                     roles[voteTarget] === 'seer' ? 'bg-purple-500/20 border-purple-500/40' :
-                    roles[voteTarget] === 'witch' ? 'bg-cyan-500/20 border-cyan-500/40' :
-                    roles[voteTarget] === 'hunter' ? 'bg-amber-500/20 border-amber-500/40' :
-                    'bg-emerald-500/20 border-emerald-500/40'
-                  } border`}>
+                      roles[voteTarget] === 'witch' ? 'bg-cyan-500/20 border-cyan-500/40' :
+                        roles[voteTarget] === 'hunter' ? 'bg-amber-500/20 border-amber-500/40' :
+                          'bg-emerald-500/20 border-emerald-500/40'
+                    } border`}>
                     {roles[voteTarget] === 'wolf' && <Moon className="w-10 h-10 text-red-400 mb-2" />}
                     {roles[voteTarget] === 'seer' && <Eye className="w-10 h-10 text-purple-400 mb-2" />}
                     {roles[voteTarget] === 'witch' && <FlaskConical className="w-10 h-10 text-cyan-400 mb-2" />}
@@ -273,9 +270,9 @@ export default function WerewolfLite() {
                     {roles[voteTarget] === 'villager' && <Users className="w-10 h-10 text-emerald-400 mb-2" />}
                     <span className="text-lg font-bold text-white">
                       {roles[voteTarget] === 'wolf' ? t('werewolf.roleWolf') :
-                       roles[voteTarget] === 'seer' ? t('werewolf.roleSeer') :
-                       roles[voteTarget] === 'witch' ? '女巫' :
-                       roles[voteTarget] === 'hunter' ? '獵人' : t('werewolf.roleVillager')}
+                        roles[voteTarget] === 'seer' ? t('werewolf.roleSeer') :
+                          roles[voteTarget] === 'witch' ? '女巫' :
+                            roles[voteTarget] === 'hunter' ? '獵人' : t('werewolf.roleVillager')}
                     </span>
                   </div>
                 }

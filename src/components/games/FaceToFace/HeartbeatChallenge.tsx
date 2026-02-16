@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -65,13 +65,13 @@ export default function HeartbeatChallenge() {
   const guessEntries = Object.entries(guesses).map(([i, b]) => ({ i: Number(i), b }))
   const closest = realBpm != null && guessEntries.length > 0 && mode === 'solo'
     ? guessEntries.reduce((a, b) =>
-        Math.abs(a.b - realBpm) <= Math.abs(b.b - realBpm) ? a : b
-      )
+      Math.abs(a.b - realBpm) <= Math.abs(b.b - realBpm) ? a : b
+    )
     : null
   const farthest = realBpm != null && guessEntries.length > 0 && mode === 'solo'
     ? guessEntries.reduce((a, b) =>
-        Math.abs(a.b - realBpm) >= Math.abs(b.b - realBpm) ? a : b
-      )
+      Math.abs(a.b - realBpm) >= Math.abs(b.b - realBpm) ? a : b
+    )
     : null
   /** R2-177：團隊模式 — 兩隊平均猜值，較接近真實 bpm 的隊伍勝 */
   const team0Guesses = mode === 'team' ? guessEntries.filter((e) => getTeamIndex(e.i, players.length) === 0) : []

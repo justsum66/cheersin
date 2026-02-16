@@ -57,8 +57,10 @@ const SPICY_QUESTIONS_INLINE = [
 
 async function loadQuestionsFromJson(): Promise<Record<WhoMostLikelyCategory, WhoMostLikelyQuestion[]>> {
   try {
-    const mod = await import('@/data/whoMostLikely.json')
-    const q = (mod.default as { questions?: Record<string, Array<{ id: number; text: string; level: string }>> }).questions
+    const res = await fetch('/data/whoMostLikely.json')
+    if (!res.ok) throw new Error('Failed to fetch data')
+    const mod = await res.json()
+    const q = (mod as { questions?: Record<string, Array<{ id: number; text: string; level: string }>> }).questions
 
     if (!q || typeof q !== 'object') {
       return CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {} as Record<WhoMostLikelyCategory, WhoMostLikelyQuestion[]>)

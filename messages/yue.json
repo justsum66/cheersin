@@ -8,7 +8,10 @@
   "common": {
     "appName": "Cheersin",
     "tagline": "探索你嘅靈魂之酒",
+    "subtitle": "用手機就可以玩嘅派對遊戲",
     "cta": "開始測驗",
+    "emergency": "派對急救掣",
+    "secondaryCta": "了解更多",
     "ctaVariant0": "開始測驗",
     "ctaVariant1": "30秒搵到你嘅命定酒款",
     "heroTitle1": "探索你嘅",
@@ -19,6 +22,8 @@
     "cancel": "取消",
     "close": "關閉",
     "back": "返回",
+    "unlockAll": "解鎖所有遊戲",
+    "unlockAllDesc": "升級 Pro 任玩無限制",
     "share": "分享",
     "copied": "已複製",
     "errorNetwork": "網絡異常，請檢查連線後再試。",
@@ -48,6 +53,14 @@
     "roundStart": "第 {{n}} 輪 - 開始！",
     "requiredField": "請填寫必填欄位",
     "formValidationError": "請檢查表單內容"
+  },
+  "trivia": {
+    "t1": "冷知識：香檳氣泡令酒精更快入血，所以容易醉！",
+    "t2": "派對貼士：玩遊戲前準備定一大壺水，保持水分好重要。",
+    "t3": "你知唔知？世界上最長嘅派對持續咗 58 小時。",
+    "t4": "宿醉救星：瞓前飲杯水，第二日頭冇咁痛。",
+    "t5": "派對達人話：音樂係派對嘅靈魂，記得揀好歌單！",
+    "t6": "飲酒唔揸車，揸車唔飲酒。Cheersin 關心你。"
   },
   "nav": {
     "home": "首頁",
@@ -130,7 +143,44 @@
     "faq5q": "有優惠碼嗎？點用？",
     "faq5a": "若有優惠碼，會喺結帳頁或定價頁標明適用方案、使用規則與期限。輸入後系統會自動折抵。",
     "faq6q": "懲罰可自訂、唔飲酒都玩到嗎？",
-    "faq6a": "可以。派對遊戲嘅懲罰可自訂，唔飲酒都可以同樂，適合所有人。遊戲內可選非酒精懲罰。"
+    "faq6a": "可以。派對遊戲嘅懲罰可自訂，唔飲酒都可以同樂，適合所有人。遊戲內可選非酒精懲罰。",
+    "whyPay": {
+      "title": "點解要 Pro？",
+      "subtitle": "唔好俾一場悶嘅派對毀咗你嘅名聲",
+      "badParty": "普通派對",
+      "goodParty": "Cheersin 派對",
+      "vibe": "氣氛",
+      "wine": "揀酒",
+      "host": "你嘅角色",
+      "free": {
+        "vibe": "尷尬冷場 30 分鐘",
+        "wine": "亂買酒，踩雷機率高",
+        "host": "忙住照顧人，自己冇得玩"
+      },
+      "pro": {
+        "vibe": "30 秒嗨翻全場",
+        "wine": "AI 侍酒師精準推薦",
+        "host": "優雅享受，派對傳奇"
+      }
+    },
+    "roiHighlight": "唔使一杯雞尾酒嘅錢！",
+    "partyHost": {
+      "title": "致：派對主揪",
+      "subtitle": "唔使再為聚會冷場背黑鍋",
+      "card1": {
+        "title": "搵遊戲好似大海撈針？",
+        "desc": "唔使再搜 100 個網站。Cheersin 收錄 50+ 款熱門酒局遊戲，一鍵開房。"
+      },
+      "card2": {
+        "title": "朋友都喺度碌手機？",
+        "desc": "尷尬癌發作？30 秒破冰遊戲，令大家即刻放低手機，嗨成一片。"
+      },
+      "card3": {
+        "title": "唔知買乜酒好？",
+        "desc": "預算有限又驚買到雷？AI 侍酒師根據你嘅場合同口味，精準推薦。"
+      },
+      "cta": "做派對英雄"
+    }
   },
   "login": {
     "title": "登入",
@@ -794,6 +844,16 @@
     "cta": "查看方案與升級",
     "infinite": "無限",
     "perDay": "次/天"
+  },
+  "truthOrDare": {
+    "levelAll": "全部",
+    "levelMild": "親友",
+    "levelSpicy": "辣味",
+    "levelAdult": "限制級",
+    "skipWithPoint": "跳過（耗 1 點）{{count}} 點",
+    "skipWithDrink": "跳過（飲一啖）",
+    "skipWithPointAria": "跳過本題，消耗 1 點唔使飲",
+    "skipWithDrinkAria": "跳過本題，要飲一啖"
   },
   "admin": {
     "fillRequired": "請填寫所有欄位",

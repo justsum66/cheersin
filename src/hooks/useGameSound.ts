@@ -10,15 +10,18 @@ const STORAGE_KEY = 'cheersin-game-sound-enabled'
 const STORAGE_VOLUME = 'cheersin-game-sound-volume'
 const STORAGE_BGM = 'cheersin-game-bgm-enabled'
 
-export type SoundKind = 'click' | 'correct' | 'wrong' | 'win' | 'countdown'
+export type SoundKind = 'click' | 'correct' | 'wrong' | 'win' | 'countdown' | 'drum' | 'airhorn' | 'pop'
 
 /** 104 關鍵時刻音效：倒數、勝利、失敗 */
-const SOUNDS: Record<SoundKind, { freq: number; duration: number; type?: OscillatorType }> = {
+const SOUNDS: Record<SoundKind, { freq: number; endFreq?: number; duration: number; type?: OscillatorType }> = {
   click: { freq: 400, duration: 0.05, type: 'sine' },
   correct: { freq: 523, duration: 0.12, type: 'sine' },
-  wrong: { freq: 200, duration: 0.2, type: 'sawtooth' },
-  win: { freq: 660, duration: 0.15, type: 'sine' },
+  wrong: { freq: 200, endFreq: 150, duration: 0.3, type: 'sawtooth' },
+  win: { freq: 660, endFreq: 880, duration: 0.3, type: 'triangle' },
   countdown: { freq: 880, duration: 0.08, type: 'sine' },
+  drum: { freq: 100, endFreq: 60, duration: 0.15, type: 'square' },
+  airhorn: { freq: 400, endFreq: 350, duration: 0.8, type: 'sawtooth' },
+  pop: { freq: 800, endFreq: 1200, duration: 0.05, type: 'sine' },
 }
 
 function getStoredEnabled(): boolean {
@@ -210,7 +213,13 @@ export function useGameSound() {
         osc.connect(gain)
         gain.connect(ctx.destination)
         osc.type = config.type ?? 'sine'
-        osc.frequency.value = config.freq
+
+        // Frequency handling
+        osc.frequency.setValueAtTime(config.freq, ctx.currentTime)
+        if (config.endFreq) {
+          osc.frequency.exponentialRampToValueAtTime(config.endFreq, ctx.currentTime + config.duration)
+        }
+
         const amp = 0.15 * volume
         gain.gain.setValueAtTime(amp, ctx.currentTime)
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + config.duration)

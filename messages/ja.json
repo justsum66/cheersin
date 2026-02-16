@@ -8,7 +8,10 @@
   "common": {
     "appName": "Cheersin",
     "tagline": "あなたのソウルワインを見つける",
+    "subtitle": "スマホで遊べるパーティーゲーム",
     "cta": "診断を始める",
+    "emergency": "パーティー緊急ボタン",
+    "secondaryCta": "もっと見る",
     "ctaVariant0": "診断を始める",
     "ctaVariant1": "30秒で命のワインを発見",
     "heroTitle1": "あなたの",
@@ -18,7 +21,9 @@
     "save": "保存",
     "cancel": "キャンセル",
     "close": "閉じる",
-    "back": "Back",
+    "back": "戻る",
+    "unlockAll": "全ゲームを解放",
+    "unlockAllDesc": "Pro にアップグレードして無制限に遊ぼう",
     "share": "Share",
     "copied": "Copied",
     "errorNetwork": "ネットワークエラー。接続を確認して再度お試しください。",
@@ -47,7 +52,15 @@
     "turnOf": "{{name}} 的回合",
     "roundStart": "第 {{n}} 輪 - 開始！",
     "requiredField": "請填寫必填欄位",
-    "formValidationError": "請檢查表單內容"
+    "formValidationError": "フォームの内容を確認してください"
+  },
+  "trivia": {
+    "t1": "豆知識：シャンパンの泡はアルコールの吸収を早めるので酔いやすい！",
+    "t2": "パーティーのコツ：ゲーム前に水をたっぷり用意しよう。",
+    "t3": "知ってた？世界最長のパーティーは58時間続いたよ。",
+    "t4": "二日酔い対策：寝る前にコップ1杯の水を飲もう。",
+    "t5": "パーティーの達人曰く：音楽はパーティーの魂。プレイリストを忘れずに！",
+    "t6": "飲んだら乗るな、乗るなら飲むな。Cheersinはあなたを大切に。"
   },
   "nav": {
     "home": "ホーム",
@@ -130,7 +143,44 @@
     "faq5q": "プロモコードは？",
     "faq5a": "発行時は決済・料金ページに適用プランとルールを表示。決済時に入力で適用。",
     "faq6q": "罰ゲームはカスタム可？お酒なしでも？",
-    "faq6a": "はい。パーティゲームの罰ゲームはカスタム可能。お酒なしでも遊べます。ゲーム内でノンアルコール選択可。"
+    "faq6a": "はい。パーティゲームの罰ゲームはカスタム可能。お酒なしでも遊べます。ゲーム内でノンアルコール選択可。",
+    "whyPay": {
+      "title": "なぜ Pro が必要？",
+      "subtitle": "つまらないパーティーで評判を落とさないで",
+      "badParty": "普通のパーティー",
+      "goodParty": "Cheersin パーティー",
+      "vibe": "雰囲気",
+      "wine": "ワイン選び",
+      "host": "あなたの役割",
+      "free": {
+        "vibe": "気まずい沈黙 30 分",
+        "wine": "適当に買って失敗しがち",
+        "host": "みんなの世話で自分は楽しめない"
+      },
+      "pro": {
+        "vibe": "30 秒で盛り上がる",
+        "wine": "AI ソムリエが的確にレコメンド",
+        "host": "優雅に楽しむパーティーの伝説"
+      }
+    },
+    "roiHighlight": "カクテル 1 杯分以下！",
+    "partyHost": {
+      "title": "パーティー主催者の皆さんへ",
+      "subtitle": "もう場が盛り下がる心配はいりません",
+      "card1": {
+        "title": "ゲーム探しは大変？",
+        "desc": "100 サイトを検索する必要なし。Cheersin には 50 以上の人気パーティーゲームがワンタップで。"
+      },
+      "card2": {
+        "title": "みんなスマホばかり？",
+        "desc": "気まずい？30 秒アイスブレイクで全員がスマホを置いて盛り上がる。"
+      },
+      "card3": {
+        "title": "何のお酒を買えばいい？",
+        "desc": "予算が限られていても大丈夫。AI ソムリエがシーンと好みに合わせて的確に提案。"
+      },
+      "cta": "パーティーヒーローになる"
+    }
   },
   "login": {
     "title": "ログイン",
@@ -793,7 +843,17 @@
     "description": "This feature requires a higher plan. Upgrade for more AI chats, players, and advanced courses.",
     "cta": "View plans & upgrade",
     "infinite": "Unlimited",
-    "perDay": "/day"
+    "perDay": "/日"
+  },
+  "truthOrDare": {
+    "levelAll": "すべて",
+    "levelMild": "友人・家族",
+    "levelSpicy": "スパイシー",
+    "levelAdult": "大人向け",
+    "skipWithPoint": "スキップ（1pt消費）残り{{count}}pt",
+    "skipWithDrink": "スキップ（一口飲む）",
+    "skipWithPointAria": "この質問をスキップし、1ポイント消費して飲まない",
+    "skipWithDrinkAria": "この質問をスキップし、一口飲む"
   },
   "admin": {
     "fillRequired": "請填寫所有欄位",

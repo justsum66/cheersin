@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import {
   Trophy,
   Users,
@@ -37,6 +37,10 @@ import { usePassPhone } from './PassPhoneContext'
 import { usePunishment } from './Punishments/PunishmentContext'
 import { useGameSound } from './GameSoundProvider'
 import type { SwitchGameItem } from './GameWrapperTypes'
+
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Button } from '@/components/ui/Button'
+import { GlassCard } from '@/components/ui/GlassCard'
 
 export interface GameWrapperHeaderProps {
   title: string
@@ -87,7 +91,7 @@ export default function GameWrapperHeader({
   onShowRules,
   showRulesButton,
   fullscreenUnsupported,
-  isSpectator = false,
+
   onPlayAgain,
   onOpenReport,
   isRulesOpen = false,
@@ -215,25 +219,26 @@ export default function GameWrapperHeader({
     <>
       <div className={`flex items-center justify-between p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex-wrap gap-2 ${isFullscreen ? 'safe-area-pt' : ''}`}>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => (hasStarted ? setShowExitConfirm(true) : onExit())}
-            className="games-focus-ring inline-flex items-center justify-center gap-2 games-touch-target p-3 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white touch-manipulation"
+            className="rounded-full px-3"
             aria-label="返回大廳（遊戲列表）"
           >
             <ChevronLeft className="w-5 h-5 shrink-0" aria-hidden />
-            <span className="text-sm font-medium hidden sm:inline">返回大廳</span>
-          </button>
+            <span className="text-sm font-medium hidden sm:inline ml-2">返回大廳</span>
+          </Button>
           {onPlayAgain && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={onPlayAgain}
-              className="inline-flex items-center justify-center gap-2 games-touch-target px-3 py-2 rounded-full bg-primary-500/20 hover:bg-primary-500/30 border border-primary-500/40 text-primary-300 text-sm font-medium transition-colors"
+              leftIcon={<RotateCcw className="w-4 h-4 shrink-0" />}
+              className="hidden sm:flex"
               aria-label="再玩一局（建立新房間）"
             >
-              <RotateCcw className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">再玩一局</span>
-            </button>
+              再玩一局
+            </Button>
           )}
         </div>
         <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0 justify-center">
@@ -248,16 +253,17 @@ export default function GameWrapperHeader({
             )}
           </div>
           {showRulesButton && onShowRules && (
-            <button
-              ref={rulesButtonRef}
-              type="button"
+            <Button
+              ref={rulesButtonRef as React.Ref<HTMLButtonElement>}
+              variant="ghost"
+              size="icon"
               onClick={onShowRules}
-              className="shrink-0 games-touch-target flex items-center justify-center p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors games-focus-ring"
+              className="shrink-0 rounded-full"
               aria-label="顯示遊戲規則"
               aria-expanded={isRulesOpen}
             >
               <HelpCircle className="w-5 h-5" />
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -268,18 +274,20 @@ export default function GameWrapperHeader({
             </div>
           )}
           <div className="relative" ref={settingsRef}>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setShowSettingsMenu((s) => !s)}
-              className="games-touch-target flex items-center justify-center p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white games-focus-ring"
+              className="rounded-full"
               aria-label="設定"
               aria-expanded={showSettingsMenu}
             >
               <Settings className="w-5 h-5" />
-            </button>
+            </Button>
             {showSettingsMenu && (
-              <div
-                className="absolute right-0 top-full mt-2 w-52 rounded-xl bg-[#0a0a1a] border border-white/10 p-2 shadow-xl z-20"
+              <GlassCard
+                variant="layer-2"
+                className="absolute right-0 top-full mt-2 w-52 rounded-xl p-2 z-20"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <button
@@ -308,16 +316,14 @@ export default function GameWrapperHeader({
                 {isHost && onToggleAnonymous != null && (
                   <label className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] cursor-pointer games-focus-ring">
                     <span className="flex-1">匿名模式</span>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={anonymousMode}
-                      onChange={async () => {
-                        const next = !anonymousMode
-                        const res = await onToggleAnonymous(next)
+                      onCheckedChange={async (checked) => {
+                        const res = await onToggleAnonymous(checked)
                         if (!res.ok) return
                         setShowSettingsMenu(false)
                       }}
-                      className="rounded border-white/30 bg-white/10 text-primary-500 focus:ring-primary-500"
+                      className="text-primary-500"
                       aria-label={anonymousMode ? '關閉匿名模式' : '開啟匿名模式'}
                     />
                   </label>
@@ -453,16 +459,14 @@ export default function GameWrapperHeader({
                 )}
                 {punishment != null && (
                   <div className="border-t border-white/10 pt-2 mt-2">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm text-white/80 hover:bg-white/5 rounded-lg px-3 py-2 min-h-[44px]">
-                      <input
-                        type="checkbox"
+                    <div className="px-3 py-2">
+                      <Checkbox
                         checked={punishment.stackMode}
-                        onChange={() => punishment.setStackMode(!punishment.stackMode)}
-                        className="rounded"
+                        onCheckedChange={(checked) => punishment.setStackMode(checked)}
+                        label="懲罰疊加（新一局保留歷史）"
                         aria-label="懲罰疊加：新一局保留懲罰歷史"
                       />
-                      懲罰疊加（新一局保留歷史）
-                    </label>
+                    </div>
                   </div>
                 )}
                 {players.length >= 2 && passPhone && (
@@ -477,18 +481,15 @@ export default function GameWrapperHeader({
                     </button>
                     {passEnabled && (
                       <div className="mt-1 pl-1 space-y-1">
-                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
-                          <input type="checkbox" checked={passPhone.antiPeek} onChange={toggleAntiPeek} className="rounded" />
-                          防偷看
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
-                          <input type="checkbox" checked={passPhone.randomOrder} onChange={toggleRandomOrder} className="rounded" />
-                          亂序傳遞
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70">
-                          <input type="checkbox" checked={passPhone.ttsEnabled} onChange={toggleTts} className="rounded" />
-                          TTS 語音
-                        </label>
+                        <div className="px-3 py-1">
+                          <Checkbox checked={passPhone.antiPeek} onCheckedChange={toggleAntiPeek} label="防偷看" className="text-white/70" />
+                        </div>
+                        <div className="px-3 py-1">
+                          <Checkbox checked={passPhone.randomOrder} onCheckedChange={toggleRandomOrder} label="亂序傳遞" className="text-white/70" />
+                        </div>
+                        <div className="px-3 py-1">
+                          <Checkbox checked={passPhone.ttsEnabled} onCheckedChange={toggleTts} label="TTS 語音" className="text-white/70" />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -520,7 +521,7 @@ export default function GameWrapperHeader({
                 >
                   <ChevronLeft className="w-4 h-4" /> 返回大廳
                 </button>
-              </div>
+              </GlassCard>
             )}
           </div>
         </div>
@@ -543,27 +544,29 @@ export default function GameWrapperHeader({
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-[#0a0a1a] border border-white/10 rounded-2xl p-4 md:p-6 max-w-sm w-full shadow-xl safe-area-px"
+              className="w-full max-w-sm safe-area-px"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 id="exit-confirm-title" className="sr-only">離開遊戲確認</h3>
-              <p className="text-white/90 font-medium mb-4" id="exit-confirm-desc">遊戲進行中，確定要離開嗎？</p>
-              <div className="flex flex-wrap gap-3 md:gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowExitConfirm(false)}
-                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium"
-                >
-                  取消
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setShowExitConfirm(false); onExit(); }}
-                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
-                >
-                  離開
-                </button>
-              </div>
+              <GlassCard className="p-4 md:p-6 rounded-2xl shadow-xl" variant="layer-2">
+                <h3 id="exit-confirm-title" className="sr-only">離開遊戲確認</h3>
+                <p className="text-white/90 font-medium mb-4" id="exit-confirm-desc">遊戲進行中，確定要離開嗎？</p>
+                <div className="flex flex-wrap gap-3 md:gap-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowExitConfirm(false)}
+                    className="flex-1"
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => { setShowExitConfirm(false); onExit(); }}
+                    className="flex-1"
+                  >
+                    離開
+                  </Button>
+                </div>
+              </GlassCard>
             </m.div>
           </m.div>
         )}
@@ -586,31 +589,33 @@ export default function GameWrapperHeader({
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-[#0a0a1a] border border-white/10 rounded-2xl p-4 md:p-6 max-w-sm w-full shadow-xl safe-area-px"
+              className="w-full max-w-sm safe-area-px"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 id="switch-confirm-title" className="sr-only">換遊戲確認</h3>
-              <p className="text-white/90 font-medium mb-4" id="switch-confirm-desc">遊戲進行中，換遊戲將重新開始，確定嗎？</p>
-              <div className="flex flex-wrap gap-3 md:gap-4">
-                <button
-                  type="button"
-                  onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
-                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium"
-                >
-                  取消
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (pendingSwitchGameId) onConfirmSwitchGame?.(pendingSwitchGameId)
-                    setShowSwitchConfirm?.(false)
-                    setPendingSwitchGameId?.(null)
-                  }}
-                  className="flex-1 min-h-[48px] px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium"
-                >
-                  確定
-                </button>
-              </div>
+              <GlassCard className="p-4 md:p-6 rounded-2xl shadow-xl" variant="layer-2">
+                <h3 id="switch-confirm-title" className="sr-only">換遊戲確認</h3>
+                <p className="text-white/90 font-medium mb-4" id="switch-confirm-desc">遊戲進行中，換遊戲將重新開始，確定嗎？</p>
+                <div className="flex flex-wrap gap-3 md:gap-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
+                    className="flex-1"
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (pendingSwitchGameId) onConfirmSwitchGame?.(pendingSwitchGameId)
+                      setShowSwitchConfirm?.(false)
+                      setPendingSwitchGameId?.(null)
+                    }}
+                    className="flex-1"
+                  >
+                    確定
+                  </Button>
+                </div>
+              </GlassCard>
             </m.div>
           </m.div>
         )}

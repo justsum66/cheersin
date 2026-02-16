@@ -1,71 +1,194 @@
-import { createHash, timingSafeEqual } from 'node:crypto'
-import type { SupabaseClient } from '@supabase/supabase-js'
-
 /**
- * Game room slug generator (short, URL-safe).
- * Uses alphanumeric lowercase for readability.
- * P3-59：slug 驗證 — 僅允許 [a-z0-9]，長度 1–20
+ * 遊戲房間工具函數
+ * 提供房間查詢、密碼處理等功能
  */
-const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'
-const SLUG_LEN = 8
-/** P3-59：API 接受之 slug 格式（路徑參數驗證用） */
-export const SLUG_PATTERN = /^[a-z0-9]{1,20}$/
-const PASSWORD_HASH_HEX_LEN = 64
 
-/** A1-12 / SEC-013：房間密碼僅存 hash，不明文；4 位數密碼 hash 供建立/加入房間驗證，固定 64 字元 hex */
-export function hashRoomPassword(password: string): string {
-  return createHash('sha256').update(password, 'utf8').digest('hex')
-}
-
-/** P0-08：常數時間比較兩個 64 字元 hex hash，防時序攻擊 */
-export function secureComparePasswordHash(providedHash: string, storedHash: string): boolean {
-  const a = providedHash.slice(0, PASSWORD_HASH_HEX_LEN).padEnd(PASSWORD_HASH_HEX_LEN, '0')
-  const b = storedHash.slice(0, PASSWORD_HASH_HEX_LEN).padEnd(PASSWORD_HASH_HEX_LEN, '0')
-  const bufA = Buffer.from(a, 'hex')
-  const bufB = Buffer.from(b, 'hex')
-  if (bufA.length !== 32 || bufB.length !== 32) return false
-  return timingSafeEqual(bufA, bufB)
-}
-
-export function generateShortSlug(): string {
-  let s = ''
-  let bytes: Uint8Array | number[]
-  try {
-    const nodeCrypto = require('node:crypto')
-    bytes = Array.from(nodeCrypto.randomBytes(SLUG_LEN))
-  } catch {
-    bytes = Array.from({ length: SLUG_LEN }, () => Math.floor(Math.random() * 256))
-  }
-  for (let i = 0; i < SLUG_LEN; i++) {
-    s += ALPHABET[bytes[i] % ALPHABET.length]
-  }
-  return s
-}
-
-export interface GameRoomRow {
-  id: string
-  slug: string
-  created_at: string
-  expires_at: string | null
-}
-
-export interface GameRoomPlayerRow {
-  id: string
-  room_id: string
-  display_name: string
-  order_index: number
-  joined_at: string
-}
+import type { SupabaseClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
 
 /**
- * 依 slug 查詢單一房間，供 /api/games/rooms/[slug]/* 共用
- * @param columns 預設 'id'，可傳 'id, host_id, settings' 等
+ * 房間 Slug 正則表達式
+ * 允許小寫字母、數字和連字符，長度 3-20
+ */
+export const SLUG_PATTERN = /^[a-z0-9-]{3,20}$/
+
+/**
+ * 根據 Slug 查詢房間
  */
 export async function getRoomBySlug<T = { id: string }>(
   supabase: SupabaseClient,
   slug: string,
-  columns = 'id'
-): Promise<{ data: T | null; error: unknown }> {
-  const result = await supabase.from('game_rooms').select(columns).eq('slug', slug).single()
-  return { data: result.data as T | null, error: result.error }
+  select: string = 'id'
+): Promise<{ data: T | null; error: Error | null }> {
+  try {
+    const { data, error } = await supabase
+      .from('game_rooms')
+      .select(select)
+      .eq('slug', slug)
+      .single()
+
+    if (error) {
+      return { data: null, error: new Error(error.message) }
+    }
+
+    return { data: data as T, error: null }
+  } catch (err) {
+    return { 
+      data: null, 
+      error: err instanceof Error ? err : new Error('Unknown error') 
+    }
+  }
+}
+
+/**
+ * 雜湊房間密碼
+ * 使用 SHA-256 進行雜湊
+ */
+export function hashRoomPassword(password: string): string {
+  if (!password) return ''
+  return crypto
+    .createHash('sha256')
+    .update(password)
+    .digest('hex')
+}
+
+/**
+ * 安全比較密碼雜湊值
+ * 使用 timingSafeEqual 防止時序攻擊
+ */
+export function secureComparePasswordHash(hash1: string, hash2: string): boolean {
+  if (!hash1 || !hash2) return false
+  if (hash1.length !== hash2.length) return false
+  
+  try {
+    const buf1 = Buffer.from(hash1, 'utf8')
+    const buf2 = Buffer.from(hash2, 'utf8')
+    return crypto.timingSafeEqual(buf1, buf2)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * 生成房間 Slug
+ */
+export function generateRoomSlug(length: number = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let slug = ''
+  for (let i = 0; i < length; i++) {
+    slug += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return slug
+}
+
+/**
+ * 驗證房間 Slug 格式
+ */
+export function isValidSlug(slug: string): boolean {
+  return SLUG_PATTERN.test(slug)
+}
+
+/**
+ * 房間狀態類型
+ */
+export type RoomStatus = 'waiting' | 'playing' | 'paused' | 'finished'
+
+/**
+ * 房間配置介面
+ */
+export interface RoomSettings {
+  max_players?: number
+  is_private?: boolean
+  password_protected?: boolean
+  game_mode?: string
+  time_limit?: number
+}
+
+/**
+ * 房間完整資料介面
+ */
+export interface GameRoom {
+  id: string
+  slug: string
+  name: string
+  host_id: string
+  status: RoomStatus
+  settings: RoomSettings | null
+  password_hash: string | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * 玩家資料介面
+ */
+export interface RoomPlayer {
+  id: string
+  room_id: string
+  user_id: string | null
+  display_name: string
+  is_host: boolean
+  is_spectator: boolean
+  is_ready: boolean
+  score: number
+  joined_at: string
+}
+
+/**
+ * 檢查用戶是否為房主
+ */
+export async function isRoomHost(
+  supabase: SupabaseClient,
+  roomId: string,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('game_rooms')
+    .select('host_id')
+    .eq('id', roomId)
+    .single()
+
+  return data?.host_id === userId
+}
+
+/**
+ * 獲取房間玩家數量
+ */
+export async function getRoomPlayerCount(
+  supabase: SupabaseClient,
+  roomId: string,
+  excludeSpectators: boolean = true
+): Promise<number> {
+  let query = supabase
+    .from('game_room_players')
+    .select('id', { count: 'exact' })
+    .eq('room_id', roomId)
+
+  if (excludeSpectators) {
+    query = query.eq('is_spectator', false)
+  }
+
+  const { count } = await query
+
+  return count || 0
+}
+
+/**
+ * 更新房間狀態
+ */
+export async function updateRoomStatus(
+  supabase: SupabaseClient,
+  roomId: string,
+  status: RoomStatus
+): Promise<{ success: boolean; error: Error | null }> {
+  const { error } = await supabase
+    .from('game_rooms')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', roomId)
+
+  if (error) {
+    return { success: false, error: new Error(error.message) }
+  }
+
+  return { success: true, error: null }
 }

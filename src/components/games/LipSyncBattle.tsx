@@ -32,7 +32,7 @@ export default function LipSyncBattle() {
   const [votes, setVotes] = useState<Record<string, string>>({})
   const [round, setRound] = useState(1)
   const [scores, setScores] = useState<Record<string, number>>({})
-  const audioRef = useRef<HTMLAudioElement>(null)
+
 
   const currentPlayer = players[currentPlayerIndex]
   const otherPlayers = players.filter(p => p !== currentPlayer)
@@ -66,7 +66,7 @@ export default function LipSyncBattle() {
       [currentPlayer]: performance
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -82,7 +82,7 @@ export default function LipSyncBattle() {
       [currentPlayer]: candidate
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -97,7 +97,7 @@ export default function LipSyncBattle() {
     Object.values(votes).forEach(voted => {
       voteCounts[voted] = (voteCounts[voted] || 0) + 1
     })
-    
+
     // 給分
     Object.entries(voteCounts).forEach(([player, votes]) => {
       setScores(prev => ({
@@ -105,7 +105,7 @@ export default function LipSyncBattle() {
         [player]: (prev[player] || 0) + votes * 2
       }))
     })
-    
+
     setGameState('results')
     play('win')
   }
@@ -146,7 +146,7 @@ export default function LipSyncBattle() {
             <h1 className="text-2xl font-bold text-white">對嘴大賽</h1>
           </div>
           <p className="text-white/80 mb-6">展現你的對嘴功力，爭奪麥克風之王！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -157,8 +157,8 @@ export default function LipSyncBattle() {
               <li>• 進行3輪比賽</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -192,7 +192,7 @@ export default function LipSyncBattle() {
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-bold text-white mb-4">準備開始</h2>
               <p className="text-white/80 mb-6">{currentPlayer} 請準備表演</p>
-              <button 
+              <button
                 onClick={startPerformance}
                 className="games-touch-target bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 px-8 rounded-xl font-bold"
               >
@@ -209,27 +209,27 @@ export default function LipSyncBattle() {
                   <p className="text-xl text-yellow-400 font-bold">{currentSong.lyrics}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
-                <button 
+                <button
                   onClick={() => finishPerformance('完美對嘴')}
                   className="games-touch-target bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 rounded-xl font-bold"
                 >
                   完美對嘴
                 </button>
-                <button 
+                <button
                   onClick={() => finishPerformance('還不錯')}
                   className="games-touch-target bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-4 rounded-xl font-bold"
                 >
                   還不錯
                 </button>
-                <button 
+                <button
                   onClick={() => finishPerformance('普通')}
                   className="games-touch-target bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white py-4 rounded-xl font-bold"
                 >
                   普通
                 </button>
-                <button 
+                <button
                   onClick={() => finishPerformance('需要練習')}
                   className="games-touch-target bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-4 rounded-xl font-bold"
                 >
@@ -266,22 +266,22 @@ export default function LipSyncBattle() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-2">
                     {performances[player] === '完美對嘴' ? '🌟' :
-                     performances[player] === '還不錯' ? '👍' :
-                     performances[player] === '普通' ? '👌' :
-                     performances[player] === '需要練習' ? '😅' : '🎤'}
+                      performances[player] === '還不錯' ? '👍' :
+                        performances[player] === '普通' ? '👌' :
+                          performances[player] === '需要練習' ? '😅' : '🎤'}
                   </div>
                   <p className="text-white/80">{performances[player]}</p>
                   <p className="text-white/60 text-sm mt-1">
                     {currentSong?.title}
                   </p>
                 </div>
-                
+
                 {currentPlayer !== player && (
-                  <button 
+                  <button
                     onClick={() => castVote(player)}
                     className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-2 rounded-lg font-medium"
                   >
@@ -297,7 +297,7 @@ export default function LipSyncBattle() {
   }
 
   if (gameState === 'results') {
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -310,13 +310,13 @@ export default function LipSyncBattle() {
               {round < 3 ? '回合結果' : '最終結果'}
             </h1>
           </div>
-          
+
           {round < 3 && currentSong && (
             <div className="bg-white/10 rounded-lg p-4 mb-6 text-center">
               <p className="text-white">本輪歌曲：{currentSong.title}</p>
             </div>
           )}
-          
+
           <div className="space-y-3 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -330,16 +330,16 @@ export default function LipSyncBattle() {
               </div>
             ))}
           </div>
-          
+
           {round < 3 ? (
-            <button 
+            <button
               onClick={nextRound}
               className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 rounded-xl font-bold"
             >
               下一輪
             </button>
           ) : (
-            <button 
+            <button
               onClick={restartGame}
               className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 rounded-xl font-bold"
             >

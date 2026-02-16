@@ -32,334 +32,10 @@ interface CocktailExample {
   funFact: string;
 }
 
-const COCKTAIL_EXAMPLES: CocktailExample[] = [
-  {
-    id: 'manhattan',
-    name: '曼哈頓',
-    originalName: 'Manhattan',
-    category: '古典',
-    baseSpirit: '黑麥威士忌',
-    ingredients: ['黑麥威士忌', '甜苦艾酒', '安格斯特拉苦精'],
-    garnish: '馬拉斯奇諾櫻桃',
-    preparation: '將所有材料與冰塊放入調酒杯中攪拌，過濾倒入馬丁尼杯中，以櫻桃裝飾。',
-    glassware: '馬丁尼杯',
-    strength: '濃烈',
-    complexity: '簡單',
-    flavorProfile: ['濃郁', '甜潤', '香料味', '複雜'],
-    occasion: ['正式晚宴', '雞尾酒時光', '浪漫約會'],
-    rating: 4.8,
-    price: 450,
-    description: '起源於19世紀末紐約曼哈頓俱樂部的經典調酒，以其濃郁複雜的風味聞名。',
-    origin: '美國紐約',
-    popularity: 92,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/manhattan-kit',
-    tags: ['經典', '威士忌', '甜味', '苦精'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '曼哈頓調酒據說是為了紀念紐約曼哈頓俱樂部的創始人而命名，1870年代首次出現於美國酒吧。',
-    funFact: '最初的曼哈頓配方使用義大利苦艾酒，後來改為甜苦艾酒。'
-  },
-  {
-    id: 'margarita',
-    name: '瑪格麗特',
-    originalName: 'Margarita',
-    category: '經典',
-    baseSpirit: '龍舌蘭',
-    ingredients: ['龍舌蘭', '橙味利口酒', '青檸汁'],
-    garnish: '鹽邊、青檸角',
-    preparation: '將杯緣沾濕後蘸鹽，將所有材料與冰塊放入搖酒器中搖和，過濾倒入杯中。',
-    glassware: '瑪格麗特杯',
-    strength: '中等',
-    complexity: '中等',
-    flavorProfile: ['酸甜', '清新', '柑橘', '平衡'],
-    occasion: ['派對', '海灘度假', '夏日聚會'],
-    rating: 4.7,
-    price: 420,
-    description: '墨西哥最具代表性的調酒之一，以其完美的酸甜平衡和鹽邊風味聞名。',
-    origin: '墨西哥',
-    popularity: 95,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/margarita-set',
-    tags: ['龍舌蘭', '酸甜', '鹽邊', '清新'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '關於瑪格麗特的起源有多種說法，最流行的是為了紀念一位名叫瑪格麗特的女孩而創作。',
-    funFact: '瑪格麗特是世界上最暢銷的調酒之一，每年消費量超過百萬杯。'
-  },
-  {
-    id: 'negroni',
-    name: '內格羅尼',
-    originalName: 'Negroni',
-    category: '經典',
-    baseSpirit: '琴酒',
-    ingredients: ['琴酒', '金巴利', '甜苦艾酒'],
-    garnish: '橙皮',
-    preparation: '將所有材料與冰塊放入岩石杯中攪拌，加入大冰塊，以橙皮裝飾。',
-    glassware: '岩石杯',
-    strength: '濃烈',
-    complexity: '簡單',
-    flavorProfile: ['苦甜', '草本', '複雜', '平衡'],
-    occasion: ['餐前酒', '下班放鬆', '品味時光'],
-    rating: 4.6,
-    price: 480,
-    description: '義大利經典調酒，以其完美的苦甜平衡和草本風味聞名。',
-    origin: '義大利佛羅倫斯',
-    popularity: 88,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/negroni-gin',
-    tags: ['琴酒', '苦甜', '草本', '餐前酒'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '1919年由義大利伯爵卡amillo Negroni要求調酒師強化他的Americano而誕生。',
-    funFact: '內格羅尼的比例永遠是1:1:1，這是不可改變的調酒規則。'
-  },
-  {
-    id: 'mojito',
-    name: '莫希托',
-    originalName: 'Mojito',
-    category: '熱帶',
-    baseSpirit: '白朗姆酒',
-    ingredients: ['白朗姆酒', '青檸汁', '糖', '薄荷葉', '蘇打水'],
-    garnish: '薄荷枝、青檸角',
-    preparation: '在杯中搗碎薄荷葉和糖，加入青檸汁和朗姆酒，加冰攪拌，倒入蘇打水，以薄荷枝裝飾。',
-    glassware: '高球杯',
-    strength: '輕盈',
-    complexity: '中等',
-    flavorProfile: ['清新', '薄荷', '柑橘', '氣泡'],
-    occasion: ['夏日派對', '海灘', '輕鬆聚會'],
-    rating: 4.5,
-    price: 380,
-    description: '古巴最具代表性的調酒，以其清新薄荷風味和氣泡感聞名。',
-    origin: '古巴哈瓦那',
-    popularity: 90,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/mojito-kit',
-    tags: ['朗姆酒', '薄荷', '清新', '夏日'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '起源於16世紀古巴，最初是水手們的健康飲料，後來成為世界知名的調酒。',
-    funFact: '莫希托是海明威最喜歡的調酒之一，他曾在古巴的La Bodeguita del Medio酒吧留下名言。'
-  },
-  {
-    id: 'old-fashioned',
-    name: '古典',
-    originalName: 'Old Fashioned',
-    category: '古典',
-    baseSpirit: '波本威士忌',
-    ingredients: ['波本威士忌', '方糖', '水', '安格斯特拉苦精'],
-    garnish: '橙皮',
-    preparation: '在岩石杯中溶解方糖於水中，加入苦精，倒入威士忌和冰塊，以橙皮裝飾。',
-    glassware: '岩石杯',
-    strength: '濃烈',
-    complexity: '簡單',
-    flavorProfile: ['濃郁', '甜潤', '橡木', '溫暖'],
-    occasion: ['正式場合', '下班放鬆', '品味威士忌'],
-    rating: 4.7,
-    price: 460,
-    description: '美國最古老的調酒之一，以其純粹的威士忌風味和經典調製方法聞名。',
-    origin: '美國肯塔基州',
-    popularity: 87,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/old-fashioned-set',
-    tags: ['威士忌', '古典', '濃郁', '純粹'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '1800年代中期首次出現，被認為是最原始的調酒形式之一。',
-    funFact: '古典調酒的名稱是因為調酒師需要用這種方式來"調和"劣質威士忌的味道。'
-  },
-  {
-    id: 'cosmopolitan',
-    name: '都會',
-    originalName: 'Cosmopolitan',
-    category: '現代',
-    baseSpirit: '伏特加',
-    ingredients: ['伏特加', '蔓越莓汁', '青檸汁', '君度橙酒'],
-    garnish: '青檸片',
-    preparation: '將所有材料與冰塊放入搖酒器中搖和，過濾倒入馬丁尼杯中，以青檸片裝飾。',
-    glassware: '馬丁尼杯',
-    strength: '中等',
-    complexity: '中等',
-    flavorProfile: ['酸甜', '果味', '清新', '女性化'],
-    occasion: ['女孩之夜', '時尚派對', '都市生活'],
-    rating: 4.4,
-    price: 430,
-    description: '1970年代調製的現代經典，因影集「慾望城市」而風靡全球。',
-    origin: '美國康乃狄克州',
-    popularity: 85,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/cosmopolitan-vodka',
-    tags: ['伏特加', '果味', '女性', '時尚'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '雖然被認為是1970年代的創作，但實際上它的原型可能更早存在於歐洲。',
-    funFact: '都會調酒在1990年代因「慾望城市」而成為最流行的女性調酒。'
-  },
-  {
-    id: 'maitai',
-    name: '邁泰',
-    originalName: 'Mai Tai',
-    category: '熱帶',
-    baseSpirit: '白朗姆酒',
-    ingredients: ['白朗姆酒', '黑朗姆酒', '杏仁糖漿', '青檸汁', '橙味利口酒'],
-    garnish: '鳳梨片、薄荷枝',
-    preparation: '將所有材料與冰塊放入搖酒器中搖和，倒入柯林斯杯中加冰，以鳳梨片和薄荷枝裝飾。',
-    glassware: '柯林斯杯',
-    strength: '中等',
-    complexity: '複雜',
-    flavorProfile: ['熱帶', '果味', '平衡', '複雜'],
-    occasion: ['海灘派對', '度假', '夏威夷風格'],
-    rating: 4.5,
-    price: 480,
-    description: '提基文化的代表調酒，以其複雜的朗姆酒風味和熱帶風情聞名。',
-    origin: '美國加州',
-    popularity: 82,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/tiki-cocktail',
-    tags: ['朗姆酒', '熱帶', '複雜', '提基'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '1944年由維克多·伯傑隆在加州奧克蘭的Trader Vic餐廳創作。',
-    funFact: '邁泰在大溪地語中意為「好」或「出色」，反映了其卓越的風味。'
-  },
-  {
-    id: 'sidecar',
-    name: '邊車',
-    originalName: 'Sidecar',
-    category: '古典',
-    baseSpirit: '白蘭地',
-    ingredients: ['白蘭地', '君度橙酒', '檸檬汁'],
-    garnish: '糖邊',
-    preparation: '將杯緣沾檸檬汁後蘸糖，將所有材料與冰塊放入搖酒器中搖和，過濾倒入杯中。',
-    glassware: '邊車杯',
-    strength: '濃烈',
-    complexity: '中等',
-    flavorProfile: ['酸甜', '柑橘', '烈酒', '平衡'],
-    occasion: ['正式晚宴', '餐後酒', '品味時光'],
-    rating: 4.6,
-    price: 470,
-    description: '以完美酸甜平衡聞名的經典調酒，是白蘭地調酒的典範。',
-    origin: '法國巴黎',
-    popularity: 78,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/brandy-cocktails',
-    tags: ['白蘭地', '酸甜', '經典', '平衡'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '起源於第一次世界大戰期間的巴黎，可能是為了紀念某位騎著摩托車的顧客而命名。',
-    funFact: '邊車調酒的糖邊裝飾增加了口感的層次和視覺的美感。'
-  },
-  {
-    id: 'bloody-mary',
-    name: '血腥瑪麗',
-    originalName: 'Bloody Mary',
-    category: '創意',
-    baseSpirit: '伏特加',
-    ingredients: ['伏特加', '番茄汁', '檸檬汁', '伍斯特醬', '塔巴斯科醬', '胡椒', '鹽'],
-    garnish: '芹菜棒、青檸角',
-    preparation: '將所有材料與冰塊放入調酒器中攪拌，倒入高球杯中，以芹菜棒和青檸角裝飾。',
-    glassware: '高球杯',
-    strength: '中等',
-    complexity: '複雜',
-    flavorProfile: ['鹹味', '辛辣', '蔬菜', '早餐風'],
-    occasion: ['早午餐', '解宿醉', '週末放鬆'],
-    rating: 4.3,
-    price: 400,
-    description: '以其複雜的調料組合和獨特風味聞名的早餐調酒。',
-    origin: '法國巴黎',
-    popularity: 80,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/breakfast-cocktails',
-    tags: ['伏特加', '鹹味', '辛辣', '早餐'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '1920年代由法蘭克·雷德在巴黎的哈利酒吧創作。',
-    funFact: '血腥瑪麗曾被譽為「調酒界的阿斯匹靈」，因為它被認為可以治療宿醉。'
-  },
-  {
-    id: 'whiskey-sour',
-    name: '威士忌酸',
-    originalName: 'Whiskey Sour',
-    category: '古典',
-    baseSpirit: '波本威士忌',
-    ingredients: ['波本威士忌', '檸檬汁', '糖漿', '蛋白(可選)'],
-    garnish: '檸檬片、紅櫻桃',
-    preparation: '將所有材料放入搖酒器中乾搖(不加冰)，再加冰搖和，過濾倒入岩石杯中，以檸檬片和櫻桃裝飾。',
-    glassware: '岩石杯',
-    strength: '中等',
-    complexity: '中等',
-    flavorProfile: ['酸甜', '威士忌', '平衡', '綿密'],
-    occasion: ['餐後酒', '品味威士忌', '輕鬆聚會'],
-    rating: 4.6,
-    price: 440,
-    description: '酸甜平衡的經典威士忌調酒，以其綿密的蛋白質感聞名。',
-    origin: '美國肯塔基州',
-    popularity: 84,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/whiskey-sour-kit',
-    tags: ['威士忌', '酸甜', '蛋白', '平衡'],
-    availability: '普遍',
-    servingTemp: '冰鎮',
-    history: '1800年代首次出現，是美國最經典的威士忌調酒之一。',
-    funFact: '蛋白的加入創造了獨特的綿密口感和泡沫質感。'
-  },
-  {
-    id: 'martini',
-    name: '馬丁尼',
-    originalName: 'Martini',
-    category: '古典',
-    baseSpirit: '琴酒',
-    ingredients: ['琴酒', '乾苦艾酒'],
-    garnish: '橄欖或檸檬皮',
-    preparation: '將所有材料與冰塊放入調酒杯中攪拌，過濾倒入冰凍的馬丁尼杯中，以橄欖或檸檬皮裝飾。',
-    glassware: '馬丁尼杯',
-    strength: '濃烈',
-    complexity: '簡單',
-    flavorProfile: ['清爽', '草本', '乾淨', '經典'],
-    occasion: ['正式場合', '浪漫約會', '商務聚會'],
-    rating: 4.8,
-    price: 490,
-    description: '世界上最著名的調酒之一，以其極簡主義和經典風味聞名。',
-    origin: '美國加州',
-    popularity: 96,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/martini-gin',
-    tags: ['琴酒', '經典', '清爽', '正式'],
-    availability: '普遍',
-    servingTemp: '冰凍',
-    history: '1860年代首次出現，經過多次改良成為今天的經典配方。',
-    funFact: '詹姆斯·龐德要求「搖晃而非攪拌」的馬丁尼在傳統調酒界引起了爭議。'
-  },
-  {
-    id: 'daiquiri',
-    name: '黛綺莉',
-    originalName: 'Daiquiri',
-    category: '古典',
-    baseSpirit: '白朗姆酒',
-    ingredients: ['白朗姆酒', '青檸汁', '糖漿'],
-    garnish: '青檸片',
-    preparation: '將所有材料與冰塊放入搖酒器中搖和，過濾倒入冰凍的馬丁尼杯中，以青檸片裝飾。',
-    glassware: '馬丁尼杯',
-    strength: '中等',
-    complexity: '簡單',
-    flavorProfile: ['酸甜', '清新', '柑橘', '清爽'],
-    occasion: ['夏日派對', '海灘', '輕鬆時光'],
-    rating: 4.4,
-    price: 390,
-    description: '古巴最著名的調酒之一，以其清新的酸甜平衡聞名。',
-    origin: '古巴',
-    popularity: 81,
-    isOnProwine: true,
-    prowineUrl: 'https://www.prowine.com.tw/daiquiri-rum',
-    tags: ['朗姆酒', '酸甜', '清新', '經典'],
-    availability: '普遍',
-    servingTemp: '冰凍',
-    history: '1896年由美國工程師詹寧斯·考克斯在古巴的達奇里小鎮創作。',
-    funFact: '黛綺莉是美國總統肯尼迪最喜歡的調酒之一。'
-  }
-];
+
 
 export function CocktailExamples() {
+  const [examples, setExamples] = useState<CocktailExample[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [selectedStrength, setSelectedStrength] = useState('全部');
@@ -368,12 +44,19 @@ export function CocktailExamples() {
   const [showProwineOnly, setShowProwineOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'popularity' | 'rating' | 'price'>('popularity');
 
+  React.useEffect(() => {
+    fetch('/data/cocktail-examples.json')
+      .then(res => res.json())
+      .then(data => setExamples(data))
+      .catch(err => console.error('Failed to load cocktail examples:', err));
+  }, []);
+
   const categories = ['全部', '經典', '現代', '熱帶', '古典', '創意', '地區特色'];
   const strengths = ['全部', '輕盈', '中等', '濃烈'];
   const occasions = ['全部', '正式晚宴', '派對', '夏日', '浪漫約會', '輕鬆聚會', '餐前酒', '餐後酒'];
 
   const filteredExamples = useMemo(() => {
-    return COCKTAIL_EXAMPLES.filter(example => {
+    return examples.filter(example => {
       const matchesSearch =
         example.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         example.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -388,7 +71,7 @@ export function CocktailExamples() {
 
       return matchesSearch && matchesCategory && matchesStrength && matchesOccasion && matchesProwine;
     });
-  }, [searchTerm, selectedCategory, selectedStrength, selectedOccasion, showProwineOnly]);
+  }, [examples, searchTerm, selectedCategory, selectedStrength, selectedOccasion, showProwineOnly]);
 
   const sortedExamples = useMemo(() => {
     return [...filteredExamples].sort((a, b) => {
@@ -525,7 +208,7 @@ export function CocktailExamples() {
         className="flex justify-between items-center mb-6 text-sm text-white/60"
       >
         <span>找到 {sortedExamples.length} 款調酒</span>
-        <span>總計 {COCKTAIL_EXAMPLES.length} 款調酒</span>
+        <span>總計 {examples.length} 款調酒</span>
       </m.div>
 
       {/* 調酒列表 */}

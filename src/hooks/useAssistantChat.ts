@@ -43,7 +43,7 @@ function trackAssistantAction(action: 'export' | 'share' | 'screenshot' | 'visio
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: `assistant_${action}`, value: 1, id: 'assistant' }),
-    }).catch(() => {})
+    }).catch(() => { })
   } catch {
     /* noop */
   }
@@ -56,7 +56,7 @@ function trackAssistantTurn(messageCount: number, kind: 'text' | 'vision' | 'err
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'assistant_turn', value: messageCount, id: kind }),
-    }).catch(() => {})
+    }).catch(() => { })
   } catch {
     /* noop */
   }
@@ -67,7 +67,7 @@ export interface UseAssistantChatOptions {
   occasion: string | null
   budget: string | null
   preferredWineTypes: string[]
-  setShowUpgradeModal: (show: boolean) => void
+  setShowUpgradeModal: (show: boolean, reason?: string) => void
   /** 送出時清除輸入框（由 page 傳入 setInput 的 wrapper） */
   clearInput?: () => void
 }
@@ -108,7 +108,7 @@ export function useAssistantChat(options: UseAssistantChatOptions) {
       if (!textContent && !imageBase64) return
       if (isLoading) return
       if (!canSend) {
-        setShowUpgradeModal(true)
+        setShowUpgradeModal(true, 'daily_limit')
         return
       }
       /** AST-38：前端送出節流，2 秒內僅允許 1 次 */

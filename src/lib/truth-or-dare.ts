@@ -31,8 +31,10 @@ async function buildPoolFromJson(
   type: 'truth' | 'dare'
 ): Promise<TruthDareItem[]> {
   try {
-    const mod = await import('@/data/truthOrDare.json')
-    const q = (mod.default as { questions: { truth: Record<string, Array<{ text: string; level: string }>>; dare: Record<string, Array<{ text: string; level: string }>> } }).questions?.[type]
+    const res = await fetch('/data/truthOrDare.json')
+    if (!res.ok) throw new Error('Failed to fetch data')
+    const mod = await res.json()
+    const q = (mod as { questions: { truth: Record<string, Array<{ text: string; level: string }>>; dare: Record<string, Array<{ text: string; level: string }>> } }).questions?.[type]
 
     if (!q || typeof q !== 'object') return []
     const out: TruthDareItem[] = []

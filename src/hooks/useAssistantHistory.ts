@@ -3,6 +3,11 @@
 import { useEffect, useRef, useMemo } from 'react'
 import type { AssistantMessage, AssistantMessageStored } from '@/types/assistant'
 import { CHAT_HISTORY_KEY, MAX_HISTORY_MESSAGES, HISTORY_SAVE_DEBOUNCE_MS } from '@/config/assistant.config'
+import type { SubscriptionTier } from '@/lib/subscription'
+
+/** Phase 1 Tasks 13-14：免費用戶歷史限制 */
+const FREE_HISTORY_MAX_MESSAGES = 10
+const FREE_HISTORY_MAX_DATE_GROUPS = 3
 
 /** AST-26：歷史載入/儲存/搜尋/分組/restartFromHere/clearAll */
 
@@ -22,10 +27,12 @@ function loadHistoryFromStorage(): AssistantMessage[] {
   }
 }
 
-function saveHistoryToStorage(messages: AssistantMessage[]): void {
+function saveHistoryToStorage(messages: AssistantMessage[], tier?: SubscriptionTier): void {
   if (typeof window === 'undefined' || !messages.length) return
+  /** Phase 1 Task 13：免費用戶只保存最近 10 條訊息 */
+  const maxSave = (!tier || tier === 'free') ? FREE_HISTORY_MAX_MESSAGES : MAX_HISTORY_MESSAGES
   try {
-    const toSave = messages.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
+    const toSave = messages.slice(-maxSave).map((m) => ({
       id: m.id,
       role: m.role,
       content: m.content,
@@ -44,6 +51,8 @@ export interface UseAssistantHistoryOptions {
   searchQuery: string
   getDateGroupLabel: GetDateGroupLabel
   dateSortOrder: string[]
+  /** Phase 1 Tasks 13-14：訂閱等級，免費用戶限制歷史 */
+  tier?: SubscriptionTier
 }
 
 /**
@@ -54,7 +63,7 @@ export function useAssistantHistory(
   setMessages: React.Dispatch<React.SetStateAction<AssistantMessage[]>>,
   options: UseAssistantHistoryOptions
 ) {
-  const { searchQuery, getDateGroupLabel, dateSortOrder } = options
+  const { searchQuery, getDateGroupLabel, dateSortOrder, tier } = options
   const historyLoadedRef = useRef(false)
 
   /** 133 載入歷史（僅首次） */
@@ -68,9 +77,9 @@ export function useAssistantHistory(
   /** 133 儲存歷史（防抖）；AST-04 拉長防抖 */
   useEffect(() => {
     if (messages.length === 0 || !historyLoadedRef.current) return
-    const timer = setTimeout(() => saveHistoryToStorage(messages), HISTORY_SAVE_DEBOUNCE_MS)
+    const timer = setTimeout(() => saveHistoryToStorage(messages, tier), HISTORY_SAVE_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [messages])
+  }, [messages, tier])
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
@@ -86,8 +95,9 @@ export function useAssistantHistory(
     }, {})
   }, [filtered, getDateGroupLabel])
 
+  /** Phase 1 Task 14：免費用戶只顯示最近 3 個日期群組 */
   const sortedDateKeys = useMemo(() => {
-    return Object.keys(groupedByDate).sort((a, b) => {
+    const keys = Object.keys(groupedByDate).sort((a, b) => {
       const ai = dateSortOrder.indexOf(a)
       const bi = dateSortOrder.indexOf(b)
       if (ai !== -1 && bi !== -1) return ai - bi
@@ -95,7 +105,9 @@ export function useAssistantHistory(
       if (bi !== -1) return 1
       return a.localeCompare(b)
     })
-  }, [groupedByDate, dateSortOrder])
+    if (!tier || tier === 'free') return keys.slice(0, FREE_HISTORY_MAX_DATE_GROUPS)
+    return keys
+  }, [groupedByDate, dateSortOrder, tier])
 
   const restartFromHere = (messageId: string) => {
     setMessages((prev) => {

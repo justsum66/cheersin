@@ -12,9 +12,15 @@ export const COPY_CTA_START_QUIZ = '開始測驗'
 export const COPY_CTA_IMMEDIATE_QUIZ = '立即開始測驗'
 export const COPY_CTA_START = '開始'
 
-/** 訂閱相關 CTA */
-export const COPY_CTA_SUBSCRIBE = '立即訂閱'
-export const COPY_CTA_GO_SUBSCRIPTION = '前往訂閱管理'
+/** 訂閱相關 CTA - 優化轉化率 */
+export const COPY_CTA_SUBSCRIBE = '免費試用 7 天'
+export const COPY_CTA_SUBSCRIBE_NOW = '立即開通，30 秒搞定'
+export const COPY_CTA_UPGRADE = '升級解鎖完整功能'
+export const COPY_CTA_GO_SUBSCRIPTION = '管理訂閱'
+/** 社會證明文案 */
+export const COPY_SOCIAL_PROOF = '本月已有 {count} 人升級'
+/** 緊迫感文案 */
+export const COPY_URGENCY = '首月半價，限時優惠'
 
 /** 表單送出 */
 export const COPY_CTA_SUBMIT = '送出'

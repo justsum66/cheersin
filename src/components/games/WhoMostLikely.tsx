@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
-import { Users, ChevronRight, RotateCcw, Share2, Copy, Smile, Laugh, Heart, Zap, Plus, Loader2, AlertTriangle } from 'lucide-react'
+import { Users, ChevronRight, RotateCcw, Share2, Copy, Smile, Laugh, Heart, Zap, Plus, Loader2, AlertTriangle, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -91,6 +91,9 @@ export default function WhoMostLikely() {
   const [showSpotlight, setShowSpotlight] = useState(false)
   /** R2-175：匿名模式時不顯示被指的人，直到點擊揭曉 */
   const [pointRevealed, setPointRevealed] = useState(false)
+
+  // 18+ Warning state
+  const [showWarning, setShowWarning] = useState(true)
 
   useEffect(() => {
     return () => {
@@ -237,6 +240,9 @@ export default function WhoMostLikely() {
     )
   }
 
+  // Move useState to top
+
+
   const poolInitialized = pool.length > 0
   if (!poolInitialized) {
     return (
@@ -245,17 +251,29 @@ export default function WhoMostLikely() {
         <div className="mt-4 w-full max-w-md space-y-4">
           <p className="text-white/60 text-sm">選擇分類</p>
           <div className="flex flex-wrap gap-2">
-            {CATEGORY_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => handleCategoryChange(value)}
-                className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                  }`}
-              >
-                {label}
-              </button>
-            ))}
+            {CATEGORY_OPTIONS.map(({ value, label }) => {
+              const locked = value === 'adult' && tier === 'free'
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    if (locked) {
+                      toast('升級 Pro 解鎖 18+ 題目 🔥', { icon: '👑' })
+                      return
+                    }
+                    handleCategoryChange(value)
+                  }}
+                  className={`min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium ${locked ? 'bg-white/5 text-white/30 cursor-not-allowed' : categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
+                    }`}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {label}
+                    {locked && <Lock className="w-3 h-3" aria-hidden />}
+                  </span>
+                </button>
+              )
+            })}
           </div>
           <p className="text-white/60 text-sm">難度</p>
           <div className="flex flex-wrap gap-2">
@@ -288,7 +306,7 @@ export default function WhoMostLikely() {
     )
   }
 
-  const [showWarning, setShowWarning] = useState(true)
+
 
   // 18+ Warning for spicy mode or adult category
   if ((selectedMode === 'spicy' || categoryFilter === 'adult') && showWarning) {
@@ -330,23 +348,33 @@ export default function WhoMostLikely() {
       ) : (
         <>
           <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 w-full max-w-lg justify-center" role="group" aria-label="題目分類">
-            {(!selectedMode || selectedMode === 'classic') && (
-              <>
-                {CATEGORY_OPTIONS.map(({ value, label }) => (
+            {(!selectedMode || selectedMode === 'classic') &&
+              CATEGORY_OPTIONS.map(({ value, label }) => {
+                const locked = value === 'adult' && tier === 'free'
+                return (
                   <button
                     key={value}
                     type="button"
-                    onClick={() => handleCategoryChange(value)}
+                    onClick={() => {
+                      if (locked) {
+                        toast('升級 Pro 解鎖 18+ 題目 🔥', { icon: '👑' })
+                        return
+                      }
+                      handleCategoryChange(value)
+                    }}
                     aria-pressed={categoryFilter === value}
-                    aria-label={label}
-                    className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-xs font-medium games-focus-ring ${categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
+                    aria-label={locked ? `${label}（需升級 Pro）` : label}
+                    className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-xs font-medium games-focus-ring ${locked ? 'bg-white/5 text-white/30 cursor-not-allowed' : categoryFilter === value ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
                       }`}
                   >
-                    {label}
+                    <span className="inline-flex items-center gap-1">
+                      {label}
+                      {locked && <Lock className="w-3 h-3" aria-hidden />}
+                    </span>
                   </button>
-                ))}
-              </>
-            )}
+                )
+              })
+            }
             {selectedMode && selectedMode !== 'classic' && (
               <div className="text-center w-full">
                 <Badge variant="accent" className="text-lg px-4 py-1 mb-2">

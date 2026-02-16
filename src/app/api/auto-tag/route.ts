@@ -2,28 +2,27 @@
  * P2-407：AI 自動標籤 — 依名稱/描述產生標籤，供酒款或課程使用
  * POST body: { type: 'wine' | 'course', name: string, description?: string }
  * 回傳: { tags: string[] }
+ * P0-06: Zod 校驗 | P0-15: 不暴露內部錯誤 | P0-23: 限流
  */
 import Groq from 'groq-sdk'
 import { NextResponse } from 'next/server'
-import { errorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { groq, GROQ_CHAT_MODEL } from '@/lib/groq'
 import { GROQ_API_KEY, GROQ_AUTO_TAG_API_KEY, CHAT_TIMEOUT_MS } from '@/lib/env-config'
+import { AutoTagPostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
-  let type: string
-  let name: string
-  let description: string
-  try {
-    const body = await request.json()
-    type = typeof body?.type === 'string' ? body.type : ''
-    name = typeof body?.name === 'string' ? body.name.trim().slice(0, 500) : ''
-    description = typeof body?.description === 'string' ? body.description.trim().slice(0, 2000) : ''
-  } catch {
-    return errorResponse(400, 'INVALID_JSON', { message: 'Invalid JSON' })
+  const ip = getClientIp(request.headers)
+  if (await isRateLimitedAsync(ip, 'auto_tag')) {
+    return errorResponse(429, 'RATE_LIMITED', { message: '請求過於頻繁，請稍後再試' })
   }
-  if (!type || !name || !['wine', 'course'].includes(type)) {
-    return errorResponse(400, 'INVALID_BODY', { message: 'type must be wine or course, name required' })
-  }
+
+  const parsed = await zodParseBody(request, AutoTagPostBodySchema)
+  if (!parsed.success) return parsed.response
+  const { type, name, description } = parsed.data
+
   const autoTagKey = GROQ_AUTO_TAG_API_KEY || GROQ_API_KEY
   if (!autoTagKey) {
     return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Auto-tag not configured' })
@@ -44,10 +43,10 @@ export async function POST(request: Request) {
     })
     const raw = completion.choices[0]?.message?.content?.trim() || '[]'
     const jsonStr = raw.replace(/^```\w*\n?|```$/g, '').trim()
-    const parsed = JSON.parse(jsonStr)
-    const tags = Array.isArray(parsed) ? parsed.filter((t) => typeof t === 'string').slice(0, 10) : []
+    const jsonParsed = JSON.parse(jsonStr)
+    const tags = Array.isArray(jsonParsed) ? jsonParsed.filter((t) => typeof t === 'string').slice(0, 10) : []
     return NextResponse.json({ tags })
   } catch (e) {
-    return errorResponse(500, 'TAG_GENERATION_FAILED', { message: e instanceof Error ? e.message : 'Tag generation failed' })
+    return serverErrorResponse(e)
   }
 }

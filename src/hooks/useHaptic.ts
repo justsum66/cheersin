@@ -2,7 +2,7 @@
  * Phase 1 C4.2 / GAME-010: 統一觸覺反饋 Hook，可開關（依 games-settings）
  */
 import { useCallback, useRef, useState, useEffect } from 'react'
-import { getHapticEnabled, setHapticEnabled } from '@/lib/games-settings'
+import { getHapticEnabled, setHapticEnabled } from '@/modules/games/settings'
 
 /** 預設震動模式（毫秒） */
 export const HAPTIC_PATTERNS: Record<string, number | number[]> = {

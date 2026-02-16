@@ -1,10 +1,24 @@
 /**
  * 誰最可能題庫單元測試：getQuestionsByCategory、CATEGORY_LABEL
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getQuestionsByCategory, CATEGORY_LABEL } from './who-most-likely'
 
 describe('getQuestionsByCategory', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => [
+        { id: 1, text: '誰最可能 1', level: 'mild', category: 'love' },
+        { id: 2, text: '誰最可能 2', level: 'normal', category: 'friendship' },
+      ],
+    })))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('returns array for all', async () => {
     const list = await getQuestionsByCategory('all')
     expect(Array.isArray(list)).toBe(true)

@@ -17,16 +17,11 @@ const SPIN_INTERVAL_START = 60
 const SPIN_INTERVAL_END = 180
 
 /** 隨機選一位：抽選動畫；72 點擊任意處可提前停止。73 支援選 1～3 人。R2-089 輪轉減速。 */
-export default function RandomPicker() {
+function StandardRandomPicker() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-
   // Phase 2: Game Mode Consolidation
   const { selectedMode } = useGameStore()
-
-  if (selectedMode === 'draw-lots') {
-    return <LuckyDraw />
-  }
 
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [pickCount, setPickCount] = useState<1 | 2 | 3>(1)
@@ -245,4 +240,14 @@ export default function RandomPicker() {
       </m.button>
     </div>
   )
+}
+
+export default function RandomPicker() {
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'draw-lots') {
+    return <LuckyDraw />
+  }
+
+  return <StandardRandomPicker />
 }

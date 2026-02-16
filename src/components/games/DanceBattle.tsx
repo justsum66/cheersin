@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
-import { Music, RotateCcw, Trophy, Play, Pause } from 'lucide-react'
+import { Music, Play, RotateCcw, Trophy } from 'lucide-react'
 
 const DANCE_MOVES = [
   { name: '拍手', emoji: '👏', difficulty: 'easy' },
@@ -32,7 +32,7 @@ export default function DanceBattle() {
   const [round, setRound] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
   const [timeLeft, setTimeLeft] = useState(30)
-  const audioRef = useRef<HTMLAudioElement>(null)
+
 
   const currentPlayer = players[currentPlayerIndex]
 
@@ -63,7 +63,7 @@ export default function DanceBattle() {
       [currentPlayer]: (prev[currentPlayer] || 0) + rating
     }))
     play('correct')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -129,7 +129,7 @@ export default function DanceBattle() {
             <h1 className="text-2xl font-bold text-white">舞蹈對決</h1>
           </div>
           <p className="text-white/80 mb-6">展現你的舞技，爭奪舞蹈之王！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -140,8 +140,8 @@ export default function DanceBattle() {
               <li>• 總分最高者獲勝</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -167,14 +167,13 @@ export default function DanceBattle() {
                 <p className="text-sm text-white/60">共5輪</p>
               </div>
             </div>
-            
+
             <div className="flex justify-center gap-4">
               {players.map((player, index) => (
-                <div key={player} className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  currentPlayer === player 
-                    ? 'bg-pink-500 text-white' 
-                    : 'bg-white/10 text-white/60'
-                }`}>
+                <div key={player} className={`px-3 py-1 rounded-full text-sm font-medium ${currentPlayer === player
+                  ? 'bg-pink-500 text-white'
+                  : 'bg-white/10 text-white/60'
+                  }`}>
                   {player}: {scores[player] || 0}分
                 </div>
               ))}
@@ -185,7 +184,7 @@ export default function DanceBattle() {
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center mb-6">
               <h2 className="text-2xl font-bold text-white mb-4">準備開始</h2>
               <p className="text-white/80 mb-6">{currentPlayer} 請準備表演</p>
-              <button 
+              <button
                 onClick={startDanceRound}
                 className="games-touch-target bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-8 rounded-xl font-bold"
               >
@@ -202,13 +201,13 @@ export default function DanceBattle() {
               </div>
               <h2 className="text-3xl font-bold text-white mb-2">{currentMove.name}</h2>
               <p className="text-white/80 mb-4">難度：{currentMove.difficulty === 'easy' ? '簡單' : currentMove.difficulty === 'medium' ? '中等' : '困難'}</p>
-              
+
               <div className="flex items-center justify-center gap-2 mb-6">
                 <div className={`w-4 h-4 rounded-full ${timeLeft > 10 ? 'bg-green-500' : timeLeft > 5 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                 <span className="text-2xl font-bold text-white">{timeLeft}</span>
                 <span className="text-white/60">秒</span>
               </div>
-              
+
               <div className="grid grid-cols-5 gap-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                   <button
@@ -227,7 +226,7 @@ export default function DanceBattle() {
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-bold text-white mb-4">評分時間</h2>
               <p className="text-white/80 mb-6">請為 {currentPlayer} 的 {currentMove.name} 表演評分</p>
-              
+
               <div className="grid grid-cols-5 gap-2 mb-6">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                   <button
@@ -239,8 +238,8 @@ export default function DanceBattle() {
                   </button>
                 ))}
               </div>
-              
-              <button 
+
+              <button
                 onClick={skipPlayer}
                 className="games-touch-target bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white py-2 px-6 rounded-lg font-medium"
               >
@@ -254,7 +253,7 @@ export default function DanceBattle() {
   }
 
   if (gameState === 'results') {
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -265,7 +264,7 @@ export default function DanceBattle() {
             <Trophy className="w-6 h-6 text-yellow-400" />
             <h1 className="text-2xl font-bold text-white">舞蹈對決結果</h1>
           </div>
-          
+
           <div className="space-y-4 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
@@ -284,8 +283,8 @@ export default function DanceBattle() {
               </div>
             ))}
           </div>
-          
-          <button 
+
+          <button
             onClick={nextRound}
             className="games-touch-target w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white py-3 rounded-xl font-bold"
           >

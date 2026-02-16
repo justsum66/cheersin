@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2 } from 'lucide-react'
-import { useGamesPlayers } from '../GamesContext'
+import { useGamesPlayers } from '@/components/games/GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
-import GameRules from '../GameRules'
-import CopyResultButton from '../CopyResultButton'
+import GameRules from '@/components/games/GameRules'
+import CopyResultButton from '@/components/games/CopyResultButton'
 import { WHO_IS_UNDERCOVER_WORD_PAIRS, loadCustomWordPairs, saveCustomWordPairs } from '@/data/who-is-undercover-words'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4', '玩家 5']
@@ -17,7 +17,7 @@ export default function WhoIsUndercover() {
   const { play } = useGameSound()
   const players = contextPlayers.length >= 3 ? contextPlayers : DEFAULT_PLAYERS
   const [phase, setPhase] = useState<'idle' | 'assign' | 'describe' | 'vote' | 'reveal'>('idle')
-  const [words, setWords] = useState<Record<number, string>>({})
+
   const [undercoverIndex, setUndercoverIndex] = useState<number | null>(null)
   const [currentSpeaker, setCurrentSpeaker] = useState(0)
   const [votes, setVotes] = useState<Record<number, number>>({})
@@ -62,7 +62,7 @@ export default function WhoIsUndercover() {
       assign[i] = i === undercover ? pair[1] : pair[0]
     }
     setRoundWordPair(pair)
-    setWords(assign)
+
     setUndercoverIndex(undercover)
     setVotes({})
     setCurrentSpeaker(0)
@@ -101,11 +101,7 @@ export default function WhoIsUndercover() {
     setPhase('idle')
   }, [])
 
-  const voteCounts = useMemo(() => {
-    const c: Record<number, number> = {}
-    Object.values(votes).forEach((t) => { c[t] = (c[t] ?? 0) + 1 })
-    return c
-  }, [votes])
+
   const allVoted = Object.keys(votes).length >= players.length
   const outIsUndercover = phase === 'reveal' && undercoverIndex !== null && currentSpeaker === undercoverIndex
 

@@ -5,14 +5,14 @@
  * 沿用 SoulMate「同時選項→比對」模式，題庫為酒桌/一般題
  */
 import { useState, useCallback } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { GitCompare } from 'lucide-react'
-import { useGamesPlayers } from '../GamesContext'
+import { useGamesPlayers } from '@/components/games/GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { usePunishmentCopy } from '@/hooks/usePunishmentCopy'
-import GameRules from '../GameRules'
-import { DrinkingAnimation } from '../DrinkingAnimation'
-import { useGameReduceMotion } from '../GameWrapper'
+import GameRules from '@/components/games/GameRules'
+import { DrinkingAnimation } from '@/components/games/DrinkingAnimation'
+import { useGameReduceMotion } from '@/components/games/GameWrapper'
 import { MATCH_ANSWER_QUESTIONS } from '@/data/match-answer-questions'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
@@ -95,9 +95,8 @@ export default function MatchAnswer() {
                     key={i}
                     type="button"
                     onClick={() => setPickA(i)}
-                    className={`min-h-[44px] px-3 py-2 rounded-lg text-sm border games-focus-ring ${
-                      pickA === i ? 'bg-primary-500/30 border-primary-500 text-white' : 'bg-white/10 border-white/20 text-white/80 hover:bg-white/15'
-                    }`}
+                    className={`min-h-[44px] px-3 py-2 rounded-lg text-sm border games-focus-ring ${pickA === i ? 'bg-primary-500/30 border-primary-500 text-white' : 'bg-white/10 border-white/20 text-white/80 hover:bg-white/15'
+                      }`}
                   >
                     {opt}
                   </button>
@@ -112,9 +111,8 @@ export default function MatchAnswer() {
                     key={i}
                     type="button"
                     onClick={() => setPickB(i)}
-                    className={`min-h-[44px] px-3 py-2 rounded-lg text-sm border games-focus-ring ${
-                      pickB === i ? 'bg-primary-500/30 border-primary-500 text-white' : 'bg-white/10 border-white/20 text-white/80 hover:bg-white/15'
-                    }`}
+                    className={`min-h-[44px] px-3 py-2 rounded-lg text-sm border games-focus-ring ${pickB === i ? 'bg-primary-500/30 border-primary-500 text-white' : 'bg-white/10 border-white/20 text-white/80 hover:bg-white/15'
+                      }`}
                   >
                     {opt}
                   </button>

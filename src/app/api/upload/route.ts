@@ -3,9 +3,10 @@
  * SEC-001：上傳 API 限流，高頻回傳 429
  * POST /api/upload：multipart/form-data，field name: file
  * 僅允許 image/jpeg、image/png、image/webp，單檔最大 5MB
+ * P0-15: 不暴露內部錯誤
  */
 import { NextResponse } from 'next/server'
-import { errorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 import { validateImageUpload } from '@/lib/validate-image-upload'
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
         if (error.message?.includes('Bucket not found') || error.message?.includes('not found')) {
           return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Upload not configured (bucket missing)' })
         }
-        return errorResponse(500, 'UPLOAD_FAILED', { message: error.message })
+        return serverErrorResponse(error)
       }
       const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path)
       return NextResponse.json({ url: urlData.publicUrl, path: data.path }, {
@@ -55,6 +56,6 @@ export async function POST(request: Request) {
     }
     return errorResponse(503, 'SERVICE_NOT_CONFIGURED', { message: 'Upload not configured' })
   } catch (e) {
-    return errorResponse(500, 'UPLOAD_FAILED', { message: e instanceof Error ? e.message : 'Upload failed' })
+    return serverErrorResponse(e)
   }
 }

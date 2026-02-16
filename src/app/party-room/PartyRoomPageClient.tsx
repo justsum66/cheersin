@@ -5,6 +5,7 @@
  * 1. ?room=slug（遊戲房間）：useGameRoom + PartyRoomActive + R2-130 乾杯同步
  * 2. 無 room：PartyLobby → PartyRoomManager（presence）
  */
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useGameRoom } from '@/hooks/useGameRoom'
 import { usePartyRoomState } from '@/hooks/usePartyRoomState'
@@ -13,6 +14,7 @@ import { useCopyInvite } from '@/hooks/useCopyInvite'
 import { useSubscription } from '@/hooks/useSubscription'
 import { PartyRoomActive } from './PartyRoomActive'
 import { PartyRoomEnded } from './PartyRoomEnded'
+import { PartyRoomJoin } from './PartyRoomJoin'
 import PartyRoomManager from '@/components/party/PartyRoomManager'
 import { trackPartyRoomCheers } from '@/lib/game-analytics'
 
@@ -43,12 +45,14 @@ function GamesRoomPartyView({ slug, tier }: { slug: string; tier: string }) {
     loading: roomLoading,
     error: roomError,
     fetchRoom,
+    join,
+    hasPassword,
   } = useGameRoom(slug)
   const { state: partyState, setState: setPartyState, refetch: refetchPartyState } = usePartyRoomState(slug)
   const { copyInvite, copied: inviteCopied } = useCopyInvite(
     () => inviteUrl ?? '',
-    () => {},
-    () => {}
+    () => { },
+    () => { }
   )
 
   /** R2-130：Realtime 訂閱 game_states，cheers 更新時 refetch 觸發 PartyRoomActive 動畫 */
@@ -78,6 +82,20 @@ function GamesRoomPartyView({ slug, tier }: { slug: string; tier: string }) {
   const isRoomExpired = expiresAt ? new Date(expiresAt).getTime() < Date.now() : false
   const ROOM_HOST_KEY = 'cheersin_room_host'
   const isHost = typeof window !== 'undefined' && sessionStorage.getItem(ROOM_HOST_KEY) === slug
+
+  /* 任務 47：檢查當前用戶是否在房間內；若無則顯示 Join */
+  const [myPlayerId, setMyPlayerId] = useState<string | null>(null)
+  const STORAGE_PID_KEY = `cheersin_room_pid_${slug}`
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem(STORAGE_PID_KEY)
+      if (stored) setMyPlayerId(stored)
+    }
+  }, [slug, STORAGE_PID_KEY])
+
+  const isJoined = roomPlayers.some(p => p.id === myPlayerId) || isHost
+
   if (isRoomExpired || roomError) {
     return (
       <PartyRoomEnded
@@ -96,7 +114,25 @@ function GamesRoomPartyView({ slug, tier }: { slug: string; tier: string }) {
     )
   }
 
-  const players = roomPlayers.map((p) => ({
+  // 若未加入，顯示 Join
+  if (!isJoined) {
+    return (
+      <PartyRoomJoin
+        roomSlug={slug}
+        hasPassword={hasPassword}
+        onJoin={async (n, p) => {
+          const res = await join(n, p)
+          if (res.ok && res.player) {
+            setMyPlayerId(res.player.id)
+            sessionStorage.setItem(STORAGE_PID_KEY, res.player.id)
+          }
+          return res
+        }}
+      />
+    )
+  }
+
+  const playersFormatted = roomPlayers.map((p) => ({
     id: p.id,
     displayName: p.displayName,
     orderIndex: p.orderIndex,
@@ -109,7 +145,7 @@ function GamesRoomPartyView({ slug, tier }: { slug: string; tier: string }) {
     <PartyRoomActive
       effectiveSlug={slug}
       roomId={roomId}
-      players={players}
+      players={playersFormatted}
       maxPlayers={maxPlayers}
       hostId={hostId}
       expiresAt={expiresAt}

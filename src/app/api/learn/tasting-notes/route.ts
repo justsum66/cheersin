@@ -2,12 +2,16 @@
  * R2-381：品鑑筆記 API — 使用 wine_favorites 表（評分+照片+筆記）
  * GET: 回傳當前用戶的品鑑筆記列表
  * POST: body { wine_name, wine_type?, notes?, rating?, image_url? } 新增一筆
+ * P0-08: Zod 校驗 | P0-14: 不暴露內部錯誤 | P0-19: 限流
  */
 import { NextResponse } from 'next/server'
-import { errorResponse } from '@/lib/api-response'
+import { errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { LEARN_ERROR, LEARN_MESSAGE } from '@/lib/api-error-codes'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { requireLearnAuth } from '@/lib/require-learn-auth'
+import { TastingNotesPostBodySchema } from '@/lib/api-body-schemas'
+import { zodParseBody } from '@/lib/parse-body'
+import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit'
 
 export async function GET() {
   const auth = await requireLearnAuth()
@@ -17,53 +21,53 @@ export async function GET() {
   if (!supabase) {
     return errorResponse(503, LEARN_ERROR.DB_NOT_CONFIGURED, { message: LEARN_MESSAGE.DB_NOT_CONFIGURED })
   }
-  const { data, error } = await supabase
-    .from('wine_favorites')
-    .select('id, wine_name, wine_type, notes, rating, image_url, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-  if (error) {
-    return errorResponse(500, LEARN_ERROR.DB_ERROR, { message: error.message })
+  try {
+    const { data, error } = await supabase
+      .from('wine_favorites')
+      .select('id, wine_name, wine_type, notes, rating, image_url, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    if (error) return serverErrorResponse(error)
+    return NextResponse.json({ items: data ?? [] })
+  } catch (e) {
+    return serverErrorResponse(e)
   }
-  return NextResponse.json({ items: data ?? [] })
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request.headers)
+  if (await isRateLimitedAsync(ip, 'learn_tasting_notes')) {
+    return errorResponse(429, 'RATE_LIMITED', { message: '請求過於頻繁，請稍後再試' })
+  }
+
   const auth = await requireLearnAuth()
   if (!auth.ok) return auth.response
   const user = auth.user
-  let body: { wine_name?: string; wine_type?: string; notes?: string; rating?: number; image_url?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return errorResponse(400, LEARN_ERROR.INVALID_JSON, { message: LEARN_MESSAGE.INVALID_JSON })
-  }
-  const wineName = typeof body.wine_name === 'string' ? body.wine_name.trim() : ''
-  if (!wineName) {
-    return errorResponse(400, LEARN_ERROR.WINE_NAME_REQUIRED, { message: LEARN_MESSAGE.WINE_NAME_REQUIRED })
-  }
-  const rating = body.rating != null ? Number(body.rating) : null
-  if (rating != null && (rating < 1 || rating > 5 || !Number.isInteger(rating))) {
-    return errorResponse(400, LEARN_ERROR.INVALID_RATING, { message: LEARN_MESSAGE.INVALID_RATING })
-  }
+
+  const parsed = await zodParseBody(request, TastingNotesPostBodySchema)
+  if (!parsed.success) return parsed.response
+  const { wine_name, wine_type, notes, rating, image_url } = parsed.data
+
   const supabase = createServerClientOptional()
   if (!supabase) {
     return errorResponse(503, LEARN_ERROR.DB_NOT_CONFIGURED, { message: LEARN_MESSAGE.DB_NOT_CONFIGURED })
   }
-  const { data, error } = await supabase
-    .from('wine_favorites')
-    .insert({
-      user_id: user.id,
-      wine_name: wineName,
-      wine_type: typeof body.wine_type === 'string' ? body.wine_type.trim() || null : null,
-      notes: typeof body.notes === 'string' ? body.notes.trim() || null : null,
-      rating: rating ?? null,
-      image_url: typeof body.image_url === 'string' ? body.image_url.trim() || null : null,
-    })
-    .select('id, wine_name, wine_type, notes, rating, image_url, created_at')
-    .single()
-  if (error) {
-    return errorResponse(500, LEARN_ERROR.DB_ERROR, { message: error.message })
+  try {
+    const { data, error } = await supabase
+      .from('wine_favorites')
+      .insert({
+        user_id: user.id,
+        wine_name,
+        wine_type: wine_type || null,
+        notes: notes || null,
+        rating: rating ?? null,
+        image_url: image_url || null,
+      })
+      .select('id, wine_name, wine_type, notes, rating, image_url, created_at')
+      .single()
+    if (error) return serverErrorResponse(error)
+    return NextResponse.json({ item: data })
+  } catch (e) {
+    return serverErrorResponse(e)
   }
-  return NextResponse.json({ item: data })
 }

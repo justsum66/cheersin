@@ -25,18 +25,18 @@ describe('games-settings', () => {
     })
 
     it('setFontSize and getFontSize round-trip', () => {
-      setFontSize('sm')
-      expect(getFontSize()).toBe('sm')
-      setFontSize('lg')
-      expect(getFontSize()).toBe('lg')
-      setFontSize('md')
-      expect(getFontSize()).toBe('md')
+      setFontSize('small')
+      expect(getFontSize()).toBe('small')
+      setFontSize('large')
+      expect(getFontSize()).toBe('large')
+      setFontSize('medium')
+      expect(getFontSize()).toBe('medium')
     })
 
-    it('getFontSize returns md for invalid stored value', () => {
+    it('getFontSize returns medium for invalid stored value', () => {
       if (typeof localStorage === 'undefined') return
-      localStorage.setItem('cheersin-games-font-size', 'xxl')
-      expect(getFontSize()).toBe('md')
+      localStorage.setItem('cheersin_games_font_size', 'xxl')
+      expect(getFontSize()).toBe('medium')
     })
   })
 

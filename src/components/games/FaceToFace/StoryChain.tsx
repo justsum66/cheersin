@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
-import { useGamesPlayers } from '../GamesContext'
+import { m, AnimatePresence } from 'framer-motion'
+import { useGamesPlayers } from '@/components/games/GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
-import GameRules from '../GameRules'
-import CopyResultButton from '../CopyResultButton'
-import { GameResultActions } from '../GameResultActions'
+import GameRules from '@/components/games/GameRules'
+import CopyResultButton from '@/components/games/CopyResultButton'
+import { GameResultActions } from '@/components/games/GameResultActions'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 

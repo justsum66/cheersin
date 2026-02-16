@@ -8,7 +8,13 @@ import { PAYPAL_BASIC_PLAN_ID, PAYPAL_PREMIUM_PLAN_ID } from '@/lib/env-config'
 import type { SubscriptionTier } from '@/lib/subscription'
 
 /** 免費方案每日 AI 對話次數（與 subscription.ts 一致） */
-export const FREE_AI_CALLS_PER_DAY = 10
+export const FREE_AI_CALLS_PER_DAY = 3
+
+/** 免費方案可用遊戲數量限制 */
+export const FREE_GAMES_LIMIT = 5
+
+/** 免費方案房間人數上限 */
+export const FREE_ROOM_MAX_PLAYERS = 2
 
 /** 年繳：買 10 送 2 */
 export const YEARLY_MONTHS_PAID = 10
@@ -73,7 +79,7 @@ export const PRICING_PLANS_DISPLAY: PricingPlanDisplay[] = [
       `每日 ${FREE_AI_CALLS_PER_DAY} 次 AI 對話`,
       '基礎靈魂酒測',
       '標準版派對遊戲',
-      '遊戲房間最多 4 人',
+      '遊戲房間最多 2 人',
     ],
     notIncluded: ['AI 侍酒師無限暢聊', '進階餐酒搭配', '專屬品酒會'],
   },
@@ -85,7 +91,7 @@ export const PRICING_PLANS_DISPLAY: PricingPlanDisplay[] = [
     sceneLabel: '派對方案',
     price: 99,
     originalPrice: 199,
-    popular: true,
+    popular: false, // CRO-01: Decoy Strategy - Move focus to Elite
     features: [
       '無限 AI 對話',
       '360° 感官檔案',
@@ -101,9 +107,10 @@ export const PRICING_PLANS_DISPLAY: PricingPlanDisplay[] = [
     tier: 'premium',
     name: 'VIP 方案',
     subName: '大師級',
-    sceneLabel: '情侶・派對方案',
+    sceneLabel: '最超值・派對首選', // CRO-01: Highlight Value
     price: 199,
     originalPrice: 399,
+    popular: true, // CRO-01: Anchor Pricing
     features: [
       '個人方案全部功能',
       '專屬課程',
@@ -124,15 +131,15 @@ export const COMPARISON_ROWS_PRICING: {
   elite: string
   tooltip?: string
 }[] = [
-  { feature: '靈魂酒測', starter: '基礎版', pro: '360° 全方位', elite: '✓', tooltip: '味覺偏好與酒款推薦' },
-  { feature: '每日 AI 對話', starter: `${FREE_AI_CALLS_PER_DAY} 次`, pro: '50 次', elite: '無限', tooltip: '與 AI 侍酒師暢聊' },
-  { feature: '遊戲房間人數', starter: '4 人', pro: '8 人', elite: '12 人', tooltip: '單一房間最多玩家數' },
-  { feature: '餐酒搭配', starter: '—', pro: '進階', elite: '進階' },
-  { feature: '派對遊戲', starter: '標準版', pro: '全部', elite: '全部' },
-  { feature: '專屬課程', starter: '—', pro: '—', elite: '✓', tooltip: '品酒學院進階課' },
-  { feature: '專家諮詢', starter: '—', pro: '—', elite: '每月 1 次' },
-  { feature: '品酒會邀請', starter: '—', pro: '—', elite: '✓' },
-]
+    { feature: '靈魂酒測', starter: '基礎版', pro: '360° 全方位', elite: '✓', tooltip: '味覺偏好與酒款推薦' },
+    { feature: '每日 AI 對話', starter: `${FREE_AI_CALLS_PER_DAY} 次`, pro: '50 次', elite: '無限', tooltip: '與 AI 侍酒師暢聊' },
+    { feature: '遊戲房間人數', starter: '2 人', pro: '8 人', elite: '12 人', tooltip: '單一房間最多玩家數' },
+    { feature: '餐酒搭配', starter: '—', pro: '進階', elite: '進階' },
+    { feature: '派對遊戲', starter: '標準版', pro: '全部', elite: '全部' },
+    { feature: '專屬課程', starter: '—', pro: '—', elite: '✓', tooltip: '品酒學院進階課' },
+    { feature: '專家諮詢', starter: '—', pro: '—', elite: '每月 1 次' },
+    { feature: '品酒會邀請', starter: '—', pro: '—', elite: '✓' },
+  ]
 
 /** API 用：取得 PayPal 方案價格字串（兩位小數） */
 export function getPayPalPriceString(tier: PayableTier): string {

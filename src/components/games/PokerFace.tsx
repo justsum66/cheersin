@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
-import { Smile, RotateCcw, Trophy, Eye } from 'lucide-react'
+import { Smile, RotateCcw, Trophy } from 'lucide-react'
 
 const EMOTIONS = [
-  '開心', '難過', '生氣', '驚訝', '害羞', '困倦', 
+  '開心', '難過', '生氣', '驚訝', '害羞', '困倦',
   '得意', '尷尬', '無語', '興奮', '緊張', '疑惑'
 ]
 
@@ -55,7 +55,7 @@ export default function PokerFace() {
       [currentPlayer]: expression
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -71,7 +71,7 @@ export default function PokerFace() {
       [currentPlayer]: suspect
     }))
     play('click')
-    
+
     if (currentPlayerIndex < players.length - 1) {
       setCurrentPlayerIndex(prev => prev + 1)
     } else {
@@ -82,7 +82,7 @@ export default function PokerFace() {
   // 計算回合結果
   const calculateRoundResults = () => {
     const liar = players.find(player => expressions[player] !== targetEmotion)
-    
+
     // 給分
     Object.entries(votes).forEach(([voter, suspect]) => {
       if (suspect === liar) {
@@ -99,7 +99,7 @@ export default function PokerFace() {
         }))
       }
     })
-    
+
     // 說謊者得分
     if (liar) {
       setScores(prev => ({
@@ -107,7 +107,7 @@ export default function PokerFace() {
         [liar]: (prev[liar] || 0) + 3
       }))
     }
-    
+
     setGameState('results')
     play('win')
   }
@@ -149,7 +149,7 @@ export default function PokerFace() {
             <h1 className="text-2xl font-bold text-white">撲克臉</h1>
           </div>
           <p className="text-white/80 mb-6">考驗你的表情控制能力！</p>
-          
+
           <div className="bg-white/10 rounded-lg p-4 mb-6">
             <p className="text-white font-medium">遊戲規則：</p>
             <ul className="text-white/80 text-sm mt-2 text-left">
@@ -160,8 +160,8 @@ export default function PokerFace() {
               <li>• 進行5輪比賽</li>
             </ul>
           </div>
-          
-          <button 
+
+          <button
             onClick={initializeGame}
             className="games-touch-target w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 text-lg rounded-xl font-bold"
           >
@@ -193,7 +193,7 @@ export default function PokerFace() {
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-bold text-white mb-4">準備開始</h2>
               <p className="text-white/80 mb-6">{currentPlayer} 請準備</p>
-              <button 
+              <button
                 onClick={startRound}
                 className="games-touch-target bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 px-8 rounded-xl font-bold"
               >
@@ -205,17 +205,16 @@ export default function PokerFace() {
               <h2 className="text-xl font-bold text-white text-center mb-6">
                 {currentPlayer} 請表現 {targetEmotion}
               </h2>
-              
+
               <div className="grid grid-cols-3 gap-4">
                 {['開心', '難過', '生氣', '驚訝', '害羞', '困倦', '得意', '尷尬', '無語', '興奮', '緊張', '疑惑'].map((emotion) => (
                   <button
                     key={emotion}
                     onClick={() => setExpression(emotion)}
-                    className={`games-touch-target aspect-square rounded-xl font-bold text-lg transition-all ${
-                      expressions[currentPlayer] === emotion
-                        ? 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white scale-105'
-                        : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                    }`}
+                    className={`games-touch-target aspect-square rounded-xl font-bold text-lg transition-all ${expressions[currentPlayer] === emotion
+                      ? 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white scale-105'
+                      : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                      }`}
                   >
                     {emotion}
                   </button>
@@ -251,27 +250,27 @@ export default function PokerFace() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-2">
                     {expressions[player] === '開心' ? '😊' :
-                     expressions[player] === '難過' ? '😢' :
-                     expressions[player] === '生氣' ? '😠' :
-                     expressions[player] === '驚訝' ? '😲' :
-                     expressions[player] === '害羞' ? '😊' :
-                     expressions[player] === '困倦' ? '😴' :
-                     expressions[player] === '得意' ? '😎' :
-                     expressions[player] === '尷尬' ? '😅' :
-                     expressions[player] === '無語' ? '😑' :
-                     expressions[player] === '興奮' ? '🤩' :
-                     expressions[player] === '緊張' ? '😰' :
-                     expressions[player] === '疑惑' ? '🤔' : '😐'}
+                      expressions[player] === '難過' ? '😢' :
+                        expressions[player] === '生氣' ? '😠' :
+                          expressions[player] === '驚訝' ? '😲' :
+                            expressions[player] === '害羞' ? '😊' :
+                              expressions[player] === '困倦' ? '😴' :
+                                expressions[player] === '得意' ? '😎' :
+                                  expressions[player] === '尷尬' ? '😅' :
+                                    expressions[player] === '無語' ? '😑' :
+                                      expressions[player] === '興奮' ? '🤩' :
+                                        expressions[player] === '緊張' ? '😰' :
+                                          expressions[player] === '疑惑' ? '🤔' : '😐'}
                   </div>
                   <p className="text-white/80">{expressions[player]}</p>
                 </div>
-                
+
                 {currentPlayer !== player && (
-                  <button 
+                  <button
                     onClick={() => castVote(player)}
                     className="games-touch-target w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-2 rounded-lg font-medium"
                   >
@@ -280,12 +279,12 @@ export default function PokerFace() {
                 )}
               </div>
             ))}
-            
+
             <div className="bg-black/20 backdrop-blur-lg border border-white/20 rounded-xl p-6">
               <div className="text-center">
                 <div className="text-4xl mb-4">🤔</div>
                 <p className="text-white font-medium mb-4">沒有人說謊</p>
-                <button 
+                <button
                   onClick={() => castVote('沒人說謊')}
                   className="games-touch-target w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-2 rounded-lg font-medium"
                 >
@@ -301,7 +300,7 @@ export default function PokerFace() {
 
   if (gameState === 'results') {
     const liar = players.find(player => expressions[player] !== targetEmotion)
-    const sortedPlayers = [...players].sort((a, b) => 
+    const sortedPlayers = [...players].sort((a, b) =>
       (scores[b] || 0) - (scores[a] || 0)
     )
 
@@ -314,7 +313,7 @@ export default function PokerFace() {
               {round < 5 ? '回合結果' : '最終結果'}
             </h1>
           </div>
-          
+
           {round < 5 && (
             <div className="bg-white/10 rounded-lg p-4 mb-6 text-center">
               <p className="text-white">指定表情：{targetEmotion}</p>
@@ -323,7 +322,7 @@ export default function PokerFace() {
               </p>
             </div>
           )}
-          
+
           <div className="space-y-3 mb-6">
             {sortedPlayers.map((player, index) => (
               <div key={player} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -340,16 +339,16 @@ export default function PokerFace() {
               </div>
             ))}
           </div>
-          
+
           {round < 5 ? (
-            <button 
+            <button
               onClick={nextRound}
               className="games-touch-target w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-bold"
             >
               下一輪
             </button>
           ) : (
-            <button 
+            <button
               onClick={restartGame}
               className="games-touch-target w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-bold"
             >

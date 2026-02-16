@@ -31,6 +31,8 @@ export interface GameRoomState {
   maxPlayers: number
   hostId: string | null
   expiresAt: string | null
+  /** PR-16：房間是否有密碼保護 */
+  hasPassword?: boolean
   loading: boolean
   error: string | null
 }
@@ -42,6 +44,7 @@ export function useGameRoom(slug: string | null) {
   const [players, setPlayers] = useState<RoomPlayer[]>([])
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [anonymousMode, setAnonymousModeState] = useState(false)
+  const [hasPassword, setHasPassword] = useState(false)
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [hostId, setHostId] = useState<string | null>(null)
   const [expiresAt, setExpiresAt] = useState<string | null>(null)
@@ -68,6 +71,7 @@ export function useGameRoom(slug: string | null) {
         setExpiresAt(null)
         setScriptId(null)
         setScriptRoom(false)
+        setHasPassword(false)
         setLoading(false)
         return
       }
@@ -83,6 +87,7 @@ export function useGameRoom(slug: string | null) {
           setExpiresAt(null)
           setScriptId(null)
           setScriptRoom(false)
+          setHasPassword(false)
           setLoading(false)
           return
         }
@@ -101,6 +106,7 @@ export function useGameRoom(slug: string | null) {
       setExpiresAt(data.room?.expiresAt ?? null)
       setScriptId(data.room?.scriptId ?? null)
       setScriptRoom(!!data.room?.scriptRoom)
+      setHasPassword(!!data.room?.hasPassword)
       setPlayers((data.players ?? []).map((p: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }) => ({
         id: p.id,
         displayName: p.displayName,
@@ -124,6 +130,7 @@ export function useGameRoom(slug: string | null) {
       setExpiresAt(null)
       setScriptId(null)
       setScriptRoom(false)
+      setHasPassword(false)
     } finally {
       setLoading(false)
     }
@@ -142,6 +149,7 @@ export function useGameRoom(slug: string | null) {
       setExpiresAt(null)
       setScriptId(null)
       setScriptRoom(false)
+      setHasPassword(false)
       setError(null)
       return
     }
@@ -178,7 +186,7 @@ export function useGameRoom(slug: string | null) {
   const JOIN_TIMEOUT_MS = 15000
   /** 任務 12：加入房間可選傳 4 位數密碼；任務 13：isSpectator 觀戰模式 */
   const join = useCallback(
-    async (displayName: string, password?: string, isSpectator?: boolean): Promise<{ ok: boolean; error?: string }> => {
+    async (displayName: string, password?: string, isSpectator?: boolean): Promise<{ ok: boolean; error?: string; player?: { id: string; displayName: string } }> => {
       if (!slug) return { ok: false, error: 'No room' }
       const name = displayName.trim()
       if (!name) return { ok: false, error: t('partyRoom.enterNickname') }
@@ -198,6 +206,9 @@ export function useGameRoom(slug: string | null) {
         clearTimeout(timeoutId)
         const data = await res.json().catch(() => ({}))
         if (!res.ok) return { ok: false, error: getDisplayErrorMessage(data, t, `HTTP ${res.status}`) }
+
+        // API response: { ok: true, player: { id, displayName, orderIndex }, players: [...] }
+        const newPlayer = (data as { player?: { id: string; displayName: string } }).player
         const raw = (data as { players?: { id: string; displayName: string; orderIndex: number; isSpectator?: boolean }[] }).players ?? []
         setPlayers(raw.map((p) => ({
           ...p,
@@ -205,7 +216,7 @@ export function useGameRoom(slug: string | null) {
           isHost: p.orderIndex === 0,
           playerColor: PLAYER_COLORS[p.orderIndex % PLAYER_COLORS.length],
         })))
-        return { ok: true }
+        return { ok: true, player: newPlayer }
       } catch (e) {
         clearTimeout(timeoutId)
         if (e instanceof Error && e.name === 'AbortError') return { ok: false, error: '連線逾時，請檢查網路後重試' }
@@ -269,6 +280,7 @@ export function useGameRoom(slug: string | null) {
     expiresAt,
     scriptId,
     scriptRoom,
+    hasPassword,
     setAnonymousMode,
     loading,
     error,

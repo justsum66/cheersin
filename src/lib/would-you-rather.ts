@@ -17,8 +17,10 @@ export const CATEGORY_LABEL: Record<WouldYouRatherCategory, string> = {
 
 async function loadQuestionsFromJson(): Promise<Record<WouldYouRatherCategory, WouldYouRatherItem[]>> {
     try {
-        const mod = await import('@/data/wouldYouRather.json')
-        const q = (mod.default as { questions?: Record<string, Array<{ id: number; a: string; b: string }>> }).questions
+        const res = await fetch('/data/wouldYouRather.json')
+        if (!res.ok) throw new Error('Failed to fetch data')
+        const mod = await res.json()
+        const q = (mod as { questions?: Record<string, Array<{ id: number; a: string; b: string }>> }).questions
 
         if (!q || typeof q !== 'object') {
             return CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {} as Record<WouldYouRatherCategory, WouldYouRatherItem[]>)

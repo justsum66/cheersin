@@ -4,74 +4,86 @@
  * 變更時請同步更新 tailwind.config.ts 的 theme.extend 與 globals.css 的 :root。
  */
 
-/** 品牌主色：深酒紅 #8B0000 */
+/** 品牌主色：奢華金 (Luxury Gold) */
 export const primary = {
-  50: '#fef2f2',
-  100: '#fee2e2',
-  200: '#fecaca',
-  300: '#fca5a5',
-  400: '#f87171',
-  500: '#8B0000',
-  600: '#7a0000',
-  700: '#6b0000',
-  800: '#5c0000',
-  900: '#4d0000',
-  950: '#2a0000',
+  50: '#fbf8e6',
+  100: '#f5edc6',
+  200: '#ebda95',
+  300: '#e0c25e',
+  400: '#d4af37', // Gold Main
+  500: '#b89128',
+  600: '#936e1c',
+  700: '#765318',
+  800: '#61421a',
+  900: '#523719',
+  950: '#2d1c0a',
 } as const
 
-/** 品牌次要色：香檳金 #D4AF37 */
+/** 品牌次要色：白金銀 (Platinum Silver) */
 export const secondary = {
-  50: '#fdf8ed',
-  100: '#f9eecd',
-  200: '#f3dc9e',
-  300: '#ecc96d',
-  400: '#e5b83d',
-  500: '#D4AF37',
-  600: '#b8942e',
-  700: '#967826',
-  800: '#745c1e',
-  900: '#524016',
-  950: '#30240d',
+  50: '#f7f7f8',
+  100: '#eeeff1',
+  200: '#dadce0',
+  300: '#bcc0c7',
+  400: '#9aa0a9',
+  500: '#7e848f',
+  600: '#656a73',
+  700: '#51545a',
+  800: '#43454b',
+  900: '#3a3b3f',
+  950: '#242528',
 } as const
 
+/** 品牌強調色：保留微量霓虹紅作為「急救」按鈕 */
 export const accent = {
-  50: '#f5f3ff',
-  100: '#ede9fe',
-  200: '#ddd6fe',
-  300: '#c4b5fd',
-  400: '#a78bfa',
-  500: '#8A2BE2',
-  600: '#7c3aed',
-  700: '#6d28d9',
-  800: '#5b21b6',
-  900: '#4c1d95',
+  50: '#fff0f3',
+  100: '#ffe3e8',
+  200: '#ffc7d4',
+  300: '#ff9bb0',
+  400: '#ff6485',
+  500: '#ff2e63', // Neon Red
+  600: '#db0f46',
+  700: '#b80031',
+  800: '#99052d',
+  900: '#82082b',
+  950: '#470013',
 } as const
 
 export const dark = {
-  50: '#f8fafc',
-  100: '#f1f5f9',
-  200: '#e2e8f0',
-  300: '#cbd5e1',
-  400: '#94a3b8',
-  500: '#64748b',
-  600: '#475569',
-  700: '#334155',
-  800: '#1e293b',
-  900: '#0f172a',
-  950: '#030014',
+  50: '#f6f5f9',
+  100: '#ecebf1',
+  200: '#dcdbe6',
+  300: '#bdbcce',
+  400: '#9c9ab0',
+  500: '#7e7b95',
+  600: '#636079',
+  700: '#504d60',
+  800: '#42404e',
+  900: '#383641',
+  950: '#050505', // Pure Black for luxury feel
 } as const
 
 export const wine = {
-  red: '#8B0000',
-  white: '#F5E6D3',
-  rose: '#FFB6C1',
-  champagne: '#D4AF37',
+  red: '#FF2E63', // Matched to new primary
+  white: '#F5F5F5',
+  rose: '#FF6485',
+  champagne: '#08D9D6', // Matched to new secondary
 } as const
 
 export const semantic = {
-  error: { DEFAULT: '#b91c1c', light: '#fecaca' as const },
-  success: { DEFAULT: '#047857', light: '#a7f3d0' as const },
-  warning: { DEFAULT: '#c2410c', light: '#fed7aa' as const },
+  error: { DEFAULT: '#ff4d4d', light: '#ffcccc' as const },
+  success: { DEFAULT: '#00ff9d', light: '#ccffe6' as const },
+  warning: { DEFAULT: '#ffb700', light: '#ffeab3' as const },
+  glass: {
+    1: 'rgb(var(--glass-1))',
+    2: 'rgb(var(--glass-2))',
+    3: 'rgb(var(--glass-3))',
+    border: {
+      1: 'rgb(var(--glass-border-1))',
+      2: 'rgb(var(--glass-border-2))',
+    },
+    shine: 'rgb(var(--glass-shine))',
+  },
 } as const
 
 /** Tailwind theme.extend.colors 用 */
@@ -84,6 +96,7 @@ export const colors = {
   error: semantic.error,
   success: semantic.success,
   warning: semantic.warning,
+  glass: semantic.glass,
 } as const
 
 /** 字體家族：與 layout next/font 對應（陣列為 mutable 以符合 Tailwind theme 型別） */
@@ -161,12 +174,12 @@ export const boxShadow = {
   'card-md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
   'card-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
   'card-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.04)',
-  glow: '0 0 20px rgba(139, 0, 0, 0.25)',
-  'glow-lg': '0 0 40px rgba(139, 0, 0, 0.35)',
-  'glow-primary': '0 0 30px rgba(139, 0, 0, 0.4)',
-  'glow-secondary': '0 0 24px rgba(212, 175, 55, 0.35)',
-  glass: '0 8px 32px 0 rgba(10, 10, 20, 0.5)',
-  'card-brand': '0 4px 24px -2px rgba(139, 0, 0, 0.15), 0 0 0 1px rgba(212, 175, 55, 0.08)',
+  glow: '0 0 20px rgba(255, 46, 99, 0.5)',
+  'glow-lg': '0 0 40px rgba(255, 46, 99, 0.6)',
+  'glow-primary': '0 0 30px rgba(255, 46, 99, 0.6)',
+  'glow-secondary': '0 0 24px rgba(8, 217, 214, 0.6)',
+  glass: '0 8px 32px 0 rgba(8, 217, 214, 0.2)',
+  'card-brand': '0 4px 24px -2px rgba(255, 46, 99, 0.3), 0 0 0 1px rgba(8, 217, 214, 0.2)',
 } as const
 
 /** 背景漸層（色值與 primary/secondary 對齊） */

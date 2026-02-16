@@ -23,8 +23,10 @@ export const CATEGORY_LABEL: Record<NeverHaveIEverCategory, string> = {
 
 async function loadQuestionsFromJson(): Promise<Record<NeverHaveIEverCategory, NeverHaveIEverItem[]>> {
   try {
-    const mod = await import('@/data/neverHaveIEver.json')
-    const q = (mod.default as { questions?: Record<string, Array<{ id: number; text: string; level: string }>> }).questions
+    const res = await fetch('/data/neverHaveIEver.json')
+    if (!res.ok) throw new Error('Failed to fetch data')
+    const mod = await res.json()
+    const q = (mod as { questions?: Record<string, Array<{ id: number; text: string; level: string }>> }).questions
 
     if (!q || typeof q !== 'object') {
       return CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {} as Record<NeverHaveIEverCategory, NeverHaveIEverItem[]>)

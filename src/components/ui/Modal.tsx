@@ -3,7 +3,7 @@
 /** P1-031 / A11Y-006：統一 Modal — 遮罩、關閉按鈕、焦點鎖定、Esc 關閉、進出場動畫 */
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { modalOverlay, modalContent } from '@/lib/variants'
 
@@ -88,7 +88,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ duration: 0.2 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className={`rounded-2xl bg-[#1a0a2e] border border-white/10 shadow-xl max-h-[90vh] overflow-auto ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -101,7 +101,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
                   type="button"
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-white/10 games-focus-ring min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  aria-label="關閉"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -113,7 +113,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
                   type="button"
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-white/10 games-focus-ring"
-                  aria-label="關閉"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>

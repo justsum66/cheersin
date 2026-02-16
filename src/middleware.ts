@@ -34,19 +34,17 @@ function generateRequestId(): string {
   return crypto.randomUUID()
 }
 
-/** P2-327：結構化 API 請求日誌格式，便於搜尋與分析 */
+/** P2-327：結構化 API 請求日誌格式，便於搜尋與分析 — 生產環境同樣記錄供除錯 */
 function logApiRequest(requestId: string, method: string, path: string): void {
-  if (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'preview') {
-    const payload = {
-      timestamp: new Date().toISOString(),
-      requestId,
-      method,
-      path,
-      level: 'info',
-      type: 'api_request',
-    }
-    logger.info('api_request', payload)
+  const payload = {
+    timestamp: new Date().toISOString(),
+    requestId,
+    method,
+    path,
+    level: 'info',
+    type: 'api_request',
   }
+  logger.info('api_request', payload)
 }
 
 /** P2-375：管理後台 IP 白名單；設 ALLOWED_ADMIN_IPS 時僅允許列內 IP 存取 /admin */
@@ -54,12 +52,27 @@ function isAdminPath(pathname: string): boolean {
   return pathname.startsWith('/admin')
 }
 
+/**
+ * 取得用戶端 IP — 優先信任可信 proxy 的標準 header。
+ * Vercel/Cloudflare 會設定 x-real-ip / cf-connecting-ip，較難偽造。
+ * x-forwarded-for 僅作為最後備選（可被偽造）。
+ */
 function getClientIpFromRequest(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    ''
-  )
+  // cf-connecting-ip 由 Cloudflare 設定，無法被客戶端偽造
+  const cfIp = request.headers.get('cf-connecting-ip')
+  if (cfIp) return cfIp.trim()
+  // x-real-ip 由反向代理設定
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) return realIp.trim()
+  // x-forwarded-for 取最後一個（最接近可信 proxy 添加的）而非第一個
+  const xff = request.headers.get('x-forwarded-for')
+  if (xff) {
+    const parts = xff.split(',').map(s => s.trim()).filter(Boolean)
+    // 在 Vercel 部署時，第一個 IP 由 Vercel 添加，是可信的
+    // 在其他環境中，最後一個是最接近 proxy 添加的
+    return parts[0] || ''
+  }
+  return ''
 }
 
 export function middleware(request: NextRequest) {

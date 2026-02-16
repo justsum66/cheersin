@@ -1,19 +1,21 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 
 /** 裝飾用背景；須使用 m 而非 motion，因在 LazyMotion 內渲染（motion 會破壞 tree shaking）。 */
 const MotionDiv = m.div
 
-/** A11y: 純裝飾背景，標記 aria-hidden 避免 region 違規 */
+/** A11y: 純裝飾背景，標記 aria-hidden 避免 region 違規；尊重 prefers-reduced-motion */
 export default function AuroraBackground() {
+  const reducedMotion = useReducedMotion()
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true" data-print-skip>
       {/* Primary gradient orbs - absolute 避免佔用文件流 */}
       <MotionDiv
         className="absolute w-[600px] h-[600px] -top-40 -left-40"
         style={{ background: 'radial-gradient(circle, rgba(139,0,0,0.25) 0%, transparent 70%)' }}
-        animate={{
+        animate={reducedMotion ? {} : {
           x: [0, 100, 0],
           y: [0, 50, 0],
           scale: [1, 1.2, 1],
@@ -25,9 +27,9 @@ export default function AuroraBackground() {
         }}
       />
       <MotionDiv
-        className="floating-orb w-[500px] h-[500px] top-1/3 -right-20"
+        className="absolute w-[500px] h-[500px] top-1/3 -right-20"
         style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)' }}
-        animate={{
+        animate={reducedMotion ? {} : {
           x: [0, -80, 0],
           y: [0, 100, 0],
           scale: [1, 1.1, 1],
@@ -41,7 +43,7 @@ export default function AuroraBackground() {
       <MotionDiv
         className="absolute w-[400px] h-[400px] bottom-20 left-1/4"
         style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)' }}
-        animate={{
+        animate={reducedMotion ? {} : {
           x: [0, 60, 0],
           y: [0, -80, 0],
           scale: [1, 1.15, 1],

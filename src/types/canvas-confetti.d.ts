@@ -13,13 +13,13 @@ declare module 'canvas-confetti' {
             y?: number;
         };
         colors?: string[];
-        shapes?: string[];
+        shapes?: Shape[];
         scalar?: number;
         zIndex?: number;
         disableForReducedMotion?: boolean;
     }
 
-    type Shape = 'square' | 'circle' | 'star';
+    export type Shape = 'square' | 'circle' | 'star';
 
     interface Confetti {
         (options?: Options): Promise<null> | null;

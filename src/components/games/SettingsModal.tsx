@@ -2,10 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { m } from 'framer-motion'
+import Link from 'next/link'
+import { Trophy, ChevronRight, Sparkles, Lock } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useHaptic } from '@/hooks/useHaptic'
+import { useSubscriptionStore } from '@/store/useSubscriptionStore'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
-import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, getNonAlcoholMode, setNonAlcoholMode, type FontSize } from '@/lib/games-settings'
+import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, getNonAlcoholMode, setNonAlcoholMode, type FontSize } from '@/modules/games/settings'
+import { toast } from 'react-hot-toast'
 
 interface SettingsModalProps {
   onClose: () => void
@@ -15,9 +19,13 @@ interface SettingsModalProps {
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const { enabled: soundEnabled, toggle: toggleSound, volume, setVolume, bgmEnabled, toggleBGM } = useGameSound()
   const { enabled: hapticEnabled, setEnabled: setHapticEnabled } = useHaptic()
+  const { tier } = useSubscriptionStore()
+
   const [fontSize, setFontSizeState] = useState<FontSize>('md')
   const [reduceMotion, setReduceMotionState] = useState(false)
   const [nonAlcoholMode, setNonAlcoholModeState] = useState(false)
+  const [adFreeEnabled, setAdFreeEnabled] = useState(false)
+
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   /** P3 無障礙：關閉時還原焦點到開啟前的觸發元素 */
   const previousActiveElementRef = useRef<HTMLElement | null>(null)
@@ -28,7 +36,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     setFontSizeState(getFontSize())
     setReduceMotionState(getReduceMotion())
     setNonAlcoholModeState(getNonAlcoholMode())
-  }, [])
+
+    // Task 48: Init Ad-Free state
+    const storedAdFree = localStorage.getItem('cheersin_ad_free')
+    if (storedAdFree === 'true' && tier !== 'free') {
+      setAdFreeEnabled(true)
+    }
+  }, [tier])
 
   useEffect(() => {
     previousActiveElementRef.current = document.activeElement as HTMLElement | null
@@ -116,9 +130,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         initial={{ y: '100%', opacity: 0.8 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0.8 }}
-        transition={{ 
-          type: 'spring', 
-          stiffness: 380, 
+        transition={{
+          type: 'spring',
+          stiffness: 380,
           damping: 32,
           mass: 0.8,
           opacity: { duration: 0.2 }
@@ -217,6 +231,65 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             >
               {nonAlcoholMode ? '開' : '關'}
             </button>
+          </section>
+
+          {/* Task 48: Ad-Free Toggle */}
+          <section aria-labelledby="settings-ad-free-label">
+            <div className="flex items-center justify-between mb-2">
+              <p id="settings-ad-free-label" className="text-white/70 text-sm">無廣告模式</p>
+              {tier === 'free' && (
+                <Link href="/pricing" onClick={handleClose} className="text-xs text-amber-400 flex items-center gap-1 hover:text-amber-300">
+                  <Sparkles className="w-3 h-3" />
+                  升級解鎖
+                </Link>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (tier === 'free') {
+                  // Redirect or show toast? Link above handles redirect.
+                  // Here maybe just shake or toast.
+                  toast.error('此功能僅限 Pro/VIP 會員使用')
+                  return
+                }
+                const newValue = !adFreeEnabled
+                setAdFreeEnabled(newValue)
+                localStorage.setItem('cheersin_ad_free', String(newValue))
+                if (newValue) {
+                  toast.success('已開啟無廣告模式')
+                }
+              }}
+              className={`w-full min-h-[48px] px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-between transition-colors ${tier === 'free'
+                ? 'bg-white/5 text-white/40 cursor-not-allowed border border-white/5'
+                : adFreeEnabled
+                  ? 'bg-primary-500/80 text-white shadow-lg shadow-primary-500/20'
+                  : 'bg-white/10 text-white/70 hover:bg-white/20'
+                }`}
+            >
+              <span>{adFreeEnabled && tier !== 'free' ? '已開啟' : '已關閉'}</span>
+              {tier === 'free' && <Lock className="w-4 h-4 ml-2 opacity-50" />}
+            </button>
+            {tier === 'free' && (
+              <p className="text-xs text-white/30 mt-2">
+                Pro 會員可隱藏所有廣告，享受純淨派對體驗。
+              </p>
+            )}
+          </section>
+
+          <section aria-labelledby="settings-tools-label">
+            <p id="settings-tools-label" className="text-white/70 text-sm mb-2">主持人工具</p>
+            <Link
+              href="/games/tools"
+              onClick={handleClose}
+              className="flex items-center justify-between w-full bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <Trophy className="w-5 h-5 text-primary-400 group-hover:text-primary-300" />
+                <span className="text-white font-medium">計分板與音效庫</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white/80" />
+            </Link>
           </section>
         </div>
       </m.div>

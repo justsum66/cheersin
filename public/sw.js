@@ -1,187 +1,322 @@
-/* 291 Service Worker：離線快取靜態資源與 fallback（PWA 離線支援） */
-/* Phase 1 E2.1: Service Worker 優化 - 智能快取策略；v4：修正 activate 清理舊 runtime 快取、移除 /logo.png 依賴 */
-/* SW 15 項 #12：Runtime 快取筆數上限，避免無限成長 */
-const CACHE_VERSION = 'v4'
-const CACHE_NAME = `cheersin-${CACHE_VERSION}`
-const RUNTIME_CACHE = `cheersin-runtime-${CACHE_VERSION}`
-const RUNTIME_CACHE_MAX_ENTRIES = 100
+/**
+ * Task 1.04: Caching Strategy Enhancement
+ * Service Worker implementation for offline support and advanced caching
+ */
 
-/* 靈態資源快取（cache-first）；PWA.2 離線 fallback 頁 */
-const STATIC_URLS = [
-  '/',
-  '/offline.html',
-  '/sizes/favicon_32.png',
-  '/sizes/favicon_16.png',
-  '/logo_monochrome_gold.png',
-  '/sizes/android_192.png',
-  '/sizes/android_512.png'
-]
+const CACHE_VERSION = 'v1.0.4'
+const CACHE_NAME = `cheersin-cache-${CACHE_VERSION}`
+const DYNAMIC_CACHE = `cheersin-dynamic-${CACHE_VERSION}`
 
-/* 動態資源快取模式（stale-while-revalidate）；P3-431 納入 /learn 頁面 */
-const SWR_PATTERNS = [
-  /\/_next\/static\//,
-  /\.(?:js|css|woff2?)$/,
-  /\/images\//,
-  /^\/learn\/?/,
-]
-
-/* 不快取的路徑 */
-const NO_CACHE_PATTERNS = [
-  /\/api\//,
-  /\/_next\/data\//
-]
-
-/* 優化：僅快取 GET、不處理帶 credentials 的請求，避免快取到使用者敏感回應 */
-function shouldCacheRequest(request) {
-  if (request.method !== 'GET') return false
-  if (request.credentials === 'include') return false
-  return true
+// Cache strategies
+const CACHE_STRATEGIES = {
+  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
+  CACHE_FIRST: 'cache-first',
+  NETWORK_FIRST: 'network-first'
 }
 
-function shouldCacheResponse(response) {
-  if (!response || !response.ok) return false
-  if (response.type !== 'basic') return false
-  return true
+// URL patterns to cache
+const CACHE_PATTERNS = {
+  // Static assets - cache first
+  STATIC: [
+    /\.(js|css|woff2|woff|ttf|png|jpg|jpeg|gif|webp|avif|svg)$/,
+    '/_next/static/',
+    '/logo_monochrome_gold.png'
+  ],
+  
+  // API routes - stale while revalidate
+  API: [
+    '/api/learn/courses',
+    '/api/games/list',
+    '/api/user/profile'
+  ],
+  
+  // Pages - network first for fresh content
+  PAGES: [
+    '/learn/',
+    '/games/',
+    '/profile/'
+  ]
+}
+
+// Cache configuration
+const CACHE_CONFIG = {
+  // Maximum cache age in seconds
+  MAX_AGE: {
+    STATIC: 31536000, // 1 year
+    API: 300, // 5 minutes
+    PAGES: 60 // 1 minute
+  },
+  
+  // Cache size limits
+  MAX_ENTRIES: {
+    STATIC: 100,
+    DYNAMIC: 50
+  }
 }
 
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing version', CACHE_VERSION)
+  
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_URLS)).then(() => self.skipWaiting()).catch(() => {})
+    caches.open(CACHE_NAME).then(cache => {
+      // Pre-cache critical assets
+      const urlsToCache = [
+        '/',
+        '/logo_monochrome_gold.png',
+        '/manifest.webmanifest'
+      ]
+      
+      return cache.addAll(urlsToCache)
+    }).then(() => {
+      console.log('[Service Worker] Installation complete')
+      return self.skipWaiting()
+    })
   )
 })
 
 self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activating')
+  
   event.waitUntil(
-    caches.keys().then((keys) => {
-      const toDelete = keys.filter((k) => k !== CACHE_NAME && k !== RUNTIME_CACHE)
-      return Promise.all(toDelete.map((k) => caches.delete(k)))
-    }).then(() => self.clients.claim()).then(() => {
-      /* 優化：啟用 Navigation Preload（支援時），導航請求可與 SW 並行，減少延遲 */
-      if (self.registration.navigationPreload && self.registration.navigationPreload.enable) {
-        return self.registration.navigationPreload.enable()
-      }
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          // Delete old caches
+          if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
+            console.log('[Service Worker] Deleting old cache:', cacheName)
+            return caches.delete(cacheName)
+          }
+        })
+      )
+    }).then(() => {
+      console.log('[Service Worker] Activation complete')
+      return self.clients.claim()
     })
   )
-})
-
-/* PWA 更新提示：處理 SKIP_WAITING 訊息 */
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting()
-  }
 })
 
 self.addEventListener('fetch', (event) => {
-  const request = event.request
+  const { request } = event
   const url = new URL(request.url)
-
-  /* 跳過不快取的路徑 */
-  if (NO_CACHE_PATTERNS.some(p => p.test(url.pathname))) return
-
-  /* 跳過非同源請求 */
-  if (request.mode !== 'navigate' && url.origin !== self.location.origin) return
-
-  /* 優化：僅快取 GET、不處理帶 credentials 的請求 */
-  if (!shouldCacheRequest(request)) return
-
-  /* 靈態資源：cache-first */
-  if (STATIC_URLS.some(u => url.pathname === u || url.pathname.endsWith(u))) {
-    event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request))
-    )
+  
+  // Skip non-GET requests and requests to other origins
+  if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return
   }
-
-  /* 任務 #12：放入 runtime 前若超過上限則刪除一筆（FIFO 近似） */
-  function putWithLimit(cache, req, res) {
-    return cache.keys().then((keys) => {
-      if (keys.length >= RUNTIME_CACHE_MAX_ENTRIES) {
-        return cache.delete(keys[0]).then(() => cache.put(req, res))
-      }
-      return cache.put(req, res)
-    })
+  
+  // Determine cache strategy based on URL
+  const strategy = getCacheStrategy(url.pathname)
+  
+  switch (strategy) {
+    case CACHE_STRATEGIES.CACHE_FIRST:
+      event.respondWith(cacheFirst(request))
+      break
+    case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
+      event.respondWith(staleWhileRevalidate(request))
+      break
+    case CACHE_STRATEGIES.NETWORK_FIRST:
+      event.respondWith(networkFirst(request))
+      break
+    default:
+      // For other requests, try network first with cache fallback
+      event.respondWith(networkFirst(request))
   }
-
-  /* SWR 資源：stale-while-revalidate；僅快取 basic 且 ok 的回應 */
-  if (SWR_PATTERNS.some(p => p.test(url.pathname))) {
-    event.respondWith(
-      caches.open(RUNTIME_CACHE).then((cache) => {
-        return cache.match(request).then((cached) => {
-          const fetchPromise = fetch(request).then((response) => {
-            if (shouldCacheResponse(response)) {
-              putWithLimit(cache, request, response.clone()).catch(function () {})
-            }
-            return response
-          }).catch(() => cached)
-          return cached || fetchPromise
-        })
-      })
-    )
-    return
-  }
-
-  /* 預設：network-first 與離線 fallback；僅快取 basic 且 ok；導航請求優先使用 Navigation Preload */
-  var networkPromise = event.preloadResponse
-    ? event.preloadResponse.then(function (preload) { return (preload && preload.ok) ? preload : fetch(request) })
-    : fetch(request)
-  event.respondWith(
-    networkPromise.then((res) => {
-      if (shouldCacheResponse(res)) {
-        const clone = res.clone()
-        caches.open(RUNTIME_CACHE).then((cache) => putWithLimit(cache, request, clone)).catch(function () {})
-      }
-      return res
-    }).catch(() => {
-      return caches.match(request).then((cached) => {
-        if (cached) return cached
-        if (request.mode === 'navigate') return caches.match('/offline.html').then((off) => off || caches.match('/'))
-        return new Response('', { status: 503, statusText: 'Offline' })
-      })
-    })
-  )
 })
 
-/* 294 推播：收到 push 時顯示通知 */
-self.addEventListener('push', (event) => {
-  if (!event.data) return
-  let payload = { title: 'Cheersin', body: '您有一則新通知' }
+// Cache First Strategy
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE_NAME)
+  const cachedResponse = await cache.match(request)
+  
+  if (cachedResponse) {
+    // Check if cache is expired
+    const cacheAge = getCacheAge(cachedResponse)
+    if (cacheAge < CACHE_CONFIG.MAX_AGE.STATIC) {
+      console.log('[Service Worker] Cache hit (cache-first):', request.url)
+      return cachedResponse
+    }
+  }
+  
+  // Fetch from network and cache
   try {
-    const data = event.data.json()
-    if (data.title) payload.title = data.title
-    if (data.body) payload.body = data.body
-  } catch {
-    payload.body = event.data.text() || payload.body
+    const networkResponse = await fetch(request)
+    if (networkResponse.ok) {
+      await cache.put(request, networkResponse.clone())
+      await enforceCacheLimit(CACHE_NAME, CACHE_CONFIG.MAX_ENTRIES.STATIC)
+    }
+    return networkResponse
+  } catch (error) {
+    // Fallback to cache if network fails
+    if (cachedResponse) {
+      console.log('[Service Worker] Network failed, using cache:', request.url)
+      return cachedResponse
+    }
+    throw error
   }
-  event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      icon: '/sizes/android_192.png',
-      badge: '/sizes/android_192.png',
-      tag: 'cheersin-push',
-      renotify: true
-    })
-  )
-})
+}
 
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close()
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      if (clientList.length > 0 && clientList[0].focus) clientList[0].focus()
-      else if (self.clients.openWindow) self.clients.openWindow('/')
-    })
-  )
-})
+// Stale While Revalidate Strategy
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(DYNAMIC_CACHE)
+  const cachedResponse = await cache.match(request)
+  
+  // Always try to fetch fresh data
+  const fetchPromise = fetch(request).then(async networkResponse => {
+    if (networkResponse.ok) {
+      await cache.put(request, networkResponse.clone())
+      await enforceCacheLimit(DYNAMIC_CACHE, CACHE_CONFIG.MAX_ENTRIES.DYNAMIC)
+    }
+    return networkResponse
+  }).catch(error => {
+    console.warn('[Service Worker] Network fetch failed:', error)
+    throw error
+  })
+  
+  // Return cached response immediately if available
+  if (cachedResponse) {
+    console.log('[Service Worker] Cache hit (stale-while-revalidate):', request.url)
+    // Update cache in background
+    fetchPromise.catch(() => {}) // Ignore errors in background update
+    return cachedResponse
+  }
+  
+  // Wait for network response if no cache
+  return fetchPromise
+}
 
-/* 295 背景同步：sync 事件重試離線時排隊的請求（可擴充為 IndexedDB 佇列） */
-const SYNC_TAG = 'cheersin-sync'
-self.addEventListener('sync', (event) => {
-  if (event.tag === SYNC_TAG) {
-    event.waitUntil(
-      Promise.resolve().then(() => {
-        /* 可在此從 IndexedDB 讀取失敗請求並重試 POST */
-        return Promise.resolve()
+// Network First Strategy
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request)
+    if (networkResponse.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE)
+      await cache.put(request, networkResponse.clone())
+      await enforceCacheLimit(DYNAMIC_CACHE, CACHE_CONFIG.MAX_ENTRIES.DYNAMIC)
+    }
+    return networkResponse
+  } catch (error) {
+    // Fallback to cache
+    const cache = await caches.open(DYNAMIC_CACHE)
+    const cachedResponse = await cache.match(request)
+    
+    if (cachedResponse) {
+      console.log('[Service Worker] Network failed, using cache:', request.url)
+      return cachedResponse
+    }
+    
+    // Return offline page for navigation requests
+    if (request.mode === 'navigate') {
+      const offlineResponse = await cache.match('/offline.html')
+      if (offlineResponse) {
+        return offlineResponse
+      }
+    }
+    
+    throw error
+  }
+}
+
+// Helper functions
+function getCacheStrategy(pathname) {
+  // Static assets
+  if (CACHE_PATTERNS.STATIC.some(pattern => 
+    typeof pattern === 'string' ? pathname.includes(pattern) : pattern.test(pathname)
+  )) {
+    return CACHE_STRATEGIES.CACHE_FIRST
+  }
+  
+  // API routes
+  if (CACHE_PATTERNS.API.some(pattern => pathname.includes(pattern))) {
+    return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE
+  }
+  
+  // Pages
+  if (CACHE_PATTERNS.PAGES.some(pattern => pathname.startsWith(pattern))) {
+    return CACHE_STRATEGIES.NETWORK_FIRST
+  }
+  
+  return CACHE_STRATEGIES.NETWORK_FIRST
+}
+
+function getCacheAge(response) {
+  const dateHeader = response.headers.get('date')
+  if (!dateHeader) return Infinity
+  
+  const cacheTime = new Date(dateHeader).getTime()
+  const now = Date.now()
+  return (now - cacheTime) / 1000 // seconds
+}
+
+async function enforceCacheLimit(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName)
+  const keys = await cache.keys()
+  
+  if (keys.length > maxEntries) {
+    // Delete oldest entries
+    const keysToDelete = keys.slice(0, keys.length - maxEntries)
+    await Promise.all(keysToDelete.map(key => cache.delete(key)))
+    console.log(`[Service Worker] Enforced cache limit, deleted ${keysToDelete.length} entries`)
+  }
+}
+
+// Message handling for cache management
+self.addEventListener('message', (event) => {
+  switch (event.data?.type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting()
+      break
+      
+    case 'CACHE_INVALIDATE':
+      invalidateCache(event.data.pattern)
+      break
+      
+    case 'CACHE_STATS':
+      getCacheStats().then(stats => {
+        event.ports[0].postMessage(stats)
       })
-    )
+      break
   }
 })
+
+async function invalidateCache(pattern) {
+  const cacheNames = [CACHE_NAME, DYNAMIC_CACHE]
+  
+  for (const cacheName of cacheNames) {
+    const cache = await caches.open(cacheName)
+    const keys = await cache.keys()
+    
+    const keysToDelete = keys.filter(key => {
+      if (typeof pattern === 'string') {
+        return key.url.includes(pattern)
+      } else {
+        return pattern.test(key.url)
+      }
+    })
+    
+    await Promise.all(keysToDelete.map(key => cache.delete(key)))
+    console.log(`[Service Worker] Invalidated ${keysToDelete.length} cache entries for pattern:`, pattern)
+  }
+}
+
+async function getCacheStats() {
+  const stats = {
+    static: { size: 0, entries: 0 },
+    dynamic: { size: 0, entries: 0 }
+  }
+  
+  try {
+    const staticCache = await caches.open(CACHE_NAME)
+    const staticKeys = await staticCache.keys()
+    stats.static.entries = staticKeys.length
+    
+    const dynamicCache = await caches.open(DYNAMIC_CACHE)
+    const dynamicKeys = await dynamicCache.keys()
+    stats.dynamic.entries = dynamicKeys.length
+  } catch (error) {
+    console.error('[Service Worker] Failed to get cache stats:', error)
+  }
+  
+  return stats
+}
+
+export {} // Make this a module

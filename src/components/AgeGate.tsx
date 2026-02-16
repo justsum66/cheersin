@@ -11,6 +11,12 @@ import { useTranslation } from '@/contexts/I18nContext'
 const COOKIE_NAME = 'cheersin_age_verified'
 const COOKIE_MAX_AGE_YEARS = 1
 
+export function getAgeGatePassed(): boolean {
+  if (typeof document === 'undefined') return false
+  const value = getCookie(COOKIE_NAME)
+  return value === '1'
+}
+
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
@@ -25,7 +31,12 @@ function setVerifiedCookie() {
   document.cookie = `${COOKIE_NAME}=1; path=/; max-age=${maxAge}; SameSite=Lax${secure ? '; Secure' : ''}`
 }
 
-export default function AgeGate({ children }: { children: React.ReactNode }) {
+interface AgeGateProps {
+  children?: React.ReactNode
+  onConfirm?: () => void
+}
+
+export default function AgeGate({ children, onConfirm }: AgeGateProps) {
   const pathname = usePathname()
   const { t } = useTranslation()
   const [status, setStatus] = useState<'loading' | 'verified' | 'gate' | 'under18' | 'skip'>('loading')
@@ -52,6 +63,9 @@ export default function AgeGate({ children }: { children: React.ReactNode }) {
   const handleConfirm = () => {
     setVerifiedCookie()
     setStatus('verified')
+    if (onConfirm) {
+      onConfirm()
+    }
   }
 
   const handleUnder18 = () => {
@@ -67,7 +81,7 @@ export default function AgeGate({ children }: { children: React.ReactNode }) {
   }
 
   if (status === 'skip' || status === 'verified') {
-    return <>{children}</>
+    return children ? <>{children}</> : null
   }
 
   if (status === 'under18') {

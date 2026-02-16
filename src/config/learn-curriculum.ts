@@ -110,8 +110,42 @@ export const COURSE_PREREQUISITES: Record<string, string[]> = {
   'blind-tasting-advanced': ['cms-deductive-tasting'],
 }
 
+/** Phase 2 B2.1: 智慧推薦下一堂課程 - 課程關聯地圖 */
+export const NEXT_COURSE_MAP: Record<string, { id: string; title: string; reason: string }[]> = {
+  'wine-basics': [
+    { id: 'white-wine', title: '白酒探索', reason: '深入認識白酒的品種與產區' },
+    { id: 'wine-advanced', title: '葡萄酒進階', reason: '延伸學習，提升專業知識' },
+    { id: 'tasting-notes', title: '品飲筆記與盲飲', reason: '實際應用品酒技巧' },
+  ],
+  'white-wine': [
+    { id: 'champagne-sparkling', title: '氣泡酒與香檳', reason: '探索另一類白酒' },
+    { id: 'wine-pairing', title: '餐酒搭配進階', reason: '學會將白酒與食物搭配' },
+  ],
+  'whisky-101': [
+    { id: 'whisky-single-malt', title: '單一麥芽威士忌', reason: '深入探索威士忌世界' },
+    { id: 'brandy-cognac', title: '白蘭地與干邑', reason: '認識另一類烈酒' },
+  ],
+  'sake-intro': [
+    { id: 'sake-advanced', title: '清酒進階', reason: '深入學習清酒釀造與品飲' },
+  ],
+  'cocktail-basics': [
+    { id: 'cocktail-classics', title: '經典調酒實作', reason: '學會更多經典配方' },
+    { id: 'home-bar', title: '居家酒吧入門', reason: '在家打造調酒空間' },
+  ],
+  'wine-advanced': [
+    { id: 'wset-l2-wines', title: 'WSET L2 葡萄酒產區', reason: '獲取国際認證' },
+    { id: 'bordeaux-deep', title: '產區深度：波爾多', reason: '探索頂級產區' },
+  ],
+  // 默認推薦（無專屬映射時）
+  '_default': [
+    { id: 'wine-basics', title: '葡萄酒入門', reason: '基礎課程，適合所有人' },
+    { id: 'cocktail-basics', title: '調酒基礎', reason: '學習調酒技巧' },
+  ],
+}
+
 export function getCourseLevel(courseId: string): CourseLevel {
   return COURSE_LEVEL_MAP[courseId] ?? 'beginner'
+
 }
 
 export function getPrerequisites(courseId: string): string[] {

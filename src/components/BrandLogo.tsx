@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
 
-const LOGO_SRC = '/logo_monochrome_gold.png'
+const LOGO_SRC = '/sizes/icon_512_gold.png'
 /** 小型圖標用於 AI 頭像等場景 */
 const LOGO_ICON_SRC = '/sizes/icon_128_gold.png'
 const BRAND_NAME = 'Cheersin'
@@ -68,6 +68,16 @@ export function BrandLogo({
           priority={variant === 'nav'}
           fetchPriority={variant === 'nav' ? 'high' : undefined}
         />
+        {/* UI-35: Logo Gleam Animation */}
+        {!reducedMotion && variant === 'nav' && (
+          <m.span
+            initial={{ x: '-100%' }}
+            animate={{ x: '200%' }}
+            transition={{ repeat: Infinity, repeatDelay: 5, duration: 1.5, ease: 'easeInOut' }}
+            className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+            style={{ width: '50%' }}
+          />
+        )}
       </span>
       <span className="flex flex-col">
         <span

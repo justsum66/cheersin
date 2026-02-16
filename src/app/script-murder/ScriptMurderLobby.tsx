@@ -108,7 +108,7 @@ export function ScriptMurderLobby({
           </m.div>
         ) : scripts.length > 0 ? (
           <InViewAnimate y={30} amount={0.15}>
-            {/* SM-50 TODO: 若劇本數 >20 可考慮虛擬捲動或分頁以優化效能 */}
+
             <ul className="grid gap-4 sm:grid-cols-2" role="list">
               {scripts.map((s, idx) => {
                 const isLocked = idx >= freeScriptLimit
@@ -185,24 +185,24 @@ export function ScriptMurderLobby({
             {scriptRooms.length === 0 ? (
               <p className="text-white/50 text-sm py-4">{t('scriptMurder.noExistingRooms')}</p>
             ) : (
-            <ul className="space-y-2" role="list">
-              {scriptRooms.map((r) => (
-                <li key={r.slug}>
-                  <Link
-                    href={`/script-murder?room=${encodeURIComponent(r.slug)}`}
-                    className="block p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/20"
-                  >
-                    <span className="font-medium">{r.scriptTitle ?? t('scriptMurder.roomFallbackTitle')}</span>
-                    <span className="text-white/50 text-sm ml-2">
-                      {t('scriptMurder.playersCount')
-                        .replace('{{current}}', String(r.playerCount))
-                        .replace('{{max}}', String(r.maxPlayers))}
-                    </span>
-                    <span className="text-primary-400 text-sm ml-2">· {t('scriptMurder.joinButton')}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+              <ul className="space-y-2" role="list">
+                {scriptRooms.map((r) => (
+                  <li key={r.slug}>
+                    <Link
+                      href={`/script-murder?room=${encodeURIComponent(r.slug)}`}
+                      className="block p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white hover:border-white/20"
+                    >
+                      <span className="font-medium">{r.scriptTitle ?? t('scriptMurder.roomFallbackTitle')}</span>
+                      <span className="text-white/50 text-sm ml-2">
+                        {t('scriptMurder.playersCount')
+                          .replace('{{current}}', String(r.playerCount))
+                          .replace('{{max}}', String(r.maxPlayers))}
+                      </span>
+                      <span className="text-primary-400 text-sm ml-2">· {t('scriptMurder.joinButton')}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}

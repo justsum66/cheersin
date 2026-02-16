@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Pencil, RefreshCw, Check, X, Timer, RotateCcw } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'

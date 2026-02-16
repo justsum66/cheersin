@@ -14,15 +14,11 @@ import { Loader2, AlertTriangle } from 'lucide-react'
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
 /** 終極二選一：顯示兩難選擇，每人選 A 或 B，選少數的人喝。R2-155：18+ 題庫需 Pro。 */
-export default function WouldYouRather() {
+export function StandardWouldYouRather() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
   // Phase 2: Game Mode Consolidation
   const { selectedMode } = useGameStore()
-
-  if (selectedMode === 'couples') {
-    return <CoupleTest />
-  }
 
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [phase, setPhase] = useState<'idle' | 'choose' | 'result'>('idle')
@@ -218,4 +214,14 @@ export default function WouldYouRather() {
       )}
     </div>
   )
+}
+
+export default function WouldYouRather() {
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'couples') {
+    return <CoupleTest />
+  }
+
+  return <StandardWouldYouRather />
 }

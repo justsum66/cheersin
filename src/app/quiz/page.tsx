@@ -22,6 +22,7 @@ import {
   History,
   BookOpen,
   Gamepad2,
+  type LucideIcon,
 } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import confetti from 'canvas-confetti'
@@ -169,7 +170,7 @@ const wineResults: Record<string, {
   shortReason: string
   description: string
   pairing: string[]
-  icon: any
+  icon: LucideIcon
   traits: string[]
   quote: string
 }> = {

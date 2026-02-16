@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Music2, Sparkles, Play, ChevronRight, Share2, Link2, X, Copy, ImageDown, GripVertical } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getGameMeta } from '@/config/games.config'
@@ -10,7 +10,6 @@ import { fireFullscreenConfetti } from '@/lib/celebration'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUserStore } from '@/store/useUserStore'
 import { usePartyStore } from '@/store/usePartyStore'
-import { useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
 import { useTranslation } from '@/contexts/I18nContext'
 

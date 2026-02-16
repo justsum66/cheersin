@@ -1,0 +1,100 @@
+
+> cheersin@1.0.0 lint
+> next lint
+
+`next lint` is deprecated and will be removed in Next.js 16.
+For new projects, use create-next-app to choose your preferred linter.
+For existing projects, migrate to the ESLint CLI:
+npx @next/codemod@canary next-lint-to-eslint-cli .
+
+
+./src/app/api/recommend/route.ts
+36:9  Warning: 'topK' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/api/scripts/route.ts
+41:23  Warning: 'error' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/learn/page.tsx
+401:13  Warning: 'total' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/party-dj/page.tsx
+5:33  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\node_modules\next\navigation.js' imported multiple times.  import/no-duplicates
+13:27  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\node_modules\next\navigation.js' imported multiple times.  import/no-duplicates
+
+./src/components/games/GameCard.tsx
+4:33  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\node_modules\framer-motion\dist\es\index.mjs' imported multiple times.  import/no-duplicates
+6:37  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\node_modules\framer-motion\dist\es\index.mjs' imported multiple times.  import/no-duplicates
+
+./src/components/games/Lobby.tsx
+28:51  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\src\config\games.config.ts' imported multiple times.  import/no-duplicates
+31:29  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\src\config\games.config.ts' imported multiple times.  import/no-duplicates
+
+./src/components/games/RandomPicker.tsx
+32:37  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+33:31  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+34:27  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+35:35  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+36:41  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+37:26  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+38:27  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+39:30  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+40:28  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+41:25  Error: React Hook "useGameReduceMotion" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+43:20  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+62:16  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+107:3  Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+118:3  Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+125:20  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+./src/components/games/Roulette.tsx
+74:25  Error: React Hook "useGameReduceMotion" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+79:33  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+82:39  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+83:41  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+84:33  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+85:20  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+86:43  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+87:37  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+88:35  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+89:49  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+92:30  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+93:24  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+94:24  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+95:23  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+96:23  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+97:26  Error: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+99:31  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+106:16  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+140:3  Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+150:3  Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+156:3  Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+166:26  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+172:29  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+186:29  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+204:27  Error: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+./src/components/games/WhoMostLikely.tsx
+291:41  Error: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+./src/components/providers/ClientProviders.tsx
+9:36  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\src\contexts\ApiLoadingContext.tsx' imported multiple times.  import/no-duplicates
+14:31  Warning: 'C:\Users\paul0\.minimax-agent\projects\3\cheersin\src\contexts\ApiLoadingContext.tsx' imported multiple times.  import/no-duplicates
+
+./src/lib/learn-progress.test.ts
+20:13  Warning: 'total' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/lib/logger.ts
+47:7  Warning: Unexpected console statement. Only these console methods are allowed: warn, error.  no-console
+
+./src/lib/migrations/game-stats-migration.ts
+37:9  Warning: Unexpected console statement. Only these console methods are allowed: warn, error.  no-console
+53:9  Warning: Unexpected console statement. Only these console methods are allowed: warn, error.  no-console
+
+./src/lib/party-dj-plan.ts
+38:9  Warning: 'peopleCount' is never reassigned. Use 'const' instead.  prefer-const
+38:35  Warning: 'mood' is never reassigned. Use 'const' instead.  prefer-const
+38:41  Warning: 'allow18' is never reassigned. Use 'const' instead.  prefer-const
+38:50  Warning: 'useAiTransition' is never reassigned. Use 'const' instead.  prefer-const
+38:67  Warning: 'subscriptionTier' is never reassigned. Use 'const' instead.  prefer-const
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

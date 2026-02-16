@@ -5,8 +5,8 @@ import { useTranslation } from '@/contexts/I18nContext'
 import { getErrorMessage } from '@/lib/api-response'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Pencil, Trash2, BookOpen, Search } from 'lucide-react'
-import { AdminSkeleton } from '../AdminSkeleton'
-import { AdminForbidden } from '../AdminForbidden'
+import { AdminSkeleton } from '@/components/admin/AdminSkeleton'
+import { AdminForbidden } from '@/components/admin/AdminForbidden'
 
 interface KnowledgeDoc {
   id: string
@@ -64,7 +64,7 @@ export default function AdminKnowledgePage() {
     } finally {
       setLoading(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- headers from next/headers, omit to avoid refetch on every request
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- headers from next/headers, omit to avoid refetch on every request
   }, [adminSecret])
 
   useEffect(() => {
@@ -202,110 +202,110 @@ export default function AdminKnowledgePage() {
           <AdminForbidden />
         ) : (
           <>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" aria-hidden />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('admin.searchPlaceholder')}
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30"
-              aria-label={t('admin.searchAria')}
-            />
-          </div>
-          <div className="flex justify-end">
-          <button
-            onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500"
-          >
-            <Plus className="w-4 h-4" />
-            {t('admin.addDoc')}
-          </button>
-          </div>
-        </div>
-
-        {(showForm || editing) && (
-          <div className="mb-6 p-6 rounded-xl bg-white/5 border border-white/10 space-y-4">
-            <h2 className="font-semibold">{editing ? t('admin.editDoc') : t('admin.addDoc')}</h2>
-            <input
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder={t('admin.placeholderTitle')}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
-            />
-            <input
-              value={form.course_id}
-              onChange={(e) => setForm((f) => ({ ...f, course_id: e.target.value }))}
-              placeholder="course_id（如 wine-basics）"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
-            />
-            <input
-              value={form.chapter}
-              onChange={(e) => setForm((f) => ({ ...f, chapter: e.target.value }))}
-              placeholder={t('admin.placeholderChapter')}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
-            />
-            <textarea
-              value={form.content}
-              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              placeholder={t('admin.placeholderContent')}
-              rows={8}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 resize-y"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={editing ? handleUpdate : handleCreate}
-                disabled={submitLoading}
-                className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50"
-              >
-                {submitLoading ? t('admin.saving') : editing ? t('admin.save') : t('admin.add')}
-              </button>
-              <button
-                onClick={() => { setShowForm(false); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
-              >
-                {t('admin.cancel')}
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" aria-hidden />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('admin.searchPlaceholder')}
+                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30"
+                  aria-label={t('admin.searchAria')}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('admin.addDoc')}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
 
-        {docs.length === 0 ? (
-          <p className="text-white/50">{t('admin.noDocs')}</p>
-        ) : filteredDocs.length === 0 ? (
-          <p className="text-white/50">{t('admin.noSearchResult', { query: searchQuery })}</p>
-        ) : (
-          <ul className="space-y-3">
-            {filteredDocs.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{doc.title}</p>
-                  <p className="text-sm text-white/50">{doc.course_id} / {doc.chapter}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+            {(showForm || editing) && (
+              <div className="mb-6 p-6 rounded-xl bg-white/5 border border-white/10 space-y-4">
+                <h2 className="font-semibold">{editing ? t('admin.editDoc') : t('admin.addDoc')}</h2>
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  placeholder={t('admin.placeholderTitle')}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
+                />
+                <input
+                  value={form.course_id}
+                  onChange={(e) => setForm((f) => ({ ...f, course_id: e.target.value }))}
+                  placeholder="course_id（如 wine-basics）"
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
+                />
+                <input
+                  value={form.chapter}
+                  onChange={(e) => setForm((f) => ({ ...f, chapter: e.target.value }))}
+                  placeholder={t('admin.placeholderChapter')}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10"
+                />
+                <textarea
+                  value={form.content}
+                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                  placeholder={t('admin.placeholderContent')}
+                  rows={8}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 resize-y"
+                />
+                <div className="flex gap-2">
                   <button
-                    onClick={() => openEdit(doc)}
-                    className="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white"
-                    title={t('admin.edit')}
+                    onClick={editing ? handleUpdate : handleCreate}
+                    disabled={submitLoading}
+                    className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50"
                   >
-                    <Pencil className="w-4 h-4" />
+                    {submitLoading ? t('admin.saving') : editing ? t('admin.save') : t('admin.add')}
                   </button>
                   <button
-                    onClick={() => handleDelete(doc.id)}
-                    className="p-2 rounded-lg hover:bg-red-500/20 text-white/70 hover:text-red-400"
-                    title={t('admin.delete')}
+                    onClick={() => { setShowForm(false); setEditing(null); setForm({ title: '', course_id: '', chapter: '', content: '' }); }}
+                    className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {t('admin.cancel')}
                   </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
+              </div>
+            )}
+
+            {docs.length === 0 ? (
+              <p className="text-white/50">{t('admin.noDocs')}</p>
+            ) : filteredDocs.length === 0 ? (
+              <p className="text-white/50">{t('admin.noSearchResult', { query: searchQuery })}</p>
+            ) : (
+              <ul className="space-y-3">
+                {filteredDocs.map((doc) => (
+                  <li
+                    key={doc.id}
+                    className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{doc.title}</p>
+                      <p className="text-sm text-white/50">{doc.course_id} / {doc.chapter}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => openEdit(doc)}
+                        className="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white"
+                        title={t('admin.edit')}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(doc.id)}
+                        className="p-2 rounded-lg hover:bg-red-500/20 text-white/70 hover:text-red-400"
+                        title={t('admin.delete')}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )}
       </div>

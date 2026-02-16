@@ -3,7 +3,7 @@
 /** R2-121 / A11Y-006：全局 Drawer — 底部滑入 + 遮罩、Escape 關閉、焦點鎖定、focus trap */
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { m , AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 
 const FOCUSABLE =
@@ -94,6 +94,14 @@ export function Drawer({ open, onClose, title, children, className = '' }: Drawe
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 500) {
+                onClose()
+              }
+            }}
             className={`relative rounded-t-2xl bg-[#1a0a2e] border border-white/10 border-b-0 shadow-xl max-h-[90vh] overflow-auto safe-area-pb ${className}`}
             onClick={(e) => e.stopPropagation()}
           >

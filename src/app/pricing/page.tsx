@@ -23,6 +23,8 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import { FeatureIcon } from '@/components/ui/FeatureIcon'
+import { GlassCard } from '@/components/ui/GlassCard'
+import { Button } from '@/components/ui/Button'
 import { SafeJsonLdScript } from '@/components/SafeJsonLdScript'
 import { SOCIAL_PROOF_USER_COUNT } from '@/lib/constants'
 import {
@@ -35,6 +37,12 @@ import {
   getPromoEndMs,
 } from '@/config/pricing.config'
 import { TESTIMONIALS } from '@/config/testimonials.config'
+import { WhyPaySection } from '@/components/pricing/WhyPaySection'
+
+{/* R2-Extra: Why Pay Section (Pain vs Gain) */ }
+<WhyPaySection />
+
+{/* 181–185：功能對比表（圖標 + 灰色不包含 + title 說明） */ }
 
 /** E01/E03：方案與功能對比從 pricing.config 讀取；icon 與 color 由頁面對應 */
 const PLAN_ICONS = { starter: Star, pro: Zap, elite: Crown } as const
@@ -307,114 +315,129 @@ export default function PricingPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`relative glass-card p-8 transition-all duration-300 games-focus-ring ${plan.popular
-                  ? 'bg-white/[0.05] border-2 border-primary-400 ring-2 ring-primary-400/50 shadow-glass-hover scale-105 z-10 focus-visible:ring-primary-400/70'
-                  : 'hover:shadow-lg hover:border-primary-500/30 hover:bg-white/5 hover:border-white/20 hover:ring-2 hover:ring-primary-400/25 focus-visible:ring-2 focus-visible:ring-primary-400/50'
-                }`}
+              className={`relative h-full transition-all duration-300 ${plan.popular ? 'z-10 scale-105' : ''}`}
             >
-              {/* R2-058：最受歡迎標籤金色邊框脈動 + 閃爍光暈 */}
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-semibold tracking-widest border border-primary-300/80 pricing-most-popular-badge">
-                  {t('pricing.mostPopular')}
-                </div>
-              )}
-              <div className="mb-6">
-                <FeatureIcon icon={plan.icon} size="md" color={plan.color as 'white' | 'primary' | 'accent'} />
-                <h2 className="text-2xl font-bold text-white mt-4 mb-1">{plan.name}</h2>
-                <p className="text-white/50 text-sm mb-2">{plan.subName}</p>
-                {plan.sceneLabel && (
-                  <p className="text-primary-400/90 text-xs font-medium uppercase tracking-wider" aria-label="適用場景">{plan.sceneLabel}</p>
-                )}
-                {/* D53 原價刪除線 + 紅色「省 XX%」 */}
-                {plan.price > 0 && plan.originalPrice != null && plan.originalPrice > plan.price && billingCycle === 'monthly' && (
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-white/50 text-sm line-through">NT${plan.originalPrice}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-red-500/90 text-white text-xs font-bold">
-                      省 {Math.round((1 - plan.price / plan.originalPrice) * 100)}%
-                    </span>
-                  </div>
-                )}
-                {plan.price > 0 && FIRST_MONTH_HALF_OFF && billingCycle === 'monthly' && (
-                  <p className="text-primary-400/90 text-xs mb-1">首月半價促銷</p>
-                )}
-                {/* R2-072：月/年切換時價格數字平滑過渡 */}
-                <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className="text-xl text-white/60 font-medium">NT$</span>
-                  <m.span
-                    key={`${plan.id}-${billingCycle}-${billingCycle === 'yearly' && plan.price > 0 ? Math.round(yearlyPerMonth(plan.price)) : plan.price}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="text-4xl md:text-[48px] leading-none font-display font-bold text-white tabular-nums inline-block"
-                  >
-                    {billingCycle === 'yearly' && plan.price > 0
-                      ? Math.round(yearlyPerMonth(plan.price))
-                      : plan.price}
-                  </m.span>
-                  <span className="text-white/40 text-sm">/月</span>
-                </div>
-                {billingCycle === 'yearly' && plan.price > 0 && (
-                  <p className="text-white/40 text-xs mt-1">
-                    年繳 NT${yearlyTotal(plan.price)}（買 10 送 2，相當於 2 個月免費）
-                  </p>
-                )}
-                {/* EXPERT_60 P0：社會認證 — 價格下方信任數字 */}
-                {plan.popular && (
-                  <p className="text-white/50 text-xs mt-2 flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5" />
-                    {SOCIAL_PROOF_USER_COUNT.toLocaleString('en-US')}+ 用戶已訂閱
-                  </p>
-                )}
-              </div>
-              {/* D54 功能列表：✓ 綠色圓底、✗ 灰色淡化 */}
-              <div className="space-y-4 mb-8">
-                {plan.features.map((f) => (
-                  <div key={f} className="flex items-start gap-3 text-white/80">
-                    <div className="mt-1 p-1 rounded-full bg-success shrink-0">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-sm">{f}</span>
-                  </div>
-                ))}
-                {plan.notIncluded.map((f) => (
-                  <div key={f} className="flex items-start gap-3 text-white/30">
-                    <div className="mt-1 p-1 rounded-full bg-white/10 shrink-0">
-                      <X className="w-3 h-3 text-white/50" />
-                    </div>
-                    <span className="text-sm line-through decoration-white/20">{f}</span>
-                  </div>
-                ))}
-              </div>
-              {/* E07 / T092：Pro 方案主按鈕漸層+微動效，其餘 ghost；Trust badge 已於方案區上方 */}
-              <Link
-                href={
-                  plan.price === 0 ? '/' : `/subscription?plan=${PLAN_ID_TO_TIER[plan.id]}`
-                }
-                onClick={() => {
-                  if (plan.price > 0) {
-                    try {
-                      fetch('/api/analytics', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: 'pricing_click', value: 1, id: plan.id }),
-                      }).catch(() => { });
-                    } catch { /* noop */ }
-                  }
-                }}
-                className={`block w-full min-h-[48px] py-4 rounded-xl font-bold text-center transition-all duration-200 games-focus-ring ${plan.popular
-                    ? 'btn-primary text-lg shadow-lg shadow-primary-500/25 hover:scale-[1.02] hover:shadow-primary-500/40 active:scale-[0.99]'
-                    : 'btn-secondary hover:bg-white/10'
+              <GlassCard
+                variant={plan.popular ? 'spotlight' : 'layer-1'}
+                hoverEffect={!plan.popular}
+                className={`h-full p-8 games-focus-ring ${plan.popular
+                  ? 'border-2 border-primary-400 ring-2 ring-primary-400/50 focus-visible:ring-primary-400/70'
+                  : 'hover:ring-2 hover:ring-primary-400/25 focus-visible:ring-2 focus-visible:ring-primary-400/50'
                   }`}
               >
-                {plan.price === 0
-                  ? t('pricing.startFree')
-                  : plan.id === 'pro'
-                    ? (['立即升級', '開始免費試用', '解鎖所有遊戲'][ctaVariant])
-                    : t('pricing.trial7')}
-              </Link>
-              <p className="text-center text-[10px] text-white/30 mt-4 uppercase tracking-wider">
-                {plan.price === 0 ? t('pricing.noCard') : t('pricing.cancelSecureRefund')}
-              </p>
+                {/* R2-058：最受歡迎標籤金色邊框脈動 + 閃爍光暈 */}
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-primary-500/90 text-white text-xs font-semibold tracking-widest border border-primary-300/80 pricing-most-popular-badge">
+                    {t('pricing.mostPopular')}
+                  </div>
+                )}
+                <div className="mb-6">
+                  <FeatureIcon icon={plan.icon} size="md" color={plan.color as 'white' | 'primary' | 'accent'} />
+                  <h2 className="text-2xl font-bold text-white mt-4 mb-1">{plan.name}</h2>
+                  <p className="text-white/50 text-sm mb-2">{plan.subName}</p>
+                  {plan.sceneLabel && (
+                    <p className="text-primary-400/90 text-xs font-medium uppercase tracking-wider" aria-label="適用場景">{plan.sceneLabel}</p>
+                  )}
+                  {/* D53 原價刪除線 + 紅色「省 XX%」 */}
+                  {plan.price > 0 && plan.originalPrice != null && plan.originalPrice > plan.price && billingCycle === 'monthly' && (
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-white/50 text-sm line-through">NT${plan.originalPrice}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-red-500/90 text-white text-xs font-bold">
+                        省 {Math.round((1 - plan.price / plan.originalPrice) * 100)}%
+                      </span>
+                    </div>
+                  )}
+                  {plan.price > 0 && FIRST_MONTH_HALF_OFF && billingCycle === 'monthly' && (
+                    <p className="text-primary-400/90 text-xs mb-1">首月半價促銷</p>
+                  )}
+                  {/* R2-072：月/年切換時價格數字平滑過渡 */}
+                  <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-xl text-white/60 font-medium">NT$</span>
+                    <m.span
+                      key={`${plan.id}-${billingCycle}-${billingCycle === 'yearly' && plan.price > 0 ? Math.round(yearlyPerMonth(plan.price)) : plan.price}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                      className="text-4xl md:text-[48px] leading-none font-display font-bold text-white tabular-nums inline-block"
+                    >
+                      {billingCycle === 'yearly' && plan.price > 0
+                        ? Math.round(yearlyPerMonth(plan.price))
+                        : plan.price}
+                    </m.span>
+                    <span className="text-white/40 text-sm">/月</span>
+                  </div>
+                  {plan.id === 'pro' && (
+                    <p className="text-secondary-400 text-xs font-bold mt-1 animate-pulse">
+                      {t('pricing.roiHighlight')}
+                    </p>
+                  )}
+                  {billingCycle === 'yearly' && plan.price > 0 && (
+                    <p className="text-white/40 text-xs mt-1">
+                      年繳 NT${yearlyTotal(plan.price)}（買 10 送 2，相當於 2 個月免費）
+                    </p>
+                  )}
+                  {/* EXPERT_60 P0：社會認證 — 價格下方信任數字 */}
+                  {plan.popular && (
+                    <p className="text-white/50 text-xs mt-2 flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      {SOCIAL_PROOF_USER_COUNT.toLocaleString('en-US')}+ 用戶已訂閱
+                    </p>
+                  )}
+                </div>
+                {/* D54 功能列表：✓ 綠色圓底、✗ 灰色淡化 */}
+                <div className="space-y-4 mb-8">
+                  {
+                    plan.features.map((f) => (
+                      <div key={f} className="flex items-start gap-3 text-white/80">
+                        <div className="mt-1 p-1 rounded-full bg-success shrink-0">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm">{f}</span>
+                      </div>
+                    ))
+                  }
+                  {
+                    plan.notIncluded.map((f) => (
+                      <div key={f} className="flex items-start gap-3 text-white/30">
+                        <div className="mt-1 p-1 rounded-full bg-white/10 shrink-0">
+                          <X className="w-3 h-3 text-white/50" />
+                        </div>
+                        <span className="text-sm line-through decoration-white/20">{f}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+                {/* E07 / T092：Pro 方案主按鈕漸層+微動效，其餘 ghost；Trust badge 已於方案區上方 */}
+                <Link
+                  href={
+                    plan.price === 0 ? '/' : `/subscription?plan=${PLAN_ID_TO_TIER[plan.id]}`
+                  }
+                  onClick={() => {
+                    if (plan.price > 0) {
+                      try {
+                        fetch('/api/analytics', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name: 'pricing_click', value: 1, id: plan.id }),
+                        }).catch(() => { });
+                      } catch { /* noop */ }
+                    }
+                  }}
+                  className={`block w-full min-h-[48px] py-4 rounded-xl font-bold text-center transition-all duration-200 games-focus-ring ${plan.popular
+                    ? 'btn-primary text-lg shadow-lg shadow-primary-500/25 hover:scale-[1.02] hover:shadow-primary-500/40 active:scale-[0.99]'
+                    : 'btn-secondary hover:bg-white/10'
+                    }`}
+                >
+                  {plan.price === 0
+                    ? t('pricing.startFree')
+                    : plan.id === 'pro'
+                      ? (['立即升級', '開始免費試用', '解鎖所有遊戲'][ctaVariant])
+                      : t('pricing.trial7')}
+                </Link>
+                <p className="text-center text-[10px] text-white/30 mt-4 uppercase tracking-wider">
+                  {plan.price === 0 ? t('pricing.noCard') : t('pricing.cancelSecureRefund')}
+                </p>
+              </GlassCard>
             </m.div>
           ))}
         </div>
@@ -427,7 +450,7 @@ export default function PricingPage() {
           className="mt-16"
         >
           <h2 className="home-heading-2 font-display font-bold text-white mb-6 text-center">{t('pricing.compareTitle')}</h2>
-          <div className="overflow-x-auto min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] -mx-4 px-4 sm:mx-0 sm:px-0" role="region" aria-label={t('pricing.compareTitle')}>
+          <GlassCard className="overflow-x-auto min-w-0 -mx-4 px-4 sm:mx-0 sm:px-0" role="region" aria-label={t('pricing.compareTitle')}>
             <table className="w-full min-w-[600px] text-left text-sm" role="table" aria-label={t('pricing.compareTitle')}>
               <thead>
                 <tr className="border-b border-white/10">
@@ -462,10 +485,10 @@ export default function PricingPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </GlassCard>
 
           {/* R2-223：定價頁對比競品 — 展示 Cheersin 相比其他派對遊戲 APP 的優勢 */}
-          <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="與其他派對遊戲比較">
+          <GlassCard className="mt-8 max-w-2xl mx-auto p-4" role="region" aria-label="與其他派對遊戲比較">
             <h3 className="text-lg font-semibold text-white mb-3 text-center">為什麼選 Cheersin？</h3>
             <ul className="text-sm text-white/80 space-y-2">
               <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 50+ 款遊戲一鍵開房，不需下載多款 APP</li>
@@ -473,29 +496,29 @@ export default function PricingPage() {
               <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 網頁即玩，免安裝，分享連結即可加入</li>
               <li className="flex items-start gap-2"><Check className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" /> 隱私友善，可匿名遊玩，資料可隨時刪除</li>
             </ul>
-          </div>
+          </GlassCard>
 
           {/* R2-222：Pro 專屬客服說明 */}
-          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-primary-500/10 border border-primary-500/20" role="region" aria-label="Pro 會員權益">
+          <GlassCard className="mt-6 max-w-2xl mx-auto p-4 bg-primary-500/10 border-primary-500/20" role="region" aria-label="Pro 會員權益">
             <h3 className="text-base font-semibold text-primary-300 mb-2 flex items-center gap-2">
               <MessageCircle className="w-4 h-4" /> Pro 專屬客服
             </h3>
             <p className="text-sm text-white/80">
               訂閱 Pro 或 Elite 方案即享專屬客服管道，優先回覆訂閱與技術問題；一般用戶可透過常見問題與客服表單聯繫。
             </p>
-          </div>
+          </GlassCard>
 
           {/* R2-215：定價頁即時聊天佔位 — 可接 Crisp / Tawk 或保留佔位 */}
-          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="即時諮詢">
+          <GlassCard className="mt-6 max-w-2xl mx-auto p-4" role="region" aria-label="即時諮詢">
             <p className="text-sm text-white/70 flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-primary-400" />
               有問題？即時客服即將上線，目前請來信 support@cheersin.app 或至
               <Link href="/profile/support" className="text-primary-400 underline">支援中心</Link>。
             </p>
-          </div>
+          </GlassCard>
 
           {/* R2-225：分享折扣碼 — 分享帶連結/文案，後端碼可 stub */}
-          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-2xl bg-white/5 border border-white/10" role="region" aria-label="分享拿折扣">
+          <GlassCard className="mt-6 max-w-2xl mx-auto p-4" role="region" aria-label="分享拿折扣">
             <h3 className="text-base font-semibold text-white mb-2">分享給朋友拿折扣</h3>
             <p className="text-sm text-white/60 mb-3">邀請好友註冊並訂閱，你們都有機會獲得專屬折扣碼（即將推出）。</p>
             <button
@@ -513,7 +536,7 @@ export default function PricingPage() {
             >
               分享連結
             </button>
-          </div>
+          </GlassCard>
         </m.section>
 
         {/* 186–187：CTA 免費試用 7 天、不滿意全額退款 — 已整合至卡片按鈕與副文案 */}
@@ -532,55 +555,57 @@ export default function PricingPage() {
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="p-6 rounded-2xl bg-white/5 border border-white/10"
+              className="rounded-2xl"
               whileHover={{ rotateX: 2, rotateY: -2, transition: { duration: 0.2 } }}
               style={{ transformStyle: 'preserve-3d' }}
             >
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
-                  <Image
-                    src={TESTIMONIALS[testimonialIndex].avatar}
-                    alt={TESTIMONIALS[testimonialIndex].name}
-                    fill
-                    className="object-cover"
-                    sizes="56px"
-                  />
+              <GlassCard className="p-6">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
+                    <Image
+                      src={TESTIMONIALS[testimonialIndex].avatar}
+                      alt={TESTIMONIALS[testimonialIndex].name}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-white text-sm">{TESTIMONIALS[testimonialIndex].name}</p>
+                    <p className="text-white/50 text-xs">{TESTIMONIALS[testimonialIndex].role}</p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="font-bold text-white text-sm">{TESTIMONIALS[testimonialIndex].name}</p>
-                  <p className="text-white/50 text-xs">{TESTIMONIALS[testimonialIndex].role}</p>
+                <p className="text-white/90 text-center mb-4">「{TESTIMONIALS[testimonialIndex].text}」</p>
+                <div className="flex justify-center gap-2 mt-4">
+                  {TESTIMONIALS.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setTestimonialIndex(i)}
+                      className={`min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full transition-colors games-focus-ring p-2 ${i === testimonialIndex ? 'bg-primary-500' : 'bg-white/30'
+                        }`}
+                      aria-label={`見證 ${i + 1}`}
+                    />
+                  ))}
                 </div>
-              </div>
-              <p className="text-white/90 text-center mb-4">「{TESTIMONIALS[testimonialIndex].text}」</p>
-              <div className="flex justify-center gap-2 mt-4">
-                {TESTIMONIALS.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setTestimonialIndex(i)}
-                    className={`min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full transition-colors games-focus-ring p-2 ${i === testimonialIndex ? 'bg-primary-500' : 'bg-white/30'
-                      }`}
-                    aria-label={`見證 ${i + 1}`}
-                  />
-                ))}
-              </div>
+              </GlassCard>
             </m.div>
           </div>
 
           {/* R2-229：定價頁影片見證 — 嵌入位預留 */}
-          <div className="mt-8 max-w-2xl mx-auto rounded-2xl border border-white/10 bg-black/30 overflow-hidden aspect-video flex items-center justify-center" aria-label="影片見證區">
+          <GlassCard className="mt-8 max-w-2xl mx-auto overflow-hidden aspect-video flex items-center justify-center bg-black/30" aria-label="影片見證區">
             <p className="text-white/40 text-sm">影片見證（即將上線）</p>
-          </div>
+          </GlassCard>
 
           {/* R2-213：Pro 專屬道具預覽 */}
-          <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-primary-500/20 max-w-xl mx-auto" role="region" aria-label="Pro 專屬道具預覽">
+          <GlassCard className="mt-8 p-4 max-w-xl mx-auto border-primary-500/20" role="region" aria-label="Pro 專屬道具預覽">
             <p className="text-center text-primary-400/90 text-sm font-medium mb-3">Pro 專屬</p>
             <div className="flex flex-wrap justify-center gap-4 text-white/70 text-xs">
               <span className="inline-flex items-center gap-1.5"><Crown className="w-4 h-4 text-primary-400" aria-hidden />專屬徽章</span>
               <span className="inline-flex items-center gap-1.5"><Star className="w-4 h-4 text-primary-400" aria-hidden />付費主題包</span>
               <span className="inline-flex items-center gap-1.5"><MessageCircle className="w-4 h-4 text-primary-400" aria-hidden />優先客服</span>
             </div>
-          </div>
+          </GlassCard>
         </m.section>
 
         {/* E27：常見問題 id 可錨點；付費相關 FAQ 已置頂 */}
@@ -670,86 +695,88 @@ export default function PricingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65 }}
-          className="mt-16 p-8 rounded-2xl bg-white/5 border border-white/10 max-w-2xl mx-auto"
+          className="mt-16 max-w-2xl mx-auto"
         >
-          {/* T066 P2：企業/團體需求請聯絡 — 定價頁入口 */}
-          <h2 className="text-xl font-display font-bold text-white mb-2 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-primary-400" />
-            {t('pricing.teamTitle')}
-          </h2>
-          <p className="text-white/60 text-sm mb-4">
-            企業／團體客製化方案：專屬題庫、品牌露出、數據報表。填寫需求或來信，我們將與您聯繫。
-          </p>
-          <p className="text-white/40 text-xs mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            安全付款 · 隨時取消，無需綁約
-          </p>
-          {/* E93 P2：商業合作／酒商通路預留 — 可後續接實際合作 */}
-          <p className="text-white/50 text-xs mb-3">
-            酒商、通路、商業合作洽詢：<a href="mailto:enterprise@cheersin.app?subject=商業合作" className="text-primary-400 hover:text-primary-300 underline">enterprise@cheersin.app</a>
-          </p>
-          {/* 199：案例展示 */}
-          <div className="mb-6 flex flex-wrap gap-2">
-            <span className="text-white/40 text-xs uppercase tracking-wider">合作案例</span>
-            <div className="flex flex-wrap gap-2">
-              {['某科技公司 50 人團隊', '某餐飲集團品酒培訓', '某外商年終品酒會'].map((label, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs"
+          <GlassCard className="p-8">
+            {/* T066 P2：企業/團體需求請聯絡 — 定價頁入口 */}
+            <h2 className="text-xl font-display font-bold text-white mb-2 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary-400" />
+              {t('pricing.teamTitle')}
+            </h2>
+            <p className="text-white/60 text-sm mb-4">
+              企業／團體客製化方案：專屬題庫、品牌露出、數據報表。填寫需求或來信，我們將與您聯繫。
+            </p>
+            <p className="text-white/40 text-xs mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              安全付款 · 隨時取消，無需綁約
+            </p>
+            {/* E93 P2：商業合作／酒商通路預留 — 可後續接實際合作 */}
+            <p className="text-white/50 text-xs mb-3">
+              酒商、通路、商業合作洽詢：<a href="mailto:enterprise@cheersin.app?subject=商業合作" className="text-primary-400 hover:text-primary-300 underline">enterprise@cheersin.app</a>
+            </p>
+            {/* 199：案例展示 */}
+            <div className="mb-6 flex flex-wrap gap-2">
+              <span className="text-white/40 text-xs uppercase tracking-wider">合作案例</span>
+              <div className="flex flex-wrap gap-2">
+                {['某科技公司 50 人團隊', '某餐飲集團品酒培訓', '某外商年終品酒會'].map((label, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <form
+              className="space-y-4"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div>
+                <label id="enterprise-name-label" htmlFor="enterprise-name" className="block text-white/70 text-sm mb-1">公司／團隊名稱</label>
+                <input
+                  id="enterprise-name"
+                  type="text"
+                  placeholder="請填寫"
+                  className="input-glass min-h-[48px] text-sm"
+                  aria-labelledby="enterprise-name-label"
+                />
+              </div>
+              <div>
+                <label id="enterprise-email-label" htmlFor="enterprise-email" className="block text-white/70 text-sm mb-1">聯絡 Email</label>
+                <input
+                  id="enterprise-email"
+                  type="email"
+                  placeholder="email@example.com"
+                  className="input-glass min-h-[48px] text-sm"
+                  aria-labelledby="enterprise-email-label"
+                />
+              </div>
+              <div>
+                <label id="enterprise-desc-label" htmlFor="enterprise-desc" className="block text-white/70 text-sm mb-1">需求說明（人數、預算、功能）</label>
+                <textarea
+                  id="enterprise-desc"
+                  placeholder="請簡述需求"
+                  rows={3}
+                  className="input-glass text-sm resize-none"
+                  aria-labelledby="enterprise-desc-label"
+                />
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button type="submit" className="btn-primary min-h-[48px] px-6 inline-flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  {t('pricing.enterpriseSubmit')}
+                </button>
+                <Link
+                  href="mailto:enterprise@cheersin.app?subject=預約 Demo"
+                  className="btn-secondary min-h-[48px] px-6 inline-flex items-center gap-2"
                 >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-          <form
-            className="space-y-4"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <div>
-              <label id="enterprise-name-label" htmlFor="enterprise-name" className="block text-white/70 text-sm mb-1">公司／團隊名稱</label>
-              <input
-                id="enterprise-name"
-                type="text"
-                placeholder="請填寫"
-                className="input-glass min-h-[48px] text-sm"
-                aria-labelledby="enterprise-name-label"
-              />
-            </div>
-            <div>
-              <label id="enterprise-email-label" htmlFor="enterprise-email" className="block text-white/70 text-sm mb-1">聯絡 Email</label>
-              <input
-                id="enterprise-email"
-                type="email"
-                placeholder="email@example.com"
-                className="input-glass min-h-[48px] text-sm"
-                aria-labelledby="enterprise-email-label"
-              />
-            </div>
-            <div>
-              <label id="enterprise-desc-label" htmlFor="enterprise-desc" className="block text-white/70 text-sm mb-1">需求說明（人數、預算、功能）</label>
-              <textarea
-                id="enterprise-desc"
-                placeholder="請簡述需求"
-                rows={3}
-                className="input-glass text-sm resize-none"
-                aria-labelledby="enterprise-desc-label"
-              />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <button type="submit" className="btn-primary min-h-[48px] px-6 inline-flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                {t('pricing.enterpriseSubmit')}
-              </button>
-              <Link
-                href="mailto:enterprise@cheersin.app?subject=預約 Demo"
-                className="btn-secondary min-h-[48px] px-6 inline-flex items-center gap-2"
-              >
-                <Calendar className="w-4 h-4" />
-                {t('pricing.bookDemo')}
-              </Link>
-            </div>
-          </form>
+                  <Calendar className="w-4 h-4" />
+                  {t('pricing.bookDemo')}
+                </Link>
+              </div>
+            </form>
+          </GlassCard>
         </m.section>
 
         {/* 190：即時客服浮動按鈕 */}
@@ -770,7 +797,7 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
-      </div>
-    </main>
+      </div >
+    </main >
   )
 }

@@ -47,7 +47,7 @@ function normalizeDelta(deg: number): number {
   return d
 }
 
-export default function Roulette() {
+function StandardRoulette() {
   const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play: playSound } = useGameSound()
@@ -65,10 +65,6 @@ export default function Roulette() {
 
   // Phase 2: Game Mode Consolidation
   const { selectedMode } = useGameStore()
-
-  if (selectedMode === 'shot') {
-    return <ShotRoulette />
-  }
 
   // Use GameWrapper generic contexts if still valid
   const reducedMotion = useGameReduceMotion()
@@ -528,4 +524,14 @@ export default function Roulette() {
       )}
     </m.div>
   )
+}
+
+export default function Roulette() {
+  const { selectedMode } = useGameStore()
+
+  if (selectedMode === 'shot') {
+    return <ShotRoulette />
+  }
+
+  return <StandardRoulette />
 }

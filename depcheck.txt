@@ -1,0 +1,17 @@
+
+> cheersin@1.0.0 depcheck
+> npx depcheck || true
+
+Unused dependencies
+* date-fns
+* lottie-react
+* pino-pretty
+Unused devDependencies
+* autoprefixer
+* cross-env
+* postcss
+Missing dependencies
+* uuid: .\src\app\party-dj\page.tsx
+* playwright: .\scripts\expert-audit.mjs
+'true' is not recognized as an internal or external command,
+operable program or batch file.
