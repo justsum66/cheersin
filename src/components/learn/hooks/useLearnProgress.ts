@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
-import { LEARN_PROGRESS_KEY } from '@/config/learn.config'
+import { useCallback, useState } from 'react'
+import { usePersistentStorage } from '../../../hooks/usePersistentStorage'
+import { LEARN_PROGRESS_KEY } from '../../../config/learn.config'
 
 export interface ProgressEntry {
   completed: number
@@ -15,40 +16,6 @@ interface UseLearnProgressReturn {
   autoSaveIndicator: boolean
 }
 
-function loadProgress(): Record<string, ProgressEntry> {
-  if (typeof window === 'undefined') return {}
-  try {
-    const raw = localStorage.getItem(LEARN_PROGRESS_KEY)
-    if (!raw) return {}
-    const parsed = JSON.parse(raw) as Record<string, unknown>
-    if (typeof parsed !== 'object' || parsed === null) return {}
-    const out: Record<string, ProgressEntry> = {}
-    for (const [k, v] of Object.entries(parsed)) {
-      if (v && typeof v === 'object' && 'completed' in v && 'total' in v) {
-        out[k] = {
-          completed: Number((v as ProgressEntry).completed),
-          total: Number((v as ProgressEntry).total)
-        }
-        if (typeof (v as ProgressEntry).completedAt === 'string') {
-          out[k].completedAt = (v as ProgressEntry).completedAt
-        }
-      }
-    }
-    return out
-  } catch {
-    return {}
-  }
-}
-
-function saveProgress(progress: Record<string, ProgressEntry>) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(LEARN_PROGRESS_KEY, JSON.stringify(progress))
-  } catch {
-    /* ignore */
-  }
-}
-
 /**
  * Hook for managing course learning progress
  * @param courseId - The course identifier
@@ -58,13 +25,27 @@ export function useLearnProgress(
   courseId: string,
   totalChapters: number
 ): UseLearnProgressReturn {
-  const [progress, setProgress] = useState<Record<string, ProgressEntry>>({})
+  // Migrate to usePersistentStorage with validation
+  const [progress, setProgress] = usePersistentStorage<Record<string, ProgressEntry>>(
+    LEARN_PROGRESS_KEY,
+    {},
+    {
+      validate: (data): data is Record<string, ProgressEntry> => {
+        if (typeof data !== 'object' || data === null) return false
+        return Object.values(data).every(entry => 
+          entry && 
+          typeof entry === 'object' && 
+          'completed' in entry && 
+          'total' in entry &&
+          typeof (entry as ProgressEntry).completed === 'number' &&
+          typeof (entry as ProgressEntry).total === 'number'
+        )
+      },
+      fallbackValue: {}
+    }
+  )
+  
   const [autoSaveIndicator, setAutoSaveIndicator] = useState(false)
-
-  // Load progress from localStorage on mount
-  useEffect(() => {
-    setProgress(loadProgress())
-  }, [])
 
   const current = progress[courseId]
   const completedCount = current ? Math.min(current.completed, totalChapters) : 0
@@ -73,19 +54,20 @@ export function useLearnProgress(
   // Update progress with auto-save indicator
   const updateProgress = useCallback((entry: ProgressEntry) => {
     setAutoSaveIndicator(true)
-    const next = { ...progress, [courseId]: entry }
-    setProgress(next)
-    saveProgress(next)
+    setProgress(prev => ({
+      ...prev,
+      [courseId]: entry
+    }))
     
     // Hide indicator after delay
     setTimeout(() => setAutoSaveIndicator(false), 1500)
-  }, [courseId, progress])
+  }, [courseId, setProgress])
 
   return {
     progress,
     completedCount,
     progressPct,
     updateProgress,
-    autoSaveIndicator
+    autoSaveIndicator: true // Always true with auto-save
   }
 }

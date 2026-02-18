@@ -1,8 +1,7 @@
 /**
  * 152 課程資料：從 data/courses 讀取，供 learn/[courseId] 使用
+ * Server-only functions for file system operations
  */
-import fs from 'fs'
-import path from 'path'
 
 /** 158 章節內穿插測驗：單選題 */
 export interface ChapterQuizItem {
@@ -44,7 +43,10 @@ const COURSE_FILE_MAP: Record<string, string> = {
   'wine-basics': 'wine-101',
 }
 
+// Server-only functions (will be tree-shaken in client bundles)
 function getDataPath(): string {
+  // @ts-ignore - This will only run on server
+  const path = require('path')
   return path.join(process.cwd(), 'data', 'courses')
 }
 
@@ -79,11 +81,17 @@ export function getCourseIds(): string[] {
 }
 
 export function getCourse(courseId: string): CourseData | null {
-  const base = getDataPath()
-  const fileName = COURSE_FILE_MAP[courseId] ?? courseId
-  const filePath = path.join(base, `${fileName}.json`)
-  if (!fs.existsSync(filePath)) return null
   try {
+    // @ts-ignore - This will only run on server
+    const fs = require('fs')
+    const path = require('path')
+    
+    const base = getDataPath()
+    const fileName = COURSE_FILE_MAP[courseId] ?? courseId
+    const filePath = path.join(base, `${fileName}.json`)
+    
+    if (!fs.existsSync(filePath)) return null
+    
     const raw = fs.readFileSync(filePath, 'utf8')
     return JSON.parse(raw) as CourseData
   } catch {
