@@ -95,11 +95,7 @@ type VirtualRowProps = {
   t: (key: string, opts?: Record<string, string | number>) => string
 }
 
-function VirtualMessageRow({
-  index,
-  style,
-  ...data
-}: { index: number; style: React.CSSProperties } & VirtualRowProps) {
+function VirtualMessageRow({ index, style, data }: { index: number; style: React.CSSProperties; data: VirtualRowProps }) {
   const message = data.messages[index]
   return (
     <div style={style}>
@@ -862,6 +858,8 @@ export default function AssistantPage() {
           {messages.length > VIRTUALIZE_MESSAGES_THRESHOLD ? (
             <div ref={messagesContainerRef} style={{ height: listHeight }}>
               <List<VirtualRowProps>
+                height={listHeight}
+                width="100%"
                 itemCount={messages.length}
                 itemSize={VIRTUAL_MESSAGE_ESTIMATED_HEIGHT + 32}
                 itemData={{
@@ -885,7 +883,6 @@ export default function AssistantPage() {
                   isWineInWishlist,
                   t,
                 }}
-                style={{ height: listHeight, width: '100%' }}
               >
                 {VirtualMessageRow}
               </List>

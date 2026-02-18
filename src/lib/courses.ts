@@ -1,7 +1,7 @@
 /**
  * 152 課程資料：從 data/courses 讀取，供 learn/[courseId] 使用
  */
-import { readFileSync, existsSync } from 'fs'
+import fs from 'fs'
 import path from 'path'
 
 /** 158 章節內穿插測驗：單選題 */
@@ -82,9 +82,9 @@ export function getCourse(courseId: string): CourseData | null {
   const base = getDataPath()
   const fileName = COURSE_FILE_MAP[courseId] ?? courseId
   const filePath = path.join(base, `${fileName}.json`)
-  if (!existsSync(filePath)) return null
+  if (!fs.existsSync(filePath)) return null
   try {
-    const raw = readFileSync(filePath, 'utf8')
+    const raw = fs.readFileSync(filePath, 'utf8')
     return JSON.parse(raw) as CourseData
   } catch {
     return null
