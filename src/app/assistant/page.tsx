@@ -862,10 +862,9 @@ export default function AssistantPage() {
           {messages.length > VIRTUALIZE_MESSAGES_THRESHOLD ? (
             <div ref={messagesContainerRef} style={{ height: listHeight }}>
               <List<VirtualRowProps>
-                rowComponent={VirtualMessageRow}
-                rowCount={messages.length}
-                rowHeight={VIRTUAL_MESSAGE_ESTIMATED_HEIGHT + 32}
-                rowProps={{
+                itemCount={messages.length}
+                itemSize={VIRTUAL_MESSAGE_ESTIMATED_HEIGHT + 32}
+                itemData={{
                   messages,
                   isLoading,
                   prefersReducedMotion,
@@ -887,7 +886,9 @@ export default function AssistantPage() {
                   t,
                 }}
                 style={{ height: listHeight, width: '100%' }}
-              />
+              >
+                {VirtualMessageRow}
+              </List>
             </div>
           ) : (
             <div ref={messagesContainerRef} className="space-y-8">
