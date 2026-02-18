@@ -4,12 +4,14 @@ import { useState, useCallback } from 'react'
 import { m } from 'framer-motion'
 import { User } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import { pickRandomImpersonation } from '@/data/impersonation'
 
 /** R2-166：模仿大賽 — 抽名人/角色，表演給其他人猜 */
 export default function Impersonation() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [topic, setTopic] = useState<string | null>(null)
   const [phase, setPhase] = useState<'draw' | 'acting' | 'revealed'>('draw')
 
@@ -44,8 +46,9 @@ export default function Impersonation() {
         </button>
       ) : (
         <m.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
           className="w-full max-w-lg text-center"
         >
           {phase === 'draw' && (

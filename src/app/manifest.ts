@@ -25,6 +25,8 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: '/sizes/favicon_32.png', sizes: '32x32', type: 'image/png' },
       { src: '/sizes/icon_256_gold.png', sizes: '256x256', type: 'image/png' },
       { src: '/sizes/icon_512_gold.png', sizes: '512x512', type: 'image/png' },
+      // PWA-017: Monochrome icon for Android themed shortcuts
+      { src: '/sizes/icon_512_gold.png', sizes: '512x512', type: 'image/png', purpose: 'monochrome' },
     ],
     /** PWA Screenshots：安裝預覽圖（行動裝置與桌面） */
     screenshots: [
@@ -52,5 +54,5 @@ export default function manifest(): MetadataRoute.Manifest {
       { name: 'AI 侍酒師', short_name: '助理', url: '/assistant', description: '問酒、推薦' },
       { name: '派對遊樂場', short_name: '遊戲', url: '/games', description: '派對桌遊' },
     ],
-  }
+  } as any
 }

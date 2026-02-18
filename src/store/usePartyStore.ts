@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 interface PartyMember {
     id: string
@@ -40,7 +41,8 @@ interface PartyState {
     resetParty: () => void
 }
 
-export const usePartyStore = create<PartyState>((set) => ({
+/** Task #52: Added devtools middleware for dev debugging */
+export const usePartyStore = create<PartyState>()(devtools((set) => ({
     roomId: null,
     roomCode: null,
     members: [],
@@ -77,4 +79,4 @@ export const usePartyStore = create<PartyState>((set) => ({
         isHost: false,
         partyPlan: null
     })
-}))
+}), { name: 'PartyStore', enabled: process.env.NODE_ENV !== 'production' }))

@@ -14,9 +14,10 @@ export function RouteChangeProgress() {
     setPercent(0)
     const t1 = setTimeout(() => setPercent(70), 50)
     const t2 = setTimeout(() => setPercent(90), 200)
+    let t4: ReturnType<typeof setTimeout> | undefined
     const t3 = setTimeout(() => {
       setPercent(100)
-      setTimeout(() => {
+      t4 = setTimeout(() => {
         setVisible(false)
         setPercent(0)
       }, 200)
@@ -25,6 +26,7 @@ export function RouteChangeProgress() {
       clearTimeout(t1)
       clearTimeout(t2)
       clearTimeout(t3)
+      if (t4) clearTimeout(t4)
     }
   }, [pathname])
 

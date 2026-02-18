@@ -4,6 +4,7 @@ import { m } from 'framer-motion'
 import { Check, Lock } from 'lucide-react'
 import type { GameMode } from '@/config/games.config'
 import { Badge } from '@/components/ui/Badge'
+import { useGameReduceMotion } from './GameWrapper'
 
 interface GameModeSelectorProps {
     modes: GameMode[]
@@ -13,6 +14,7 @@ interface GameModeSelectorProps {
 }
 
 export function GameModeSelector({ modes, onSelect, onCancel, title }: GameModeSelectorProps) {
+    const reducedMotion = useGameReduceMotion()
     const containerVariants = {
         hidden: { opacity: 0, y: 20 },
         visible: {
@@ -31,15 +33,15 @@ export function GameModeSelector({ modes, onSelect, onCancel, title }: GameModeS
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="game-mode-selector-title">
             <m.div
                 className="w-full max-w-lg p-6 space-y-6 rounded-2xl bg-card/50 border border-white/10 shadow-2xl backdrop-blur-md"
                 variants={containerVariants}
-                initial="hidden"
+                initial={reducedMotion ? false : "hidden"}
                 animate="visible"
             >
                 <div className="space-y-2 text-center">
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+                    <h2 id="game-mode-selector-title" className="text-2xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
                         {title || '選擇遊戲模式'}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -51,7 +53,7 @@ export function GameModeSelector({ modes, onSelect, onCancel, title }: GameModeS
                     {modes.map((mode) => (
                         <m.button
                             key={mode.id}
-                            variants={itemVariants}
+                            variants={reducedMotion ? undefined : itemVariants}
                             onClick={() => onSelect(mode.id)}
                             className={`relative flex items-center p-4 transition-all duration-300 border rounded-xl group text-left w-full
                 hover:scale-[1.02] active:scale-[0.98] outline-none focus:ring-2 focus:ring-primary/50
@@ -88,7 +90,8 @@ export function GameModeSelector({ modes, onSelect, onCancel, title }: GameModeS
                 <div className="flex justify-center pt-2">
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                        className="px-4 py-2 min-h-[44px] text-sm font-medium text-muted-foreground hover:text-white transition-colors games-focus-ring rounded-lg"
+                        aria-label="返回上一頁"
                     >
                         返回
                     </button>

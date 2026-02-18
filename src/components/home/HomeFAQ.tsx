@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { m , AnimatePresence } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
 
 /** T067 P2：遊戲懲罰可自訂、FAQ 說明「可非酒精」，家長與不喝酒玩家接納 */
 const FAQ_ITEMS = [
@@ -13,49 +12,57 @@ const FAQ_ITEMS = [
   { q: 'AI 侍酒師有使用次數嗎？', a: '免費方案每日有額度，Pro 會員享有更高額度與優先回應。' },
 ]
 
-/** 45 問題？快速 FAQ 折疊區 */
+/** HP-009：semantic <details>/<summary> — works without JS, native a11y
+ *  HP-044: Search/filter for FAQ items */
 export default function HomeFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return FAQ_ITEMS
+    return FAQ_ITEMS.filter(
+      (item) => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)
+    )
+  }, [search])
 
   return (
     <div className="mt-8 max-w-2xl mx-auto">
       <h3 className="text-sm font-medium text-white/60 mb-3">常見問題</h3>
+
+      {/* HP-044: FAQ search input */}
+      <div className="relative mb-3">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="搜尋常見問題..."
+          className="w-full pl-9 pr-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 bg-white/[0.03] border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-all"
+          aria-label="搜尋常見問題"
+        />
+      </div>
+
       <div className="space-y-2">
-        {FAQ_ITEMS.map((item, index) => (
-          <m.div
-            key={index}
-            layout
-            className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
-          >
-            <button
-              type="button"
-              onClick={() => setOpenIndex(openIndex === index ? null : index)}
-              className="w-full flex items-center justify-between gap-3 min-h-[48px] px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors games-focus-ring rounded-xl"
-              aria-expanded={openIndex === index}
+        {filtered.length === 0 ? (
+          <p className="text-center text-white/40 text-sm py-4">找不到相關問題</p>
+        ) : (
+          filtered.map((item, index) => (
+            <details
+              key={index}
+              className="group rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
             >
-              <span className="text-sm font-medium">{item.q}</span>
-              <m.span
-                animate={{ rotate: openIndex === index ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
+              <summary
+                className="flex items-center justify-between gap-3 min-h-[48px] px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors games-focus-ring rounded-xl cursor-pointer list-none [&::-webkit-details-marker]:hidden"
               >
-                <ChevronDown className="w-4 h-4 text-white/50" />
-              </m.span>
-            </button>
-            <AnimatePresence initial={false}>
-              {openIndex === index && (
-                <m.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
-                </m.div>
-              )}
-            </AnimatePresence>
-          </m.div>
-        ))}
+                <span className="text-sm font-medium">{item.q}</span>
+                <ChevronDown className="w-4 h-4 text-white/50 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+              </summary>
+              <div className="overflow-hidden animate-[faqOpen_0.2s_ease-out]">
+                <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
+              </div>
+            </details>
+          ))
+        )}
       </div>
     </div>
   )

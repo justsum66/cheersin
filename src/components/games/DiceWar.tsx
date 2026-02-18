@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
@@ -24,6 +24,7 @@ export default function DiceWar() {
   const [rolling, setRolling] = useState(false)
   const [phase, setPhase] = useState<'waiting' | 'rolling' | 'result'>('waiting')
   const [winner, setWinner] = useState<string | null>(null)
+  const rollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const players = contextPlayers.length > 0 ? contextPlayers : ['玩家1', '玩家2']
   const player1 = players[0]
@@ -35,7 +36,8 @@ export default function DiceWar() {
     play('click')
 
     let count = 0
-    const interval = setInterval(() => {
+    if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
+    rollIntervalRef.current = setInterval(() => {
       setPlayerDice([
         Math.floor(Math.random() * 6) + 1,
         Math.floor(Math.random() * 6) + 1,
@@ -46,7 +48,8 @@ export default function DiceWar() {
       ])
       count++
       if (count >= 10) {
-        clearInterval(interval)
+        clearInterval(rollIntervalRef.current!)
+        rollIntervalRef.current = null
         const p1 = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1] as [number, number]
         const p2 = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1] as [number, number]
         setPlayerDice(p1)
@@ -72,6 +75,15 @@ export default function DiceWar() {
       }
     }, 100)
   }, [player1, player2, play])
+
+  useEffect(() => {
+    return () => {
+      if (rollIntervalRef.current) {
+        clearInterval(rollIntervalRef.current)
+        rollIntervalRef.current = null
+      }
+    }
+  }, [])
 
   const nextRound = () => {
     setRound(r => r + 1)

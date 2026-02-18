@@ -431,10 +431,43 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
 
+/* Enhanced Focus Styles for Better Accessibility */
+.games-focus-ring {
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.games-focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.8), 0 0 0 5px rgba(212, 175, 55, 0.4);
+  border-radius: inherit; /* Match parent border radius */
+}
+
+/* Skip link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #D4AF37;
+  color: #000;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 10000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .animate-scroll-left,
   .animate-aurora {
     animation: none;
+  }
+  
+  /* Reduce animations for focus rings */
+  .games-focus-ring:focus-visible {
+    transition: none;
   }
 }

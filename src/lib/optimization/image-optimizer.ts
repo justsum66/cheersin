@@ -122,7 +122,7 @@ export class ProgressiveImageLoader {
       
       try {
         await this.loadImageWithFallback(optimizedUrl, container, i === 0)
-        console.log(`[Image Optimizer] Loaded quality level ${quality}%`)
+        if (process.env.NODE_ENV !== 'production') console.log(`[Image Optimizer] Loaded quality level ${quality}%`)
       } catch (error) {
         console.warn(`[Image Optimizer] Failed to load quality level ${quality}%:`, error)
         // Continue with next quality level
@@ -328,7 +328,7 @@ export async function preloadCriticalImages(imageUrls: string[]): Promise<void> 
   // Check if we're in a test environment or non-browser environment
   if (typeof window === 'undefined' || typeof Image === 'undefined' || process.env.NODE_ENV === 'test') {
     // In test/non-browser environments, just simulate successful loading
-    console.log(`[Image Optimization] Skipped preloading ${imageUrls.length} images (test/non-browser environment)`)
+    if (process.env.NODE_ENV !== 'production') console.log(`[Image Optimization] Skipped preloading ${imageUrls.length} images (test/non-browser environment)`)
     return Promise.resolve();
   }
   
@@ -343,7 +343,7 @@ export async function preloadCriticalImages(imageUrls: string[]): Promise<void> 
   
   try {
     await Promise.all(preloadPromises)
-    console.log(`[Image Optimization] Preloaded ${imageUrls.length} critical images`)
+    if (process.env.NODE_ENV !== 'production') console.log(`[Image Optimization] Preloaded ${imageUrls.length} critical images`)
   } catch (error) {
     console.warn('[Image Optimization] Some images failed to preload:', error)
   }

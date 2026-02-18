@@ -1,13 +1,15 @@
 'use client'
 
 /**
- * P2.E3.2 / P1-47: 學習小組（coming-soon UX 優化）
+ * LEARN-048 / P2.E3.2: 學習小組 + Live Cohort 排程功能
  * - 功能預覽清單
- * - 視覺進度指標
+ * - LEARN-048: 模擬 live cohort 排程報名
  * - 返回導航
  */
+import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, UserPlus, LinkIcon, BarChart3, Trophy } from 'lucide-react'
+import { ChevronLeft, UserPlus, LinkIcon, BarChart3, Trophy, Calendar, Clock, Users } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const PREVIEW_FEATURES = [
   { icon: UserPlus, title: '建立小組', desc: '最多 6 人組隊，設定小組名稱與學習目標' },
@@ -16,7 +18,30 @@ const PREVIEW_FEATURES = [
   { icon: Trophy, title: '組隊成就', desc: '全員完成同一門課可解鎖專屬小組徽章' },
 ]
 
+/** LEARN-048: Live Cohort 排程 */
+const UPCOMING_COHORTS = [
+  { id: 'wine-basics-cohort-1', course: '葡萄酒入門', date: '2026-03-01', time: '20:00', spots: 12, enrolled: 7 },
+  { id: 'cocktail-cohort-1', course: '調酒基礎', date: '2026-03-08', time: '19:30', spots: 10, enrolled: 4 },
+  { id: 'whisky-cohort-1', course: '威士忌入門', date: '2026-03-15', time: '20:00', spots: 8, enrolled: 6 },
+]
+
 export default function LearnStudyGroupPage() {
+  const [enrolledCohorts, setEnrolledCohorts] = useState<Set<string>>(new Set())
+
+  const handleEnroll = (cohortId: string) => {
+    setEnrolledCohorts(prev => {
+      const next = new Set(prev)
+      if (next.has(cohortId)) {
+        next.delete(cohortId)
+        toast('已取消報名', { duration: 1500 })
+      } else {
+        next.add(cohortId)
+        toast.success('已報名成功！開課前會提醒你', { duration: 2000 })
+      }
+      return next
+    })
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white px-4 py-8 pb-24">
       <div className="max-w-2xl mx-auto">
@@ -31,11 +56,62 @@ export default function LearnStudyGroupPage() {
 
         <h1 className="text-2xl font-bold flex items-center gap-2 mb-2">
           <UserPlus className="w-7 h-7 text-primary-400" />
-          學習小組
+          學習小組 & Live Cohort
         </h1>
         <p className="text-white/60 text-sm mb-8">
-          邀請好友組隊，一起選課、一起完成，互相監督。
+          邀請好友組隊，或報名 Live Cohort 跟著大家一起學。
         </p>
+
+        {/* LEARN-048: Live Cohort 排程 */}
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary-400" />
+            即將開課的 Cohort
+          </h2>
+          <div className="space-y-3">
+            {UPCOMING_COHORTS.map(cohort => {
+              const isEnrolled = enrolledCohorts.has(cohort.id)
+              const spotsLeft = cohort.spots - cohort.enrolled
+              return (
+                <div key={cohort.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-white">{cohort.course}</h3>
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-white/50">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {cohort.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {cohort.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {cohort.enrolled}/{cohort.spots} 人
+                        </span>
+                      </div>
+                      {spotsLeft <= 3 && spotsLeft > 0 && (
+                        <p className="text-amber-400 text-xs mt-1">僅剩 {spotsLeft} 個名額</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleEnroll(cohort.id)}
+                      className={`shrink-0 min-h-[40px] px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        isEnrolled
+                          ? 'bg-primary-500/20 border border-primary-500/40 text-primary-300'
+                          : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/15'
+                      }`}
+                    >
+                      {isEnrolled ? '已報名' : '報名'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
         {/* Status Banner */}
         <div className="rounded-xl bg-primary-500/10 border border-primary-500/20 p-4 mb-8">
@@ -45,7 +121,7 @@ export default function LearnStudyGroupPage() {
               <div className="absolute inset-0 w-3 h-3 bg-amber-400 rounded-full animate-ping opacity-50" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/90">功能開發中</p>
+              <p className="text-sm font-medium text-white/90">小組功能開發中</p>
               <p className="text-xs text-white/50">預計 2026 Q2 上線</p>
             </div>
           </div>
@@ -53,7 +129,7 @@ export default function LearnStudyGroupPage() {
 
         {/* Feature Preview */}
         <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">
-          功能預覽
+          小組功能預覽
         </h2>
         <div className="space-y-3 mb-8">
           {PREVIEW_FEATURES.map((feat) => {

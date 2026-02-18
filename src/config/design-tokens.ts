@@ -79,9 +79,9 @@ export const colors = {
   // Text Colors (with opacity) — 正文、副標、弱化、裝飾用
   text: {
     primary: 'rgb(255, 255, 255)',
-    secondary: 'rgba(255, 255, 255, 0.7)',
-    muted: 'rgba(255, 255, 255, 0.5)',
-    subtle: 'rgba(255, 255, 255, 0.3)',
+    secondary: 'rgba(255, 255, 255, 0.8)', // Increased from 0.7 for better contrast
+    muted: 'rgba(255, 255, 255, 0.6)',     // Increased from 0.5 for better contrast
+    subtle: 'rgba(255, 255, 255, 0.4)',    // Increased from 0.3 for better contrast
   },
 } as const
 
@@ -280,3 +280,24 @@ export const designTokens = {
 } as const
 
 export type DesignTokens = typeof designTokens
+
+// ============================================
+// CLEAN-026: Re-export Tailwind theme tokens for convenience
+// ============================================
+export { themeExtend } from '@/lib/design-tokens'
+
+// Re-export unified animation variants
+export {
+  fadeIn,
+  fadeInUp,
+  fadeInDown,
+  slideUp,
+  scaleIn,
+  staggerContainer,
+  staggerItem,
+  modalOverlay,
+  modalContent,
+  buttonHover,
+  buttonTap,
+  cardHover,
+} from '@/lib/animation-variants'

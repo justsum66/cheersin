@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { m } from 'framer-motion'
-import { Sparkles, RotateCcw, Check, X } from 'lucide-react'
+import { Sparkles, RotateCcw, Check, X, Flame, History } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
@@ -27,6 +28,7 @@ const MIND_READ_TOPICS = [
 export default function MindReading() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [targetIdx, setTargetIdx] = useState(0)
@@ -36,6 +38,11 @@ export default function MindReading() {
   const [guesses, setGuesses] = useState<Record<string, string>>({})
   const [revealed, setRevealed] = useState(false)
   const [scores, setScores] = useState<Record<string, number>>({})
+  /** GAME-105: Score history — track round-by-round results */
+  const [scoreHistory, setScoreHistory] = useState<{ round: number; player: string; correct: boolean }[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  /** GAME-106: Streak bonus tracking — 2+ correct in a row = +1 bonus */
+  const [streaks, setStreaks] = useState<Record<string, number>>({})
 
   const target = players[targetIdx]
   const otherPlayers = players.filter((_, i) => i !== targetIdx)
@@ -72,13 +79,22 @@ export default function MindReading() {
   const reveal = useCallback(() => {
     play('correct')
     setRevealed(true)
-    // Count correct guesses
+    const roundNum = scoreHistory.length + 1
+    // Count correct guesses with streak bonus
     Object.entries(guesses).forEach(([player, guess]) => {
-      if (guess === targetAnswer) {
-        setScores(prev => ({ ...prev, [player]: (prev[player] || 0) + 1 }))
+      const isCorrect = guess === targetAnswer
+      setScoreHistory(prev => [...prev, { round: roundNum, player, correct: isCorrect }])
+      if (isCorrect) {
+        const currentStreak = (streaks[player] || 0) + 1
+        setStreaks(prev => ({ ...prev, [player]: currentStreak }))
+        /** GAME-106: Streak bonus — 2+ consecutive correct = +1 bonus point */
+        const bonus = currentStreak >= 2 ? 1 : 0
+        setScores(prev => ({ ...prev, [player]: (prev[player] || 0) + 1 + bonus }))
+      } else {
+        setStreaks(prev => ({ ...prev, [player]: 0 }))
       }
     })
-  }, [guesses, targetAnswer, play])
+  }, [guesses, targetAnswer, play, scoreHistory.length, streaks])
 
   const nextRound = useCallback(() => {
     setTargetIdx((targetIdx + 1) % players.length)
@@ -96,6 +112,9 @@ export default function MindReading() {
     setGuesses({})
     setRevealed(false)
     setScores({})
+    setScoreHistory([])
+    setStreaks({})
+    setShowHistory(false)
   }, [])
 
   const allGuessed = Object.keys(guesses).length === otherPlayers.length
@@ -167,7 +186,7 @@ export default function MindReading() {
           )}
         </div>
       ) : (
-        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center w-full max-w-md">
+        <m.div initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="text-center w-full max-w-md">
           <p className="text-white/50 mb-2">{currentTopic.topic}</p>
           <p className="text-violet-400 font-bold text-2xl mb-4">{target} 選了：{targetAnswer}</p>
           <div className="space-y-2">
@@ -191,7 +210,34 @@ export default function MindReading() {
       {Object.keys(scores).length > 0 && (
         <div className="absolute bottom-4 left-4 text-white/30 text-xs">
           {Object.entries(scores).map(([p, s]) => (
-            <div key={p}>{p}: {s}分</div>
+            <div key={p} className="flex items-center gap-1">
+              {p}: {s}分
+              {/** GAME-106: Show streak indicator */}
+              {(streaks[p] || 0) >= 2 && <Flame className="w-3 h-3 text-orange-400 inline" />}
+            </div>
+          ))}
+          {/** GAME-105: Score history toggle */}
+          <button
+            type="button"
+            onClick={() => setShowHistory(h => !h)}
+            className="mt-1 flex items-center gap-1 text-white/40 hover:text-white/60 games-focus-ring"
+          >
+            <History className="w-3 h-3" /> 歷史
+          </button>
+        </div>
+      )}
+
+      {/** GAME-105: Score history panel */}
+      {showHistory && scoreHistory.length > 0 && (
+        <div className="absolute bottom-16 left-4 bg-black/80 border border-white/10 rounded-xl p-3 max-h-40 overflow-y-auto text-xs text-white/60 w-56 z-10">
+          <p className="text-white/40 mb-1 font-medium">歷史紀錄</p>
+          {scoreHistory.slice().reverse().map((h, i) => (
+            <div key={i} className="flex items-center gap-1 py-0.5">
+              <span className={h.correct ? 'text-green-400' : 'text-red-400'}>
+                {h.correct ? <Check className="w-3 h-3 inline" /> : <X className="w-3 h-3 inline" />}
+              </span>
+              <span>R{h.round} {h.player}</span>
+            </div>
           ))}
         </div>
       )}

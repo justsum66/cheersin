@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { m, useMotionValue, useSpring, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion'
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center rounded-xl transition-all duration-300 font-medium disabled:opacity-70 disabled:pointer-events-none active:scale-95 border ring-offset-background outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'inline-flex items-center justify-center rounded-xl transition-all duration-300 font-medium disabled:opacity-70 disabled:pointer-events-none active:scale-95 border ring-offset-background outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:shadow-glass-hover',
     {
         variants: {
             variant: {
@@ -18,10 +18,10 @@ const buttonVariants = cva(
                 outline: 'border-white/20 bg-transparent text-white hover:bg-white/10',
             },
             size: {
-                sm: 'h-9 px-3 text-sm',
-                md: 'h-12 px-6 text-base',
-                lg: 'h-14 px-8 text-lg',
-                icon: 'h-10 w-10 p-2',
+                sm: 'h-11 px-3 text-sm min-h-[44px] min-w-[44px]', // Increased from h-9 to h-11 to meet 44px requirement
+                md: 'h-12 px-6 text-base min-h-[44px] min-w-[44px]',
+                lg: 'h-14 px-8 text-lg min-h-[44px] min-w-[44px]',
+                icon: 'h-11 w-11 p-2 min-h-[44px] min-w-[44px]', // Increased from h-10 w-10 to h-11 w-11 to meet 44px requirement
             },
             neonBorder: {
                 true: 'border-primary-400/50 shadow-[0_0_10px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)]',
@@ -52,7 +52,8 @@ export interface ButtonProps
     magneticStrength?: number
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+/** Task #53: 使用 memo + forwardRef 優化列表渲染性能 */
+const ButtonInner = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, neonBorder, fullWidth, rounded, isLoading, leftIcon, rightIcon, magnetic = false, magneticStrength = 0.2, children, ...props }, ref) => {
         const reducedMotion = useReducedMotion()
 
@@ -88,30 +89,53 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             </>
         )
 
-        if (magnetic && !reducedMotion && !isLoading && !props.disabled) {
-            return (
-                <LazyMotion features={domAnimation}>
-                    <m.button
-                        ref={ref as any}
-                        className={commonClasses}
-                        disabled={props.disabled}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                        style={{ x: springX, y: springY }}
-                        whileTap={{ scale: 0.95 }}
-                        {...(props as any)}
-                    >
-                        {content}
-                    </m.button>
-                </LazyMotion>
-            )
+        // Apply tap animation to all buttons (R2-031: All main buttons should have whileTap scale effect)
+        if (!reducedMotion && !isLoading && !props.disabled) {
+            // For magnetic buttons, keep the mouse move effects
+            if (magnetic) {
+                return (
+                    <LazyMotion features={domAnimation}>
+                        <m.button
+                            ref={ref as any}
+                            className={commonClasses}
+                            disabled={props.disabled}
+                            aria-busy={isLoading ? 'true' : undefined}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                            style={{ x: springX, y: springY }}
+                            whileTap={{ scale: 0.95 }}
+                            {...(props as any)}
+                        >
+                            {content}
+                        </m.button>
+                    </LazyMotion>
+                )
+            } else {
+                // For non-magnetic buttons, just apply the tap animation
+                return (
+                    <LazyMotion features={domAnimation}>
+                        <m.button
+                            ref={ref as any}
+                            className={commonClasses}
+                            disabled={props.disabled}
+                            aria-busy={isLoading ? 'true' : undefined}
+                            whileTap={{ scale: 0.95 }}
+                            {...(props as any)}
+                        >
+                            {content}
+                        </m.button>
+                    </LazyMotion>
+                )
+            }
         }
 
+        // Fallback to regular button when motion is reduced or button is loading/disabled
         return (
             <button
                 className={commonClasses}
                 ref={ref}
                 disabled={isLoading || props.disabled}
+                aria-busy={isLoading ? 'true' : undefined}
                 {...props}
             >
                 {content}
@@ -119,6 +143,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )
     }
 )
-Button.displayName = 'Button'
+ButtonInner.displayName = 'Button'
+
+const Button = React.memo(ButtonInner)
 
 export { Button, buttonVariants }

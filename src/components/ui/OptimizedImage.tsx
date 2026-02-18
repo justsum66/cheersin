@@ -1,164 +1,134 @@
 'use client'
 
-import Image from 'next/image'
+import Image, { ImageProps } from 'next/image'
 import { useState, useEffect } from 'react'
 
-interface OptimizedImageProps {
-  src: string
-  alt: string
-  width?: number
-  height?: number
-  sizes?: string
-  quality?: number
+interface OptimizedImageProps extends Omit<ImageProps, 'loading' | 'quality' | 'className'> {
+  /** 是否優先載入（LCP候選） */
   priority?: boolean
-  className?: string
-  style?: React.CSSProperties
-  onLoad?: () => void
-  onError?: () => void
+  /** 載入策略：lazy | eager */
   loading?: 'lazy' | 'eager'
-  // Task 1.03: Image Optimization Pipeline
-  enableWebP?: boolean
-  enableAVIF?: boolean
-  progressiveLoading?: boolean
-  blurDataURL?: string
+  /** 圖片品質 1-100（預設 75） */
+  quality?: number
+  /** 是否啟用模糊預覽 */
+  blurPreview?: boolean
+  /** 圖片載入完成回呼 */
+  onLoad?: () => void
+  /** 圖片載入錯誤回呼 */
+  onError?: () => void
+  /** CSS class */
+  className?: string
 }
 
 /**
- * Task 1.03: Image Optimization Pipeline
- * Enhanced image component with WebP/AVIF support, progressive loading, and 60% payload reduction
+ * A2. 圖片全面WebP/AVIF轉換 - 統一優化圖片元件
+ * 
+ * 特色：
+ * ✅ 自動使用WebP/AVIF現代格式（Next.js已配置）
+ * ✅ 智慧載入策略（LCP優先、其他lazy）
+ * ✅ 漸進式載入（blur preview）
+ * ✅ 響應式srcSet自動生成
+ * ✅ 載入狀態管理
+ * 
+ * 使用範例：
+ * <OptimizedImage 
+ *   src="/hero.jpg" 
+ *   alt="Hero"
+ *   width={1200}
+ *   height={600}
+ *   priority  // LCP圖片
+ *   blurPreview  // 模糊預覽
+ * />
  */
 export function OptimizedImage({
-  src,
-  alt,
-  width,
-  height,
-  sizes = '100vw',
-  quality = 75,
   priority = false,
-  className = '',
-  style,
+  loading = 'lazy',
+  quality = 75,
+  blurPreview = false,
   onLoad,
   onError,
-  loading = 'lazy',
-  enableWebP = true,
-  enableAVIF = true,
-  progressiveLoading = true,
-  blurDataURL
+  className = '',
+  ...props
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
-  const [imageSrc, setImageSrc] = useState(src)
 
-  // Progressive loading effect
-  useEffect(() => {
-    if (progressiveLoading && !isLoaded) {
-      const timer = setTimeout(() => {
-        setIsLoaded(true)
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [isLoaded, progressiveLoading])
+  const effectiveLoading = priority ? 'eager' : loading
 
-  // Handle image loading
   const handleLoad = () => {
     setIsLoaded(true)
     onLoad?.()
   }
 
-  // Handle image error
   const handleError = () => {
     setHasError(true)
     onError?.()
-    
-    // Fallback to original image if optimized formats fail
-    if (imageSrc !== src) {
-      setImageSrc(src)
-    }
   }
 
-  // Generate optimized image formats
-  const getOptimizedSrc = () => {
-    if (hasError) return src
-    
-    // For external images, use the original src
-    if (src.startsWith('http')) {
-      return src
-    }
-    
-    // For local images, Next.js handles optimization automatically
-    return src
+  // 如果有錯誤，顯示預設圖片或佔位符
+  if (hasError) {
+    return (
+      <div 
+        className={`bg-gradient-to-br from-white/5 to-white/10 border border-white/10 rounded-xl flex items-center justify-center ${className}`}
+        style={{ 
+          width: props.width, 
+          height: props.height,
+          aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : undefined
+        }}
+      >
+        <div className="text-center text-white/40 text-sm">
+          <div className="mb-1">🖼️</div>
+          <div>圖片載入失敗</div>
+        </div>
+      </div>
+    )
   }
-
-  // Progressive loading classes
-  const loadingClasses = progressiveLoading 
-    ? `transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`
-    : ''
 
   return (
-    <div className={`relative inline-block ${className}`} style={style}>
-      {/* Loading placeholder */}
-      {!isLoaded && progressiveLoading && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg" />
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* 預設佔位符（載入前顯示） */}
+      {!isLoaded && (
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 animate-pulse"
+          style={{ 
+            width: props.width, 
+            height: props.height 
+          }}
+        />
       )}
-      
-      {/* Optimized Image */}
+
+      {/* 模糊預覽（如果啟用） */}
+      {blurPreview && !isLoaded && (
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-30"
+          style={{ 
+            width: props.width, 
+            height: props.height 
+          }}
+        />
+      )}
+
       <Image
-        src={getOptimizedSrc()}
-        alt={alt}
-        width={width}
-        height={height}
-        sizes={sizes}
-        quality={quality}
+        {...props}
         priority={priority}
-        loading={loading}
-        className={`${loadingClasses} ${hasError ? 'opacity-50' : ''}`}
+        loading={effectiveLoading}
+        quality={quality}
         onLoad={handleLoad}
         onError={handleError}
-        placeholder={blurDataURL ? 'blur' : 'empty'}
-        blurDataURL={blurDataURL}
-        // Task 1.03: Enable modern image formats
-        unoptimized={!enableWebP && !enableAVIF}
+        className={`${className || ''} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+        // 確保支援現代格式
+        unoptimized={false}
       />
-      
-      {/* Error fallback */}
-      {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-100 dark:bg-red-900/20 rounded-lg">
-          <span className="text-red-500 dark:text-red-400 text-sm">Failed to load image</span>
+
+      {/* 載入指示器（可選） */}
+      {!isLoaded && (
+        <div className="absolute bottom-2 right-2">
+          <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
         </div>
       )}
     </div>
   )
 }
 
-/**
- * Preload critical images for LCP optimization
- */
-export function preloadImage(src: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const img = new window.Image()
-    img.onload = () => resolve()
-    img.onerror = () => reject(new Error(`Failed to preload image: ${src}`))
-    img.src = src
-  })
-}
-
-/**
- * Generate responsive image sizes configuration
- */
-export const IMAGE_SIZES = {
-  hero: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
-  card: '(max-width: 768px) 100vw, 300px',
-  avatar: '64px',
-  thumbnail: '(max-width: 768px) 100vw, 200px',
-  full: '100vw'
-} as const
-
-/**
- * Image quality presets for different use cases
- */
-export const IMAGE_QUALITY = {
-  thumbnail: 60,
-  standard: 75,
-  high: 85,
-  maximum: 90
-} as const
+// 預設匯出以保持相容性
+export default OptimizedImage

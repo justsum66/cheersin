@@ -9,7 +9,7 @@ import { DrinkingAnimation } from './DrinkingAnimation'
 import { TypewriterText } from '@/components/ui/TypewriterText'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
-import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
+import { useGameReduceMotion } from './GameWrapper'
 import {
   getPromptsByCategory,
   CATEGORY_LABEL,
@@ -30,7 +30,7 @@ const CATEGORY_OPTIONS: { value: SecretRevealCategory | 'all'; label: string }[]
 export default function SecretReveal() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
-  const reducedMotion = usePrefersReducedMotion()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [categoryFilter, setCategoryFilter] = useState<SecretRevealCategory | 'all'>('all')
   const [pool, setPool] = useState<SecretRevealPrompt[]>([])
@@ -200,8 +200,8 @@ export default function SecretReveal() {
         <p className="text-white/50 text-sm mt-2">講述者：{players[storytellerIndex]}</p>
         <m.div
           key={currentPrompt.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={reducedMotion ? false : { opacity: 1, y: 0 }}
           className="w-full max-w-lg text-center mt-4"
         >
           <TypewriterText
@@ -297,8 +297,8 @@ export default function SecretReveal() {
     return (
       <div className="h-full flex flex-col items-center py-4 px-4">
         <m.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
+          initial={reducedMotion ? false : { scale: 0.9 }}
+          animate={reducedMotion ? false : { scale: 1 }}
           className="w-full max-w-lg text-center p-6 rounded-2xl bg-white/5 border border-white/10"
         >
           {isShocking && (
@@ -335,8 +335,8 @@ export default function SecretReveal() {
       <div className="h-full flex flex-col items-center justify-center py-4 px-4">
         <GameRules rules="秘密爆料：遊戲結束" />
         <m.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
+          animate={reducedMotion ? false : { opacity: 1, scale: 1 }}
           className="w-full max-w-md p-6 rounded-2xl bg-white/5 border border-white/10 text-center"
         >
           <p className="text-primary-400 font-bold text-xl mb-4">遊戲結束統計</p>

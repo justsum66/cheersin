@@ -115,7 +115,7 @@ export default function TruthOrDare() {
   const [levelFilter, setLevelFilter] = useState<TruthDareLevel | 'all'>('all')
   const [maxStars, setMaxStars] = useState(5)
 
-  // Phase 2: React to selectedMode
+  // Phase 2: React to selectedMode — reset used pools on mode change
   useEffect(() => {
     if (selectedMode === 'spicy') {
       setLevelFilter('adult')
@@ -124,15 +124,20 @@ export default function TruthOrDare() {
     } else if (selectedMode === 'classic') {
       setLevelFilter('all')
     }
+    // OPT-023: Reset used pools when mode changes so fresh questions appear
+    setUsedTruth(new Set())
+    setUsedDare(new Set())
   }, [selectedMode])
 
   // Load Initial Data
   useEffect(() => {
+    const abortController = new AbortController()
     async function loadData() {
       setIsLoading(true)
       try {
         const tPool = await getTruthPool()
         const dPool = await getDarePool()
+        if (abortController.signal.aborted) return
         setTruthPool(tPool)
         setDarePool(dPool)
 
@@ -146,14 +151,16 @@ export default function TruthOrDare() {
           fetchExternalTruthDare('truth'),
           fetchExternalTruthDare('dare')
         ]).then(([tExt, dExt]) => {
+          if (abortController.signal.aborted) return
           if (tExt.length > 0) setTruthPool((prev) => [...prev, ...tExt])
           if (dExt.length > 0) setDarePool((prev) => [...prev, ...dExt])
         })
       } finally {
-        setIsLoading(false)
+        if (!abortController.signal.aborted) setIsLoading(false)
       }
     }
     loadData()
+    return () => { abortController.abort() }
   }, [])
 
   // Save Custom Data

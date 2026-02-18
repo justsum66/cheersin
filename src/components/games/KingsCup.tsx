@@ -29,6 +29,9 @@ const DEFAULT_CARDS: CardDef[] = [
 
 type DrawRecord = { card: string; name: string; short: string; emoji: string; isFourthKing: boolean }
 
+/** GAME-102: Active persistent rules — rules set by J cards that stay active */
+type ActiveRule = { by: string; text: string }
+
 // G3-003: Rule Persistence
 const useKingsRules = () => useGamePersistence<CardDef[]>('kings_rules', DEFAULT_CARDS)
 
@@ -53,6 +56,9 @@ export default function KingsCup() {
   const [ruleExpanded, setRuleExpanded] = useState(true)
   const [showHistory, setShowHistory] = useState(true)
   const [isDrawPending, setIsDrawPending] = useState(false)
+  /** GAME-102: Active rules reminder — rules set by J/Q cards that persist */
+  const [activeRules, setActiveRules] = useState<ActiveRule[]>([])
+  const [showRuleReminder, setShowRuleReminder] = useState(false)
 
   // 3D Motion Values
   const mouseX = useMotionValue(0)
@@ -178,6 +184,10 @@ export default function KingsCup() {
         setShowFourthKing(true)
       }
     }
+    /** GAME-102: Track active rules from J/Q cards for rule reminder popup */
+    if (card.card === 'J' || card.card === 'Q') {
+      setActiveRules(prev => [...prev, { by: players[currentPlayerIdx], text: `${card.card} ${card.name}：${card.rule}` }])
+    }
     setRuleExpanded(true)
   }
 
@@ -190,6 +200,7 @@ export default function KingsCup() {
     setShowResetConfirm(false)
     setDrawHistory([])
     setUsedCards([])
+    setActiveRules([])
   }
 
   // Edit Rules Logic
@@ -384,6 +395,16 @@ export default function KingsCup() {
         <button type="button" onClick={() => setShowResetConfirm(true)} className="btn-secondary min-h-[48px] min-w-[48px] games-focus-ring hover:scale-[1.02] active:scale-[0.98] transition-transform">
           重置
         </button>
+        {/** GAME-102: Active rule reminder button */}
+        {activeRules.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowRuleReminder(true)}
+            className="relative min-h-[48px] px-3 rounded-xl bg-violet-500/20 border border-violet-500/50 text-violet-300 text-sm font-medium games-focus-ring hover:bg-violet-500/30"
+          >
+            📜 規則 ({activeRules.length})
+          </button>
+        )}
       </div>
 
       {drawHistory.length > 0 && (
@@ -486,6 +507,47 @@ export default function KingsCup() {
               <div className="flex flex-wrap gap-3 md:gap-4 justify-center games-btn-group">
                 <button type="button" onClick={reset} className="btn-primary min-h-[48px] min-w-[48px] games-focus-ring" data-testid="kings-cup-reset-confirm">確定重置</button>
                 <button type="button" onClick={() => setShowResetConfirm(false)} className="btn-secondary min-h-[48px] min-w-[48px] games-focus-ring">取消</button>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/** GAME-102: Active Rule Reminder Popup */}
+      <AnimatePresence>
+        {showRuleReminder && (
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 safe-area-px safe-area-pb"
+            onClick={() => setShowRuleReminder(false)}
+          >
+            <m.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-900 border border-violet-500/30 rounded-2xl w-full max-w-md max-h-[60vh] flex flex-col shadow-2xl"
+            >
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-violet-300">📜 目前有效規則</h3>
+                <button onClick={() => setShowRuleReminder(false)} className="text-white/60 hover:text-white">✕</button>
+              </div>
+              <div className="overflow-y-auto p-4 space-y-2">
+                {activeRules.length === 0 ? (
+                  <p className="text-white/40 text-sm text-center">目前沒有特殊規則</p>
+                ) : (
+                  activeRules.map((r, i) => (
+                    <div key={i} className="bg-white/5 p-3 rounded-xl border border-white/10">
+                      <p className="text-white/60 text-xs mb-1">由 {r.by} 設立</p>
+                      <p className="text-white text-sm">{r.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="p-4 border-t border-white/10">
+                <button onClick={() => setShowRuleReminder(false)} className="btn-primary w-full py-2 games-focus-ring">知道了</button>
               </div>
             </m.div>
           </m.div>

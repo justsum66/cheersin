@@ -15,11 +15,9 @@ import { RATE_LIMIT_MESSAGE } from '@/lib/api-error-codes';
 import { isRateLimitedAsync, getClientIp } from '@/lib/rate-limit';
 import { SubscriptionPostBodySchema, MAX_SUBSCRIPTION_ID_LENGTH } from '@/lib/api-body-schemas';
 
-import { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } from '@/lib/env-config';
+import { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API_BASE } from '@/lib/env-config';
 
-const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
-  ? 'https://api-m.paypal.com'
-  : 'https://api-m.sandbox.paypal.com';
+/** PAY-016: PayPal API base from centralized env config (supports sandbox toggle) */
 
 /** 取得 PayPal OAuth2 access token；失敗時拋出以便回傳 503 */
 async function getAccessToken(): Promise<string> {

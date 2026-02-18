@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import {
   Sparkles,
@@ -276,7 +276,10 @@ export default function QuizPage() {
   /** 58 不知道星座？用生日 */
   const [birthDate, setBirthDate] = useState('')
 
-  const displayQuestions = shuffledQuestions.length > 0 ? shuffledQuestions : questions
+  /** 64 隨機打亂陣列（Fisher-Yates）— memoized to avoid recreation */
+  const displayQuestions = useMemo(() => {
+    return shuffledQuestions.length > 0 ? shuffledQuestions : questions
+  }, [shuffledQuestions])
   /** 48 焦點管理：step 切換時聚焦主區域 */
   const mainRef = useRef<HTMLDivElement>(null)
   /** 73 上次測驗結果（用於歷史對比） */
@@ -739,7 +742,7 @@ export default function QuizPage() {
         e.preventDefault()
         const ans = answers[currentQuestion]
         if (currentQuestion < displayQuestions.length - 1 && ans) {
-          const opt = displayQuestions[currentQuestion].options.find((o) => o.trait === ans)
+          const opt = displayQuestions[currentQuestion].options.find((o: { trait: string }) => o.trait === ans)
           if (opt) handleAnswer(opt.id, opt.trait)
         }
       } else if (e.key >= '1' && e.key <= '4') {
@@ -769,9 +772,10 @@ export default function QuizPage() {
           {step === 'intro' && (
             <m.div
               key="intro"
-              initial={{ opacity: 0, y: 30 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -30 }}
+              transition={prefersReducedMotion ? { duration: 0 } : undefined}
               className="text-center pt-0 pb-12"
             >
               {showIdleHint && (
@@ -1024,7 +1028,7 @@ export default function QuizPage() {
                 aria-label={displayQuestions[currentQuestion].question}
                 aria-labelledby="quiz-question-text"
               >
-                {displayQuestions[currentQuestion].options.map((option, index) => (
+                {displayQuestions[currentQuestion].options.map((option: { id: string; text: string; icon: any; trait: string }, index) => (
                   <m.button
                     key={option.id}
                     type="button"

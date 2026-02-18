@@ -259,7 +259,7 @@ class GameRoomConnectionManager {
     // Calculate exponential backoff with jitter
     const delay = this.calculateRetryDelay()
     
-    console.log(`[Connection Manager] Retrying in ${delay}ms (attempt ${this._retryCount + 1}/${this.options.maxRetries})`)
+    if (process.env.NODE_ENV !== 'production') console.log(`[Connection Manager] Retrying in ${delay}ms (attempt ${this._retryCount + 1}/${this.options.maxRetries})`)
     
     this.retryTimeout = setTimeout(async () => {
       try {
@@ -372,9 +372,11 @@ export function useGameRoomConnection(options: ConnectionOptions = {}): Connecti
       setStrategy(newStrategy)
     })
 
+    // Task #57: 組件卸載時斷開連接並清理所有計時器
     return () => {
       unsubscribeStatus()
       unsubscribeStrategy()
+      manager.disconnect()
     }
   }, [manager])
 

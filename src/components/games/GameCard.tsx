@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useEffect, useCallback } from 'react'
+import { memo, useState, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 
@@ -114,6 +114,19 @@ function StarRow({ rating, onRate, gameId }: { rating?: number; onRate?: (id: st
   )
 }
 
+/** UI-33: 搜尋關鍵字高亮 */
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query || query.length < 2) return text
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  if (parts.length === 1) return text
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.toLowerCase()
+      ? <mark key={i} className="bg-primary-500/30 text-primary-200 rounded-sm px-0.5">{part}</mark>
+      : part
+  )
+}
+
 /** 純展示遊戲卡片，memo 避免 Lobby 篩選/搜尋時全列表 re-render；GAMES_500 #130 減少動畫時已關閉 hover/scale；#112 右鍵選單（收藏／評分／分享） */
 function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLabel, lineClampLines = 2 }: GameCardProps) {
   const { t } = useTranslation()
@@ -121,6 +134,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
   const lineClampClass = lineClampLines === 1 ? 'line-clamp-1' : lineClampLines === 3 ? 'line-clamp-3' : 'line-clamp-2'
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const tiltRafRef = useRef<number>(0)
   const closeMenu = useCallback(() => setContextMenu(null), [])
   /** P1-108：hover 顯示規則與評分覆蓋層；有 rulesSummary 或評分 UI 時顯示 */
   const showFlipOverlay = !reducedMotion && isHovered && (!!game.rulesSummary || !!game.onRate)
@@ -158,6 +172,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
   return (
     <>
       {/* Phase 1 C5.2: Lobby 遊戲卡片 hover 深度效果增強 - 微妙 3D 傾角 + 深度陰影 */}
+      {/* R2-033: 遊戲卡片 Hover 效果增強 - 減少動畫時放大效果 */}
       {/* Phase 1 E3.3: virtual-scroll-card 優化長列表渲染性能 */}
       <m.div
         ref={buttonRef}
@@ -165,25 +180,27 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         tabIndex={0}
         onMouseMove={(e) => {
           if (reducedMotion) return
-          const rect = e.currentTarget.getBoundingClientRect()
-          const x = e.clientX - rect.left
-          const y = e.clientY - rect.top
-          const centerX = rect.width / 2
-          const centerY = rect.height / 2
-          // Refined tilt calculation: smoother and more subtle
-          // X rotation is based on Y position (tilt up/down)
-          const rotateXVal = ((y - centerY) / centerY) * -3 // Max -3deg to 3deg
-          // Y rotation is based on X position (tilt left/right)
-          const rotateYVal = ((x - centerX) / centerX) * 3 // Max -3deg to 3deg
-
-          // Directly animate to new values for responsiveness
-          e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateXVal}deg) rotateY(${rotateYVal}deg) scale3d(1.02, 1.02, 1.02)`
+          cancelAnimationFrame(tiltRafRef.current)
+          const target = e.currentTarget
+          const clientX = e.clientX
+          const clientY = e.clientY
+          tiltRafRef.current = requestAnimationFrame(() => {
+            const rect = target.getBoundingClientRect()
+            const x = clientX - rect.left
+            const y = clientY - rect.top
+            const centerX = rect.width / 2
+            const centerY = rect.height / 2
+            const rotateXVal = ((y - centerY) / centerY) * -3
+            const rotateYVal = ((x - centerX) / centerX) * 3
+            target.style.transform = `perspective(1000px) rotateX(${rotateXVal}deg) rotateY(${rotateYVal}deg) scale(1.03)`
+          })
         }}
+        onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={(e) => {
           setIsHovered(false)
           if (reducedMotion) return
           // Reset transform
-          e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)'
+          e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)'
         }}
         className={`virtual-scroll-card rounded-2xl text-left group relative h-full min-h-[180px] transition-all duration-300 outline-none cursor-pointer scroll-margin-block-[1.5rem] touch-feedback btn-icon-text-gap games-focus-ring`}
         style={{ transformStyle: 'preserve-3d', transition: 'transform 0.2s ease-out, box-shadow 0.3s ease' }}
@@ -198,6 +215,14 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             onSelect(game.id)
+          } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            // Navigate to next game card
+            e.preventDefault()
+            onKeyDown(e, index)
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            // Navigate to previous game card
+            e.preventDefault()
+            onKeyDown(e, index)
           } else {
             onKeyDown(e, index)
           }
@@ -208,6 +233,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
         }}
         whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+        whileHover={reducedMotion ? { scale: 1.03 } : undefined}
       >
         <GlassCard
           variant="spotlight"
@@ -215,7 +241,7 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
         >
           {/* P1-195：付費遊戲 Pro/皇冠角標；R2-191：本週免費時加標籤 */}
           {game.isPremium && (
-            <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1.5 flex-wrap justify-end max-w-[70%]">
+            <span className="absolute top-2 right-2 z-20 inline-flex items-center gap-1.5 flex-wrap justify-end max-w-[70%]">
               {game.isWeeklyFree && (
                 <span className="inline-flex px-2 py-0.5 rounded-md bg-accent-500/90 text-white text-[10px] font-bold shadow-md" aria-label="本週限時免費">本週免費</span>
               )}
@@ -226,14 +252,14 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
           )}
           {/* Task 15: 18+ 標籤 - 與 Premium 並排或單獨顯示 */}
           {game.hasAdultContent && !game.isPremium && (
-            <span className="absolute top-2 right-2 z-10 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold shadow-md" aria-label="含成人內容">18+</span>
+            <span className="absolute top-2 right-2 z-19 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] md:text-xs font-bold shadow-md" aria-label="含成人內容">18+</span>
           )}
           {game.hasAdultContent && game.isPremium && (
-            <span className="absolute top-8 right-2 z-10 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold shadow-md" aria-label="含成人內容">18+</span>
+            <span className="absolute top-8 right-2 z-19 inline-flex px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] md:text-xs font-bold shadow-md" aria-label="含成人內容">18+</span>
           )}
           {/* GAMES_500 #111：熱門在右上、收藏在左上，不重疊；P1-123 / R2-071 New 標籤微閃爍 */}
           {game.isNew && !game.isPremium && (
-            <span className="absolute top-2 right-2 z-10 animate-[pulse_2s_ease-in-out_infinite]">
+            <span className="absolute top-2 right-2 z-18 animate-[pulse_2s_ease-in-out_infinite]">
               <Badge variant="accent" size="sm">{t('games.new')}</Badge>
             </span>
           )}
@@ -299,9 +325,15 @@ function GameCardInner({ game, index, onSelect, onKeyDown, buttonRef, displayLab
 
           <div className="z-10 mt-auto">
             <h3 className="text-xl font-display font-bold text-white mb-2 group-hover:text-primary-400 transition-colors duration-200 truncate" title={game.name}>
-              {game.name}
+              {game.searchQuery && game.searchQuery.length >= 2
+                ? highlightMatch(game.name, game.searchQuery)
+                : game.name}
             </h3>
-            <p className={`text-white/50 text-sm mb-3 ${lineClampClass} min-h-[2.5rem]`}>{game.description}</p>
+            <p className={`text-white/50 text-sm mb-3 ${lineClampClass} min-h-[2.5rem]`}>
+              {game.searchQuery && game.searchQuery.length >= 2
+                ? highlightMatch(game.description, game.searchQuery)
+                : game.description}
+            </p>
             {/* P0-11：主 CTA 使用 btn-secondary、觸控區域 ≥44px */}
             {/* Phase 1 B2.1: 按鈕增加 press scale 動畫 */}
             <span className="inline-flex items-center gap-2 btn-secondary btn-press-scale min-h-[48px] min-w-[44px] py-2 px-4 text-sm font-semibold rounded-xl mt-2 w-fit">

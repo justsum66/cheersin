@@ -762,7 +762,9 @@
     "description": "选择剧本，建立房间，4–8 人秘密角色、投票、惩罚。",
     "createRoom": "建立房间",
     "creating": "建立中…",
-    "noScripts": "尚无剧本，敬请期待。", "noScriptsHint": "若为新环境，首次载入会自动建立 8 支剧本，请按「重新载入」再试。", "reloadScripts": "重新载入",
+    "noScripts": "尚无剧本，敬请期待。",
+    "noScriptsHint": "若为新环境，首次载入会自动建立 8 支剧本，请按「重新载入」再试。",
+    "reloadScripts": "重新载入",
     "upgradeUnlock": "升级解锁",
     "copyInvite": "复制邀请链接",
     "copied": "已复制",
@@ -804,7 +806,8 @@
     "joining": "加入中…",
     "backToHome": "返回首页",
     "goToPartyGames": "先去派对游乐场",
-    "playersAndDuration": "{{min}}–{{max}} 人 · 约 {{minDur}} 分钟", "chaptersAndRoles": "{{chapters}} 章 · {{roles}} 角色",
+    "playersAndDuration": "{{min}}–{{max}} 人 · 约 {{minDur}} 分钟",
+    "chaptersAndRoles": "{{chapters}} 章 · {{roles}} 角色",
     "roomFallbackTitle": "剧本杀房",
     "playersCount": "{{current}}/{{max}} 人",
     "errorLoadScripts": "无法载入剧本列表",
@@ -868,7 +871,16 @@
     "roleSeer": "预言家",
     "defaultPlayer": "玩家{{n}}"
   },
-  "truthOrDare": { "levelAll": "全部", "levelMild": "亲友", "levelSpicy": "辣味", "levelAdult": "限制级", "skipWithPoint": "跳过（耗 1 点）{{count}} 点", "skipWithDrink": "跳过（喝一口）", "skipWithPointAria": "跳过本题，消耗 1 点不喝酒", "skipWithDrinkAria": "跳过本题，需喝一口" },
+  "truthOrDare": {
+    "levelAll": "全部",
+    "levelMild": "亲友",
+    "levelSpicy": "辣味",
+    "levelAdult": "限制级",
+    "skipWithPoint": "跳过（耗 1 点）{{count}} 点",
+    "skipWithDrink": "跳过（喝一口）",
+    "skipWithPointAria": "跳过本题，消耗 1 点不喝酒",
+    "skipWithDrinkAria": "跳过本题，需喝一口"
+  },
   "admin": {
     "fillRequired": "請填寫所有欄位",
     "enterEmailOrUserId": "請輸入 email 或 user id",
@@ -918,5 +930,8 @@
     "noSubscriptions": "尚無訂閱紀錄",
     "noUserFound": "找不到符合的用戶",
     "paypalId": "PayPal ID"
+  },
+  "home": {
+    "heroPill": "THE ULTIMATE PARTY APP"
   }
 }

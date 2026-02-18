@@ -89,7 +89,28 @@ export default function StoryChain() {
     setNewPart('')
   }, [])
 
-  const currentPlayer = players[currentPlayerIndex]
+  /** GAME-113: AI-style story continuation suggestion */
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+  const generateSuggestion = useCallback(() => {
+    const lastPart = storyParts[storyParts.length - 1] || ''
+    const connectors = ['然後', '突然', '沒想到', '結果', '就在這時', '誰知道', '不料', '幸好', '於是']
+    const endings = ['出現了一隻神奇的動物', '天空變成了紫色', '所有人都笑了起來', '一陣風吹過', '手機響了', '門被打開了', '一切都變了', '有人大喊了一聲']
+    const connector = connectors[Math.floor(Math.random() * connectors.length)]
+    const ending = endings[Math.floor(Math.random() * endings.length)]
+    setSuggestion(`${connector}，${ending}...`)
+  }, [storyParts])
+
+  /** GAME-114: Story illustration — show a themed emoji based on story keywords */
+  const storyIllustration = useMemo(() => {
+    const fullStory = storyParts.join(' ')
+    if (fullStory.includes('動物') || fullStory.includes('狗') || fullStory.includes('貓')) return '🐾'
+    if (fullStory.includes('森林') || fullStory.includes('樹')) return '🌲'
+    if (fullStory.includes('海') || fullStory.includes('水')) return '🌊'
+    if (fullStory.includes('城堡') || fullStory.includes('王')) return '🏰'
+    if (fullStory.includes('夜') || fullStory.includes('暗')) return '🌙'
+    if (fullStory.includes('火') || fullStory.includes('熱')) return '🔥'
+    return '📖'
+  }, [storyParts])
   const nextPlayer = players[(currentPlayerIndex + 1) % players.length]
 
   const resultText = `故事接龍 - 第${round}回合\n${players.map(p => `${p}: ${scores[p] || 0}分`).join('\n')}\n\n完整故事：\n${storyParts.join(' ')}`
@@ -159,7 +180,7 @@ export default function StoryChain() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <p className="text-sm text-white/60">目前玩家</p>
-                    <p className="text-xl font-bold text-green-400">{currentPlayer}</p>
+                    <p className="text-xl font-bold text-green-400">{players[currentPlayerIndex]}</p>
                   </div>
                   <div>
                     <p className="text-sm text-white/60">下一位</p>
@@ -169,7 +190,11 @@ export default function StoryChain() {
               </div>
 
               <div className="mb-6 bg-gradient-to-r from-green-500/20 to-teal-500/20 rounded-lg p-4">
-                <p className="text-white/80 mb-2">當前故事：</p>
+                {/** GAME-114: Story illustration emoji */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{storyIllustration}</span>
+                  <p className="text-white/80">當前故事：</p>
+                </div>
                 <div className="bg-black/20 rounded-lg p-4 text-left">
                   {storyParts.map((part, index) => (
                     <span key={index} className={`${index === storyParts.length - 1 ? 'text-yellow-400 font-bold' : 'text-white/80'}`}>
@@ -196,6 +221,21 @@ export default function StoryChain() {
                   <PenTool className="w-5 h-5 inline mr-2" />
                   添加故事
                 </button>
+                {/** GAME-113: AI story suggestion button */}
+                <button
+                  onClick={generateSuggestion}
+                  className="w-full mt-2 py-2 bg-white/10 border border-white/20 rounded-xl text-white/60 text-sm hover:bg-white/20 transition-colors"
+                >
+                  💡 需要靈感？
+                </button>
+                {suggestion && (
+                  <p
+                    className="mt-2 text-amber-400/80 text-sm italic cursor-pointer hover:text-amber-300"
+                    onClick={() => { setNewPart(suggestion); setSuggestion(null) }}
+                  >
+                    建議：{suggestion}（點擊採用）
+                  </p>
+                )}
               </div>
 
               <div className="w-full bg-white/10 rounded-full h-2">

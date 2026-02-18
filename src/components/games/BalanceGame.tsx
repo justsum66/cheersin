@@ -10,16 +10,16 @@ import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 
 const BALANCE_QUESTIONS = [
-  { question: '哪個比較重？', optionA: '一噸鐵', optionB: '一噸棉花', answer: 'tie', explanation: '都是一噸！' },
-  { question: '哪個比較高？', optionA: '台北101', optionB: '艾菲爾鐵塔', answer: 'A', explanation: '台北101 508公尺 vs 艾菲爾 330公尺' },
-  { question: '哪個比較多？', optionA: '地球上的沙子', optionB: '可觀測宇宙的星星', answer: 'B', explanation: '星星數量遠超過沙子！' },
-  { question: '哪個比較快？', optionA: '獵豹', optionB: '鴕鳥', answer: 'A', explanation: '獵豹 120km/h vs 鴕鳥 70km/h' },
-  { question: '哪個比較長？', optionA: '萬里長城', optionB: '赤道周長', answer: 'B', explanation: '長城約 21,196km vs 赤道 40,075km' },
-  { question: '哪個比較老？', optionA: '金字塔', optionB: '中國長城', answer: 'A', explanation: '金字塔約4500年 vs 長城約2200年' },
-  { question: '哪個比較深？', optionA: '馬里亞納海溝', optionB: '珠穆朗瑪峰高度', answer: 'A', explanation: '馬里亞納 10,994m vs 珠峰 8,848m' },
-  { question: '哪個比較熱？', optionA: '太陽表面', optionB: '閃電', answer: 'B', explanation: '閃電可達 30,000°C vs 太陽表面 5,500°C' },
-  { question: '哪個比較大？', optionA: '太平洋面積', optionB: '月球表面積', answer: 'A', explanation: '太平洋 1.65億km² vs 月球 0.38億km²' },
-  { question: '哪個比較多人口？', optionA: '印度', optionB: '中國', answer: 'A', explanation: '2024年印度已超過中國' },
+  { question: '哪個比較重？', optionA: '一噸鐵', optionB: '一噸棉花', answer: 'tie', explanation: '都是一噸！', difficulty: 1 },
+  { question: '哪個比較高？', optionA: '台北101', optionB: '艾菲爾鐵塔', answer: 'A', explanation: '台北101 508公尺 vs 艾菲爾 330公尺', difficulty: 1 },
+  { question: '哪個比較多？', optionA: '地球上的沙子', optionB: '可觀測宇宙的星星', answer: 'B', explanation: '星星數量遠超過沙子！', difficulty: 2 },
+  { question: '哪個比較快？', optionA: '獵豹', optionB: '鴕鳥', answer: 'A', explanation: '獵豹 120km/h vs 鴕鳥 70km/h', difficulty: 1 },
+  { question: '哪個比較長？', optionA: '萬里長城', optionB: '赤道周長', answer: 'B', explanation: '長城約 21,196km vs 赤道 40,075km', difficulty: 2 },
+  { question: '哪個比較老？', optionA: '金字塔', optionB: '中國長城', answer: 'A', explanation: '金字塔約4500年 vs 長城約2200年', difficulty: 2 },
+  { question: '哪個比較深？', optionA: '馬里亞納海溝', optionB: '珠穆朗瑪峰高度', answer: 'A', explanation: '馬里亞納 10,994m vs 珠峰 8,848m', difficulty: 3 },
+  { question: '哪個比較熱？', optionA: '太陽表面', optionB: '閃電', answer: 'B', explanation: '閃電可達 30,000°C vs 太陽表面 5,500°C', difficulty: 3 },
+  { question: '哪個比較大？', optionA: '太平洋面積', optionB: '月球表面積', answer: 'A', explanation: '太平洋 1.65億km² vs 月球 0.38億km²', difficulty: 2 },
+  { question: '哪個比較多人口？', optionA: '印度', optionB: '中國', answer: 'A', explanation: '2024年印度已超過中國', difficulty: 3 },
 ]
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
@@ -54,7 +54,12 @@ export default function BalanceGame() {
       setCurrentQuestion(null)
       return
     }
-    const next = available[Math.floor(Math.random() * available.length)]
+    /** GAME-082: Difficulty curve - start easy, ramp up */
+    const answeredCount = usedQuestions.size
+    const targetDifficulty = answeredCount < 3 ? 1 : answeredCount < 6 ? 2 : 3
+    const preferred = available.filter(q => q.difficulty <= targetDifficulty)
+    const pool = preferred.length > 0 ? preferred : available
+    const next = pool[Math.floor(Math.random() * pool.length)]
     setCurrentQuestion(next)
     setSelectedAnswer(null)
     setShowResult(false)

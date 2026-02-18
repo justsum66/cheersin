@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
 import { Coins, RotateCcw } from 'lucide-react'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -14,6 +15,7 @@ const BASE_BET = 10
 /** 251–260：21 點：莊家 17 停牌、籌碼系統、雙倍下注、爆牌/輸喝 */
 export default function Blackjack() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [deck, setDeck] = useState<Card[]>(() => shuffleDeck(createDeck()))
   const [playerCards, setPlayerCards] = useState<Card[]>([])
   const [dealerCards, setDealerCards] = useState<Card[]>([])
@@ -237,9 +239,9 @@ export default function Blackjack() {
   const renderCard = (c: Card, i: number, hidden?: boolean) => (
     <m.span
       key={`${c.suit}-${c.rank}-${i}`}
-      initial={{ x: -30, y: -15, opacity: 0, scale: 0.5 }}
+      initial={reducedMotion ? false : { x: -30, y: -15, opacity: 0, scale: 0.5 }}
       animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-      transition={{ delay: i * 0.1, type: 'spring', stiffness: 180, damping: 18 }}
+      transition={reducedMotion ? { duration: 0 } : { delay: i * 0.1, type: 'spring', stiffness: 180, damping: 18 }}
       className="inline-flex items-center justify-center w-10 h-14 rounded-md bg-white/10 border border-white/20 text-white text-sm font-mono shadow-lg"
     >
       {hidden ? '?' : `${rankLabel(c.rank)}${suitSymbol(c.suit)}`}
@@ -308,8 +310,9 @@ export default function Blackjack() {
     <div className="h-full flex flex-col items-center justify-center py-4 px-4">
       <AnimatePresence>
         <m.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
           className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 mb-4"
         >
           <p className="text-primary-400 font-bold text-lg mb-2">

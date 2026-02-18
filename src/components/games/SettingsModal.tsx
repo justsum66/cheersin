@@ -3,13 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { m } from 'framer-motion'
 import Link from 'next/link'
-import { Trophy, ChevronRight, Sparkles, Lock } from 'lucide-react'
-import { useGameSound } from '@/hooks/useGameSound'
-import { useHaptic } from '@/hooks/useHaptic'
+import { Sparkles, Lock } from 'lucide-react'
 import { useSubscriptionStore } from '@/store/useSubscriptionStore'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
-import { getFontSize, setFontSize, getReduceMotion, setReduceMotion, getNonAlcoholMode, setNonAlcoholMode, type FontSize } from '@/modules/games/settings'
 import { toast } from 'react-hot-toast'
+import { 
+  AudioSettings,
+  FontSizeSettings,
+  MotionSettings,
+  HapticSettings,
+  NonAlcoholSettings,
+  ToolsSettings
+} from './settings'
 
 interface SettingsModalProps {
   onClose: () => void
@@ -17,26 +22,13 @@ interface SettingsModalProps {
 
 /** 101–103 遊戲頁設定：音效開關、音量滑桿、字級、減少動畫。存 localStorage。P3 無障礙：開啟時焦點移至關閉鈕。GAMES_500 #238：設定內音量與實際音效同步 — 需與 useGameSound/實際播放器綁定。 */
 export default function SettingsModal({ onClose }: SettingsModalProps) {
-  const { enabled: soundEnabled, toggle: toggleSound, volume, setVolume, bgmEnabled, toggleBGM } = useGameSound()
-  const { enabled: hapticEnabled, setEnabled: setHapticEnabled } = useHaptic()
   const { tier } = useSubscriptionStore()
-
-  const [fontSize, setFontSizeState] = useState<FontSize>('md')
-  const [reduceMotion, setReduceMotionState] = useState(false)
-  const [nonAlcoholMode, setNonAlcoholModeState] = useState(false)
   const [adFreeEnabled, setAdFreeEnabled] = useState(false)
-
   const closeButtonRef = useRef<HTMLButtonElement>(null)
-  /** P3 無障礙：關閉時還原焦點到開啟前的觸發元素 */
   const previousActiveElementRef = useRef<HTMLElement | null>(null)
-  /** P3 無障礙：Tab 循環限制在彈窗內（focus trap） */
   const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setFontSizeState(getFontSize())
-    setReduceMotionState(getReduceMotion())
-    setNonAlcoholModeState(getNonAlcoholMode())
-
     // Task 48: Init Ad-Free state
     const storedAdFree = localStorage.getItem('cheersin_ad_free')
     if (storedAdFree === 'true' && tier !== 'free') {
@@ -96,21 +88,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     return () => window.removeEventListener('keydown', onKey)
   }, [handleClose])
 
-  const handleFontSize = (v: FontSize) => {
-    setFontSizeState(v)
-    setFontSize(v)
-  }
-
-  const handleReduceMotion = (v: boolean) => {
-    setReduceMotionState(v)
-    setReduceMotion(v)
-  }
-
-  const handleNonAlcoholMode = (v: boolean) => {
-    setNonAlcoholModeState(v)
-    setNonAlcoholMode(v)
-  }
-
   return (
     <m.div
       initial={{ opacity: 0 }}
@@ -145,94 +122,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <ModalCloseButton ref={closeButtonRef} onClick={handleClose} aria-label="關閉" className="rounded-full text-white/70" />
         </div>
         <div className="flex flex-col gap-[var(--space-card)]">
-          <section aria-labelledby="settings-audio-label">
-            <p id="settings-audio-label" className="text-white/70 text-sm mb-2">音效</p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <m.button
-                type="button"
-                onClick={toggleSound}
-                key={soundEnabled ? 'on' : 'off'}
-                initial={false}
-                animate={soundEnabled ? { scale: [1, 1.08, 1], boxShadow: ['0 0 0 0 rgba(139,0,0,0)', '0 0 0 8px rgba(139,0,0,0.2)', '0 0 0 0 rgba(139,0,0,0)'] } : {}}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${soundEnabled ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
-              >
-                {soundEnabled ? '開' : '關'}
-              </m.button>
-              {soundEnabled && (
-                <div className="flex-1 min-w-[120px] flex items-center gap-2">
-                  <span className="text-white/50 text-xs w-8">音量</span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={Math.round(volume * 100)}
-                    onChange={(e) => setVolume(Number(e.target.value) / 100)}
-                    className="flex-1 h-2 rounded-full bg-white/10 accent-primary-500 min-w-0"
-                    aria-label="音量"
-                  />
-                </div>
-              )}
-            </div>
-            {/* 101 背景音樂開關 */}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-white/50 text-xs">背景音樂</span>
-              <button
-                type="button"
-                onClick={toggleBGM}
-                className={`min-h-[48px] min-w-[48px] px-3 py-1.5 rounded-lg text-sm font-medium ${bgmEnabled ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
-              >
-                {bgmEnabled ? '開' : '關'}
-              </button>
-            </div>
-          </section>
-          <section aria-labelledby="settings-font-label">
-            <p id="settings-font-label" className="text-white/70 text-sm mb-2">字級</p>
-            <div className="flex gap-2">
-              {(['sm', 'md', 'lg'] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => handleFontSize(s)}
-                  className={`min-h-[48px] min-w-[48px] flex-1 px-3 rounded-lg text-sm font-medium transition-colors ${fontSize === s ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-                >
-                  {s === 'sm' ? '小' : s === 'md' ? '中' : '大'}
-                </button>
-              ))}
-            </div>
-          </section>
-          <section aria-labelledby="settings-motion-label">
-            <p id="settings-motion-label" className="text-white/70 text-sm mb-2">簡化動畫（直播友善）</p>
-            <button
-              type="button"
-              onClick={() => handleReduceMotion(!reduceMotion)}
-              className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${reduceMotion ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
-            >
-              {reduceMotion ? '開' : '關'}
-            </button>
-          </section>
-          <section aria-labelledby="settings-haptic-label">
-            <p id="settings-haptic-label" className="text-white/70 text-sm mb-2">觸覺反饋（震動）</p>
-            <button
-              type="button"
-              onClick={() => setHapticEnabled(!hapticEnabled)}
-              className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${hapticEnabled ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
-            >
-              {hapticEnabled ? '開' : '關'}
-            </button>
-          </section>
-          {/* R2-151：全遊戲非酒精模式 — 懲罰文案改為「做一下」等 */}
-          <section aria-labelledby="settings-non-alcohol-label">
-            <p id="settings-non-alcohol-label" className="text-white/70 text-sm mb-2">非酒精模式（懲罰改為「做一下」）</p>
-            <button
-              type="button"
-              onClick={() => handleNonAlcoholMode(!nonAlcoholMode)}
-              className={`min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl text-sm font-medium ${nonAlcoholMode ? 'bg-primary-500/80 text-white' : 'bg-white/10 text-white/70'}`}
-            >
-              {nonAlcoholMode ? '開' : '關'}
-            </button>
-          </section>
-
+          <AudioSettings />
+          <FontSizeSettings />
+          <MotionSettings />
+          <HapticSettings />
+          <NonAlcoholSettings />
+          
           {/* Task 48: Ad-Free Toggle */}
           <section aria-labelledby="settings-ad-free-label">
             <div className="flex items-center justify-between mb-2">
@@ -276,21 +171,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               </p>
             )}
           </section>
-
-          <section aria-labelledby="settings-tools-label">
-            <p id="settings-tools-label" className="text-white/70 text-sm mb-2">主持人工具</p>
-            <Link
-              href="/games/tools"
-              onClick={handleClose}
-              className="flex items-center justify-between w-full bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors text-left group"
-            >
-              <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-primary-400 group-hover:text-primary-300" />
-                <span className="text-white font-medium">計分板與音效庫</span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white/80" />
-            </Link>
-          </section>
+          
+          <ToolsSettings onClose={handleClose} />
         </div>
       </m.div>
     </m.div>

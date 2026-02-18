@@ -11,10 +11,12 @@ import {
   getPsychQuizResult,
   type PsychQuizResult,
 } from '@/data/psych-quiz'
+import { useGameReduceMotion } from './GameWrapper'
 
 /** R2-164：心理測驗喝酒版 — 靜態題目＋計分結果，結果頁可帶「建議喝一口」等 */
 export default function PsychQuiz() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const punishment = usePunishmentCopy()
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<('A' | 'B' | 'C')[]>([])
@@ -57,8 +59,9 @@ export default function PsychQuiz() {
         {result ? (
           <m.div
             key="result"
-            initial={{ opacity: 0, y: 10 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full max-w-md text-center p-6 rounded-2xl bg-white/5 border border-primary-500/30"
           >
             <h2 className="text-xl font-bold text-primary-300 mb-2">{result.title}</h2>
@@ -74,9 +77,10 @@ export default function PsychQuiz() {
         ) : q ? (
           <m.div
             key={step}
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full max-w-lg"
           >
             <p className="text-white/50 text-xs mb-2">第 {step + 1} / {PSYCH_QUIZ_QUESTIONS.length} 題</p>

@@ -4,12 +4,14 @@ import { useState, useCallback } from 'react'
 import { m } from 'framer-motion'
 import { Smile } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import { pickRandomEmojiBattle } from '@/data/emoji-battle'
 
 /** R2-152：表情包大戰 — 情境＋多選表情包，大家投票決勝（本版：選最貼切後下一題） */
 export default function EmojiBattle() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [round, setRound] = useState(() => pickRandomEmojiBattle())
   const [picked, setPicked] = useState<string | null>(null)
 
@@ -39,8 +41,9 @@ export default function EmojiBattle() {
 
       <m.div
         key={round.scenario}
-        initial={{ opacity: 0, y: 8 }}
+        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={reducedMotion ? { duration: 0 } : undefined}
         className="w-full max-w-lg text-center"
       >
         <p className="text-white font-medium mb-6 p-4 rounded-2xl bg-white/5 border border-white/10">
@@ -57,6 +60,7 @@ export default function EmojiBattle() {
                   ? 'border-primary-500 bg-primary-500/20 scale-110'
                   : 'border-white/20 bg-white/5 hover:bg-white/10'
               }`}
+              aria-label={`選擇表情 ${emoji}`}
             >
               {emoji}
             </button>

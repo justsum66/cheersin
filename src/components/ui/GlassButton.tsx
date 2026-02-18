@@ -1,6 +1,7 @@
 import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 
 export interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -19,6 +20,8 @@ export interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
  */
 export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
     ({ className, variant = 'primary', size = 'md', isLoading, leftIcon, rightIcon, neonBorder = false, children, ...props }, ref) => {
+        /** A11Y: Respect reduced motion preference for loading spinner */
+        const reducedMotion = usePrefersReducedMotion()
 
         const variants = {
             primary: 'btn-primary text-white shadow-hero-glow hover:shadow-glass-hover', // Uses globals.css .btn-primary + extra glow
@@ -52,7 +55,7 @@ export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
                 )}
                 {...props}
             >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <Loader2 className={cn("mr-2 h-4 w-4", !reducedMotion && "animate-spin")} aria-hidden />}
                 {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
                 {children}
                 {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}

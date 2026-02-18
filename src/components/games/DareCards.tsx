@@ -1,16 +1,22 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { m } from 'framer-motion'
-import { Sparkles, RotateCcw, Check, X } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
+import { Sparkles, RotateCcw, Check, X, Star } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
-const DARE_CARDS = [
+interface DareCard {
+  dare: string
+  penalty: number
+}
+
+const DARE_CARDS: DareCard[] = [
   { dare: '模仿一種動物叫三聲', penalty: 1 },
   { dare: '用腳趾頭夾起一個物品', penalty: 1 },
   { dare: '對著鏡子說「我愛你」三次', penalty: 1 },
@@ -37,13 +43,18 @@ const DARE_CARDS = [
 export default function DareCards() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0)
-  const [currentDare, setCurrentDare] = useState<typeof DARE_CARDS[0] | null>(null)
+  const [currentDare, setCurrentDare] = useState<DareCard | null>(null)
   const [usedDares, setUsedDares] = useState<Set<number>>(new Set())
   const [result, setResult] = useState<'complete' | 'drink' | null>(null)
   const [history, setHistory] = useState<Array<{ player: string; dare: string; completed: boolean }>>([])
+  // GAME-069: Card flip animation state
+  const [isFlipping, setIsFlipping] = useState(false)
+  // GAME-070: Dare rating
+  const [dareRatings, setDareRatings] = useState<Record<string, number>>({})
 
   const currentPlayer = players[currentPlayerIdx]
 
@@ -60,20 +71,27 @@ export default function DareCards() {
 
   const drawCard = useCallback(() => {
     play('click')
-    setCurrentDare(getNextDare())
-    setResult(null)
+    setIsFlipping(true)
+    // GAME-069: Delay reveal for flip animation
+    setTimeout(() => {
+      setCurrentDare(getNextDare())
+      setResult(null)
+      setIsFlipping(false)
+    }, 400)
   }, [getNextDare, play])
 
   const complete = useCallback(() => {
+    if (!currentDare) return;
     play('correct')
     setResult('complete')
-    setHistory(prev => [...prev, { player: currentPlayer, dare: currentDare!.dare, completed: true }])
+    setHistory(prev => [...prev, { player: currentPlayer, dare: currentDare.dare, completed: true }])
   }, [currentPlayer, currentDare, play])
 
   const drink = useCallback(() => {
+    if (!currentDare) return;
     play('wrong')
     setResult('drink')
-    setHistory(prev => [...prev, { player: currentPlayer, dare: currentDare!.dare, completed: false }])
+    setHistory(prev => [...prev, { player: currentPlayer, dare: currentDare.dare, completed: false }])
   }, [currentPlayer, currentDare, play])
 
   const nextPlayer = useCallback(() => {
@@ -101,21 +119,57 @@ export default function DareCards() {
 
       <p className="text-white/70 mb-4">輪到 <span className="text-yellow-400 font-bold">{currentPlayer}</span></p>
 
-      {!currentDare ? (
+      {!currentDare && !isFlipping ? (
         <m.button whileTap={{ scale: 0.96 }} onClick={drawCard} className="px-8 py-6 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-xl games-focus-ring">
           抽挑戰卡！
         </m.button>
+      ) : isFlipping ? (
+        /* GAME-069: Card flip animation */
+        <m.div
+          initial={reducedMotion ? false : { rotateY: 0 }}
+          animate={{ rotateY: reducedMotion ? 0 : 180 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: 'easeInOut' }}
+          className="w-full max-w-md h-40 rounded-2xl bg-gradient-to-br from-yellow-500/30 to-orange-500/30 border border-yellow-500/30 flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          <Sparkles className="w-10 h-10 text-yellow-400 animate-pulse" />
+        </m.div>
       ) : result === null ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <m.div
-            initial={{ rotateY: 180, opacity: 0 }}
-            animate={{ rotateY: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="w-full p-6 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-center"
-          >
-            <p className="text-white text-xl font-medium">{currentDare.dare}</p>
-            <p className="text-white/50 mt-2 text-sm">放棄懲罰：喝 {currentDare.penalty} 杯</p>
-          </m.div>
+          {/* GAME-069: Animated card reveal */}
+          <AnimatePresence mode="wait">
+            {currentDare && (
+            <m.div
+              key={currentDare.dare}
+              initial={reducedMotion ? false : { rotateY: -90, opacity: 0 }}
+              animate={{ rotateY: 0, opacity: 1 }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: 'easeOut' }}
+              className="w-full p-6 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-center"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              <p className="text-white text-xl font-medium">{currentDare.dare}</p>
+              <p className="text-white/50 mt-2 text-sm">放棄懲罰：喝 {currentDare.penalty} 杯</p>
+              {/* GAME-070: Dare difficulty rating */}
+              <div className="flex items-center justify-center gap-1 mt-3" role="group" aria-label="挑戰難度評分">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setDareRatings((prev) => ({ ...prev, [currentDare.dare]: star }))}
+                    className="p-0.5 games-focus-ring rounded"
+                    aria-label={`評 ${star} 星`}
+                    aria-pressed={(dareRatings[currentDare.dare] ?? 0) >= star}
+                  >
+                    <Star
+                      className={`w-4 h-4 transition-colors ${(dareRatings[currentDare.dare] ?? 0) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
+                    />
+                  </button>
+                ))}
+                <span className="text-white/30 text-[10px] ml-1">難度</span>
+              </div>
+            </m.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex gap-4">
             <m.button
@@ -135,15 +189,20 @@ export default function DareCards() {
           </div>
         </div>
       ) : (
-        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div 
+          initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
+          className="text-center"
+        >
           {result === 'complete' ? (
             <p className="text-emerald-400 font-bold text-2xl">挑戰成功！👏</p>
-          ) : (
+          ) : currentDare ? (
             <p className="text-red-400 font-bold text-2xl">{currentPlayer} 喝 {currentDare.penalty} 杯！</p>
-          )}
+          ) : null}
           <div className="flex gap-3 mt-4 justify-center">
             <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>
-            <CopyResultButton text={`大膽挑戰：${currentDare.dare}\n${currentPlayer} ${result === 'complete' ? '完成挑戰' : `喝了 ${currentDare.penalty} 杯`}`} />
+            {currentDare && <CopyResultButton text={`大膽挑戰：${currentDare.dare}\n${currentPlayer} ${result === 'complete' ? '完成挑戰' : `喝了 ${currentDare.penalty} 杯`}`} />}
           </div>
         </m.div>
       )}

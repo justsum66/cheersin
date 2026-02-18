@@ -197,6 +197,8 @@ const nextConfig: NextConfig = {
       "frame-ancestors 'self'",
       "object-src 'none'",
       "base-uri 'self'",
+      /** PWA-008: Allow SW scope in CSP — add worker-src directive */
+      "worker-src 'self'",
       /* T39: form-action 加入 paypal.com，讓 PayPal 結帳表單提交正常運作 */
       "form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com",
     ].join('; ')
@@ -217,6 +219,14 @@ const nextConfig: NextConfig = {
       ...(hstsHeader ? [hstsHeader] : []),
     ]
     return [
+      /** PWA-008: Explicit SW scope header to ensure CSP allows service worker */
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Service-Worker-Allowed', value: '/' },
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+        ],
+      },
       {
         source: '/(.*)\\.(ico|png|jpg|jpeg|gif|webp|avif|svg|woff|woff2|ttf|otf)',
         headers: [

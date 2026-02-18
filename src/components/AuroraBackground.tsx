@@ -11,48 +11,27 @@ export default function AuroraBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true" data-print-skip>
-      {/* Primary gradient orbs - absolute 避免佔用文件流 */}
+      {/* Primary gradient orbs — static position, no infinite loop */}
       <MotionDiv
         className="absolute w-[600px] h-[600px] -top-40 -left-40"
         style={{ background: 'radial-gradient(circle, rgba(139,0,0,0.25) 0%, transparent 70%)' }}
-        animate={reducedMotion ? {} : {
-          x: [0, 100, 0],
-          y: [0, 50, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, ease: 'easeOut' }}
       />
       <MotionDiv
         className="absolute w-[500px] h-[500px] top-1/3 -right-20"
         style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)' }}
-        animate={reducedMotion ? {} : {
-          x: [0, -80, 0],
-          y: [0, 100, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: 2, ease: 'easeOut', delay: 0.3 }}
       />
       <MotionDiv
         className="absolute w-[400px] h-[400px] bottom-20 left-1/4"
         style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)' }}
-        animate={reducedMotion ? {} : {
-          x: [0, 60, 0],
-          y: [0, -80, 0],
-          scale: [1, 1.15, 1],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: 1.8, ease: 'easeOut', delay: 0.6 }}
       />
       
       {/* Subtle grid overlay */}

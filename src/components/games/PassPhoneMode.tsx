@@ -21,9 +21,10 @@ function speakTurn(name: string, enabled: boolean) {
     utterance.lang = 'zh-TW'
     utterance.rate = TTS_RATE
     utterance.pitch = TTS_PITCH
+    utterance.onerror = () => { /* TTS failed silently (e.g. iOS background) */ }
     u.speak(utterance)
   } catch {
-    /* ignore */
+    /* ignore - TTS not supported or blocked */
   }
 }
 

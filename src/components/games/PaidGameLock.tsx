@@ -8,6 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import type { SubscriptionTier } from '@/lib/subscription'
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription'
 import { UpgradeModal } from '@/components/UpgradeModal'
+import { useGameReduceMotion } from './GameWrapper'
 
 interface PaidGameLockProps {
   /** 遊戲名稱 */
@@ -22,6 +23,7 @@ interface PaidGameLockProps {
 
 /** G0.5：付費遊戲鎖定覆蓋層，顯示升級提示與 CTA */
 export function PaidGameLock({ gameName, requiredTier, onClose, category }: PaidGameLockProps) {
+  const reducedMotion = useGameReduceMotion()
   const { tier } = useSubscription()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
@@ -46,19 +48,20 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
   return (
     <>
       <m.div
-        initial={{ opacity: 0 }}
+        initial={reducedMotion ? undefined : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0 }}
+        transition={reducedMotion ? { duration: 0 } : undefined}
         className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="paid-game-lock-title"
       >
         <m.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={reducedMotion ? undefined : { scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          exit={reducedMotion ? undefined : { scale: 0.9, opacity: 0, y: 20 }}
+          transition={reducedMotion ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 300 }}
           className="relative w-full max-w-md rounded-3xl overflow-hidden"
         >
           {/* 漸層背景 */}
@@ -74,7 +77,7 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
             {onClose && (
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors games-focus-ring"
+                className="absolute top-4 right-4 p-3 rounded-full bg-black/40 hover:bg-black/60 transition-colors games-focus-ring"
                 aria-label="關閉"
               >
                 <X className="w-5 h-5 text-white/70" />
@@ -83,9 +86,9 @@ export function PaidGameLock({ gameName, requiredTier, onClose, category }: Paid
 
             {/* 鎖定圖示 */}
             <m.div
-              initial={{ scale: 0 }}
+              initial={reducedMotion ? undefined : { scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.1 }}
+              transition={reducedMotion ? { duration: 0 } : { type: 'spring', delay: 0.1 }}
               className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-primary-500/30 to-accent-500/30 flex items-center justify-center mb-6 border border-white/10"
             >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-lg">

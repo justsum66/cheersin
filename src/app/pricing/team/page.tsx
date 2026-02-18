@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Building2, Mail, Calendar, ArrowLeft, Shield } from 'lucide-react'
+import { Building2, Mail, Calendar, ArrowLeft, Shield, Users } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
+import { TEAM_PRICING_TIERS, PAYPAL_PLANS } from '@/config/pricing.config'
 
-/** R2-187：團隊方案諮詢頁／聯絡我們 — 企業/大型活動 CTA + 表單或 mailto */
+/** R2-187 + PAY-022：Team subscription pricing page with bulk discount tiers */
 export default function PricingTeamPage() {
   const { t } = useTranslation()
   return (
@@ -27,6 +28,38 @@ export default function PricingTeamPage() {
         <Shield className="w-4 h-4" />
         安全付款 · 隨時取消，無需綁約
       </p>
+
+      {/* PAY-022: Team pricing tiers with bulk discounts */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary-400" aria-hidden />
+          Volume Discounts
+        </h2>
+        <div className="grid gap-3">
+          {TEAM_PRICING_TIERS.map((tier) => {
+            const premiumBase = PAYPAL_PLANS.premium.priceMonthly
+            const discountedPrice = Math.round(premiumBase * (1 - tier.discountPercent / 100))
+            return (
+              <div
+                key={tier.label}
+                className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-white font-medium">{tier.label}</p>
+                  <p className="text-white/50 text-xs">
+                    {tier.minSeats}–{tier.maxSeats === 999 ? '∞' : tier.maxSeats} seats
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-primary-400 font-bold">-{tier.discountPercent}%</p>
+                  <p className="text-white/50 text-xs">NT${discountedPrice}/seat/mo</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
       <div className="space-y-4 mb-8">
         <a
           href="mailto:enterprise@cheersin.app?subject=團隊方案諮詢"

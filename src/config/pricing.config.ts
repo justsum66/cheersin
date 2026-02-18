@@ -22,6 +22,44 @@ export const YEARLY_MONTHS_GET = 12
 /** 首月半價促銷 */
 export const FIRST_MONTH_HALF_OFF = true
 
+/** PAY-021: Annual billing option — price = monthlyPrice * YEARLY_MONTHS_PAID */
+export const ANNUAL_PLANS: Record<PayableTier, { name: string; priceAnnual: number; priceMonthlyEquiv: number; savingsPercent: number }> = {
+  basic: {
+    name: 'Cheersin Basic (Annual)',
+    priceAnnual: 99 * YEARLY_MONTHS_PAID,
+    priceMonthlyEquiv: Math.round((99 * YEARLY_MONTHS_PAID) / YEARLY_MONTHS_GET),
+    savingsPercent: Math.round(((YEARLY_MONTHS_GET - YEARLY_MONTHS_PAID) / YEARLY_MONTHS_GET) * 100),
+  },
+  premium: {
+    name: 'Cheersin Premium (Annual)',
+    priceAnnual: 199 * YEARLY_MONTHS_PAID,
+    priceMonthlyEquiv: Math.round((199 * YEARLY_MONTHS_PAID) / YEARLY_MONTHS_GET),
+    savingsPercent: Math.round(((YEARLY_MONTHS_GET - YEARLY_MONTHS_PAID) / YEARLY_MONTHS_GET) * 100),
+  },
+}
+
+/** PAY-022: Team/group subscription pricing — bulk discount tiers */
+export const TEAM_PRICING_TIERS = [
+  { minSeats: 3, maxSeats: 5, discountPercent: 10, label: 'Small Team' },
+  { minSeats: 6, maxSeats: 10, discountPercent: 15, label: 'Team' },
+  { minSeats: 11, maxSeats: 25, discountPercent: 20, label: 'Department' },
+  { minSeats: 26, maxSeats: 999, discountPercent: 25, label: 'Enterprise' },
+] as const
+
+/** PAY-024: Referral reward — referrer and referee both get discount */
+export const REFERRAL_REWARD = {
+  referrerDiscountPercent: 100, // free month
+  refereeDiscountPercent: 50,  // 50% off first month
+  maxReferralsPerUser: 10,
+} as const
+
+/** PAY-030: Lifetime deal for early adopters */
+export const LIFETIME_DEAL = {
+  basic: { price: 1999, label: 'Basic Lifetime' },
+  premium: { price: 3999, label: 'Premium Lifetime' },
+  enabled: false, // Set to true during launch promo
+} as const
+
 /** 方案 UI id → 後端 tier（結帳與 webhook 使用 tier） */
 export const PLAN_ID_TO_TIER: Record<string, SubscriptionTier> = {
   starter: 'free',

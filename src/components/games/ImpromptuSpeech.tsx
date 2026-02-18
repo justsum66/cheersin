@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { m } from 'framer-motion'
 import { Mic, SkipForward } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import { pickRandomImpromptuTopic } from '@/data/impromptu-speech'
 
@@ -12,6 +13,7 @@ const COUNTDOWN_SEC = 30
 /** R2-170：即興演講 — 隨機抽題＋倒數計時，時間到或跳過則下一位/喝 */
 export default function ImpromptuSpeech() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [topic, setTopic] = useState<string | null>(null)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [phase, setPhase] = useState<'idle' | 'speaking'>('idle')
@@ -77,8 +79,9 @@ export default function ImpromptuSpeech() {
 
       {phase === 'speaking' && topic && (
         <m.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
           className="w-full max-w-lg text-center"
         >
           <p className="text-white font-medium text-lg mb-4 p-4 rounded-2xl bg-white/5 border border-primary-500/30">

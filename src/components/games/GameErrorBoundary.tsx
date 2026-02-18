@@ -21,17 +21,18 @@ interface Props {
 interface State {
   hasError: boolean
   error: Error | null
+  isRetrying: boolean
 }
 
 /** 遊戲區塊錯誤邊界：單一遊戲崩潰不影響整頁 */
 export default class GameErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { hasError: false, error: null, isRetrying: false }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+    return { hasError: true, error, isRetrying: false }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -44,8 +45,10 @@ export default class GameErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null })
+    this.setState({ hasError: false, error: null, isRetrying: true })
     this.props.onReset?.()
+    // Reset retrying state after a tick to allow re-render
+    setTimeout(() => this.setState({ isRetrying: false }), 0)
   }
 
   render() {
@@ -66,11 +69,18 @@ export default class GameErrorBoundary extends Component<Props, State> {
           <p id="game-error-desc" className="text-white/60 text-sm mb-4 max-w-md">
             {this.props.desc ?? (this.props.gameName ? `「${this.props.gameName}」` : '此遊戲') + '發生錯誤，請重新整理或返回遊戲列表再試。'}
           </p>
+          {process.env.NODE_ENV === 'development' && this.state.error && (
+            <details className="mb-4 max-w-md text-left">
+              <summary className="text-white/40 text-xs cursor-pointer hover:text-white/60">開發者資訊</summary>
+              <pre className="mt-1 p-2 rounded bg-black/30 text-red-300/80 text-xs overflow-auto max-h-[150px] whitespace-pre-wrap break-all">{this.state.error.stack ?? this.state.error.message}</pre>
+            </details>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
               onClick={this.handleReset}
-              className="game-btn-touch games-focus-ring min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-sm font-medium focus:outline-none"
+              disabled={this.state.isRetrying}
+              className="game-btn-touch games-focus-ring min-h-[48px] min-w-[48px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-sm font-medium focus:outline-none disabled:opacity-50"
               aria-label={this.props.retryLabel ?? '重試載入遊戲'}
             >
               <RefreshCw className="w-4 h-4" />

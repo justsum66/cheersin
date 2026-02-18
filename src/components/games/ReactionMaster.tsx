@@ -8,6 +8,7 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 const COLORS = [
   { name: '紅色', color: 'bg-red-500', hex: '#ef4444' },
@@ -21,6 +22,7 @@ export default function ReactionMaster() {
   const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const defaultPlayers = [1, 2].map((n) => t('games.playerN', { n }))
   const players = contextPlayers.length >= 2 ? contextPlayers : defaultPlayers
 
@@ -122,8 +124,8 @@ export default function ReactionMaster() {
       {gameState === 'waiting' && (
         <div className="flex flex-col items-center gap-6">
           <m.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1, repeat: Infinity }}
+            animate={reducedMotion ? undefined : { opacity: [0.5, 1, 0.5] }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 1, repeat: Infinity }}
             className="w-32 h-32 rounded-full bg-white/10 border-4 border-white/30 flex items-center justify-center"
           >
             <span className="text-white/50 text-xl">{t('games.reactionMasterWait')}</span>
@@ -145,8 +147,9 @@ export default function ReactionMaster() {
       {gameState === 'show' && targetColor && (
         <div className="flex flex-col items-center gap-6">
           <m.div
-            initial={{ scale: 0 }}
+            initial={reducedMotion ? false : { scale: 0 }}
             animate={{ scale: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className={`w-32 h-32 rounded-full ${targetColor.color} flex items-center justify-center shadow-lg`}
           >
             <span className="text-white font-bold text-2xl">{targetColor.name}</span>
@@ -174,7 +177,7 @@ export default function ReactionMaster() {
       )}
 
       {gameState === 'result' && (
-        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="text-center">
           {wrongPlayer ? (
             <>
               <X className="w-16 h-16 text-red-500 mx-auto mb-2" />

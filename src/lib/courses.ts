@@ -6,9 +6,12 @@ import path from 'path'
 
 /** 158 章節內穿插測驗：單選題 */
 export interface ChapterQuizItem {
+  id: string
   question: string
   options: string[]
+  correctAnswer: string
   correctIndex: number
+  explanation: string
 }
 
 export interface Chapter {

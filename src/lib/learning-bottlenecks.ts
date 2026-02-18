@@ -63,10 +63,10 @@ export interface LearningBottleneck {
 // 瓶頸偵測規則
 interface DetectionRule {
   name: string
-  condition: (data: any) => boolean
+  condition: (data: LearningMetrics) => boolean
   weight: number // 重要性權重 1-10
   bottleneckType: BottleneckType
-  severityCalculator: (data: any) => SeverityLevel
+  severityCalculator: (data: LearningMetrics) => SeverityLevel
   indicators: string[]
 }
 
@@ -595,7 +595,7 @@ function getInteractionData(courseId: string): {
 }
 
 // 計算參與度分數
-function calculateEngagementScore(data: any): number {
+function calculateEngagementScore(_data: { sessionCount: number; totalTime: number }): number {
   // 基於互動頻率、時間、深度等計算
   return 65 // 預設值
 }

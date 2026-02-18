@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
-import { Sparkles, Smartphone, Send, Instagram, Facebook } from 'lucide-react'
+import { Sparkles, Smartphone, Send, Instagram, Facebook, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { SpringDrag } from '@/components/ui/SpringDrag'
@@ -16,10 +16,29 @@ interface HomeFooterProps {
     faq: React.ReactNode
 }
 
+/** HP-018: Email validation regex */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function HomeFooter({ faq }: HomeFooterProps) {
     const { t } = useTranslation()
     const reducedMotion = useReducedMotion()
     const [subscribeSubmitting, setSubscribeSubmitting] = useState(false)
+    const [email, setEmail] = useState('')
+    const [emailError, setEmailError] = useState<string | null>(null)
+
+    /** HP-018: Validate email with inline error message */
+    const validateEmail = useCallback((value: string): boolean => {
+        if (!value.trim()) {
+            setEmailError('請輸入 Email')
+            return false
+        }
+        if (!EMAIL_REGEX.test(value)) {
+            setEmailError('請輸入有效的 Email 格式')
+            return false
+        }
+        setEmailError(null)
+        return true
+    }, [])
 
     return (
         <footer id="footer-cta-section" className="border-t border-white/10 bg-white/[0.02] py-10 md:py-14 px-4 relative overflow-hidden safe-area-pb print:py-6" role="contentinfo" aria-label="頁尾與網站地圖">
@@ -72,16 +91,45 @@ export function HomeFooter({ faq }: HomeFooterProps) {
                     onSubmit={(e) => {
                         e.preventDefault()
                         if (subscribeSubmitting) return
+                        // HP-018: Validate before submit
+                        if (!validateEmail(email)) return
                         setSubscribeSubmitting(true)
                         toast.success('已收到！我們會寄送新品與優惠給您。', { duration: 4000 })
-                        setTimeout(() => setSubscribeSubmitting(false), 2000)
+                        setTimeout(() => {
+                            setSubscribeSubmitting(false)
+                            setEmail('')
+                        }, 2000)
                     }}
                 >
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <input type="email" placeholder="留下 Email，接收新品與優惠" className="input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a]" aria-label="Email 訂閱" disabled={subscribeSubmitting} required />
-                        <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
-                            <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
-                        </button>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value)
+                                    if (emailError) validateEmail(e.target.value)
+                                }}
+                                onBlur={() => email && validateEmail(email)}
+                                placeholder="留下 Email，接收新品與優惠"
+                                className={`input-glass flex-1 games-touch-target rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-primary-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] ${emailError ? 'border-red-500/50 ring-1 ring-red-500/30' : ''}`}
+                                aria-label="Email 訂閱"
+                                aria-invalid={!!emailError}
+                                aria-describedby={emailError ? 'email-error' : undefined}
+                                disabled={subscribeSubmitting}
+                                required
+                            />
+                            <button type="submit" disabled={subscribeSubmitting} className="btn-ghost flex items-center justify-center gap-2 games-touch-target px-6 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/30 transition-colors duration-200 games-focus-ring disabled:opacity-60 disabled:cursor-not-allowed" aria-busy={subscribeSubmitting}>
+                                <Send className="w-4 h-4" /> {subscribeSubmitting ? '送出中…' : '訂閱'}
+                            </button>
+                        </div>
+                        {/* HP-018: Inline error message */}
+                        {emailError && (
+                            <p id="email-error" className="flex items-center gap-1 text-red-400 text-xs mt-1" role="alert">
+                                <AlertCircle className="w-3 h-3" />
+                                {emailError}
+                            </p>
+                        )}
                     </div>
                     <div className="flex flex-col gap-2 text-left">
                         <label className="flex items-center gap-2 text-white/70 text-xs cursor-pointer">
@@ -94,11 +142,11 @@ export function HomeFooter({ faq }: HomeFooterProps) {
                         </label>
                     </div>
                 </form>
-                <div className="group flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
-                    {/* R2-086：社群圖標 group-hover 品牌色擴散（ring 擴散 + scale） */}
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
-                    <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-primary-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-primary-500/30 group-hover:text-white" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
+                <div className="flex items-center justify-center gap-4 mb-6 text-white/60" role="navigation" aria-label="社群連結">
+                    {/* HP-027：社群圖標 hover 時顯示品牌專屬色 */}
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-gradient-to-br hover:from-purple-500/30 hover:to-pink-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-pink-500/30 hover:text-pink-400" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-blue-600/30 ring-2 ring-transparent hover:ring-4 hover:ring-blue-500/30 hover:text-blue-400" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+                    <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/10 text-white/70 transition-all duration-300 hover:scale-110 hover:bg-green-500/30 ring-2 ring-transparent hover:ring-4 hover:ring-green-500/30 hover:text-green-400" aria-label="Line"><span className="text-sm font-bold">LINE</span></a>
                 </div>
                 <p className="text-white/70 text-sm mb-8" role="note" aria-label="飲酒提醒">{FOOTER_DRINK_NOTE_BOTTOM}</p>
 

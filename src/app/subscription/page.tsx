@@ -139,11 +139,23 @@ export default function SubscriptionPage() {
             <p className="text-white/50 text-sm mt-1">下次扣款日：{currentSubscription.current_period_end}</p>
           )}
           <div className="flex flex-wrap gap-2 mt-3">
-            <Link href="/pricing" className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500/20 text-primary-300 text-sm font-medium games-focus-ring">
+            <Link href="/subscription/manage" className="min-h-[48px] px-4 py-2 rounded-xl bg-primary-500/20 text-primary-300 text-sm font-medium games-focus-ring">
               變更方案
+            </Link>
+            <Link href="/subscription/history" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium games-focus-ring hover:bg-white/15">
+              付款紀錄
             </Link>
             <Link href="/subscription/cancel" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium games-focus-ring hover:bg-white/15">
               取消訂閱
+            </Link>
+            <Link href="/subscription/refund" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/60 text-sm font-medium games-focus-ring hover:bg-white/15">
+              申請退款
+            </Link>
+            <Link href="/subscription/pause" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/60 text-sm font-medium games-focus-ring hover:bg-white/15">
+              暫停訂閱
+            </Link>
+            <Link href="/subscription/gift" className="min-h-[48px] px-4 py-2 rounded-xl bg-white/10 text-white/60 text-sm font-medium games-focus-ring hover:bg-white/15">
+              贈送好友
             </Link>
           </div>
         </m.div>

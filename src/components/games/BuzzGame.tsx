@@ -12,11 +12,12 @@ import GameRules from './GameRules'
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 const BUZZ_OPTIONS = [3, 5, 7] as const
 
+// GAME-059: Custom buzz words that can trigger Buzz
+const DEFAULT_CUSTOM_WORDS: string[] = []
+
 /** 檢查數字是否要說 Buzz（是 buzzNumber 的倍數或包含該數字） */
 function shouldBuzz(n: number, buzzNumber: number): boolean {
-  // 是倍數
   if (n % buzzNumber === 0) return true
-  // 包含該數字
   if (String(n).includes(String(buzzNumber))) return true
   return false
 }
@@ -31,6 +32,9 @@ export default function BuzzGame() {
   // 遊戲設定
   const [buzzNumber, setBuzzNumber] = useState<typeof BUZZ_OPTIONS[number]>(7)
   const [showSettings, setShowSettings] = useState(false)
+  // GAME-059: Custom buzz words
+  const [customWords, setCustomWords] = useState<string[]>(DEFAULT_CUSTOM_WORDS)
+  const [newWord, setNewWord] = useState('')
   
   // 遊戲狀態
   const [currentNumber, setCurrentNumber] = useState(1)
@@ -39,6 +43,12 @@ export default function BuzzGame() {
   const [wrongAction, setWrongAction] = useState<'should-buzz' | 'should-number' | null>(null)
   const [buzzAnimation, setBuzzAnimation] = useState(false)
   const [history, setHistory] = useState<{ player: string; number: number; action: 'number' | 'buzz'; correct: boolean }[]>([])
+  // GAME-060: Leaderboard (survival score per player)
+  const [scores, setScores] = useState<Record<string, number>>(() => {
+    const s: Record<string, number> = {}
+    for (const p of (contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS)) s[p] = 0
+    return s
+  })
 
   const loserClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -53,6 +63,7 @@ export default function BuzzGame() {
     setWrongAction(null)
     setBuzzAnimation(false)
     setHistory([])
+    // GAME-060: Don't reset scores on game reset - accumulative leaderboard
   }, [])
 
   // 說數字
@@ -64,6 +75,12 @@ export default function BuzzGame() {
       setWrongAction('should-buzz')
       setLoser(currentPlayer)
       play('wrong')
+      // GAME-060: Update scores - other players survive
+      setScores(prev => {
+        const next = { ...prev }
+        for (const p of players) if (p !== currentPlayer) next[p] = (next[p] ?? 0) + 1
+        return next
+      })
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([150, 80, 150])
       setHistory(prev => [...prev, { player: currentPlayer, number: currentNumber, action: 'number', correct: false }])
       
@@ -93,6 +110,12 @@ export default function BuzzGame() {
       setWrongAction('should-number')
       setLoser(currentPlayer)
       play('wrong')
+      // GAME-060: Update scores - other players survive
+      setScores(prev => {
+        const next = { ...prev }
+        for (const p of players) if (p !== currentPlayer) next[p] = (next[p] ?? 0) + 1
+        return next
+      })
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([150, 80, 150])
       setHistory(prev => [...prev, { player: currentPlayer, number: currentNumber, action: 'buzz', correct: false }])
       
@@ -180,6 +203,45 @@ export default function BuzzGame() {
                 </button>
               ))}
             </div>
+            {/* GAME-059: Custom buzz words */}
+            <h3 className="text-white/70 text-sm mb-2 mt-4">自訂禁語詞</h3>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={newWord}
+                onChange={(e) => setNewWord(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newWord.trim()) {
+                    setCustomWords((prev) => [...prev, newWord.trim()])
+                    setNewWord('')
+                  }
+                }}
+                placeholder="輸入禁語詞..."
+                className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm placeholder-white/40 focus:outline-none focus:border-primary-400"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newWord.trim()) {
+                    setCustomWords((prev) => [...prev, newWord.trim()])
+                    setNewWord('')
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-primary-500 text-white text-sm games-focus-ring"
+              >
+                +
+              </button>
+            </div>
+            {customWords.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {customWords.map((w, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-500/20 text-accent-400 text-xs">
+                    {w}
+                    <button type="button" onClick={() => setCustomWords((prev) => prev.filter((_, j) => j !== i))} className="hover:text-white">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
           </m.div>
         )}
       </AnimatePresence>
@@ -308,6 +370,26 @@ export default function BuzzGame() {
       )}
 
       <p className="text-white/40 text-sm mt-4">鍵盤：空白鍵/B 說 Buzz，Enter 說數字</p>
+
+      {/* GAME-060: Leaderboard */}
+      {Object.values(scores).some((v) => v > 0) && (
+        <div className="mt-6 w-full max-w-xs">
+          <h3 className="text-white/50 text-sm mb-2 text-center">🏆 排行榜（存活分）</h3>
+          <div className="space-y-1">
+            {Object.entries(scores)
+              .sort(([, a], [, b]) => b - a)
+              .map(([name, score], idx) => (
+                <div
+                  key={name}
+                  className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm ${idx === 0 && score > 0 ? 'bg-yellow-500/15 text-yellow-300' : 'bg-white/5 text-white/60'}`}
+                >
+                  <span>{idx === 0 && score > 0 ? '👑 ' : ''}{name}</span>
+                  <span className="font-mono font-bold">{score}</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* 歷史紀錄 */}
       {history.length > 0 && (

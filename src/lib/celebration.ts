@@ -80,7 +80,7 @@ function showFailureFlash(durationMs = 600): void {
   })
   setTimeout(() => {
     el.style.opacity = '0'
-    setTimeout(() => el.remove(), 180)
+    setTimeout(() => { if (el.isConnected) el.remove() }, 180)
   }, durationMs)
 }
 
@@ -111,6 +111,6 @@ export function showPunishmentOverlay(durationMs = 800): void {
   })
   setTimeout(() => {
     el.style.opacity = '0'
-    setTimeout(() => el.remove(), 280)
+    setTimeout(() => { if (el.isConnected) el.remove() }, 280)
   }, durationMs)
 }

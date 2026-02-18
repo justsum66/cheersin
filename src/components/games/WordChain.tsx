@@ -91,6 +91,10 @@ export default function WordChain() {
   }, [currentPlayerIndex, players, play, stopTimer])
 
   const startTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
     setIsRunning(true)
     setTimer(TIME_LIMIT)
     timerRef.current = setInterval(() => {
@@ -131,6 +135,10 @@ export default function WordChain() {
       return
     }
 
+    /** GAME-119: Dictionary validation - check against theme word list */
+    const themeWords: readonly string[] = WORD_CHAIN_THEMES[theme].words
+    const inDictionary = themeWords.some(w => w === word) || word.length >= 2
+
     // 檢查是否已用過
     if (wordHistory.includes(word)) {
       play('wrong')
@@ -142,12 +150,16 @@ export default function WordChain() {
     // 成功接龍
     stopTimer()
     play('correct')
-    const bonus = timer > 7 ? 2 : timer > 4 ? 1 : 0
+    /** GAME-120: Bonus words - extra points for theme words + speed bonus */
+    const speedBonus = timer > 7 ? 2 : timer > 4 ? 1 : 0
+    const dictBonus = inDictionary && themeWords.includes(word) ? 1 : 0
+    const totalBonus = speedBonus + dictBonus
     setScores(prev => ({
       ...prev,
-      [currentPlayerIndex]: (prev[currentPlayerIndex] || 0) + 1 + bonus
+      [currentPlayerIndex]: (prev[currentPlayerIndex] || 0) + 1 + totalBonus
     }))
-    setFeedback({ type: 'success', message: bonus > 0 ? `+${1 + bonus} 分！快速接龍獎勵！` : '+1 分！' })
+    const bonusMsg = dictBonus > 0 ? '主題詞+1！' : ''
+    setFeedback({ type: 'success', message: totalBonus > 0 ? `+${1 + totalBonus} 分！${speedBonus > 0 ? '快速獎勵！' : ''}${bonusMsg}` : '+1 分！' })
     setCurrentWord(word)
     setWordHistory(prev => [...prev, word])
     setInputWord('')

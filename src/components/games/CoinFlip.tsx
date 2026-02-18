@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -12,16 +13,23 @@ const HISTORY_MAX = 5
 /** 拋硬幣：猜正面或反面，猜錯喝。來源：Drynk app。本局最近結果可選顯示。 */
 export default function CoinFlip() {
   const { play: playSound } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [choice, setChoice] = useState<typeof SIDES[number] | null>(null)
   const [result, setResult] = useState<typeof SIDES[number] | null>(null)
   const [show, setShow] = useState(false)
   const [history, setHistory] = useState<string[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  // GAME-055: Streak counter
+  const [streak, setStreak] = useState(0)
+  const [bestStreak, setBestStreak] = useState(0)
+  // GAME-056: Wagering mode
+  const [coins, setCoins] = useState(100)
+  const [wager, setWager] = useState(10)
   const soundTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const flip = () => {
-    if (choice === null) return
+    if (choice === null || coins < wager) return
     if (soundTimeoutRef.current) clearTimeout(soundTimeoutRef.current)
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
     playSound('click')
@@ -30,6 +38,18 @@ export default function CoinFlip() {
     setResult(side)
     setShow(true)
     setHistory((prev) => [`猜${choice}開${side}${isWin ? '安全' : '喝'}`, ...prev].slice(0, HISTORY_MAX))
+    // GAME-055: Update streak
+    if (isWin) {
+      setStreak((s) => {
+        const next = s + 1
+        setBestStreak((b) => Math.max(b, next))
+        return next
+      })
+      setCoins((c) => c + wager)
+    } else {
+      setStreak(0)
+      setCoins((c) => Math.max(0, c - wager))
+    }
     soundTimeoutRef.current = setTimeout(() => {
       playSound(isWin ? 'win' : 'wrong')
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(isWin ? 50 : 100)
@@ -74,6 +94,29 @@ export default function CoinFlip() {
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="拋硬幣">
       <GameRules rules={`猜硬幣是正面還是反面，系統隨機開獎。\n猜錯的人喝。`} />
+      {/* GAME-055: Streak counter display */}
+      <div className="flex items-center gap-4 mb-3 text-xs text-white/50">
+        <span>🪙 {coins} 金幣</span>
+        <span>🔥 連勝 {streak}</span>
+        <span>🏆 最佳 {bestStreak}</span>
+      </div>
+      {/* GAME-056: Wager selector */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-white/50 text-xs">下注:</span>
+        {[5, 10, 25, 50].map((w) => (
+          <button
+            key={w}
+            type="button"
+            onClick={() => setWager(w)}
+            disabled={coins < w}
+            className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-medium transition-colors games-focus-ring ${wager === w ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'} disabled:opacity-30`}
+            aria-pressed={wager === w}
+            aria-label={`下注 ${w} 金幣`}
+          >
+            {w}
+          </button>
+        ))}
+      </div>
       <p className="text-white/50 text-sm mb-2 text-center">猜正面或反面，猜錯喝</p>
       {!show && (
         <>
@@ -107,14 +150,14 @@ export default function CoinFlip() {
       <AnimatePresence>
         {show && result !== null && choice !== null && (
           <m.div
-            initial={{ scale: 0.5, opacity: 0, rotateY: 0 }}
+            initial={reducedMotion ? false : { scale: 0.5, opacity: 0, rotateY: 0 }}
             animate={{ 
-              scale: [0.5, 1.2, 1],
+              scale: reducedMotion ? 1 : [0.5, 1.2, 1],
               opacity: 1,
-              rotateY: [0, 720, 720]
+              rotateY: reducedMotion ? 0 : [0, 720, 720]
             }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+            transition={reducedMotion ? { duration: 0 } : {
               duration: 0.8,
               times: [0, 0.7, 1],
               rotateY: { duration: 0.6, ease: "easeOut" }
@@ -127,17 +170,17 @@ export default function CoinFlip() {
             {/* Phase 1 C1.5: 硬幣 3D 翻转动画 */}
             <m.p 
               className="text-2xl font-bold text-primary-300 mb-2"
-              initial={{ rotateX: -90, opacity: 0 }}
+              initial={reducedMotion ? false : { rotateX: -90, opacity: 0 }}
               animate={{ rotateX: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.3 }}
+              transition={reducedMotion ? { duration: 0 } : { delay: 0.6, duration: 0.3 }}
             >
               开{result}
             </m.p>
             <m.p 
               className={`font-bold text-xl ${win ? 'text-green-400' : 'text-red-400'}`}
-              initial={{ scale: 0 }}
-              animate={{ scale: [0, 1.3, 1] }}
-              transition={{ delay: 0.7, duration: 0.4 }}
+              initial={reducedMotion ? false : { scale: 0 }}
+              animate={{ scale: reducedMotion ? 1 : [0, 1.3, 1] }}
+              transition={reducedMotion ? { duration: 0 } : { delay: 0.7, duration: 0.4 }}
             >
               {win ? '✓ 安全' : '喝！'}
             </m.p>

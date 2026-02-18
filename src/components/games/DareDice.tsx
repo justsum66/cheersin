@@ -16,23 +16,30 @@ const DARES: Record<string, string[]> = {
 
 /** 大冒險骰：擲 1～6 對應懲罰等級，抽一題大冒險。 */
 /** Phase 1 C1.1: 增強骰子滾動物理效果 */
+/** GAME-093: Custom dare bank support */
 export default function DareDice() {
   const { play } = useGameSound()
   const reducedMotion = useGameReduceMotion()
   const [dice, setDice] = useState<number | null>(null)
   const [dare, setDare] = useState<string | null>(null)
   const [rolling, setRolling] = useState(false)
-  const [rollingValue, setRollingValue] = useState(1) // 骰子滾動時顯示的數字
+  const [rollingValue, setRollingValue] = useState(1)
   const rollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
+  const [customDare, setCustomDare] = useState('')
+  const [customDares, setCustomDares] = useState<string[]>([])
+  /** GAME-094: Re-roll tracking — allow one free re-roll per round */
+  const [rerollUsed, setRerollUsed] = useState(false)
   const roll = () => {
     play('click')
     setDare(null)
     setRolling(true)
+    setRerollUsed(false)
     const val = Math.floor(Math.random() * 6) + 1
     const level = DARE_LEVELS[val]
-    const pool = DARES[level] ?? DARES['中']
+    /** GAME-093: Pull from custom dare bank first, then default */
+    const defaultPool = DARES[level] ?? DARES['中']
+    const pool = customDares.length > 0 ? [...customDares, ...defaultPool] : defaultPool
     const chosen = pool[Math.floor(Math.random() * pool.length)]
     const durationMs = reducedMotion ? 100 : 800
 
@@ -71,6 +78,35 @@ export default function DareDice() {
   }, [])
 
   const level = dice !== null ? DARE_LEVELS[dice] : null
+
+  /** GAME-094: Re-roll animation — re-rolls the dare only (keeps dice value) */
+  const reroll = () => {
+    if (rerollUsed || dice === null) return
+    play('click')
+    setRerollUsed(true)
+    setRolling(true)
+    const lv = DARE_LEVELS[dice]
+    const defaultPool = DARES[lv] ?? DARES['中']
+    const pool = customDares.length > 0 ? [...customDares, ...defaultPool] : defaultPool
+    const chosen = pool[Math.floor(Math.random() * pool.length)]
+    const durationMs = reducedMotion ? 100 : 500
+    if (!reducedMotion) {
+      if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
+      rollIntervalRef.current = setInterval(() => {
+        setRollingValue(Math.floor(Math.random() * 6) + 1)
+      }, 80)
+    }
+    if (rollTimeoutRef.current) clearTimeout(rollTimeoutRef.current)
+    rollTimeoutRef.current = setTimeout(() => {
+      if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
+      rollTimeoutRef.current = null
+      rollIntervalRef.current = null
+      setRollingValue(dice)
+      setDare(chosen ?? null)
+      setRolling(false)
+      play('wrong')
+    }, durationMs)
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label="大冒險骰">
@@ -112,6 +148,20 @@ export default function DareDice() {
           <p className="text-amber-300 font-bold">等級：{level}（{dice} 點）</p>
           <p className="text-white font-medium mt-2">{dare}</p>
           <CopyResultButton text={`大冒險骰：${level} － ${dare}`} label="複製結果" className="mt-2 games-focus-ring" />
+          {/** GAME-094: Re-roll button with spin animation */}
+          {!rerollUsed && (
+            <button
+              type="button"
+              onClick={reroll}
+              disabled={rolling}
+              className="mt-2 px-4 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white/70 text-sm games-focus-ring hover:bg-white/20 disabled:opacity-50"
+            >
+              🔄 重抽一次（免費）
+            </button>
+          )}
+          {rerollUsed && (
+            <p className="mt-1 text-white/30 text-xs">已使用重抽機會</p>
+          )}
         </m.div>
       )}
     </div>

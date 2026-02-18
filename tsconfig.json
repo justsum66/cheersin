@@ -24,6 +24,15 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@/games/*": [
+        "./src/components/games/*"
+      ],
+      "@/learn/*": [
+        "./src/components/learn/*"
+      ],
+      "@/ui/*": [
+        "./src/components/ui/*"
       ]
     },
     "target": "ES2017"

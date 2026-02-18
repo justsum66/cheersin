@@ -15,6 +15,7 @@ export default function HomeTestimonialsCarousel() {
   const reducedMotion = useReducedMotion()
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const regionRef = useRef<HTMLDivElement>(null)
+  const [isPaused, setIsPaused] = useState(false)
 
   isTransitioningRef.current = isTransitioning
   const len = HOME_TESTIMONIALS.length
@@ -31,12 +32,12 @@ export default function HomeTestimonialsCarousel() {
   )
 
   useEffect(() => {
-    if (reducedMotion) return
+    if (reducedMotion || isPaused) return
     intervalRef.current = setInterval(() => go(1), HOME_TESTIMONIALS_INTERVAL_MS)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [go, reducedMotion])
+  }, [go, reducedMotion, isPaused])
 
   /** H49：輪播鍵盤可操作 — ArrowLeft/ArrowRight 切換 */
   const onKeyDown = useCallback(
@@ -60,8 +61,13 @@ export default function HomeTestimonialsCarousel() {
       className="overflow-hidden py-4"
       role="region"
       aria-label="精選用戶評價"
+      aria-roledescription="carousel"
       tabIndex={0}
       onKeyDown={onKeyDown}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
     >
       <div
         className="relative touch-pan-y"

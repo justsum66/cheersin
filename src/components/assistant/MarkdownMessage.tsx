@@ -102,7 +102,8 @@ interface MarkdownMessageProps {
 
 export function MarkdownMessage({ content, className = '' }: MarkdownMessageProps) {
   // P006: Import remark-gfm dynamically. Hooks 必須在頂層、不可在 early return 之後。
-  const [remarkGfm, setRemarkGfm] = useState<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [remarkGfm, setRemarkGfm] = useState<(() => void) | null>(null)
 
   useEffect(() => {
     import('remark-gfm').then((mod) => setRemarkGfm(() => mod.default))

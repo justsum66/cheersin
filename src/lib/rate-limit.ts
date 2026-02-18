@@ -219,6 +219,8 @@ const ROUTE_RATE_LIMITS: Record<string, RateLimitConfig> = Object.freeze({
   generate_invitation: { maxRequests: 20, windowMs: 60_000 },
   admin: { maxRequests: 30, windowMs: 60_000 },
   onesignal: { maxRequests: 10, windowMs: 60_000 },
+  /** PAY-004: PayPal Webhook — 60秒內最多100次請求 */
+  paypal_webhook: { maxRequests: 100, windowMs: 60_000 },
 })
 
 /**

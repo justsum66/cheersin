@@ -3,7 +3,7 @@
 /**
  * i18n Context — 六語系（繁中、簡中、粵、英、日、韓），cookie 持久化
  */
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { locales, defaultLocale, COOKIE_KEY, localeNames, type Locale } from '@/lib/i18n/config'
 import { messages } from '@/lib/i18n/messages'
 
@@ -82,13 +82,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     [locale]
   )
 
-  const value: I18nContextValue = {
-    locale: mounted ? locale : defaultLocale,
+  // OPT: Memoize context value to prevent unnecessary re-renders of consumers
+  const effectiveLocale = mounted ? locale : defaultLocale
+  const value = useMemo<I18nContextValue>(() => ({
+    locale: effectiveLocale,
     setLocale,
     t,
     localeNames,
     locales: locales as unknown as Locale[],
-  }
+  }), [effectiveLocale, setLocale, t])
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
 }

@@ -1,13 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { errorResponse } from '@/lib/api-response'
 import { createServerClientOptional } from '@/lib/supabase-server'
 import { logApiError, logApiWarn } from '@/lib/api-error-log'
 import { getTierFromPayPalPlanId } from '@/config/pricing.config'
+import { isRateLimitedAsync, getClientIp, createRateLimitResponse, checkRateLimit, DEFAULT_RATE_LIMIT } from '@/lib/rate-limit'
+import { PAYPAL_API_BASE, PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID } from '@/lib/env-config'
 
-// PayPal API base URL (use sandbox for testing)
-const PAYPAL_API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'https://api-m.paypal.com'
-  : 'https://api-m.sandbox.paypal.com'
+// PAY-016: PayPal API base URL from centralized env config (supports sandbox toggle)
+
+/** PAY-002: Retry configuration for Supabase writes */
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  baseDelayMs: 200,
+}
+
+/** PAY-011: Grace period (days) before downgrading on payment failure */
+const GRACE_PERIOD_DAYS = 3
+
+/** PAY-002: Execute Supabase operation with exponential backoff retry */
+async function withRetry<T>(
+  operation: () => Promise<{ data: T | null; error: { message: string; code?: string } | null }>,
+  context: string,
+  requestId?: string | null
+): Promise<{ data: T | null; error: { message: string; code?: string } | null }> {
+  let lastError: { message: string; code?: string } | null = null
+  for (let attempt = 1; attempt <= RETRY_CONFIG.maxAttempts; attempt++) {
+    const result = await operation()
+    if (!result.error) return result
+    lastError = result.error
+    // Don't retry on constraint violations (duplicate key, etc.)
+    if (result.error.code === '23505' || result.error.code === '42P01') return result
+    if (attempt < RETRY_CONFIG.maxAttempts) {
+      const delay = RETRY_CONFIG.baseDelayMs * Math.pow(2, attempt - 1)
+      logApiWarn('webhooks/paypal', `Retry ${attempt}/${RETRY_CONFIG.maxAttempts} for ${context} after ${delay}ms`, { requestId })
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  return { data: null, error: lastError }
+}
+
+/** PAY-003: Store failed event to dead-letter queue for manual review */
+async function storeToDeadLetterQueue(
+  supabase: ReturnType<typeof createServerClientOptional>,
+  event: PayPalWebhookEvent,
+  errorMsg: string,
+  requestId?: string | null
+): Promise<void> {
+  if (!supabase) return
+  try {
+    await supabase.from('webhook_dead_letters').insert({
+      event_id: event.id ?? null,
+      event_type: event.event_type,
+      payload: JSON.stringify(event),
+      error_message: errorMsg,
+      created_at: new Date().toISOString(),
+      retry_count: 0,
+      status: 'pending',
+    })
+  } catch (dlqError) {
+    // If DLQ table doesn't exist or insert fails, just log it
+    logApiWarn('webhooks/paypal', `Failed to store to DLQ: ${dlqError instanceof Error ? dlqError.message : String(dlqError)}`, { requestId })
+  }
+}
 
 /** PayPal webhook event payload (subset of fields we use)；id 用於冪等；T048 REFUNDED 用 billing_agreement_id */
 interface PayPalWebhookEvent {
@@ -25,16 +80,16 @@ interface PayPalWebhookEvent {
   }
 }
 
-/** E09：PayPal Webhook 簽名驗證與冪等 — 生產環境驗證簽名；event_id 冪等寫入 webhook_events */
+/** E09：PayPal Webhook 簽名驗證與冪等 — 生產環境驗證簽名；event_id 冪等寫入 webhook_events；使用 centralized env-config */
 async function verifyWebhookSignature(
   body: string,
   headers: Headers,
   requestId?: string | null
 ): Promise<boolean> {
   try {
-    // Get PayPal access token
+    // Get PayPal access token using centralized env-config
     const auth = Buffer.from(
-      `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`
+      `${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`
     ).toString('base64')
 
     const tokenResponse = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
@@ -73,7 +128,7 @@ async function verifyWebhookSignature(
           transmission_id: headers.get('paypal-transmission-id'),
           transmission_sig: headers.get('paypal-transmission-sig'),
           transmission_time: headers.get('paypal-transmission-time'),
-          webhook_id: process.env.PAYPAL_WEBHOOK_ID,
+          webhook_id: PAYPAL_WEBHOOK_ID,
           webhook_event: JSON.parse(body),
         }),
       }
@@ -299,7 +354,7 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
       break
     }
 
-    // Subscription suspended (payment failed)
+    // Subscription suspended (payment failed) — PAY-011: 3-day grace before downgrade
     case 'BILLING.SUBSCRIPTION.SUSPENDED': {
       const subscriptionId = resource.id
 
@@ -309,9 +364,16 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
         .eq('paypal_subscription_id', subscriptionId)
         .maybeSingle()
 
+      // PAY-011: Set grace period end date instead of immediate downgrade
+      const gracePeriodEnd = new Date()
+      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + GRACE_PERIOD_DAYS)
+
       const { error } = await supabase
         .from('subscriptions')
-        .update({ status: 'suspended' })
+        .update({
+          status: 'suspended',
+          grace_period_end: gracePeriodEnd.toISOString(),
+        })
         .eq('paypal_subscription_id', subscriptionId)
 
       if (error) {
@@ -327,8 +389,17 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
           new_tier: subBefore.plan_type,
           event_type: eventType,
         })
+        // Notify user about grace period
+        if (subBefore.user_id) {
+          await supabase.from('notifications').insert({
+            user_id: subBefore.user_id,
+            type: 'grace_period',
+            title: 'Payment failed — grace period active',
+            body: `Your payment failed. You have ${GRACE_PERIOD_DAYS} days to update your payment method before your plan is downgraded.`,
+          })
+        }
       }
-      logApiWarn('webhooks/paypal', 'Subscription suspended', { requestId })
+      logApiWarn('webhooks/paypal', `Subscription suspended, grace period until ${gracePeriodEnd.toISOString().slice(0, 10)}`, { requestId })
       break
     }
 
@@ -458,21 +529,31 @@ async function handlePayPalEvent(event: PayPalWebhookEvent, requestId?: string |
 export async function POST(request: NextRequest) {
   const startMs = Date.now()
   const requestId = request.headers.get('x-request-id') ?? undefined
-  const body = await request.text()
   const headers = request.headers
 
+  // PAY-004: Rate limiting — max 100 req/min per IP
+  const clientIp = getClientIp(headers)
+  const rateLimited = await isRateLimitedAsync(clientIp, 'paypal_webhook')
+  if (rateLimited) {
+    logApiWarn('webhooks/paypal', 'Rate limited', { requestId })
+    return createRateLimitResponse(checkRateLimit(`paypal_webhook:${clientIp}`))
+  }
+
+  const body = await request.text()
+
   try {
-    // P0-05：生產環境強制驗證簽名，且 PAYPAL_WEBHOOK_ID 必填
-    if (process.env.NODE_ENV === 'production') {
-      if (!process.env.PAYPAL_WEBHOOK_ID?.trim()) {
-        logApiError('webhooks/paypal', new Error('PAYPAL_WEBHOOK_ID not set in production'), { isP0: true, requestId })
-        return errorResponse(503, 'WEBHOOK_NOT_CONFIGURED', { message: 'Webhook not configured' })
-      }
+    // PAY-001: Verify signature in all environments when PAYPAL_WEBHOOK_ID is set
+    const webhookId = PAYPAL_WEBHOOK_ID
+    if (webhookId) {
       const isValid = await verifyWebhookSignature(body, headers, requestId)
       if (!isValid) {
         logApiError('webhooks/paypal', new Error('Invalid webhook signature'), { code: 'invalid_signature', isP0: true, requestId })
         return errorResponse(401, 'INVALID_SIGNATURE', { message: 'Invalid signature' })
       }
+    } else if (process.env.NODE_ENV === 'production') {
+      // P0-05: Production requires PAYPAL_WEBHOOK_ID
+      logApiError('webhooks/paypal', new Error('PAYPAL_WEBHOOK_ID not set in production'), { isP0: true, requestId })
+      return errorResponse(503, 'WEBHOOK_NOT_CONFIGURED', { message: 'Webhook not configured' })
     }
 
     let event: PayPalWebhookEvent
@@ -519,14 +600,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 })
   } catch (error) {
     const durationMs = Date.now() - startMs
+    let parsedEvent: PayPalWebhookEvent | undefined
     let eventType: string | undefined
     try {
-      const parsed = JSON.parse(body) as { event_type?: string }
-      eventType = typeof parsed?.event_type === 'string' ? parsed.event_type : undefined
+      parsedEvent = JSON.parse(body) as PayPalWebhookEvent
+      eventType = typeof parsedEvent?.event_type === 'string' ? parsedEvent.event_type : undefined
     } catch {
       eventType = undefined
     }
     logApiError('webhooks/paypal', error, { action: 'handle-event', isP0: true, requestId, durationMs, eventType })
+    
+    // PAY-003: Store to dead-letter queue for manual review
+    if (parsedEvent) {
+      const supabase = createServerClientOptional()
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      await storeToDeadLetterQueue(supabase, parsedEvent, errorMsg, requestId)
+    }
+    
     return errorResponse(500, 'WEBHOOK_HANDLER_FAILED', { message: 'Webhook handler failed' })
   }
 }
@@ -538,4 +628,67 @@ export async function GET() {
     webhook: 'PayPal Subscription Webhook',
     timestamp: new Date().toISOString()
   })
+}
+
+/** SEC-TIMING：Timing-safe comparison for admin key to prevent timing attacks */
+function isValidAdminKey(provided: string | null, expected: string): boolean {
+  if (!provided) return false
+  const providedPart = provided.startsWith('Bearer ') ? provided.slice(7) : provided
+  try {
+    const a = Buffer.from(providedPart, 'utf-8')
+    const b = Buffer.from(expected, 'utf-8')
+    if (a.length !== b.length) return false
+    return timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * PAY-005: Webhook event replay mechanism
+ * Admin can replay a specific event from DLQ by calling PATCH with event_id
+ * curl -X PATCH /api/webhooks/paypal -d '{"event_id":"WH-xxx","action":"replay"}'
+ */
+export async function PATCH(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  const adminKey = process.env.ADMIN_API_KEY?.trim()
+  if (!adminKey || !isValidAdminKey(authHeader, adminKey)) {
+    return errorResponse(401, 'UNAUTHORIZED', { message: 'Admin key required' })
+  }
+
+  try {
+    const body = await request.json() as { event_id?: string; action?: string }
+    if (body.action !== 'replay' || !body.event_id) {
+      return errorResponse(400, 'INVALID_REQUEST', { message: 'action=replay and event_id required' })
+    }
+
+    const supabase = createServerClientOptional()
+    if (!supabase) {
+      return errorResponse(503, 'DB_NOT_CONFIGURED', { message: 'Supabase not configured' })
+    }
+
+    const { data: dlqEntry } = await supabase
+      .from('webhook_dead_letters')
+      .select('payload, retry_count')
+      .eq('event_id', body.event_id)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (!dlqEntry) {
+      return errorResponse(404, 'NOT_FOUND', { message: 'DLQ entry not found or already processed' })
+    }
+
+    const event = JSON.parse(dlqEntry.payload) as PayPalWebhookEvent
+    await handlePayPalEvent(event, `replay-${body.event_id}`)
+
+    await supabase
+      .from('webhook_dead_letters')
+      .update({ status: 'replayed', retry_count: (dlqEntry.retry_count ?? 0) + 1 })
+      .eq('event_id', body.event_id)
+
+    return NextResponse.json({ success: true, event_id: body.event_id, action: 'replayed' })
+  } catch (error) {
+    logApiError('webhooks/paypal', error, { action: 'replay' })
+    return errorResponse(500, 'REPLAY_FAILED', { message: 'Replay failed' })
+  }
 }

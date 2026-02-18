@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
-import { Image, RefreshCw, Trophy, Eye, EyeOff } from 'lucide-react'
+import { Image, RefreshCw, Trophy, Eye, EyeOff, Timer, Camera } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGamesPlayers } from './GamesContext'
@@ -38,6 +38,9 @@ export default function PhotoGuess() {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [currentPuzzle, setCurrentPuzzle] = useState<typeof EMOJI_PUZZLES[0] | null>(null)
   const [showHint, setShowHint] = useState(false)
+  /** GAME-107: Pose timer for guessing — 15 seconds per puzzle */
+  const [poseTimer, setPoseTimer] = useState(15)
+  const poseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [showAnswer, setShowAnswer] = useState(false)
   const [scores, setScores] = useState<Record<number, number>>({})
   const [usedPuzzles, setUsedPuzzles] = useState<Set<string>>(new Set())

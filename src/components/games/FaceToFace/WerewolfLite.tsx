@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from '../GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
@@ -8,7 +8,7 @@ import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from '../GameRules'
 import CopyResultButton from '../CopyResultButton'
 import { FlipCard } from '@/components/ui/FlipCard'
-import { Moon, Users, Eye, FlaskConical, Crosshair } from 'lucide-react'
+import { Moon, Users, Eye, FlaskConical, Crosshair, Timer } from 'lucide-react'
 
 /** WW-21：角色型別集中；R2-141 增加女巫、獵人 */
 export type WerewolfRole = 'wolf' | 'villager' | 'seer' | 'witch' | 'hunter'
@@ -35,6 +35,11 @@ export default function WerewolfLite() {
   const [hunterRevengeTarget, setHunterRevengeTarget] = useState<number | null>(null)
   /** R2-102：角色揭曉 FlipCard — 進入 result 後延遲翻面 */
   const [revealFlipped, setRevealFlipped] = useState(false)
+  /** GAME-104: Night phase timer */
+  const [nightTimeLeft, setNightTimeLeft] = useState(0)
+  const nightTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  /** GAME-103: Role card reveal animation phase */
+  const [roleRevealIdx, setRoleRevealIdx] = useState<number | null>(null)
   useEffect(() => {
     if (phase === 'result' && voteTarget != null) {
       setRevealFlipped(false)
@@ -42,6 +47,28 @@ export default function WerewolfLite() {
       return () => clearTimeout(t)
     }
   }, [phase, voteTarget])
+
+  /** GAME-104: Start night timer when entering night phase */
+  useEffect(() => {
+    if (phase === 'night') {
+      setNightTimeLeft(30)
+      if (nightTimerRef.current) clearInterval(nightTimerRef.current)
+      nightTimerRef.current = setInterval(() => {
+        setNightTimeLeft(prev => {
+          if (prev <= 1) {
+            if (nightTimerRef.current) { clearInterval(nightTimerRef.current); nightTimerRef.current = null }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else {
+      if (nightTimerRef.current) { clearInterval(nightTimerRef.current); nightTimerRef.current = null }
+    }
+    return () => {
+      if (nightTimerRef.current) clearInterval(nightTimerRef.current)
+    }
+  }, [phase])
 
   const n = players.length
   const wolfCount = n <= 5 ? 1 : 2
@@ -71,7 +98,8 @@ export default function WerewolfLite() {
     setNightTarget(null)
     setVoteTarget(null)
     setHunterRevengeTarget(null)
-
+    /** GAME-103: Start role reveal sequence */
+    setRoleRevealIdx(0)
     setRound(1)
     setPhase('night')
   }, [n, wolfCount, hasSeer, hasWitch, hasHunter, play])
@@ -145,10 +173,30 @@ export default function WerewolfLite() {
 
   const rulesText = t('werewolf.rules').replace('{{wolfCount}}', String(wolfCount))
 
+  /** GAME-117: Narrator auto-script text per phase */
+  const narratorText = useMemo(() => {
+    if (phase === 'night') return `第 ${round} 夜，天黑請閉眼。狼人請睜眼，選擇要殺害的對象。`
+    if (phase === 'witch') return '女巫請睜眼，今晚有人被害，你要使用解藥嗎？'
+    if (phase === 'day') return '天亮了，請大家睜眼。昨晚的情況已經揭曉，請開始討論。'
+    if (phase === 'vote') return '討論結束，請投票選出你認為是狼人的玩家。'
+    return ''
+  }, [phase, round])
+
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 md:py-6 px-4 safe-area-px" role="main" aria-label={t('werewolf.title')}>
       <GameRules rules={rulesText} title={t('werewolf.rulesTitle')} />
       <p className="text-white/50 text-sm mb-2 text-center">{t('werewolf.title')}</p>
+      {/** GAME-117: Narrator auto-script display */}
+      {narratorText && phase !== 'idle' && (
+        <m.div
+          key={phase}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 max-w-md text-center"
+        >
+          <p className="text-indigo-300 text-xs italic">🎭 {narratorText}</p>
+        </m.div>
+      )}
 
       {phase === 'idle' && (
         <m.button
@@ -163,6 +211,13 @@ export default function WerewolfLite() {
 
       {phase === 'night' && (
         <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+          {/** GAME-104: Night phase timer display */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Timer className={`w-4 h-4 ${nightTimeLeft <= 10 ? 'text-red-400' : 'text-white/50'}`} />
+            <span className={`text-sm font-mono tabular-nums ${nightTimeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-white/50'}`}>
+              {nightTimeLeft}s
+            </span>
+          </div>
           <p className="text-white/70 mb-2">{t('werewolf.nightPrompt').replace('{{round}}', String(round))}</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {aliveList.filter((i) => roles[i] !== 'wolf').map((i) => (
@@ -209,16 +264,20 @@ export default function WerewolfLite() {
       {phase === 'vote' && (
         <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
           <p className="text-white/70 mb-4">{t('werewolf.votePrompt')}</p>
-          <div className="flex flex-wrap gap-2 justify-center">
+          {/** GAME-118: Enhanced daylight voting UI with avatar-style buttons */}
+          <div className="grid grid-cols-2 gap-3 justify-center">
             {aliveList.map((i) => (
-              <button
+              <m.button
                 key={i}
                 type="button"
-                className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm games-focus-ring games-touch-target"
+                className="min-h-[56px] px-4 py-3 rounded-2xl bg-white/10 hover:bg-red-500/20 text-white text-sm games-focus-ring games-touch-target border border-white/10 hover:border-red-500/40 flex flex-col items-center gap-1 transition-colors"
                 onClick={() => castVoteOut(i)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
-                {players[i]}
-              </button>
+                <span className="text-2xl">👤</span>
+                <span className="font-medium">{players[i]}</span>
+              </m.button>
             ))}
           </div>
         </m.div>

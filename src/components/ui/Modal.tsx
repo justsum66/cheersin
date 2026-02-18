@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { m, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { modalOverlay, modalContent } from '@/lib/variants'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 
 const FOCUSABLE =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -21,6 +22,8 @@ export interface ModalProps {
 export function Modal({ open, onClose, title, children, className = '' }: ModalProps) {
   const prevFocus = useRef<HTMLElement | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  /** A11Y: Respect reduced motion preference */
+  const reducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
     if (!open) return
@@ -75,7 +78,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={{ duration: 0.2 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.2 }}
           className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={onClose}
           role="dialog"
@@ -88,7 +91,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={reducedMotion ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 300 }}
             className={`rounded-2xl bg-[#1a0a2e] border border-white/10 shadow-xl max-h-[90vh] overflow-auto ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -100,7 +103,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 games-focus-ring min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="p-2 rounded-lg hover:bg-white/10 games-focus-ring min-h-[48px] min-w-[48px] flex items-center justify-center"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
@@ -112,7 +115,7 @@ export function Modal({ open, onClose, title, children, className = '' }: ModalP
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 games-focus-ring"
+                  className="p-2 rounded-lg hover:bg-white/10 games-focus-ring min-h-[48px] min-w-[48px] flex items-center justify-center"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />

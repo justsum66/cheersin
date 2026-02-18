@@ -163,24 +163,38 @@ export function useGameRoom(slug: string | null) {
     return () => controller.abort()
   }, [slug, fetchRoom])
 
-  /** 輪詢：每 5 秒拉一次玩家列表（房間模式時可於上層呼叫） */
+  /** 輪詢：每 5 秒拉一次玩家列表；tab hidden 時暫停，visible 時恢復；GAMES_500 #167 過期不 refetch */
   useEffect(() => {
     if (!slug || !roomId) return
-    const t = setInterval(() => fetchRoom(slug), 5000)
-    return () => clearInterval(t)
-  }, [slug, roomId, fetchRoom])
+    let intervalId: ReturnType<typeof setInterval> | null = null
 
-  /** 任務 11：tab 重新可見時 refetch；GAMES_500 #167 房間不存在時不重複請求 */
-  useEffect(() => {
-    if (!slug || typeof document === 'undefined') return
-    const onVisibility = () => {
-      if (document.visibilityState !== 'visible') return
+    const startPolling = () => {
+      if (intervalId) return
       if (permanentErrorSlugRef.current === slug) return
-      fetchRoom(slug)
+      intervalId = setInterval(() => fetchRoom(slug), 5000)
     }
+
+    const stopPolling = () => {
+      if (intervalId) { clearInterval(intervalId); intervalId = null }
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        if (permanentErrorSlugRef.current === slug) return
+        fetchRoom(slug)
+        startPolling()
+      } else {
+        stopPolling()
+      }
+    }
+
+    if (!document.hidden) startPolling()
     document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [slug, fetchRoom])
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [slug, roomId, fetchRoom])
 
   /** GAMES_500 #184：房間加入逾時與重試 — 15 秒逾時 */
   const JOIN_TIMEOUT_MS = 15000

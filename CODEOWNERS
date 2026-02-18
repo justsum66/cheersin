@@ -1,0 +1,42 @@
+# CLEAN-036: Code Ownership
+# Defines ownership of code directories for review routing.
+# When this project grows to a team, PR reviews are auto-assigned.
+
+# Global fallback
+* @cheersin/core
+
+# Frontend - Pages & Components
+/src/app/ @cheersin/frontend
+/src/components/ @cheersin/frontend
+
+# Games Module
+/src/components/games/ @cheersin/games
+/src/app/games/ @cheersin/games
+
+# Script Murder Module
+/src/app/script-murder/ @cheersin/games
+/src/components/script-murder/ @cheersin/games
+
+# Learn Module
+/src/app/learn/ @cheersin/learn
+/src/components/learn/ @cheersin/learn
+
+# API & Backend
+/src/app/api/ @cheersin/backend
+/src/lib/ @cheersin/backend
+
+# Configuration & Infrastructure
+/src/config/ @cheersin/core
+/public/ @cheersin/core
+/next.config.ts @cheersin/core
+/tailwind.config.ts @cheersin/frontend
+/tsconfig.json @cheersin/core
+
+# PWA
+/public/sw.js @cheersin/pwa
+/src/components/pwa/ @cheersin/pwa
+
+# Payment
+/src/app/api/webhooks/ @cheersin/backend
+/src/app/subscription/ @cheersin/backend
+/src/app/pricing/ @cheersin/backend

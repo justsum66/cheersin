@@ -101,6 +101,10 @@ export function useAssistantChat(options: UseAssistantChatOptions) {
   const maxPerDay = getMaxAICallsPerDay(tier)
   const canSend = canUseAICall(tier, usedToday)
 
+  /** PERF：使用 ref 追蹤 messages 以避免 sendMessage 依賴陣列包含 messages 導致每則訊息重新建立 callback */
+  const messagesRef = useRef<AssistantMessage[]>([])
+  messagesRef.current = messages
+
   const sendMessage = useCallback(
     async (content: string, imageBase64?: string, options?: { skipIncrement?: boolean }) => {
       skipIncrementRef.current = options?.skipIncrement ?? false
@@ -140,7 +144,7 @@ export function useAssistantChat(options: UseAssistantChatOptions) {
       setApiLoading(true)
 
       const assistantId = (Date.now() + 1).toString()
-      const allMessages = [...messages, userMessage]
+      const allMessages = [...messagesRef.current, userMessage]
       const contextMessages = allMessages.slice(-MAX_CONTEXT_MESSAGES)
       const last5Turns = contextMessages.slice(-5).map((m) => ({ role: m.role, content: m.content }))
 
@@ -176,7 +180,7 @@ export function useAssistantChat(options: UseAssistantChatOptions) {
       streamContentRef.current = ''
       lastStreamFlushRef.current = 0
       /** AST-47：此輪結束後訊息數（user + assistant） */
-      const turnMessageCount = messages.length + 2
+      const turnMessageCount = messagesRef.current.length + 2
       setMessages((prev) => [
         ...prev,
         { id: assistantId, role: 'assistant', content: '', timestamp: new Date() },
@@ -328,7 +332,6 @@ export function useAssistantChat(options: UseAssistantChatOptions) {
       preferredWineTypes,
       isLoading,
       canSend,
-      messages,
       setShowUpgradeModal,
       clearInput,
       setApiLoading,

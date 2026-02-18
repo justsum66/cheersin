@@ -180,6 +180,15 @@ export default function MemoryMatch() {
                         ? 'bg-white/20 border-2 border-white/40' 
                         : 'bg-white/10 border border-white/20 hover:bg-white/20'
                   }`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={isFlipped || isMatched ? `卡片 ${index + 1}：${card.emoji}` : `翻開卡片 ${index + 1}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      flipCard(index)
+                    }
+                  }}
                 >
                   {(isFlipped || isMatched) ? card.emoji : '?'}
                 </div>

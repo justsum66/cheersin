@@ -5,6 +5,7 @@ import { gamesWithCategory, getGameMeta } from '@/config/games.config'
 import { incrementWeeklyPlay } from '@/modules/games/stats/weekly'
 import { setGameRating } from '@/modules/games/user/favorites'
 import type { SubscriptionTier } from '@/lib/subscription'
+import { useGameReduceMotion } from './GameWrapper'
 
 interface GameRatingModalProps {
     gameId: string | null
@@ -21,6 +22,7 @@ export function GameRatingModal({
     onPlayNext,
     tier
 }: GameRatingModalProps) {
+    const reducedMotion = useGameReduceMotion()
     // Logic to find next game
     const nextGame = (() => {
         if (!gameId) return undefined
@@ -75,16 +77,18 @@ export function GameRatingModal({
 
     return (
         <m.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={onClose}
         >
             <m.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
+                exit={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >

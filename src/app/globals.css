@@ -38,7 +38,7 @@
   --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-sans: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
   --text-scale: 1;
-  --focus-ring: 0 0 0 3px rgba(139, 0, 0, 0.6);
+  --focus-ring: 0 0 0 3px rgba(212, 175, 55, 0.8); /* Enhanced gold focus ring for better contrast */
   /* 任務 96：字級以 rem 為主，支援瀏覽器字級縮放；避免固定 px 標題 */
   /* Type scale token：單一來源字階 */
   --text-xs: 0.75rem;

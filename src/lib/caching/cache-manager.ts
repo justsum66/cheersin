@@ -6,6 +6,8 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 
+const __DEV__ = process.env.NODE_ENV !== 'production'
+
 // Enhanced cache configuration with warming strategies
 export const CACHE_CONFIG = {
   // Time-based cache durations
@@ -52,7 +54,7 @@ export const CACHE_CONFIG = {
  */
 export class CacheWarmingManager {
   private warmingTasks: Map<string, { 
-    fetcher: () => Promise<any>; 
+    fetcher: () => Promise<unknown>; 
     interval: NodeJS.Timeout; 
     priority: number 
   }> = new Map()
@@ -60,7 +62,7 @@ export class CacheWarmingManager {
   
   async addWarmingTask(
     key: string,
-    fetcher: () => Promise<any>,
+    fetcher: () => Promise<unknown>,
     priority: number = 1
   ): Promise<void> {
     if (!CACHE_CONFIG.WARMING.ENABLED) return
@@ -74,9 +76,9 @@ export class CacheWarmingManager {
       
       this.activeWarming.add(key)
       try {
-        console.log(`[Cache Warming] Warming cache for ${key}`)
+        if (__DEV__) console.log(`[Cache Warming] Warming cache for ${key}`)
         await fetcher()
-        console.log(`[Cache Warming] Successfully warmed ${key}`)
+        if (__DEV__) console.log(`[Cache Warming] Successfully warmed ${key}`)
       } catch (error) {
         console.warn(`[Cache Warming] Failed to warm ${key}:`, error)
       } finally {
@@ -85,7 +87,7 @@ export class CacheWarmingManager {
     }, CACHE_CONFIG.WARMING.INTERVAL)
     
     this.warmingTasks.set(key, { fetcher, interval, priority })
-    console.log(`[Cache Warming] Added warming task for ${key}`)
+    if (__DEV__) console.log(`[Cache Warming] Added warming task for ${key}`)
   }
   
   removeWarmingTask(key: string): void {
@@ -93,7 +95,7 @@ export class CacheWarmingManager {
     if (task) {
       clearInterval(task.interval)
       this.warmingTasks.delete(key)
-      console.log(`[Cache Warming] Removed warming task for ${key}`)
+      if (__DEV__) console.log(`[Cache Warming] Removed warming task for ${key}`)
     }
   }
   
@@ -112,7 +114,7 @@ export class CacheWarmingManager {
   }
   
   async warmAll(): Promise<void> {
-    console.log('[Cache Warming] Starting full cache warming')
+    if (__DEV__) console.log('[Cache Warming] Starting full cache warming')
     const tasks = Array.from(this.warmingTasks.entries())
       .sort(([, a], [, b]) => b.priority - a.priority) // Sort by priority
       
@@ -124,7 +126,7 @@ export class CacheWarmingManager {
         chunk.map(async ([key, task]) => {
           try {
             await task.fetcher()
-            console.log(`[Cache Warming] Warmed ${key}`)
+            if (__DEV__) console.log(`[Cache Warming] Warmed ${key}`)
           } catch (error) {
             console.warn(`[Cache Warming] Failed to warm ${key}:`, error)
           }
@@ -132,7 +134,7 @@ export class CacheWarmingManager {
       )
     }
     
-    console.log('[Cache Warming] Full cache warming completed')
+    if (__DEV__) console.log('[Cache Warming] Full cache warming completed')
   }
   
   private chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -258,7 +260,7 @@ export class ClientCache<T> {
    */
   invalidate(key: string): void {
     this.cache.delete(key)
-    console.log(`[Cache] Invalidated ${key}`)
+    if (__DEV__) console.log(`[Cache] Invalidated ${key}`)
   }
   
   /**
@@ -282,7 +284,7 @@ export class ClientCache<T> {
   clear(): void {
     this.cache.clear()
     this.subscribers.clear()
-    console.log('[Cache] Cleared all cache')
+    if (__DEV__) console.log('[Cache] Cleared all cache')
   }
   
   /**
@@ -556,7 +558,7 @@ export class CachePerformanceMonitor {
     
     // For image-specific metrics, we can add them to a separate collection
     // but for now we'll just log them
-    console.log(`[Image Perf] ${imageId}: Load time=${loadTime}ms, Size=${size}, Format=${format}, Quality=${quality}%`);
+    if (__DEV__) console.log(`[Image Perf] ${imageId}: Load time=${loadTime}ms, Size=${size}, Format=${format}, Quality=${quality}%`);
   }
   
   getAverageLoadTime(): number {
@@ -618,9 +620,9 @@ export function createCachedFunction<T, Args extends any[]>(
   // Use Next.js unstable_cache for server-side caching
   const cachedFn = unstable_cache(
     async (...args: Args) => {
-      console.log(`[Cache] Executing ${key} with args:`, args)
+      if (__DEV__) console.log(`[Cache] Executing ${key} with args:`, args)
       const result = await fn(...args)
-      console.log(`[Cache] Cached ${key} result`)
+      if (__DEV__) console.log(`[Cache] Cached ${key} result`)
       return result
     },
     [key],

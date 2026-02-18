@@ -6,6 +6,7 @@ import { Wine, Shuffle } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import { pickRandomJiuling, type JiulingItem } from '@/data/jiuling'
+import { useGameReduceMotion } from './GameWrapper'
 
 /** R2-176：酒令（划拳/行酒令數位化）— 隨機抽一則顯示，可再抽；簡易划拳對決 */
 const FIST_OPTIONS = ['石頭', '剪刀', '布'] as const
@@ -14,6 +15,7 @@ const FIST_BEATS: Record<Fist, Fist> = { 石頭: '剪刀', 剪刀: '布', 布: '
 
 export default function Jiuling() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [current, setCurrent] = useState<JiulingItem | null>(null)
   const [phase, setPhase] = useState<'idle' | 'show' | 'fist'>('idle')
   const [fistPlayer, setFistPlayer] = useState<Fist | null>(null)
@@ -80,8 +82,9 @@ export default function Jiuling() {
 
       {phase === 'show' && current && (
         <m.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
           className="text-center max-w-md w-full p-6 rounded-2xl bg-white/5 border border-primary-500/30"
         >
           <p className="text-2xl font-bold text-primary-300 mb-2">{current.text}</p>
@@ -124,8 +127,9 @@ export default function Jiuling() {
             </>
           ) : (
             <m.div
-              initial={{ opacity: 0 }}
+              initial={reducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={reducedMotion ? { duration: 0 } : undefined}
               className="p-4 rounded-2xl bg-white/5 border border-white/10"
             >
               <p className="text-white/80">你：{fistPlayer} · 系統：{fistSystem}</p>

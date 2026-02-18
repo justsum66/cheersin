@@ -46,6 +46,7 @@ export default function FlashCard() {
     setCountdown(3)
     play('click')
 
+    if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) {

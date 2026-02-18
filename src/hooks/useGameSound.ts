@@ -144,9 +144,13 @@ export function useGameSound() {
     try {
       if (bgmOscRef.current) {
         bgmOscRef.current.stop()
+        bgmOscRef.current.disconnect()
         bgmOscRef.current = null
       }
-      bgmGainRef.current = null
+      if (bgmGainRef.current) {
+        bgmGainRef.current.disconnect()
+        bgmGainRef.current = null
+      }
     } catch {
       /* ignore */
     }
@@ -225,6 +229,13 @@ export function useGameSound() {
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + config.duration)
         osc.start(ctx.currentTime)
         osc.stop(ctx.currentTime + config.duration)
+        const safetyTimeout = setTimeout(() => {
+          try { osc.disconnect(); gain.disconnect() } catch { /* ignore */ }
+        }, (config.duration + 0.1) * 1000)
+        osc.onended = () => {
+          clearTimeout(safetyTimeout)
+          try { osc.disconnect(); gain.disconnect() } catch { /* ignore */ }
+        }
       } catch {
         /* ignore */
       }

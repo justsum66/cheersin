@@ -36,7 +36,7 @@ export function migrateGameStats() {
     try {
         if (localStorage.getItem(MIGRATION_DONE_KEY)) return
 
-        console.log('[Migration] Starting game stats migration...')
+        if (process.env.NODE_ENV !== 'production') console.log('[Migration] Starting game stats migration...')
 
         // 1. Migrate Total Play Counts (STORAGE_KEYS.GAMES_STATS)
         migrateCounts(STORAGE_KEYS.GAMES_STATS)
@@ -52,7 +52,7 @@ export function migrateGameStats() {
         migratePlaylists(STORAGE_KEYS.GAMES_PLAYLISTS)
 
         localStorage.setItem(MIGRATION_DONE_KEY, 'true')
-        console.log('[Migration] Game stats migration completed.')
+        if (process.env.NODE_ENV !== 'production') console.log('[Migration] Game stats migration completed.')
     } catch (e) {
         console.error('[Migration] Failed to migrate game stats:', e)
     }

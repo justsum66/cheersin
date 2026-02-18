@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 export interface UserProfile {
     id: string
@@ -37,7 +38,8 @@ interface UserStore {
     logout: () => void
 }
 
-export const useUserStore = create<UserStore>((set) => ({
+/** Task #52: Added devtools middleware for dev debugging */
+export const useUserStore = create<UserStore>()(devtools((set) => ({
     user: null,
     profile: null,
     subscription: null,
@@ -49,4 +51,4 @@ export const useUserStore = create<UserStore>((set) => ({
     setLoading: (isLoading) => set({ isLoading }),
 
     logout: () => set({ user: null, profile: null, subscription: null })
-}))
+}), { name: 'UserStore', enabled: process.env.NODE_ENV !== 'production' }))

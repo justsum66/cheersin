@@ -5,6 +5,7 @@ import { m } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import { useTranslation } from '@/contexts/I18nContext'
+import { useGameReduceMotion } from './GameWrapper'
 
 interface InviteModalProps {
     slug: string
@@ -13,6 +14,7 @@ interface InviteModalProps {
 }
 
 export function InviteModal({ slug, inviteUrl, onClose }: InviteModalProps) {
+    const reducedMotion = useGameReduceMotion()
     const router = useRouter()
     const { t } = useTranslation()
     const [inviteBlockCollapsed, setInviteBlockCollapsed] = useState(false)
@@ -57,16 +59,18 @@ export function InviteModal({ slug, inviteUrl, onClose }: InviteModalProps) {
 
     return (
         <m.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={onClose}
         >
             <m.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
+                exit={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/10 overflow-hidden"
                 style={{ background: 'linear-gradient(135deg, #6B0F1A 0%, #8B1530 50%, #C9A961 100%)' }}
                 onClick={(e) => e.stopPropagation()}

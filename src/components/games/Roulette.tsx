@@ -213,7 +213,7 @@ function StandardRoulette() {
         setHistory((prev) => [name, ...prev].slice(0, HISTORY_MAX))
         addReplayEvent({ type: 'roulette_spin', label: `轉盤：${name} 中獎` })
         playSound('win')
-        fireFullscreenConfetti()
+        try { fireFullscreenConfetti() } catch { /* ignore if DOM unmounted */ }
       }
       const runInertia = () => {
         rotation += velocity

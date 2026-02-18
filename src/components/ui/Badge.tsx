@@ -1,9 +1,11 @@
 
+import { memo } from 'react'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
 
 /**
  * P1-079：風格統一的標籤組件，用於遊戲卡片、課程狀態、用戶等級等。
+ * Task #53: 使用 React.memo 優化列表渲染性能
  */
 export interface BadgeProps {
   children: ReactNode
@@ -28,27 +30,46 @@ const sizeClasses = {
   md: 'text-xs px-2.5 py-1',
 }
 
-export function Badge({
+import { m, useReducedMotion } from 'framer-motion'
+
+function BadgeInner({
   children,
   variant = 'default',
   size = 'md',
   className = '',
   title,
   shimmer = false,
-}: BadgeProps & { shimmer?: boolean }) {
+  pulse = false,
+}: BadgeProps & { shimmer?: boolean; pulse?: boolean }) {
+  const reducedMotion = useReducedMotion()
+  
   return (
-    <span
+    <m.span
       className={cn(
         `inline-flex items-center font-medium rounded-full border relative overflow-hidden ${variantClasses[variant]} ${sizeClasses[size]}`,
         className
       )}
       role="status"
       title={title}
+      whileHover={reducedMotion ? undefined : { scale: 1.05 }}
+      whileTap={reducedMotion ? undefined : { scale: 0.95 }}
+      animate={pulse && !reducedMotion ? {
+        scale: [1, 1.05, 1],
+      } : {}}
+      transition={pulse && !reducedMotion ? {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      } : {}}
     >
       {shimmer && (
         <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       )}
       {children}
-    </span>
+    </m.span>
   )
 }
+
+export const Badge = memo(BadgeInner)
+
+export default Badge;

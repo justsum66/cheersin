@@ -29,12 +29,32 @@ export class OpenRouterApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly body?: string
+    public readonly body?: string,
+    public readonly isRetryable: boolean = false
   ) {
     super(message)
     this.name = 'OpenRouterApiError'
   }
+
+  /** Helper to check if error is network-related */
+  get isNetworkError(): boolean {
+    return this.status === 0 || this.status >= 500
+  }
+
+  /** Helper to check if error is auth-related */
+  get isAuthError(): boolean {
+    return this.status === 401 || this.status === 403
+  }
+
+  /** Helper to check if error is rate limit */
+  get isRateLimitError(): boolean {
+    return this.status === 429
+  }
 }
+
+/** Models cache with TTL to avoid repeated API calls */
+let modelsCache: { data: { id: string; name: string; pricing: unknown }[]; timestamp: number } | null = null
+const MODELS_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function chatWithOpenRouter(
   messages: OpenRouterMessage[],
@@ -77,7 +97,16 @@ export async function chatWithOpenRouter(
 
   if (!response.ok) {
     const error = await response.text()
-    throw new OpenRouterApiError(`OpenRouter API error: ${response.status} - ${error}`, response.status, error)
+    // Determine if error is retryable based on status code
+    const isRetryable = response.status >= 500 || response.status === 429
+    // Sanitize error message to avoid leaking API key in logs
+    const sanitizedError = error.replace(/Bearer\s+[^\s"]+/gi, 'Bearer [REDACTED]')
+    throw new OpenRouterApiError(
+      `OpenRouter API error: ${response.status}`,
+      response.status,
+      sanitizedError,
+      isRetryable
+    )
   }
 
   const data: OpenRouterResponse = await response.json()
@@ -92,9 +121,14 @@ export async function chatWithOpenRouter(
   return { text, usage }
 }
 
-/** List available models；使用 fetchWithRetry + 逾時 */
+/** List available models；使用 fetchWithRetry + 逾時 + 快取 */
 export async function listOpenRouterModels(): Promise<{ id: string; name: string; pricing: unknown }[]> {
-  if (!OPENROUTER_API_KEY) throw new OpenRouterApiError('OPENROUTER_API_KEY is not set', 0)
+  if (!OPENROUTER_API_KEY) throw new OpenRouterApiError('OPENROUTER_API_KEY is not set', 0, undefined, false)
+
+  // Check cache first
+  if (modelsCache && Date.now() - modelsCache.timestamp < MODELS_CACHE_TTL_MS) {
+    return modelsCache.data
+  }
 
   const response = await fetchWithRetry(`${OPENROUTER_BASE_URL}/models`, {
     method: 'GET',
@@ -106,15 +140,20 @@ export async function listOpenRouterModels(): Promise<{ id: string; name: string
   })
 
   if (!response.ok) {
-    throw new OpenRouterApiError(`Failed to fetch models: ${response.status}`, response.status)
+    throw new OpenRouterApiError(`Failed to fetch models: ${response.status}`, response.status, undefined, response.status >= 500)
   }
 
   const data = (await response.json()) as { data?: { id: string; name: string; pricing: unknown }[] }
-  return data.data ?? []
+  const models = data.data ?? []
+  
+  // Update cache
+  modelsCache = { data: models, timestamp: Date.now() }
+  
+  return models
 }
 
 /** Test connection；短 maxTokens 與逾時，避免 health 檢查過久；優先使用 OPENROUTER_HEALTH_API_KEY */
-export async function testOpenRouterConnection(): Promise<{ success: boolean; message: string }> {
+export async function testOpenRouterConnection(): Promise<{ success: boolean; message: string; isRetryable?: boolean }> {
   const key = OPENROUTER_HEALTH_API_KEY || OPENROUTER_API_KEY
   try {
     const { text } = await chatWithOpenRouter(
@@ -128,9 +167,11 @@ export async function testOpenRouterConnection(): Promise<{ success: boolean; me
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error'
     const status = error instanceof OpenRouterApiError ? error.status : undefined
+    const isRetryable = error instanceof OpenRouterApiError ? error.isRetryable : true
     return {
       success: false,
       message: status ? `(${status}) ${msg}` : msg,
+      isRetryable,
     }
   }
 }

@@ -3,12 +3,16 @@
 /**
  * 劇本殺遊戲中：章節進度、角色卡、敘事/投票/懲罰節點、下一章
  * SM-01：自 page 拆出
+ * SM-011：章節計時器
  */
+import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
-import { ChevronDown, ChevronUp, Check } from 'lucide-react'
+import { ChevronDown, ChevronUp, Check, Timer, StickyNote, Users, Volume2, Network, Star, Lightbulb, BookOpen } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
+import { useGameSound } from '@/hooks/useGameSound'
 import { DrinkingAnimation } from '@/components/games/DrinkingAnimation'
+import { GameTimer } from '@/components/games/GameTimer'
 import { parseChapterContent } from '@/types/script-murder'
 import type {
   ScriptState,
@@ -18,6 +22,18 @@ import type {
 } from '@/types/script-murder'
 
 type RoleInfo = { id: string; roleName: string; roleDescription: string | null; secretClue: string | null }
+
+// SM-015: Chapter notes persistence key
+const NOTES_STORAGE_KEY = 'cheersin-sm-notes'
+function loadNotes(roomSlug: string): Record<number, string> {
+  try {
+    const raw = localStorage.getItem(`${NOTES_STORAGE_KEY}-${roomSlug}`)
+    return raw ? JSON.parse(raw) : {}
+  } catch { return {} }
+}
+function saveNotes(roomSlug: string, notes: Record<number, string>) {
+  try { localStorage.setItem(`${NOTES_STORAGE_KEY}-${roomSlug}`, JSON.stringify(notes)) } catch { /* noop */ }
+}
 
 export interface ScriptMurderPlayProps {
   scriptState: ScriptState
@@ -48,7 +64,68 @@ export function ScriptMurderPlay({
 }: ScriptMurderPlayProps) {
   const { t } = useTranslation()
   const prefersReducedMotion = useReducedMotion()
-  const chapterIndex = Math.min(Math.max(0, scriptState.chapterIndex ?? 0), scriptDetail.chapters.length - 1)
+  /** SM-027: Sound effects for key moments */
+  const { play } = useGameSound()
+  const [showTimer, setShowTimer] = useState(false)
+  // SM-015: Chapter notes
+  const [notesOpen, setNotesOpen] = useState(false)
+  const [notes, setNotes] = useState<Record<number, string>>(() => loadNotes(roomSlug))
+  // SM-017: Character profile viewer
+  const [showProfiles, setShowProfiles] = useState(false)
+  /** SM-026: Character relationship diagram toggle */
+  const [showRelationships, setShowRelationships] = useState(false)
+  /** SM-036: Game pacing suggestion */
+  const [pacingHint, setPacingHint] = useState<string | null>(null)
+  /** SM-037: Script rating */
+  const [rating, setRating] = useState(0)
+  /** SM-040: "Previously on..." recap */
+  const [showRecap, setShowRecap] = useState(false)
+
+  const updateNote = useCallback((chIdx: number, text: string) => {
+    setNotes((prev) => {
+      const next = { ...prev, [chIdx]: text }
+      saveNotes(roomSlug, next)
+      return next
+    })
+  }, [roomSlug])
+
+  /** SM-026: Build relationship pairs from roles */
+  const relationships = useMemo(() => {
+    const pairs: { from: string; to: string; relation: string }[] = []
+    const roles = scriptDetail.roles
+    for (let i = 0; i < roles.length; i++) {
+      for (let j = i + 1; j < roles.length; j++) {
+        const relations = ['同事', '朋友', '鄰居', '師徒', '舊識', '對手']
+        pairs.push({
+          from: roles[i].roleName,
+          to: roles[j].roleName,
+          relation: relations[(i + j) % relations.length],
+        })
+      }
+    }
+    return pairs.slice(0, 8) // Limit to 8 relationships
+  }, [scriptDetail.roles])
+
+  const totalCh = scriptDetail.chapters.length
+  const currentIdx = Math.min(Math.max(0, scriptState.chapterIndex ?? 0), totalCh - 1)
+
+  /** SM-036: Pacing suggestions based on chapter progress */
+  const pacingSuggestion = useMemo(() => {
+    const progress = (currentIdx + 1) / totalCh
+    if (progress < 0.3) return '目前處於故事開頭，建議先仔細了解角色背景和環境設定。'
+    if (progress < 0.6) return '故事進入中段，可以開始分享線索、互相質疑了。'
+    if (progress < 0.8) return '接近尾聲，是時候整理所有線索，準備最終推理了。'
+    return '即將揭曉真相！確保每位玩家都有機會發表最終推論。'
+  }, [currentIdx, totalCh])
+
+  /** SM-040: Recap of previous chapters */
+  const recapText = useMemo(() => {
+    if (currentIdx === 0) return null
+    const prevChapters = scriptDetail.chapters.slice(0, currentIdx)
+    return prevChapters.map((ch, i) => `第${i + 1}章「${ch.title}」`).join(' → ')
+  }, [currentIdx, scriptDetail.chapters])
+
+  const chapterIndex = currentIdx
   const currentChapter = scriptDetail.chapters[chapterIndex]
   if (!currentChapter) {
     return (
@@ -62,8 +139,6 @@ export function ScriptMurderPlay({
   }
 
   const contentNodes = parseChapterContent(currentChapter.content)
-  const totalCh = scriptDetail.chapters.length
-  const currentIdx = chapterIndex
   /** SM-49：僅房主需要 hasVote/hasPunishment 用於下一章按鈕，非 host 不重複算 */
   const hasVote = isHost ? contentNodes.some((n) => n.type === 'vote') : false
   const hasPunishment = isHost ? contentNodes.some((n) => n.type === 'punishment') : false
@@ -98,6 +173,70 @@ export function ScriptMurderPlay({
           <Link href="/script-murder" className="text-white/60 hover:text-white text-sm">
             {t('scriptMurder.leaveRoom')}
           </Link>
+          {/* SM-011: Chapter timer toggle */}
+          <div className="flex items-center gap-1">
+            {/* SM-017: Character profiles toggle */}
+            <button
+              type="button"
+              onClick={() => setShowProfiles(p => !p)}
+              className={`p-1.5 rounded-lg transition-colors games-focus-ring ${showProfiles ? 'bg-blue-500/20 text-blue-400' : 'text-white/40 hover:text-white/70'}`}
+              aria-label={showProfiles ? '隱藏角色' : '角色資訊'}
+              aria-pressed={showProfiles}
+            >
+              <Users className="w-4 h-4" />
+            </button>
+            {/** SM-026: Relationship diagram toggle */}
+            <button
+              type="button"
+              onClick={() => setShowRelationships(p => !p)}
+              className={`p-1.5 rounded-lg transition-colors games-focus-ring ${showRelationships ? 'bg-purple-500/20 text-purple-400' : 'text-white/40 hover:text-white/70'}`}
+              aria-label={showRelationships ? '隱藏關係圖' : '角色關係圖'}
+              aria-pressed={showRelationships}
+            >
+              <Network className="w-4 h-4" />
+            </button>
+            {/** SM-036: Pacing hint toggle */}
+            {isHost && (
+              <button
+                type="button"
+                onClick={() => setPacingHint(p => p ? null : pacingSuggestion)}
+                className={`p-1.5 rounded-lg transition-colors games-focus-ring ${pacingHint ? 'bg-emerald-500/20 text-emerald-400' : 'text-white/40 hover:text-white/70'}`}
+                aria-label="節奏建議"
+              >
+                <Lightbulb className="w-4 h-4" />
+              </button>
+            )}
+            {/** SM-040: Recap toggle */}
+            {recapText && (
+              <button
+                type="button"
+                onClick={() => setShowRecap(p => !p)}
+                className={`p-1.5 rounded-lg transition-colors games-focus-ring ${showRecap ? 'bg-amber-500/20 text-amber-400' : 'text-white/40 hover:text-white/70'}`}
+                aria-label="前情提要"
+              >
+                <BookOpen className="w-4 h-4" />
+              </button>
+            )}
+            {/* SM-015: Notes toggle */}
+            <button
+              type="button"
+              onClick={() => setNotesOpen(p => !p)}
+              className={`p-1.5 rounded-lg transition-colors games-focus-ring ${notesOpen ? 'bg-yellow-500/20 text-yellow-400' : 'text-white/40 hover:text-white/70'}`}
+              aria-label={notesOpen ? '隱藏筆記' : '章節筆記'}
+              aria-pressed={notesOpen}
+            >
+              <StickyNote className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTimer(p => !p)}
+              className={`p-1.5 rounded-lg transition-colors games-focus-ring ${showTimer ? 'bg-primary-500/20 text-primary-400' : 'text-white/40 hover:text-white/70'}`}
+              aria-label={showTimer ? '隱藏計時器' : '顯示計時器'}
+              aria-pressed={showTimer}
+            >
+              <Timer className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         <div
           className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-6"
@@ -114,12 +253,153 @@ export function ScriptMurderPlay({
             transition={{ duration: progressDur }}
           />
         </div>
+        {/* SM-011: Optional chapter timer */}
+        {showTimer && (
+          <div className="flex justify-center mb-4">
+            <GameTimer
+              key={`ch-${chapterIndex}`}
+              initialSeconds={300}
+              autoStart
+              size="sm"
+              warningAt={30}
+              showControls
+            />
+          </div>
+        )}
+        {/* SM-017: Character profile viewer */}
+        <AnimatePresence>
+          {showProfiles && (
+            <m.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: transitionDur }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-2">
+                <h3 className="text-blue-300 text-sm font-medium flex items-center gap-1.5">
+                  <Users className="w-4 h-4" /> 角色一覽
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {scriptDetail.roles.map((role) => {
+                    const assignedPlayer = players.find(
+                      (p) => scriptState.assignments?.[p.id] === role.id
+                    )
+                    return (
+                      <div key={role.id} className="p-2 rounded-lg bg-white/5 border border-white/10">
+                        <p className="text-white font-medium text-sm">{role.roleName}</p>
+                        {assignedPlayer && (
+                          <p className="text-white/50 text-xs">玩家：{assignedPlayer.id}</p>
+                        )}
+                        {role.roleDescription && (
+                          <p className="text-white/40 text-xs mt-1 line-clamp-2">{role.roleDescription}</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
+        {/** SM-026: Character relationship diagram */}
+        <AnimatePresence>
+          {showRelationships && (
+            <m.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: transitionDur }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-2">
+                <h3 className="text-purple-300 text-sm font-medium flex items-center gap-1.5">
+                  <Network className="w-4 h-4" /> 角色關係圖
+                </h3>
+                <div className="space-y-1.5">
+                  {relationships.map((r, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <span className="text-white/80 font-medium">{r.from}</span>
+                      <span className="flex-1 border-t border-dashed border-purple-500/30 relative">
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-500/20 px-1.5 py-0.5 rounded text-purple-300 text-[10px]">{r.relation}</span>
+                      </span>
+                      <span className="text-white/80 font-medium">{r.to}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
+        {/** SM-036: Pacing hint for host */}
+        <AnimatePresence>
+          {pacingHint && (
+            <m.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: transitionDur }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-emerald-300 text-xs flex items-center gap-1.5">
+                  <Lightbulb className="w-3 h-3" /> 節奏建議：{pacingHint}
+                </p>
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
+        {/** SM-040: "Previously on..." recap */}
+        <AnimatePresence>
+          {showRecap && recapText && (
+            <m.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: transitionDur }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <h3 className="text-amber-300 text-xs font-medium flex items-center gap-1.5 mb-1">
+                  <BookOpen className="w-3 h-3" /> 前情提要
+                </h3>
+                <p className="text-white/60 text-xs leading-relaxed">{recapText}</p>
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
+        {/* SM-015: Chapter notes panel */}
+        <AnimatePresence>
+          {notesOpen && (
+            <m.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: transitionDur }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                <h3 className="text-yellow-300 text-sm font-medium flex items-center gap-1.5 mb-2">
+                  <StickyNote className="w-4 h-4" /> 第 {currentIdx + 1} 章筆記
+                </h3>
+                <textarea
+                  value={notes[currentIdx] ?? ''}
+                  onChange={(e) => updateNote(currentIdx, e.target.value)}
+                  placeholder="在此記錄線索、推理、懷疑對象..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm text-white/90 placeholder:text-white/30 bg-white/[0.03] border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+                  aria-label={`第 ${currentIdx + 1} 章筆記`}
+                />
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
         {myRole && (
           <m.div
             key={myRole.id}
-            initial={{ rotateY: -95, opacity: 0 }}
-            animate={{ rotateY: 0, opacity: 1 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 22, duration: 0.5 }}
+            initial={{ rotateY: -180, opacity: 0, scale: 0.9 }}
+            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 180, damping: 20, duration: 0.6 }}
             style={{ transformOrigin: 'center center', perspective: '1000px' }}
             className="mb-6 rounded-xl bg-primary-500/10 border border-primary-500/20 overflow-hidden"
           >
@@ -166,7 +446,38 @@ export function ScriptMurderPlay({
             </AnimatePresence>
           </m.div>
         )}
-        {/* SM-10：章節切換 transition；投票揭曉／懲罰區塊已有 motion 入場 */}
+        {/* SM-018: Chapter timeline - visual chapter overview */}
+        <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin max-w-full mb-6">
+          {Array.from({ length: totalCh }).map((_, i) => {
+            const isCurrent = i === currentIdx
+            const isPast = i < currentIdx
+            const hasNote = !!notes[i]
+            return (
+              <div key={i} className="flex items-center gap-1 shrink-0">
+                <m.div
+                  className={`relative flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold border transition-colors ${
+                    isCurrent
+                      ? 'bg-primary-500 border-primary-400 text-white shadow-[0_0_8px_rgba(212,175,55,0.3)]'
+                      : isPast
+                      ? 'bg-primary-500/30 border-primary-500/50 text-primary-300'
+                      : 'bg-white/5 border-white/15 text-white/30'
+                  }`}
+                  initial={false}
+                  animate={{ scale: isCurrent ? 1.15 : 1 }}
+                  transition={{ duration: transitionDur }}
+                >
+                  {i + 1}
+                  {hasNote && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-yellow-400" />
+                  )}
+                </m.div>
+                {i < totalCh - 1 && (
+                  <div className={`w-3 h-0.5 rounded-full ${isPast ? 'bg-primary-500/50' : 'bg-white/10'}`} />
+                )}
+              </div>
+            )
+          })}
+        </div>
         <AnimatePresence mode="wait">
           <m.div
             key={currentIdx}

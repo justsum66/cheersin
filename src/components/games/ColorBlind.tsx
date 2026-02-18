@@ -18,6 +18,9 @@ const COLORS = [
   { name: '橘色', color: '#F97316', textColor: 'text-orange-500' },
 ]
 
+/** GAME-087: Color-blind safe mode patterns */
+const CB_PATTERNS = ['■', '●', '▲', '★', '◆', '♦'] as const
+
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 const ROUND_TIME = 15
 const QUESTIONS_PER_ROUND = 8
@@ -57,15 +60,22 @@ export default function ColorBlind() {
   const [correctCount, setCorrectCount] = useState(0)
   const [score, setScore] = useState<Record<number, number>>({})
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  /** GAME-087: Color-blind safe mode */
+  const [cbSafeMode, setCbSafeMode] = useState(false)
+  /** GAME-088: Progressive difficulty - reduce time each round */
+  const [roundNumber, setRoundNumber] = useState(0)
 
   const startRound = useCallback(() => {
     setCurrentQuestion(generateQuestion())
     setGamePhase('playing')
-    setTimeLeft(ROUND_TIME)
+    /** GAME-088: Progressive difficulty - shorter timer each round */
+    const adjustedTime = Math.max(8, ROUND_TIME - roundNumber * 2)
+    setTimeLeft(adjustedTime)
     setQuestionCount(0)
     setCorrectCount(0)
     play('click')
 
+    if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
@@ -76,7 +86,7 @@ export default function ColorBlind() {
         return t - 1
       })
     }, 1000)
-  }, [play])
+  }, [play, roundNumber])
 
   const handleAnswer = useCallback((colorName: string) => {
     if (!currentQuestion) return
@@ -115,6 +125,7 @@ export default function ColorBlind() {
     setTimeLeft(ROUND_TIME)
     setQuestionCount(0)
     setCorrectCount(0)
+    setRoundNumber(r => r + 1)
   }, [players.length])
 
   const resetGame = useCallback(() => {
@@ -126,6 +137,7 @@ export default function ColorBlind() {
     setQuestionCount(0)
     setCorrectCount(0)
     setScore({})
+    setRoundNumber(0)
   }, [])
 
   useEffect(() => {
@@ -147,7 +159,18 @@ export default function ColorBlind() {
         rulesKey="color-blind.rules"
       />
 
-      <Palette className="w-12 h-12 text-purple-400 mb-4" />
+      <div className="flex items-center gap-3 mb-3">
+        <Palette className="w-12 h-12 text-purple-400" />
+        {/* GAME-087: Color-blind safe mode toggle */}
+        <button
+          type="button"
+          onClick={() => setCbSafeMode(v => !v)}
+          className={`text-xs px-3 py-1.5 rounded-lg games-focus-ring transition-colors ${cbSafeMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-white/10 text-white/50 border border-white/10'}`}
+          aria-pressed={cbSafeMode}
+        >
+          {cbSafeMode ? '色盲模式 ON' : '色盲友善'}
+        </button>
+      </div>
 
       {gamePhase === 'ready' && (
         <div className="text-center w-full max-w-md">
@@ -193,14 +216,14 @@ export default function ColorBlind() {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            {COLORS.map((c) => (
+            {COLORS.map((c, i) => (
               <button
                 key={c.name}
                 type="button"
                 onClick={() => handleAnswer(c.name)}
                 className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white games-focus-ring hover:bg-white/20 min-h-[48px]"
               >
-                <span className={c.textColor}>{c.name}</span>
+                <span className={c.textColor}>{cbSafeMode ? `${CB_PATTERNS[i]} ${c.name}` : c.name}</span>
               </button>
             ))}
           </div>

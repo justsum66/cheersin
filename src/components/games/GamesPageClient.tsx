@@ -10,6 +10,7 @@ import { getFontSize, getReduceMotion, getHapticEnabled } from '@/modules/games/
 import { getWeeklyPlayCounts } from '@/modules/games/stats/weekly'
 import { clearLastSession } from '@/modules/games/user/history'
 import { Gamepad2, Users, UserPlus, Settings, Plus, Shuffle, Crown, X, Wifi, WifiOff, WifiLow } from 'lucide-react'
+import { useNavVisibility } from '@/contexts/NavVisibilityContext'
 
 import { FeatureIcon } from '@/components/ui/FeatureIcon'
 import { GlassCard } from '@/components/ui/GlassCard'
@@ -82,6 +83,7 @@ function GamesPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const roomSlug = searchParams.get('room')
+  const navVisibility = useNavVisibility()
   /** P1-122：篩選器狀態保持 — 從 URL ?tab= 讀取並同步回寫 */
   const LOBBY_TABS: DisplayCategory[] = ['couple', 'all', 'classic', 'vs', 'random', 'two', 'custom']
   const tabParam = searchParams.get('tab')
@@ -143,9 +145,8 @@ function GamesPageContent() {
   const [paidLockGame, setPaidLockGame] = useState<{ name: string } | null>(null)
   
   // Game tracking
-  const trackStart = useCallback((playerCount: number) => {
-    // Implementation for tracking game start
-    console.log('Game started with', playerCount, 'players')
+  const trackStart = useCallback((_playerCount: number) => {
+    // CLEAN-010: removed console.log; analytics tracked via /api/analytics
   }, [])
   
   // Game handlers
@@ -182,6 +183,13 @@ function GamesPageContent() {
     // Set active game
     setActiveGame(gameId)
   }, [hookStartGame])
+
+  // P0-001：遊戲進行中自動隱藏導航列以最大化遊戲區域
+  useEffect(() => {
+    if (navVisibility?.setHideForGame) {
+      navVisibility.setHideForGame(!!activeGame)
+    }
+  }, [activeGame, navVisibility])
 
   useEffect(() => {
     return () => {
@@ -701,7 +709,15 @@ function GamesPageContent() {
                 />
                 {/* Game Grid — hide when room slug but not joined yet；P0-018 懶加載 Lobby */}
                 {(!roomSlug || joinedDisplayName) && (
-                  <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center text-white/50 text-sm" aria-busy="true">載入遊戲列表中…</div>}>
+                  <Suspense fallback={
+                    <div className="min-h-[200px] animate-pulse" aria-busy="true" aria-label="載入遊戲列表中">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div key={i} className="h-40 rounded-xl bg-white/5 border border-white/10" />
+                        ))}
+                      </div>
+                    </div>
+                  }>
                     <Lobby
                       games={gamesWithCategory}
                       recentGameIds={recentGameIds}

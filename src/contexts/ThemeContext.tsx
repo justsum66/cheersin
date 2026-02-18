@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 
 export type ThemeMode = 'dark' | 'light' | 'system'
 export type ZodiacSign = string | null
@@ -115,28 +115,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') localStorage.setItem('cheersin-font-scale', s)
   }, [])
 
+  const setZodiacCb = useCallback((z: ZodiacSign) => {
+    setZodiac(z)
+    if (typeof window !== 'undefined') {
+      if (z) localStorage.setItem('cheersin-zodiac', z)
+      else localStorage.removeItem('cheersin-zodiac')
+    }
+  }, [])
+
+  // OPT: Memoize context value to prevent unnecessary consumer re-renders
+  const value = useMemo<ThemeContextValue>(() => ({
+    theme,
+    setTheme,
+    resolved,
+    zodiac,
+    setZodiac: setZodiacCb,
+    primaryHue: hues.primary,
+    secondaryHue: hues.secondary,
+    highContrast,
+    setHighContrast,
+    fontScale,
+    setFontScale,
+  }), [theme, setTheme, resolved, zodiac, setZodiacCb, hues.primary, hues.secondary, highContrast, setHighContrast, fontScale, setFontScale])
+
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        setTheme,
-        resolved,
-        zodiac,
-        setZodiac: (z) => {
-          setZodiac(z)
-          if (typeof window !== 'undefined') {
-            if (z) localStorage.setItem('cheersin-zodiac', z)
-            else localStorage.removeItem('cheersin-zodiac')
-          }
-        },
-        primaryHue: hues.primary,
-        secondaryHue: hues.secondary,
-        highContrast,
-        setHighContrast,
-        fontScale,
-        setFontScale,
-      }}
-    >
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )

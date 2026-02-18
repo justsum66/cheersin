@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { Outfit, Inter, Noto_Sans_TC } from 'next/font/google'
+import { LazyMotion, domAnimation } from 'framer-motion'
 import './globals.css'
 import '@/styles/base.css'
 import '@/styles/shared.css'
@@ -28,6 +29,7 @@ import NavHiddenEffect from '@/components/navigation/NavHiddenEffect'
 import AgeGate from '@/components/AgeGate'
 const CookieConsentBanner = dynamic(() => import('@/components/CookieConsentBanner'))
 const ChatWidget = dynamic(() => import('@/components/ChatWidget').then(m => m.ChatWidget))
+import ClientOnlyProviders from '@/components/providers/ClientOnlyProviders'
 import MaintenanceBanner from '@/components/MaintenanceBanner'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import ExpiryBanner from '@/components/ExpiryBanner'
@@ -140,11 +142,14 @@ export default async function RootLayout({
         {/* 26 preconnect 外部資源 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* HP-047: Preconnect to critical third-party origins */}
+        <link rel="preconnect" href="https://wdegandlipgdvqhgmoai.supabase.co" crossOrigin="" />
         {/* 27 dns-prefetch 第三方服務 */}
         <link rel="dns-prefetch" href="https://wdegandlipgdvqhgmoai.supabase.co" />
         <link rel="dns-prefetch" href="https://api.groq.com" />
         <link rel="dns-prefetch" href="https://openrouter.ai" />
         <link rel="dns-prefetch" href="https://api.pinecone.io" />
+        <link rel="dns-prefetch" href="https://www.paypal.com" />
         {/* P031: LCP optimization - preload critical hero image with fetchpriority */}
         <link rel="preload" href="/logo_monochrome_gold.png" as="image" fetchPriority="high" />
         {/* Task 1.01: Core Web Vitals Optimization - Preload critical fonts */}
@@ -177,8 +182,9 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no, email=no" />
       </head>
       <body className="antialiased font-sans">
-        <JsonLd />
-        <ClientProviders>
+        <LazyMotion features={domAnimation}>
+          <JsonLd />
+          <ClientProviders>
           <AgeGate>
             <WebVitalsReporter />
             <WebVitalsTracker />
@@ -207,11 +213,16 @@ export default async function RootLayout({
             </main>
             <BackToTop />
             <ChatWidget />
+            {/* NAV-021 / PWA-003/004: Client-only dynamic components */}
+            <ClientOnlyProviders />
           </AgeGate>
           <CookieConsentBanner />
         </ClientProviders>
+        <GameStickyFooter />
+      </LazyMotion>
         {/* A-10 toast 不擋操作：container  pointer-events-none，toast 本體 pointer-events-auto */}
         {/* 任務 76：Toast z-index 低於 Modal（design-tokens modal 200），多則堆疊順序由 react-hot-toast 處理 */}
+        {/* GameStickyFooter 和 Toast 在 LazyMotion 之外，因其與主互動解耦 */}
         <Toaster
           position="top-center"
           containerStyle={{ pointerEvents: 'none', zIndex: 150 }}

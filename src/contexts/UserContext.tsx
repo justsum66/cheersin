@@ -32,10 +32,16 @@ function AuthSync() {
       return
     }
     setLoading(true)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ? mapSupabaseUser(session.user) : null)
-      setLoading(false)
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ? mapSupabaseUser(session.user) : null)
+        setLoading(false)
+      })
+      .catch(() => {
+        // AUTH-ERR: Silent fail - user remains logged out
+        setUser(null)
+        setLoading(false)
+      })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ? mapSupabaseUser(session.user) : null)
     })

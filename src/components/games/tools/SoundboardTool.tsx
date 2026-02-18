@@ -2,9 +2,9 @@
 
 import { useGameSound, type SoundKind } from '@/hooks/useGameSound'
 import { m } from 'framer-motion'
-import { Volume2, VolumeX, Music, Drum, Bell, PartyPopper, CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react'
+import { Volume2, VolumeX, Music, Drum, Bell, PartyPopper, CheckCircle, XCircle, AlertCircle, Clock, type LucideIcon } from 'lucide-react'
 
-const EFFECTS: { kind: SoundKind; label: string; icon: any; color: string }[] = [
+const EFFECTS: { kind: SoundKind; label: string; icon: LucideIcon; color: string }[] = [
     { kind: 'click', label: 'Click', icon: Volume2, color: 'bg-blue-500' },
     { kind: 'correct', label: 'Correct', icon: CheckCircle, color: 'bg-green-500' },
     { kind: 'wrong', label: 'Wrong', icon: XCircle, color: 'bg-red-500' },

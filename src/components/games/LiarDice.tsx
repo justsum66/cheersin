@@ -5,6 +5,7 @@ import { m } from 'framer-motion'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DICE_COUNT = 5
 const GUESS_DEADLINE_SEC = 5
@@ -17,6 +18,7 @@ type RoundRecord = { total: number; guess: 'low' | 'mid' | 'high'; correct: bool
 /** 吹牛骰子：骰面動畫、猜前顯示低/中/高區間說明。82 掀蓋時緊張計時 5 秒。 */
 export default function LiarDice() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [dices, setDices] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [guess, setGuess] = useState<'low' | 'mid' | 'high' | null>(null)
@@ -124,9 +126,9 @@ export default function LiarDice() {
             Array.from({ length: DICE_COUNT }).map((_, i) => (
               <m.span
                 key={i}
-                initial={{ scale: 0.5, opacity: 0.6 }}
+                initial={reducedMotion ? false : { scale: 0.5, opacity: 0.6 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: i * 0.06, repeat: Infinity, duration: 0.3 }}
+                transition={reducedMotion ? { duration: 0 } : { delay: i * 0.06, repeat: Infinity, duration: 0.3 }}
                 className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl font-bold text-white"
               >
                 ?
@@ -136,9 +138,9 @@ export default function LiarDice() {
             dices.map((d, i) => (
               <m.span
                 key={`${i}-${d}`}
-                initial={{ scale: 0.3, rotateX: -180 }}
+                initial={reducedMotion ? false : { scale: 0.3, rotateX: -180 }}
                 animate={{ scale: 1, rotateX: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25, delay: i * 0.05 }}
+                transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 25, delay: i * 0.05 }}
                 className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl font-bold text-white shadow-lg"
               >
                 {d}
@@ -150,8 +152,9 @@ export default function LiarDice() {
       {result && (
         <div className="mb-4">
           <m.p
-            initial={{ scale: 0.9 }}
+            initial={reducedMotion ? false : { scale: 0.9 }}
             animate={{ scale: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className={`font-bold text-lg ${result.includes('喝') ? 'text-red-400' : 'text-green-400'}`}
           >
             {result}

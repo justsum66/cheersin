@@ -1,4 +1,4 @@
-import { HTMLAttributes, ElementType, forwardRef } from 'react'
+import { HTMLAttributes, ElementType, forwardRef, memo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -14,12 +14,13 @@ interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
  * GlassCard Primitive
  *
  * Implements the "Deep Glass" design system with multi-layered transparency and blurs.
+ * Task #53: 使用 memo + forwardRef 優化列表渲染性能
  *
  * @param variant - Controls transparency level (base=clearest, layer-3=most opaque)
  * @param hoverEffect - Adds lift and glow on hover
  * @param gradient - Adds subtle background gradient
  */
-export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(({
+const GlassCardInner = forwardRef<HTMLDivElement, GlassCardProps>(({
     variant = 'base',
     hoverEffect = false,
     gradient = 'none',
@@ -39,11 +40,11 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(({
     const gradients = {
         none: '',
         subtle: 'bg-gradient-to-br from-white/[0.03] to-transparent',
-        glow: 'bg-gradient-to-br from-primary-500/[0.05] via-transparent to-secondary-500/[0.05]',
+        glow: 'bg-gradient-to-br from-primary-500/[0.08] via-transparent to-secondary-500/[0.08]', // Enhanced glow effect
     }
 
     const hoverStyles = hoverEffect
-        ? 'transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:bg-[rgba(var(--glass-shine))] hover:border-[rgba(var(--glass-border-2))]'
+        ? 'transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:bg-[rgba(var(--glass-shine))] hover:border-[rgba(var(--glass-border-2))] hover:scale-[1.02]' // Added subtle scale for better feedback
         : ''
 
     return (
@@ -64,4 +65,6 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(({
     )
 })
 
-GlassCard.displayName = 'GlassCard'
+GlassCardInner.displayName = 'GlassCard'
+
+export const GlassCard = memo(GlassCardInner)

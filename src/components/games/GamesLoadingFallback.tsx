@@ -28,12 +28,12 @@ export default function GamesLoadingFallback() {
         </div>
         <div className="flex gap-2 justify-center mb-4 flex-wrap">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-12 w-24 rounded-t-xl" aria-hidden />
+            <Skeleton key={i} className="h-12 w-24 rounded-t-xl animate-pulse" aria-hidden />
           ))}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <SkeletonCard key={i} className="h-36" />
+            <SkeletonCard key={i} className="h-[180px] animate-pulse" />
           ))}
         </div>
       </div>

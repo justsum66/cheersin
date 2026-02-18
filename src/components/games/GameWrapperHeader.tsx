@@ -37,6 +37,7 @@ import { usePassPhone } from './PassPhoneContext'
 import { usePunishment } from './Punishments/PunishmentContext'
 import { useGameSound } from './GameSoundProvider'
 import type { SwitchGameItem } from './GameWrapperTypes'
+import { useGameReduceMotion } from './GameWrapper'
 
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
@@ -108,6 +109,7 @@ export default function GameWrapperHeader({
   isHost = false,
   onToggleAnonymous,
 }: GameWrapperHeaderProps) {
+  const reducedMotion = useGameReduceMotion()
   /* R2-001: Deep Refactor - Use Store */
   const { gameState, setGameState, stats, replayEvents, trial: trialState } = useGameStore()
 
@@ -141,6 +143,28 @@ export default function GameWrapperHeader({
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
+  }, [showSettingsMenu])
+
+  /** OPT-039: Focus trap — Tab cycles within settings dropdown when open */
+  useEffect(() => {
+    if (!showSettingsMenu || !settingsRef.current) return
+    const container = settingsRef.current
+    const focusable = () => container.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setShowSettingsMenu(false); return }
+      if (e.key !== 'Tab') return
+      const els = focusable()
+      if (els.length === 0) return
+      const first = els[0]
+      const last = els[els.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+    container.addEventListener('keydown', onKeyDown)
+    // Auto-focus first focusable element
+    const els = focusable()
+    if (els.length > 0) els[0].focus()
+    return () => container.removeEventListener('keydown', onKeyDown)
   }, [showSettingsMenu])
 
   useEffect(() => {
@@ -287,7 +311,7 @@ export default function GameWrapperHeader({
             {showSettingsMenu && (
               <GlassCard
                 variant="layer-2"
-                className="absolute right-0 top-full mt-2 w-52 rounded-xl p-2 z-20"
+                className="absolute right-0 top-full mt-2 w-52 max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto rounded-xl p-2 z-20"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <button
@@ -296,7 +320,7 @@ export default function GameWrapperHeader({
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[48px] min-w-[48px] items-center games-focus-ring"
                   aria-label={soundEnabled ? '關閉音效' : '開啟音效'}
                 >
-                  <m.span key={soundEnabled ? 'on' : 'off'} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                  <m.span key={soundEnabled ? 'on' : 'off'} initial={reducedMotion ? undefined : { scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 25 }}>
                     {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                   </m.span>
                   {soundEnabled ? '音效開' : '音效關'}
@@ -415,14 +439,14 @@ export default function GameWrapperHeader({
                 {shareInviteUrl ? (
                   <m.div
                     className="border-t border-white/10 pt-2 mt-2 space-y-1"
-                    initial="hidden"
+                    initial={reducedMotion ? false : "hidden"}
                     animate="visible"
                     variants={{ visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } }, hidden: {} }}
                   >
                     <p className="px-3 py-1 text-xs text-white/50">分享房間</p>
                     <m.button
                       type="button"
-                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
+                      variants={reducedMotion ? undefined : { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                       onClick={() => { const u = `https://line.me/R/msg/text/?${encodeURIComponent(`${shareInviteUrl}\n\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
                       aria-label="分享到 Line"
@@ -431,7 +455,7 @@ export default function GameWrapperHeader({
                     </m.button>
                     <m.button
                       type="button"
-                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
+                      variants={reducedMotion ? undefined : { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                       onClick={() => { const u = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareInviteUrl}\n一起玩 Cheersin！`)}`; window.open(u, '_blank'); setShowSettingsMenu(false); }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
                       aria-label="分享到 WhatsApp"
@@ -440,7 +464,7 @@ export default function GameWrapperHeader({
                     </m.button>
                     <m.button
                       type="button"
-                      variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
+                      variants={reducedMotion ? undefined : { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                       onClick={handleCopyLink}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-white/80 hover:bg-white/10 min-h-[44px]"
                     >
@@ -530,9 +554,10 @@ export default function GameWrapperHeader({
       <AnimatePresence>
         {showExitConfirm && (
           <m.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
             onClick={() => setShowExitConfirm(false)}
           >
@@ -541,9 +566,10 @@ export default function GameWrapperHeader({
               aria-modal="true"
               aria-labelledby="exit-confirm-title"
               aria-describedby="exit-confirm-desc"
-              initial={{ scale: 0.9 }}
+              initial={reducedMotion ? undefined : { scale: 0.9 }}
               animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
+              exit={reducedMotion ? undefined : { scale: 0.9 }}
+              transition={reducedMotion ? { duration: 0 } : undefined}
               className="w-full max-w-sm safe-area-px"
               onClick={(e) => e.stopPropagation()}
             >
@@ -555,6 +581,7 @@ export default function GameWrapperHeader({
                     variant="ghost"
                     onClick={() => setShowExitConfirm(false)}
                     className="flex-1"
+                    autoFocus
                   >
                     取消
                   </Button>
@@ -575,9 +602,10 @@ export default function GameWrapperHeader({
       <AnimatePresence>
         {showSwitchConfirm && pendingSwitchGameId && (
           <m.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 safe-area-px safe-area-pb"
             onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
           >
@@ -586,9 +614,10 @@ export default function GameWrapperHeader({
               aria-modal="true"
               aria-labelledby="switch-confirm-title"
               aria-describedby="switch-confirm-desc"
-              initial={{ scale: 0.9 }}
+              initial={reducedMotion ? undefined : { scale: 0.9 }}
               animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
+              exit={reducedMotion ? undefined : { scale: 0.9 }}
+              transition={reducedMotion ? { duration: 0 } : undefined}
               className="w-full max-w-sm safe-area-px"
               onClick={(e) => e.stopPropagation()}
             >
@@ -600,6 +629,7 @@ export default function GameWrapperHeader({
                     variant="ghost"
                     onClick={() => { setShowSwitchConfirm?.(false); setPendingSwitchGameId?.(null); }}
                     className="flex-1"
+                    autoFocus
                   >
                     取消
                   </Button>

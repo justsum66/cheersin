@@ -15,7 +15,8 @@ import { getCourseRating } from '@/lib/learn-course-ratings'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
-import { CoursePreviewModal } from '@/components/learn/CoursePreviewModal'
+import { CoursePreviewModal } from '@/components/learn/ui/CoursePreviewModal'
+import { LearningRoadmap } from '@/components/learn/ui/LearningRoadmap'
 import CourseListSection from './components/CourseListSection';
 import GamificationSection from './components/GamificationSection';
 import { useTranslation } from '@/contexts/I18nContext'
@@ -999,6 +1000,60 @@ export default function LearnPage() {
               <span className="text-green-400 text-sm">✓ 達標</span>
             )}
           </div>
+          {/* LEARN-022: Enhanced progress bar for daily goal */}
+          {dailyGoal > 0 && (
+            <div className="mt-3">
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <m.div
+                  className={`h-full rounded-full ${chaptersToday >= dailyGoal ? 'bg-green-500' : 'bg-primary-500'}`}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, (chaptersToday / dailyGoal) * 100)}%` }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="text-white/40 text-xs mt-1">{Math.min(chaptersToday, dailyGoal)} / {dailyGoal} 章</p>
+            </div>
+          )}
+          {/* LEARN-022: Streak display with fire animation */}
+          {streak.days > 0 && (
+            <div className="mt-3 flex items-center gap-2 pt-3 border-t border-white/10">
+              <m.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Flame className="w-5 h-5 text-amber-400" />
+              </m.div>
+              <span className="text-amber-400 font-medium text-sm">連續學習 {streak.days} 天</span>
+              {streak.days >= 7 && <span className="text-amber-300/60 text-xs ml-1">太厲害了！</span>}
+            </div>
+          )}
+          {/* LEARN-022: Heatmap for past 7 days */}
+          {heatmapHistory.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <p className="text-white/50 text-xs mb-2">過去 7 天學習紀錄</p>
+              <div className="flex gap-1.5">
+                {heatmapHistory.map((day) => (
+                  <div key={day.date} className="flex-1 text-center">
+                    <div
+                      className={`h-6 rounded-md transition-colors ${
+                        day.count === 0 ? 'bg-white/5' :
+                        day.count === 1 ? 'bg-primary-500/30' :
+                        day.count === 2 ? 'bg-primary-500/50' :
+                        'bg-primary-500/70'
+                      }`}
+                      title={`${day.date}: ${day.count} 章`}
+                    />
+                    <span className="text-white/30 text-[10px]">{day.date.slice(-2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </m.div>
+
+        {/* LEARN-021: Learning Path Visualization */}
+        <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} className="mb-6">
+          <LearningRoadmap />
         </m.div>
 
         <GamificationSection
@@ -1643,6 +1698,47 @@ export default function LearnPage() {
             ⚡ 只要 10 分鐘內課程
           </button>
         </div>
+
+        {/* LEARN-042: 課程套裝組合 */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { title: '葡萄酒從零到一', desc: '入門 → 進階 → 品飲筆記', ids: ['wine-basics', 'wine-advanced', 'tasting-notes'], color: 'from-red-500/10 to-purple-500/10', border: 'border-red-500/20' },
+            { title: '調酒大師養成', desc: '基礎 → 經典 → 居家酒吧', ids: ['cocktail-basics', 'cocktail-classics', 'home-bar'], color: 'from-amber-500/10 to-orange-500/10', border: 'border-amber-500/20' },
+            { title: 'WSET 備考套裝', desc: 'L1 → L2 → L3', ids: ['wset-l1-spirits', 'wset-l2-wines', 'wset-l3-tasting'], color: 'from-violet-500/10 to-blue-500/10', border: 'border-violet-500/20' },
+          ].map(bundle => {
+            const bundleProgress = bundle.ids.reduce((acc, id) => {
+              const p = progress[id]
+              const total = COURSES.find(c => c.id === id)?.lessons ?? 0
+              if (p && total > 0) {
+                acc.completed += Math.min(p.completed, total)
+                acc.total += total
+              } else {
+                acc.total += total
+              }
+              return acc
+            }, { completed: 0, total: 0 })
+            const pct = bundleProgress.total > 0 ? Math.round((bundleProgress.completed / bundleProgress.total) * 100) : 0
+            return (
+              <div key={bundle.title} className={`p-4 rounded-xl bg-gradient-to-br ${bundle.color} border ${bundle.border}`}>
+                <h3 className="text-sm font-semibold text-white mb-1">{bundle.title}</h3>
+                <p className="text-white/50 text-xs mb-3">{bundle.desc}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-primary-400 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs text-white/60 tabular-nums">{pct}%</span>
+                </div>
+                <Link
+                  href={`/learn/${bundle.ids[0]}`}
+                  className="inline-flex items-center gap-1 text-primary-300 text-xs hover:text-primary-200 transition-colors"
+                >
+                  {pct > 0 ? '繼續學習' : '開始學習'}
+                  <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            )
+          })}
+        </div>
         {/* UX_LAYOUT_200 #181：篩選變更時載入指示 — 結果區 aria-busy；P3-50：未來若列表增長可考慮虛擬捲動或分頁 */}
         <div role="region" aria-busy={isFiltering || searchQuery !== deferredSearch} aria-label="課程列表" id="learn-course-list">
           <p className="text-white/50 text-sm mb-5 md:mb-6" aria-live="polite">
@@ -1711,6 +1807,43 @@ export default function LearnPage() {
               {nextCourseSuggestion.title}
               <ChevronRight className="w-4 h-4" />
             </Link>
+          </m.div>
+        )}
+
+        {/* LEARN-038: 課程比較表 — 選取兩門課程比較 */}
+        {filteredCourses.length >= 2 && (
+          <m.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10"
+          >
+            <p className="text-white/70 text-sm font-semibold mb-3">課程比較</p>
+            <div className="grid grid-cols-2 gap-3">
+              {filteredCourses.slice(0, 2).map((c) => {
+                const prog = progress[c.id]
+                const pct = prog && c.lessons > 0 ? Math.round((Math.min(prog.completed, c.lessons) / c.lessons) * 100) : 0
+                const rating = getCourseRating(c.id) ?? c.rating ?? 0
+                return (
+                  <div key={c.id} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <h4 className="text-sm font-medium text-white truncate mb-2">{c.title}</h4>
+                    <div className="space-y-1 text-xs text-white/60">
+                      <p>等級：<span className="text-white/80">{c.level === 'beginner' ? '入門' : c.level === 'intermediate' ? '進階' : '專家'}</span></p>
+                      <p>時長：<span className="text-white/80">{c.duration}</span></p>
+                      <p>章節：<span className="text-white/80">{c.lessons} 章</span></p>
+                      <p>評分：<span className="text-primary-300">{rating > 0 ? rating.toFixed(1) : '--'}</span></p>
+                      <p>進度：<span className={pct > 0 ? 'text-primary-300' : 'text-white/40'}>{pct}%</span></p>
+                      <p>{c.free ? <span className="text-green-300">免費</span> : <span className="text-amber-300">Pro</span>}</p>
+                    </div>
+                    <Link
+                      href={`/learn/${c.id}`}
+                      className="mt-2 block text-center px-2 py-1 rounded-lg bg-primary-500/20 text-primary-300 text-xs hover:bg-primary-500/30 transition-colors"
+                    >
+                      前往
+                    </Link>
+                  </div>
+                )
+              })}
+            </div>
           </m.div>
         )}
 

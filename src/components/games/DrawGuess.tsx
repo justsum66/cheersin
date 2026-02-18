@@ -58,6 +58,7 @@ export default function DrawGuess() {
     setGuessedCorrect(false)
     play('click')
 
+    if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {

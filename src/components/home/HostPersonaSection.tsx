@@ -1,12 +1,13 @@
 'use client'
 
-import { m } from 'framer-motion'
-import { Search, Smartphone, Wine, ArrowRight } from 'lucide-react'
+import { m, useReducedMotion } from 'framer-motion'
+import { Search, Smartphone, Wine, ArrowRight, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/I18nContext'
 
 export function HostPersonaSection() {
     const { t } = useTranslation()
+    const reducedMotion = useReducedMotion()
 
     const cards = [
         { icon: Search, titleKey: 'pricing.partyHost.card1.title', descKey: 'pricing.partyHost.card1.desc', delay: 0 },
@@ -14,12 +15,38 @@ export function HostPersonaSection() {
         { icon: Wine, titleKey: 'pricing.partyHost.card3.title', descKey: 'pricing.partyHost.card3.desc', delay: 0.2 },
     ]
 
+    // HP-025: Crown bounce animation variants
+    const crownVariants = {
+        hidden: { scale: 0, rotate: -20, opacity: 0 },
+        visible: {
+            scale: 1,
+            rotate: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring' as const,
+                stiffness: 300,
+                damping: 15,
+                delay: 0.5,
+            },
+        },
+    }
+
     return (
         <section className="py-16 md:py-24 relative overflow-hidden">
             <div className="absolute inset-0 bg-primary-900/5 -skew-y-3 transform origin-top-left scale-110" />
             <div className="max-w-7xl xl:max-w-[1440px] mx-auto px-4 relative z-10">
                 <div className="text-center mb-12">
-                    <span className="inline-block py-1 px-3 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold uppercase tracking-widest mb-4">
+                    <span className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold uppercase tracking-widest mb-4">
+                        {/* HP-025: Crown icon with entrance animation */}
+                        <m.span
+                            initial={reducedMotion ? 'visible' : 'hidden'}
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.5 }}
+                            variants={reducedMotion ? undefined : crownVariants}
+                            className="inline-flex"
+                        >
+                            <Crown className="w-4 h-4 text-yellow-400" />
+                        </m.span>
                         {t('pricing.partyHost.title')}
                     </span>
                     <h2 className="home-heading-2 text-white mb-4">

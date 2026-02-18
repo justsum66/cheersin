@@ -70,6 +70,18 @@ export const PAYPAL_WEBHOOK_ID = normalizeEnv(process.env.PAYPAL_WEBHOOK_ID)
 export const PAYPAL_BASIC_PLAN_ID = normalizeEnv(process.env.PAYPAL_BASIC_PLAN_ID)
 export const PAYPAL_PREMIUM_PLAN_ID = normalizeEnv(process.env.PAYPAL_PREMIUM_PLAN_ID)
 
+/** PAY-016: PayPal sandbox toggle — explicit env override for testing */
+export const PAYPAL_SANDBOX = (() => {
+  const raw = normalizeEnv(process.env.PAYPAL_SANDBOX)
+  if (raw === 'true' || raw === '1') return true
+  if (raw === 'false' || raw === '0') return false
+  return process.env.NODE_ENV !== 'production'
+})()
+
+export const PAYPAL_API_BASE = PAYPAL_SANDBOX
+  ? 'https://api-m.sandbox.paypal.com'
+  : 'https://api-m.paypal.com'
+
 /** Admin / Debug */
 export const ADMIN_SECRET = normalizeEnv(process.env.ADMIN_SECRET)
 

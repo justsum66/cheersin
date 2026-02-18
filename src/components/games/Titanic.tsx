@@ -5,6 +5,7 @@ import CopyResultButton from './CopyResultButton'
 import { m , AnimatePresence } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
@@ -15,6 +16,7 @@ const INCREMENT_OPTIONS = [4, 6, 8] as const
 export default function Titanic() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
   const [increment, setIncrement] = useState<4 | 6 | 8>(6)
   const [level, setLevel] = useState(0)
@@ -103,15 +105,15 @@ export default function Titanic() {
           className={`w-full bg-gradient-to-b from-cyan-400 to-blue-800 ${isNearFull ? 'shadow-[0_0_16px_rgba(34,211,238,0.4)]' : ''}`}
           initial={false}
           animate={{ height: `${level}%` }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
         />
         <AnimatePresence>
           {justFilled && (
             <m.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+              animate={reducedMotion ? false : { opacity: 1, y: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none bg-blue-900/40"
               aria-hidden
             >
@@ -122,8 +124,8 @@ export default function Titanic() {
       </div>
       {lost && (
         <m.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
+          initial={reducedMotion ? false : { scale: 0.8 }}
+          animate={reducedMotion ? false : { scale: 1 }}
           className="mb-4"
         >
           <p className="text-red-400 font-bold text-xl" aria-live="assertive">{lost} 沉了，喝！</p>

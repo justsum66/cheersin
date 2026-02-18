@@ -6,6 +6,7 @@ import { m } from 'framer-motion'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameRoom } from '@/hooks/useGameRoom'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
@@ -28,6 +29,7 @@ export default function UpDownStairs() {
   const { roomId, players: roomPlayers, fetchRoom } = useGameRoom(roomSlug)
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = roomId && roomPlayers.length >= 2
     ? roomPlayers.map((p) => p.displayName)
     : contextPlayers.length >= 2

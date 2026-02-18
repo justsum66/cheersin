@@ -19,6 +19,7 @@ import { useScriptMurderRealtime } from '@/hooks/useScriptMurderRealtime'
 import type { ScriptSummary, ScriptDetail } from '@/types/script-murder'
 import { getErrorMessage } from '@/lib/api-response'
 import { SkeletonCard } from '@/components/ui/Skeleton'
+import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
 import { ScriptMurderLobby } from './ScriptMurderLobby'
 import { ScriptMurderRoom } from './ScriptMurderRoom'
 import { ScriptMurderPlay } from './ScriptMurderPlay'
@@ -172,7 +173,8 @@ export default function ScriptMurderPage() {
     fetchRef.current.fetchGameState()
   }, [roomSlug])
   useScriptMurderRealtime(roomSlug || null, refetchRoomAndState)
-  usePolling(refetchRoomAndState, { intervalMs: 5000, enabled: !!roomSlug })
+  /** SM-004：輪詢間隔從 5s 降至 2s，加快 WS 失敗時的關鍵事件更新 */
+  usePolling(refetchRoomAndState, { intervalMs: 2000, enabled: !!roomSlug })
 
   useEffect(() => {
     if (typeof document === 'undefined' || roomSlug) return
@@ -262,16 +264,18 @@ export default function ScriptMurderPage() {
 
   if (!roomSlug) {
     return (
-      <ScriptMurderLobby
-        scripts={scripts}
-        scriptRooms={scriptRooms}
-        loadingScripts={loadingScripts}
-        error={lobbyError}
-        createRoom={createRoom}
-        creating={creating}
-        freeScriptLimit={freeScriptLimit}
-        onRetry={fetchScripts}
-      />
+      <ErrorBoundaryBlock blockName="ScriptMurderLobby">
+        <ScriptMurderLobby
+          scripts={scripts}
+          scriptRooms={scriptRooms}
+          loadingScripts={loadingScripts}
+          error={lobbyError}
+          createRoom={createRoom}
+          creating={creating}
+          freeScriptLimit={freeScriptLimit}
+          onRetry={fetchScripts}
+        />
+      </ErrorBoundaryBlock>
     )
   }
 
@@ -344,39 +348,43 @@ export default function ScriptMurderPage() {
 
   if (inLobby) {
     return (
-      <ScriptMurderRoom
-        room={room}
-        roomSlug={roomSlug}
-        players={players}
-        scriptDetail={scriptDetail}
-        inviteUrl={inviteUrl}
-        copyInvite={copyInvite}
-        inviteCopied={inviteCopied}
-        joined={joined}
-        displayName={displayName}
-        setDisplayName={setDisplayName}
-        joinRoom={joinRoom}
-        joinError={joinError}
-        joinLoading={joinLoading}
-        startGame={startGame}
-        showStartConfirm={showStartConfirm}
-        setShowStartConfirm={setShowStartConfirm}
-        onLeave={handleLeave}
-        myPlayerRowId={myPlayerRowId}
-        allowSoloTest={searchParams.get('solo') === '1'}
-        soloTestHref={roomSlug ? `/script-murder?room=${encodeURIComponent(roomSlug)}&solo=1` : null}
-        isHost={isHost}
-      />
+      <ErrorBoundaryBlock blockName="ScriptMurderRoom">
+        <ScriptMurderRoom
+          room={room}
+          roomSlug={roomSlug}
+          players={players}
+          scriptDetail={scriptDetail}
+          inviteUrl={inviteUrl}
+          copyInvite={copyInvite}
+          inviteCopied={inviteCopied}
+          joined={joined}
+          displayName={displayName}
+          setDisplayName={setDisplayName}
+          joinRoom={joinRoom}
+          joinError={joinError}
+          joinLoading={joinLoading}
+          startGame={startGame}
+          showStartConfirm={showStartConfirm}
+          setShowStartConfirm={setShowStartConfirm}
+          onLeave={handleLeave}
+          myPlayerRowId={myPlayerRowId}
+          allowSoloTest={searchParams.get('solo') === '1'}
+          soloTestHref={roomSlug ? `/script-murder?room=${encodeURIComponent(roomSlug)}&solo=1` : null}
+          isHost={isHost}
+        />
+      </ErrorBoundaryBlock>
     )
   }
 
   if (inEnded) {
     return (
-      <ScriptMurderEnded
-        scriptState={scriptState}
-        scriptDetail={scriptDetail}
-        roomSlug={roomSlug}
-      />
+      <ErrorBoundaryBlock blockName="ScriptMurderEnded">
+        <ScriptMurderEnded
+          scriptState={scriptState}
+          scriptDetail={scriptDetail}
+          roomSlug={roomSlug}
+        />
+      </ErrorBoundaryBlock>
     )
   }
 
@@ -402,19 +410,21 @@ export default function ScriptMurderPage() {
     }
 
     return (
-      <ScriptMurderPlay
-        scriptState={scriptState}
-        scriptDetail={scriptDetail}
-        roomSlug={roomSlug}
-        players={players}
-        postScriptAction={postScriptAction}
-        actionLoading={actionLoading}
-        myRole={myRole}
-        roleClueOpen={roleClueOpen}
-        setRoleClueOpen={setRoleClueOpen}
-        playerId={playerId}
-        isHost={isHost}
-      />
+      <ErrorBoundaryBlock blockName="ScriptMurderPlay">
+        <ScriptMurderPlay
+          scriptState={scriptState}
+          scriptDetail={scriptDetail}
+          roomSlug={roomSlug}
+          players={players}
+          postScriptAction={postScriptAction}
+          actionLoading={actionLoading}
+          myRole={myRole}
+          roleClueOpen={roleClueOpen}
+          setRoleClueOpen={setRoleClueOpen}
+          playerId={playerId}
+          isHost={isHost}
+        />
+      </ErrorBoundaryBlock>
     )
   }
 

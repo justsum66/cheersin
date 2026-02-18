@@ -3,7 +3,7 @@
  * Service Worker implementation for offline support and advanced caching
  */
 
-const CACHE_VERSION = 'v1.0.4'
+const CACHE_VERSION = 'v1.0.5'
 const CACHE_NAME = `cheersin-cache-${CACHE_VERSION}`
 const DYNAMIC_CACHE = `cheersin-dynamic-${CACHE_VERSION}`
 
@@ -59,14 +59,19 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Pre-cache critical assets
+      // Pre-cache critical assets — individual adds so one 404 does not block install
       const urlsToCache = [
         '/',
+        '/offline.html',
         '/logo_monochrome_gold.png',
         '/manifest.webmanifest'
       ]
       
-      return cache.addAll(urlsToCache)
+      return Promise.allSettled(
+        urlsToCache.map(url => cache.add(url).catch(err => {
+          console.warn('[Service Worker] Failed to pre-cache:', url, err.message)
+        }))
+      )
     }).then(() => {
       console.log('[Service Worker] Installation complete')
       return self.skipWaiting()
@@ -81,8 +86,8 @@ self.addEventListener('activate', (event) => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          // Delete old caches
-          if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
+          // Delete old caches (keep current static, dynamic, and game caches)
+          if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE && cacheName !== GAME_CACHE) {
             console.log('[Service Worker] Deleting old cache:', cacheName)
             return caches.delete(cacheName)
           }
@@ -90,6 +95,8 @@ self.addEventListener('activate', (event) => {
       )
     }).then(() => {
       console.log('[Service Worker] Activation complete')
+      // PWA-015: Check storage quota on activation
+      checkStorageQuota()
       return self.clients.claim()
     })
   )
@@ -104,6 +111,12 @@ self.addEventListener('fetch', (event) => {
     return
   }
   
+  // PWA-013: Route game assets to dedicated cache with 30-day TTL
+  if (isGameAsset(url.pathname)) {
+    event.respondWith(gameAssetCacheFirst(request))
+    return
+  }
+
   // Determine cache strategy based on URL
   const strategy = getCacheStrategy(url.pathname)
   
@@ -115,11 +128,11 @@ self.addEventListener('fetch', (event) => {
       event.respondWith(staleWhileRevalidate(request))
       break
     case CACHE_STRATEGIES.NETWORK_FIRST:
-      event.respondWith(networkFirst(request))
+      // PWA-019: Use navigation preload response when available
+      event.respondWith(networkFirst(request, event))
       break
     default:
-      // For other requests, try network first with cache fallback
-      event.respondWith(networkFirst(request))
+      event.respondWith(networkFirst(request, event))
   }
 })
 
@@ -185,19 +198,32 @@ async function staleWhileRevalidate(request) {
 }
 
 // Network First Strategy
-async function networkFirst(request) {
+/** PWA-005: HTML pages always network-first with cache-busting query param stripped */
+async function networkFirst(request, fetchEvent) {
+  // Strip cache-busting params for HTML requests to normalize cache keys
+  let cleanRequest = request
+  if (request.mode === 'navigate') {
+    const url = new URL(request.url)
+    url.searchParams.delete('_sw')
+    url.searchParams.delete('_t')
+    cleanRequest = new Request(url.toString(), { headers: request.headers, mode: request.mode })
+  }
   try {
-    const networkResponse = await fetch(request)
+    // PWA-019: Prefer navigation preload response when available
+    const preloadResponse = fetchEvent && fetchEvent.preloadResponse
+      ? await fetchEvent.preloadResponse
+      : undefined
+    const networkResponse = preloadResponse || await fetch(cleanRequest)
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE)
-      await cache.put(request, networkResponse.clone())
+      await cache.put(cleanRequest, networkResponse.clone())
       await enforceCacheLimit(DYNAMIC_CACHE, CACHE_CONFIG.MAX_ENTRIES.DYNAMIC)
     }
     return networkResponse
   } catch (error) {
     // Fallback to cache
     const cache = await caches.open(DYNAMIC_CACHE)
-    const cachedResponse = await cache.match(request)
+    const cachedResponse = await cache.match(cleanRequest)
     
     if (cachedResponse) {
       console.log('[Service Worker] Network failed, using cache:', request.url)
@@ -217,6 +243,28 @@ async function networkFirst(request) {
 }
 
 // Helper functions
+
+// PWA-013: Game asset cache-first with 30-day TTL
+async function gameAssetCacheFirst(request) {
+  const cache = await caches.open(GAME_CACHE)
+  const cachedResponse = await cache.match(request)
+  if (cachedResponse) {
+    const age = getCacheAge(cachedResponse)
+    if (age < GAME_CACHE_MAX_AGE) return cachedResponse
+  }
+  try {
+    const networkResponse = await fetch(request)
+    if (networkResponse.ok) {
+      await cache.put(request, networkResponse.clone())
+      await enforceCacheLimit(GAME_CACHE, GAME_CACHE_MAX_ENTRIES)
+    }
+    return networkResponse
+  } catch {
+    if (cachedResponse) return cachedResponse
+    return new Response('Game asset unavailable offline', { status: 503 })
+  }
+}
+
 function getCacheStrategy(pathname) {
   // Static assets
   if (CACHE_PATTERNS.STATIC.some(pattern => 
@@ -319,4 +367,98 @@ async function getCacheStats() {
   return stats
 }
 
-export {} // Make this a module
+// ======== PWA-009: Background Sync for failed form submissions ========
+const BG_SYNC_QUEUE = 'cheersin-bg-sync-queue'
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'form-submit-retry') {
+    event.waitUntil(replayQueuedRequests())
+  }
+})
+
+async function replayQueuedRequests() {
+  try {
+    const cache = await caches.open(BG_SYNC_QUEUE)
+    const keys = await cache.keys()
+    for (const request of keys) {
+      const cachedResp = await cache.match(request)
+      if (!cachedResp) continue
+      const body = await cachedResp.text()
+      try {
+        await fetch(request.url, {
+          method: request.method || 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        })
+        await cache.delete(request)
+      } catch {
+        console.warn('[SW] Background sync retry failed for', request.url)
+      }
+    }
+  } catch (err) {
+    console.error('[SW] Background sync error:', err)
+  }
+}
+
+// ======== PWA-010: Periodic Background Sync for course progress ========
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'sync-course-progress') {
+    event.waitUntil(syncCourseProgress())
+  }
+})
+
+async function syncCourseProgress() {
+  try {
+    const clients = await self.clients.matchAll({ type: 'window' })
+    for (const client of clients) {
+      client.postMessage({ type: 'SYNC_COURSE_PROGRESS' })
+    }
+  } catch (err) {
+    console.warn('[SW] Periodic sync error:', err)
+  }
+}
+
+// ======== PWA-013: Separate game asset cache with longer TTL ========
+const GAME_CACHE = `cheersin-games-${CACHE_VERSION}`
+const GAME_CACHE_MAX_AGE = 30 * 24 * 60 * 60 // 30 days in seconds
+const GAME_CACHE_MAX_ENTRIES = 200
+
+function isGameAsset(pathname) {
+  return /^\/(games|_next\/static)\/.*\.(png|jpg|jpeg|webp|avif|svg|gif|mp3|ogg|wav)$/i.test(pathname)
+    || pathname.startsWith('/images/games/')
+}
+
+// ======== PWA-015: Cache Storage Quota Management ========
+async function checkStorageQuota() {
+  if (!navigator.storage || !navigator.storage.estimate) return
+  try {
+    const { usage, quota } = await navigator.storage.estimate()
+    const usedMB = (usage || 0) / (1024 * 1024)
+    const quotaMB = (quota || 0) / (1024 * 1024)
+    if (usedMB > 50) {
+      const clients = await self.clients.matchAll({ type: 'window' })
+      for (const client of clients) {
+        client.postMessage({
+          type: 'CACHE_QUOTA_WARNING',
+          usage: Math.round(usedMB),
+          quota: Math.round(quotaMB),
+        })
+      }
+    }
+  } catch {
+    // storage API not available
+  }
+}
+
+// ======== PWA-019: Navigation Preload for faster SW responses ========
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable()
+      }
+    })()
+  )
+})
+
+// Service Worker runs as classic script (not ES module)

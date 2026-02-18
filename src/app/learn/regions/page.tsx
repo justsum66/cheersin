@@ -3,7 +3,7 @@
 /** R2-387：產區地圖 — 可點擊產區顯示名稱與簡介（沿用 InteractiveRegionMap） */
 import Link from 'next/link'
 import { ChevronLeft, MapPin } from 'lucide-react'
-import { InteractiveRegionMap } from '@/components/learn/InteractiveRegionMap'
+import { InteractiveRegionMap } from '@/components/learn/maps/InteractiveRegionMap'
 
 export default function RegionsMapPage() {
   return (

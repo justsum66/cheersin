@@ -171,6 +171,7 @@ function StandardDice() {
   const announceRef = useRef<HTMLDivElement>(null)
   const rollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const rollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rollSoundIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { registerShakeHandler, unregisterShakeHandler } = useGamesShake()
   const { play } = useGameSound()
   /* R2-001: Deep Refactor - Use Store */
@@ -190,16 +191,20 @@ function StandardDice() {
     setLastPredictionResult(null)
     if (rollIntervalRef.current) clearInterval(rollIntervalRef.current)
     if (rollTimeoutRef.current) clearTimeout(rollTimeoutRef.current)
+    if (rollSoundIntervalRef.current) clearInterval(rollSoundIntervalRef.current)
     const count = diceCount
     // G3-031: Physics-like bounce duration
     const durationMs = reducedMotion ? 100 : 1400
     // G3-032: Rolling sound loop (countdown sound as substitute)
-    const rollSoundInterval = setInterval(() => play('countdown'), 200)
+    rollSoundIntervalRef.current = setInterval(() => play('countdown'), 200)
     rollIntervalRef.current = setInterval(() => {
       setDices((prev) => prev.map((v, i) => heldDice[i] ? v : Math.ceil(Math.random() * 6)))
     }, 80)
     rollTimeoutRef.current = setTimeout(() => {
-      clearInterval(rollSoundInterval)
+      if (rollSoundIntervalRef.current) {
+        clearInterval(rollSoundIntervalRef.current)
+        rollSoundIntervalRef.current = null
+      }
       if (rollIntervalRef.current) {
         clearInterval(rollIntervalRef.current)
         rollIntervalRef.current = null
@@ -245,6 +250,10 @@ function StandardDice() {
       if (rollTimeoutRef.current) {
         clearTimeout(rollTimeoutRef.current)
         rollTimeoutRef.current = null
+      }
+      if (rollSoundIntervalRef.current) {
+        clearInterval(rollSoundIntervalRef.current)
+        rollSoundIntervalRef.current = null
       }
     }
   }, [])
@@ -303,6 +312,7 @@ function StandardDice() {
             onClick={() => setDiceStyle(s)}
             disabled={rolling}
             aria-pressed={diceStyle === s}
+            aria-label={`骰子樣式：${DICE_STYLE_LABEL[s]}`}
             whileHover={buttonHover}
             whileTap={buttonTap}
             className={`min-h-[48px] min-w-[48px] px-2.5 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 games-focus-ring ${diceStyle === s ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}

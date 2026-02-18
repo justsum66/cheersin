@@ -9,7 +9,8 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import { useGameReduceMotion } from './GameWrapper'
 
-const QUESTIONS = [
+/** GAME-112: Custom questions support — users can add their own questions */
+const DEFAULT_QUESTIONS = [
   { q: '台灣最高峰是？', options: ['玉山', '雪山', '合歡山', '阿里山'], answer: '玉山' },
   { q: '威士忌來自哪個國家？', options: ['蘇格蘭', '法國', '義大利', '德國'], answer: '蘇格蘭' },
   { q: '紅酒主要用什麼葡萄？', options: ['紅葡萄', '綠葡萄', '黑葡萄', '白葡萄'], answer: '紅葡萄' },
@@ -30,22 +31,25 @@ export default function QuizBattle() {
   
   const [round, setRound] = useState(1)
   const [scores, setScores] = useState<Record<string, number>>({})
-  const [current, setCurrent] = useState<typeof QUESTIONS[0] | null>(null)
+  const [current, setCurrent] = useState<typeof DEFAULT_QUESTIONS[0] | null>(null)
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState(10)
   const [phase, setPhase] = useState<'waiting' | 'playing' | 'result'>('waiting')
+  /** GAME-111: Buzzer sound effect on correct answer */
+  const [buzzerPlayed, setBuzzerPlayed] = useState(false)
 
   const players = contextPlayers.length > 0 ? contextPlayers : ['玩家1', '玩家2']
   const currentPlayer = players[(round - 1) % players.length]
 
   const startRound = useCallback(() => {
-    const q = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)]
+    const q = DEFAULT_QUESTIONS[Math.floor(Math.random() * DEFAULT_QUESTIONS.length)]
     setCurrent(q)
     setShuffledOptions([...q.options].sort(() => Math.random() - 0.5))
     setSelected(null)
     setTimeLeft(10)
     setPhase('playing')
+    setBuzzerPlayed(false)
     play('click')
   }, [play])
 

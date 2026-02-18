@@ -3,8 +3,8 @@
 import { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, HelpCircle, Wine, Droplets, BookOpen, Layers, Search } from 'lucide-react'
-import KnowledgeCardFlip from '@/components/learn/KnowledgeCardFlip'
-import { WineKnowledgeDataLoader, useWineKnowledgePromise } from '@/components/learn/WineKnowledgeWithUse'
+import KnowledgeCardFlip from '@/components/learn/ui/KnowledgeCardFlip'
+import { WineKnowledgeDataLoader, useWineKnowledgePromise } from '@/components/learn/data/WineKnowledgeWithUse'
 import ErrorBoundaryBlock from '@/components/ErrorBoundaryBlock'
 
 type KnowledgeFilter = 'all' | 'faq' | 'glass' | 'decanting' | 'tips'

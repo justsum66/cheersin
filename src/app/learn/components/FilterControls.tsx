@@ -20,6 +20,8 @@ interface FilterControlsProps {
   viewMode: ViewMode
   setViewMode: (mode: ViewMode) => void
   filteredCoursesLength: number
+  /** CLEAN: Per-level course counts to avoid window.COURSES global access */
+  courseCounts?: Record<string, number>
   isFiltering?: boolean
   deferredSearch?: string
   showShareFilter?: boolean
@@ -52,6 +54,7 @@ export default function FilterControls({
   viewMode,
   setViewMode,
   filteredCoursesLength,
+  courseCounts,
   isFiltering = false,
   deferredSearch = '',
   showShareFilter = false,
@@ -161,8 +164,8 @@ export default function FilterControls({
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mb-4 overflow-x-auto scrollbar-hide pb-1">
           {LEVEL_TABS.map((level, idx) => {
             const count = level === 'all' 
-              ? (window as any).COURSES?.length || 0 
-              : (window as any).COURSES?.filter((c: any) => c.level === level).length || 0
+              ? (courseCounts?.['all'] ?? filteredCoursesLength)
+              : (courseCounts?.[level] ?? 0)
             return (
               <button
                 key={level}

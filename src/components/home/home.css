@@ -208,3 +208,85 @@
     width: 100%;
   }
 }
+
+/* HP-031: Smooth scroll between home sections */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* HP-032: Generalized shimmer loading effect for home section cards */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.home-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-shimmer::after {
+    animation: none;
+  }
+}
+
+/* HP-037: Animated gradient border for premium CTA buttons */
+@keyframes home-gradient-border {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.home-gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(270deg, #D4AF37, #FF2E63, #08D9D6, #D4AF37);
+  background-size: 300% 300%;
+  animation: home-gradient-border 4s ease infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.home-gradient-border:hover::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-gradient-border::before {
+    animation: none;
+    background: linear-gradient(135deg, #D4AF37, #FF2E63);
+  }
+}

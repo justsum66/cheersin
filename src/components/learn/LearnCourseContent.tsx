@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { ClickableImage } from '@/components/ui/ImageLightbox'
 import { m, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles, Focus, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, HelpCircle, Bookmark, BookmarkCheck, Printer, Share2, Award, Trophy, Clock, Link2, Pin, Sparkles, Focus, ChevronDown, ChevronUp, Volume2, VolumeX, Search } from 'lucide-react'
 import { recordStudyToday, addPoints, getStreak, addLearnMinutes, getLearnMinutes, setCompletedChapterToday, addWeeklyChapterCount, incrementChaptersCompletedToday } from '@/lib/gamification'
 import { useGameSound } from '@/hooks/useGameSound'
 import { fireFullscreenConfetti } from '@/lib/celebration'
@@ -16,35 +16,36 @@ import { parseContentWithTerms, ParsedTerm } from '@/lib/learn-terms'
 import { PronunciationButton } from '@/components/ui/PronunciationButton'
 import { addWrongAnswer, getWrongAnswersByCourseAndChapter } from '@/lib/wrong-answers'
 import { unlockBadge, type BadgeId } from '@/lib/gamification'
-import VideoPlayer from '@/components/learn/VideoPlayer'
-import { ShareToStory } from '@/components/learn/ShareToStory'
-import { CertificateShare } from '@/components/learn/CertificateShare'
-import { KeywordSummary, extractKeywords } from '@/components/learn/KeywordSummary'
-import { ExamPointsReference } from '@/components/learn/ExamPointsReference'
+import VideoPlayer from './ui/VideoPlayer'
+import { ShareToStory } from './ui/ShareToStory'
+import { CertificateShare } from './ui/CertificateShare'
+import { KeywordSummary, extractKeywords } from './ui/KeywordSummary'
+import { ExamPointsReference } from './ui/ExamPointsReference'
 import { FontSizeControl } from '@/components/ui/FontSizeControl'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { BadgeUnlockCelebration } from '@/components/profile/BadgeUnlockCelebration'
-import { WineGlossary } from '@/components/learn/WineGlossary'
-import { WineExamples } from '@/components/learn/WineExamples'
-import { InteractiveRegionMap } from '@/components/learn/InteractiveRegionMap'
-import { WineRecommendationDatabase } from '@/components/learn/WineRecommendationDatabase'
-import { SeasonalWineGuide } from '@/components/learn/SeasonalWineGuide'
-import { WhiskyGlossary } from '@/components/learn/WhiskyGlossary'
-import { InteractiveWhiskyMap } from '@/components/learn/InteractiveWhiskyMap'
-import { WhiskyRecommendationDatabase } from '@/components/learn/WhiskyRecommendationDatabase'
-import { SeasonalWhiskyGuide } from '@/components/learn/SeasonalWhiskyGuide'
-import { WhiskyExamples } from '@/components/learn/WhiskyExamples'
-import { BeerCiderGlossary } from '@/components/learn/BeerCiderGlossary'
-import { InteractiveBeerCiderMap } from '@/components/learn/InteractiveBeerCiderMap'
-import { BeerCiderRecommendationDatabase } from '@/components/learn/BeerCiderRecommendationDatabase'
-import { SeasonalBeerCiderGuide } from '@/components/learn/SeasonalBeerCiderGuide'
-import { BeerCiderExamples } from '@/components/learn/BeerCiderExamples'
-import { CocktailGlossary } from '@/components/learn/CocktailGlossary'
-import { CocktailExamples } from '@/components/learn/CocktailExamples'
-import { InteractiveCocktailMap } from '@/components/learn/InteractiveCocktailMap'
-import { CocktailRecommendationDatabase } from '@/components/learn/CocktailRecommendationDatabase'
-import { SeasonalCocktailGuide } from '@/components/learn/SeasonalCocktailGuide'
+import { WineGlossary } from './data/WineGlossary'
+import { WineExamples } from './data/WineExamples'
+import { InteractiveRegionMap } from './maps/InteractiveRegionMap'
+import { WineRecommendationDatabase } from './data/WineRecommendationDatabase'
+import { SeasonalWineGuide } from './data/SeasonalWineGuide'
+import { WhiskyGlossary } from './data/WhiskyGlossary'
+import { InteractiveWhiskyMap } from './maps/InteractiveWhiskyMap'
+import { WhiskyRecommendationDatabase } from './data/WhiskyRecommendationDatabase'
+import { SeasonalWhiskyGuide } from './data/SeasonalWhiskyGuide'
+import { WhiskyExamples } from './data/WhiskyExamples'
+import { BeerCiderGlossary } from './data/BeerCiderGlossary'
+import { InteractiveBeerCiderMap } from './maps/InteractiveBeerCiderMap'
+import { BeerCiderRecommendationDatabase } from './data/BeerCiderRecommendationDatabase'
+import { SeasonalBeerCiderGuide } from './data/SeasonalBeerCiderGuide'
+import { BeerCiderExamples } from './data/BeerCiderExamples'
+import { CocktailGlossary } from './data/CocktailGlossary'
+import { CocktailExamples } from './data/CocktailExamples'
+import { InteractiveCocktailMap } from './maps/InteractiveCocktailMap'
+import { CocktailRecommendationDatabase } from './data/CocktailRecommendationDatabase'
+import { SeasonalCocktailGuide } from './data/SeasonalCocktailGuide'
 import toast from 'react-hot-toast'
+import { speak, cancelSpeak, isSpeechSupported } from '@/lib/speech'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useTranslation } from '@/contexts/I18nContext'
 import { COPY_TOAST_PROGRESS_SAVED } from '@/config/copy.config'
@@ -52,7 +53,12 @@ import { getReadingListForCourse } from '@/config/learn-reading-list'
 import { getCommonMistakes } from '@/config/learn-common-mistakes'
 import { getReferencesForCourse } from '@/config/learn-references'
 import { NEXT_COURSE_MAP } from '@/config/learn-curriculum'
-import { LEARN_PROGRESS_KEY, LEARN_QUIZ_PASSED_KEY, CHAPTER_QUIZ_PASS_THRESHOLD } from '@/config/learn.config'
+import { LEARN_PROGRESS_KEY, LEARN_QUIZ_PASSED_KEY, CHAPTER_QUIZ_PASS_THRESHOLD, COURSE_VERSIONS, COURSE_AUTHORS, LEARN_VOCABULARY_KEY } from '@/config/learn.config'
+import { COURSE_PREREQUISITES, COURSE_LEVEL_MAP, COURSE_LEVEL_LABELS } from '@/config/learn-curriculum'
+import { COURSE_META } from '@/lib/courses'
+import { InteractiveLearningTools } from './sections/InteractiveLearningTools'
+import { SupplementaryContent } from './sections/SupplementaryContent'
+import { CourseRecommendations } from './sections/CourseRecommendations'
 
 
 function getQuizPassed(courseId: string, chapterId: number): boolean {
@@ -249,6 +255,41 @@ export function LearnCourseContent({
   const chapterRefs = useRef<Map<number, HTMLElement>>(new Map())
   const reducedMotion = usePrefersReducedMotion()
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** LEARN-019: TTS audio narration state */
+  const [ttsActive, setTtsActive] = useState<number | null>(null)
+  const handleTts = useCallback((chId: number, content: string) => {
+    if (ttsActive === chId) {
+      cancelSpeak()
+      setTtsActive(null)
+      return
+    }
+    cancelSpeak()
+    setTtsActive(chId)
+    const plainText = content.replace(/\n\n+/g, '。').replace(/\n/g, '，').slice(0, 2000)
+    speak(plainText, { lang: 'zh-TW', rate: 0.9 })
+    const checkDone = setInterval(() => {
+      if (typeof window !== 'undefined' && !window.speechSynthesis?.speaking) {
+        setTtsActive(null)
+        clearInterval(checkDone)
+      }
+    }, 500)
+  }, [ttsActive])
+
+  /** LEARN-028: In-course content search */
+  const [courseSearchQuery, setCourseSearchQuery] = useState('')
+  const [courseSearchOpen, setCourseSearchOpen] = useState(false)
+  const courseSearchResults = useMemo(() => {
+    if (!courseSearchQuery || courseSearchQuery.length < 2) return []
+    const q = courseSearchQuery.toLowerCase()
+    return chapters
+      .filter(ch => ch.title.toLowerCase().includes(q) || (ch.content || '').toLowerCase().includes(q))
+      .map(ch => {
+        const idx = (ch.content || '').toLowerCase().indexOf(q)
+        const snippet = idx >= 0 ? (ch.content || '').slice(Math.max(0, idx - 30), idx + 60) : ''
+        return { chId: ch.id, title: ch.title, snippet }
+      })
+  }, [courseSearchQuery, chapters])
 
   /** Phase 1 D1.3: 章節完成動畫 - Check mark + 成就提示 */
   /** Phase 1 D3.2: 閱讀進度自動保存提示 - 保存時顯示指示器 */
@@ -471,6 +512,17 @@ export function LearnCourseContent({
                 返回學院
               </Link>
               <div className="flex items-center gap-2">
+                {/* LEARN-028: In-course search toggle */}
+                <button
+                  type="button"
+                  onClick={() => setCourseSearchOpen(v => !v)}
+                  className={`min-h-[48px] px-3 inline-flex items-center gap-2 rounded-lg text-sm games-focus-ring ${courseSearchOpen ? 'bg-primary-500/30 text-primary-300' : 'bg-white/5 text-white/60 hover:text-white'}`}
+                  title="搜尋課程內容"
+                  aria-pressed={courseSearchOpen}
+                >
+                  <Search className="w-4 h-4" />
+                  搜尋
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -495,6 +547,57 @@ export function LearnCourseContent({
                 </button>
               </div>
             </div>
+
+            {/* LEARN-028: In-course content search panel */}
+            <AnimatePresence>
+              {courseSearchOpen && (
+                <m.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-4 overflow-hidden"
+                >
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Search className="w-4 h-4 text-white/40" />
+                      <input
+                        type="text"
+                        value={courseSearchQuery}
+                        onChange={e => setCourseSearchQuery(e.target.value)}
+                        placeholder="搜尋本課程內容…"
+                        className="flex-1 bg-transparent text-white text-sm placeholder-white/40 outline-none"
+                        autoFocus
+                      />
+                      {courseSearchQuery && (
+                        <button type="button" onClick={() => setCourseSearchQuery('')} className="text-white/40 hover:text-white text-xs">
+                          清除
+                        </button>
+                      )}
+                    </div>
+                    {courseSearchQuery.length >= 2 && (
+                      <div className="space-y-1 max-h-48 overflow-y-auto">
+                        {courseSearchResults.length === 0 ? (
+                          <p className="text-white/40 text-xs">無符合結果</p>
+                        ) : courseSearchResults.map(r => (
+                          <button
+                            key={r.chId}
+                            type="button"
+                            onClick={() => {
+                              chapterRefs.current.get(r.chId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              setCourseSearchOpen(false)
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                          >
+                            <span className="text-white text-sm font-medium">{t('common.chapterLabel', { n: r.chId })}：{r.title}</span>
+                            {r.snippet && <p className="text-white/40 text-xs mt-0.5 truncate">…{r.snippet}…</p>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </m.div>
+              )}
+            </AnimatePresence>
 
             {/* 39 課程內目錄錨點；Acad-09/680 目錄 RWD、48px、當前章節高亮、進度勾選 */}
             <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10">
@@ -533,11 +636,18 @@ export function LearnCourseContent({
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white mb-2 leading-tight games-heading">{title}</h1>
                   <p className="text-white/60 text-sm md:text-base mb-1 leading-relaxed games-body max-w-2xl">{description}</p>
                   {learningObjectives && learningObjectives.length > 0 && (
-                    <ul className="text-white/50 text-sm mt-3 space-y-1 list-disc list-inside games-body max-w-2xl" aria-label="本課學習目標">
-                      {learningObjectives.map((obj, i) => (
-                        <li key={i}>{obj}</li>
-                      ))}
-                    </ul>
+                    /* LEARN-032: 「你將學到」預覽卡 */
+                    <div className="mt-3 p-3 rounded-xl bg-white/5 border border-white/10" aria-label="本課學習目標">
+                      <p className="text-white/70 text-xs font-semibold mb-2 uppercase tracking-wider">你將學到</p>
+                      <ul className="text-white/50 text-sm space-y-1 list-none games-body max-w-2xl">
+                        {learningObjectives.map((obj, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <Check className="w-3.5 h-3.5 text-primary-400 shrink-0 mt-0.5" />
+                            <span>{obj}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   <p className="text-white/40 text-xs mt-2">快捷鍵：J / ↓ 下一章 · K / ↑ 上一章</p>
                 </div>
@@ -598,7 +708,63 @@ export function LearnCourseContent({
               <p className="text-white/40 text-sm mt-2">
                 {chapters.length} 章 · {duration}
                 {!free && <span className="ml-2 text-primary-400">Pro</span>}
+                {/* LEARN-031: 課程版本號 */}
+                {COURSE_VERSIONS[courseId] && (
+                  <span className="ml-2 text-white/30" title="課程版本">v{COURSE_VERSIONS[courseId]}</span>
+                )}
+                {/* LEARN-033: 課程難度等級 */}
+                {COURSE_LEVEL_MAP[courseId] && (
+                  <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
+                    COURSE_LEVEL_MAP[courseId] === 'beginner' ? 'bg-green-500/20 text-green-300' :
+                    COURSE_LEVEL_MAP[courseId] === 'intermediate' ? 'bg-amber-500/20 text-amber-300' :
+                    'bg-red-500/20 text-red-300'
+                  }`}>
+                    {COURSE_LEVEL_LABELS[COURSE_LEVEL_MAP[courseId]]}
+                  </span>
+                )}
               </p>
+
+              {/* LEARN-034: 課程作者 / 貢獻者資訊 */}
+              {COURSE_AUTHORS[courseId] && COURSE_AUTHORS[courseId].length > 0 && (
+                <p className="text-white/30 text-xs mt-1">
+                  {COURSE_AUTHORS[courseId].map((a, i) => (
+                    <span key={i}>
+                      {i > 0 && ' · '}
+                      {a.name}（{a.role}{a.credential ? `，${a.credential}` : ''}）
+                    </span>
+                  ))}
+                </p>
+              )}
+
+              {/* LEARN-033: 先修課程連結 */}
+              {(() => {
+                const prereqs = COURSE_PREREQUISITES[courseId]
+                if (!prereqs || prereqs.length === 0) return null
+                return (
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <span className="text-white/40 text-xs">先修課程：</span>
+                    {prereqs.map(pid => {
+                      const meta = COURSE_META[pid]
+                      const prereqProgress = progress[pid]
+                      const done = prereqProgress && prereqProgress.completed >= prereqProgress.total
+                      return (
+                        <Link
+                          key={pid}
+                          href={`/learn/${pid}`}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors ${
+                            done
+                              ? 'bg-primary-500/20 text-primary-300'
+                              : 'bg-white/5 text-white/50 hover:text-white/80'
+                          }`}
+                        >
+                          {done && <Check className="w-3 h-3" />}
+                          {meta?.title ?? pid}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
               {/* 153 課程進度百分比；98 aria-live 進度更新 */}
               {progressPct > 0 && (
                 <div className="mt-3 flex items-center gap-2 min-w-0" aria-live="polite" aria-atomic="true" aria-label={`已完成 ${progressPct}%`}>
@@ -645,12 +811,12 @@ export function LearnCourseContent({
                     onTouchEnd={clearLongPress}
                     onTouchCancel={clearLongPress}
                     className="rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-6 focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a1a] focus:outline-none border-b-white/5"
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
                     viewport={{ once: true, margin: '-50px' }}
                     transition={{
-                      duration: 0.5,
-                      delay: chIdx * 0.08,
+                      duration: reducedMotion ? 0.01 : 0.5,
+                      delay: reducedMotion ? 0 : chIdx * 0.08,
                       ease: [0.22, 1, 0.36, 1]
                     }}
                   >
@@ -660,6 +826,18 @@ export function LearnCourseContent({
                       </h2>
                       <div className="flex items-center gap-2">
                         <span className="text-white/40 text-sm">{ch.duration}</span>
+                        {/* LEARN-019: TTS audio narration button */}
+                        {isSpeechSupported() && (
+                          <button
+                            type="button"
+                            onClick={() => handleTts(ch.id, ch.content || '')}
+                            className={`min-h-[48px] min-w-[48px] p-2 rounded-lg games-focus-ring transition-colors ${ttsActive === ch.id ? 'bg-primary-500/20 text-primary-400' : 'text-white/60 hover:text-primary-400 hover:bg-white/10'}`}
+                            aria-label={ttsActive === ch.id ? '停止朗讀' : '朗讀本章'}
+                            title={ttsActive === ch.id ? '停止朗讀' : '朗讀本章內容'}
+                          >
+                            {ttsActive === ch.id ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                          </button>
+                        )}
                         {/* 40 分享本章：複製連結 */}
                         <button
                           type="button"
@@ -731,6 +909,7 @@ export function LearnCourseContent({
                     )}
                     {/* Phase 1 D3.1: 術語 tooltip 加強 - hover 效果優化 */}
                     {/* Phase 2 F2.1: 法語/義大利語術語發音按鈕整合 */}
+                    {/* LEARN-035: 技術術語語法高亮 */}
                     <div className="mb-4 space-y-4">
                       {(() => {
                         const parts = (ch.content || '').split(/\n\n+/).filter(Boolean)
@@ -739,7 +918,19 @@ export function LearnCourseContent({
                           <p key={pi} className="text-white/80 text-sm md:text-base leading-loose whitespace-pre-line games-body max-w-[65ch]">
                             {parseContentWithTerms(para).map((node, ni) =>
                               typeof node === 'string' ? (
-                                node
+                                /* LEARN-035: 將 `反引號包裹的文字` 渲染為高亮術語標籤 */
+                                node.split(/(`[^`]+`)/).map((seg, si) =>
+                                  seg.startsWith('`') && seg.endsWith('`') ? (
+                                    <code
+                                      key={`${pi}-${ni}-${si}`}
+                                      className="px-1.5 py-0.5 rounded bg-primary-500/15 text-primary-300 text-[0.9em] font-mono border border-primary-500/20"
+                                    >
+                                      {seg.slice(1, -1)}
+                                    </code>
+                                  ) : (
+                                    seg
+                                  )
+                                )
                               ) : (
                                 <span
                                   key={`${pi}-${ni}`}
@@ -748,6 +939,24 @@ export function LearnCourseContent({
                                   <span
                                     title={(node as ParsedTerm).en}
                                     className="underline decoration-dotted decoration-primary-500/60 cursor-help hover:decoration-primary-400 hover:text-primary-300 transition-colors duration-200 hover:decoration-2"
+                                    /* LEARN-037: 點擊術語加入詞彙庫 */
+                                    onClick={() => {
+                                      const term = (node as ParsedTerm).term
+                                      const en = (node as ParsedTerm).en
+                                      try {
+                                        const raw = localStorage.getItem(LEARN_VOCABULARY_KEY)
+                                        const vocab: Record<string, string> = raw ? JSON.parse(raw) : {}
+                                        if (!vocab[term]) {
+                                          vocab[term] = en
+                                          localStorage.setItem(LEARN_VOCABULARY_KEY, JSON.stringify(vocab))
+                                          toast.success(`已加入詞彙庫：${term}`, { duration: 1500 })
+                                        } else {
+                                          toast(`${term} 已在詞彙庫中`, { duration: 1200 })
+                                        }
+                                      } catch { /* ignore */ }
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
                                   >
                                     {(node as ParsedTerm).term}
                                   </span>
@@ -845,6 +1054,107 @@ export function LearnCourseContent({
                       chapterTitle={ch.title}
                       className="mb-4"
                     />
+
+                    {/* LEARN-047: 漸進式揭示 - 深入探討區塊 */}
+                    {ch.content && ch.content.length > 300 && (() => {
+                      const [deepDiveOpen, setDeepDiveOpen] = useState(false)
+                      return (
+                        <div className="mb-4 rounded-xl border border-white/10 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setDeepDiveOpen(o => !o)}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-left"
+                          >
+                            <span className="text-sm font-medium text-white/70 flex items-center gap-2">
+                              <Search className="w-4 h-4 text-primary-400" />
+                              深入探討
+                            </span>
+                            {deepDiveOpen ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
+                          </button>
+                          {deepDiveOpen && (
+                            <div className="px-4 py-3 bg-white/[0.02] border-t border-white/5">
+                              <p className="text-white/50 text-xs mb-2">本章延伸內容：</p>
+                              <ul className="space-y-1.5 text-white/60 text-sm">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-primary-400 mt-0.5">•</span>
+                                  <span>嘗試用自己的話重新描述本章核心概念</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-primary-400 mt-0.5">•</span>
+                                  <span>思考本章知識如何應用在實際品飲場景</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-primary-400 mt-0.5">•</span>
+                                  <span>將不確定的術語加入詞彙庫複習</span>
+                                </li>
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
+
+                    {/* LEARN-043: AI 風格 Q&A 互動（本地模擬） */}
+                    {(() => {
+                      const [qaOpen, setQaOpen] = useState(false)
+                      const [qaQuery, setQaQuery] = useState('')
+                      const [qaAnswer, setQaAnswer] = useState('')
+                      const contentText = ch.content || ''
+                      const handleAskQa = () => {
+                        const q = qaQuery.trim()
+                        if (!q) return
+                        // 從章節內容擷取相關段落作為回答
+                        const sentences = contentText.split(/[。！？\n]+/).filter(s => s.trim().length > 5)
+                        const matches = sentences.filter(s => {
+                          const qWords = q.split(/\s+/)
+                          return qWords.some(w => w.length >= 2 && s.includes(w))
+                        })
+                        if (matches.length > 0) {
+                          setQaAnswer(`根據本章內容：\n${matches.slice(0, 3).join('。\n')}。`)
+                        } else {
+                          setQaAnswer(`本章未找到直接相關內容。建議複習「${ch.title}」全文，或嘗試其他關鍵字。`)
+                        }
+                      }
+                      return (
+                        <div className="mb-4">
+                          <button
+                            type="button"
+                            onClick={() => setQaOpen(o => !o)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs hover:text-white/80 hover:bg-white/10 transition-colors"
+                          >
+                            <HelpCircle className="w-3.5 h-3.5" />
+                            問答助手
+                          </button>
+                          {qaOpen && (
+                            <div className="mt-2 p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                              <p className="text-white/50 text-xs">輸入問題，從本章內容尋找答案</p>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={qaQuery}
+                                  onChange={e => setQaQuery(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && handleAskQa()}
+                                  placeholder="例：什麼是單寧？"
+                                  className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 min-h-[40px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleAskQa}
+                                  className="px-3 py-2 rounded-lg bg-primary-500/20 text-primary-300 text-sm font-medium hover:bg-primary-500/30 transition-colors min-h-[40px]"
+                                >
+                                  搜尋
+                                </button>
+                              </div>
+                              {qaAnswer && (
+                                <div className="p-3 rounded-lg bg-primary-500/10 border border-primary-500/20">
+                                  <p className="text-white/80 text-sm whitespace-pre-line">{qaAnswer}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                     {/* 158 穿插測驗：有 quiz 時先答題再完成本章；P2.C2.3 題目難度自適應：曾錯題排後面 */}
                     {ch.quiz && ch.quiz.length > 0 && (() => {
@@ -1094,6 +1404,31 @@ export function LearnCourseContent({
                 )
               })}
             </div>
+
+            {/* LEARN-020: Tasting note CTA for tasting-related courses */}
+            {['wine-basics', 'wine-advanced', 'tasting-notes', 'white-wine', 'champagne-sparkling',
+              'wset-l3-tasting', 'cms-deductive-tasting', 'blind-tasting-advanced',
+              'bordeaux-deep', 'burgundy-deep', 'italy-deep', 'new-world-deep',
+              'fortified-wines', 'dessert-wines', 'natural-wine'].includes(courseId) && (
+              <m.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-6 p-5 rounded-2xl bg-gradient-to-r from-primary-500/10 to-amber-500/10 border border-primary-500/20"
+              >
+                <h3 className="text-white font-semibold mb-2">記錄你的品飲體驗</h3>
+                <p className="text-white/60 text-sm mb-3">學完這堂課，試著品飲一杯並記錄下來吧！</p>
+                <Link
+                  href="/learn/notes"
+                  className="min-h-[48px] inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500/20 border border-primary-500/30 text-primary-300 font-medium hover:bg-primary-500/30 transition-colors games-focus-ring"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  前往品鑑筆記
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </m.div>
+            )}
 
             {/* 專為wine-101新增的互動式學習工具 */}
             {courseId === 'wine-basics' && (
@@ -1662,6 +1997,76 @@ export function LearnCourseContent({
             <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
               <h3 className="text-sm font-semibold text-white/90 mb-1">重點回顧音檔</h3>
               <p className="text-white/50 text-xs">Podcast 與音檔籌備中，敬請期待。通勤時也能複習重點。</p>
+            </div>
+
+            {/* LEARN-037: 跨課程詞彙庫入口 */}
+            <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-white/90 mb-1">我的詞彙庫</h3>
+                  <p className="text-white/50 text-xs">閱讀時點擊術語即可加入。已收藏 {(() => {
+                    try {
+                      const raw = typeof window !== 'undefined' ? localStorage.getItem(LEARN_VOCABULARY_KEY) : null
+                      return raw ? Object.keys(JSON.parse(raw)).length : 0
+                    } catch { return 0 }
+                  })()} 個詞彙</p>
+                </div>
+                <Link
+                  href="/learn/glossary"
+                  className="px-3 py-1.5 rounded-lg bg-primary-500/20 text-primary-300 text-xs font-medium hover:bg-primary-500/30 transition-colors"
+                >
+                  查看全部
+                </Link>
+              </div>
+            </div>
+
+            {/* LEARN-039: 深色模式圖片最佳化提示 */}
+            <div className="mt-6 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
+              <span className="text-white/40 text-xs">本課程圖片已針對深色背景最佳化，閱讀更舒適。</span>
+            </div>
+
+            {/* LEARN-046: 離線下載提示（PWA） */}
+            <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <span className="text-white/40 text-xs">課程文字內容已可離線閱讀（透過 Service Worker 快取）</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if ('caches' in window) {
+                    caches.open('cheersin-learn-v1').then(cache => {
+                      cache.add(window.location.pathname).then(() => {
+                        toast.success('已快取本課程供離線閱讀', { duration: 2000 })
+                      }).catch(() => {
+                        toast('快取失敗，請確認網路連線', { duration: 2000 })
+                      })
+                    })
+                  } else {
+                    toast('您的瀏覽器不支援離線快取', { duration: 2000 })
+                  }
+                }}
+                className="px-3 py-1 rounded-lg bg-primary-500/20 text-primary-300 text-xs font-medium hover:bg-primary-500/30 transition-colors shrink-0"
+              >
+                快取此頁
+              </button>
+            </div>
+
+            {/* LEARN-040: 建議編輯按鈕 */}
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const subject = encodeURIComponent(`[課程建議] ${title}`)
+                  const body = encodeURIComponent(`課程：${title}\n建議內容：\n\n`)
+                  window.open(`mailto:feedback@cheersin.app?subject=${subject}&body=${body}`, '_blank')
+                  toast.success('感謝你的回饋！', { duration: 2000 })
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm hover:text-white/80 hover:bg-white/10 transition-colors games-focus-ring"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                建議改善此課程
+              </button>
             </div>
 
             {/* Phase 2 B2.1: 智慧推薦下一堂課程 */}

@@ -6,6 +6,7 @@ import { Layers, RotateCcw } from 'lucide-react'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import { createDeck, shuffleDeck, rankLabel, suitSymbol, rowPoint, type Card } from '@/lib/deck'
 
 /** 246–250：十三張比大小：每人 13 張排 3/5/5 墩，與系統比大小，輸的墩數對應喝酒口數 */
@@ -15,6 +16,7 @@ function rowScore(cards: Card[]): number {
 
 export default function ThirteenCards() {
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [deck, setDeck] = useState<Card[]>(() => shuffleDeck(createDeck()))
   const [playerHand, setPlayerHand] = useState<Card[]>([])
   const [systemHand, setSystemHand] = useState<Card[]>([])
@@ -64,9 +66,9 @@ export default function ThirteenCards() {
       {cards.map((c, i) => (
         <m.span
           key={`${c.suit}-${c.rank}-${i}`}
-          initial={{ x: -80, y: -20, opacity: 0, scale: 0.5 }}
-          animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-          transition={{ delay: baseDelay + i * 0.08, type: 'spring', stiffness: 200, damping: 20 }}
+          initial={reducedMotion ? false : { x: -80, y: -20, opacity: 0, scale: 0.5 }}
+          animate={reducedMotion ? false : { x: 0, y: 0, opacity: 1, scale: 1 }}
+          transition={reducedMotion ? { duration: 0 } : { delay: baseDelay + i * 0.08, type: 'spring', stiffness: 200, damping: 20 }}
           className="inline-flex items-center justify-center w-9 h-12 rounded-md bg-white/10 border border-white/20 text-white text-sm font-mono"
           title={`${rankLabel(c.rank)} ${c.suit}`}
         >
@@ -133,8 +135,8 @@ export default function ThirteenCards() {
     <div className="h-full flex flex-col items-center justify-center py-4 px-4">
       <AnimatePresence>
         <m.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+          animate={reducedMotion ? false : { opacity: 1, scale: 1 }}
           className="text-center p-6 rounded-2xl bg-white/5 border border-white/10"
         >
           <p className="text-primary-400 font-bold text-lg mb-2">比完囉！</p>

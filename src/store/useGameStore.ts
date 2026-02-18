@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 export interface GameStatsSnapshot {
     durationSec?: number
@@ -76,7 +77,8 @@ interface GameStore {
     resetGame: () => void
 }
 
-export const useGameStore = create<GameStore>((set) => ({
+/** Task #52: Added devtools middleware for dev debugging */
+export const useGameStore = create<GameStore>()(devtools((set) => ({
     roomId: null,
     players: [],
     hostId: null,
@@ -159,4 +161,4 @@ export const useGameStore = create<GameStore>((set) => ({
         stats: {},
         replayEvents: [],
     })
-}))
+}), { name: 'GameStore', enabled: process.env.NODE_ENV !== 'production' }))

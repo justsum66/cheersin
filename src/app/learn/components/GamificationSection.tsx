@@ -18,6 +18,7 @@ import {
   Check,
   Star
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/I18nContext'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
@@ -25,6 +26,12 @@ import { getPoints, getLeaderboard, getStreak, getLearnMinutes, getUnlockedBadge
 import { getBookmarks } from '@/lib/learn-bookmarks'
 
 type ProgressEntry = { completed: number; total: number; completedAt?: string };
+
+/** CLEAN: Proper types replacing `any` */
+interface LeaderboardEntry { rank: number; name: string; points: number; isCurrentUser?: boolean }
+interface BookmarkEntry { courseId: string; chapterId: string | number; courseTitle?: string; title?: string }
+interface TimelineEntry { courseId: string; title: string; completedAt: string }
+interface FriendCompare { nickname: string; completedCourses: number; updatedAt: string }
 
 interface GamificationSectionProps {
   progress: Record<string, ProgressEntry>;
@@ -52,16 +59,16 @@ interface GamificationSectionProps {
   learnMinutes?: number;
   streak?: { days: number; lastDate: string };
   badges?: string[];
-  leaderboard?: any[];
-  bookmarks?: any[];
-  timelineEntries?: any[];
+  leaderboard?: LeaderboardEntry[];
+  bookmarks?: BookmarkEntry[];
+  timelineEntries?: TimelineEntry[];
   dailyDone?: boolean;
   weeklyCount?: number;
   dailyGoal?: number;
   chaptersToday?: number;
   heatmapHistory?: { date: string; count: number }[];
-  friendCompare?: any;
-  setFriendCompareState?: (compare: any) => void;
+  friendCompare?: FriendCompare | null;
+  setFriendCompareState?: (compare: FriendCompare | null) => void;
   inviteToast?: boolean;
   setInviteToast?: (toast: boolean) => void;
   shareProgressToast?: boolean;
@@ -171,8 +178,8 @@ export default function GamificationSection({
     const url = typeof window !== 'undefined' ? window.location.origin + '/learn' : 'https://cheersin.app/learn'
     const done = Object.keys(progress).filter((cid) => {
       const p = progress[cid]
-      const total = (window as any).COURSES?.find((c: any) => c.id === cid)?.lessons ?? 0
-      return total > 0 && p && p.completed >= total
+      // Completed courses have completed >= total (total stored in progress)
+      return p && p.total > 0 && p.completed >= p.total
     }).length
     const text = `我在 Cheersin 完成了 ${done} 堂課${learnMinutes > 0 ? `，累計學習 ${learnMinutes} 分鐘` : ''}！`
     
@@ -298,7 +305,7 @@ export default function GamificationSection({
           </button>
           {timelineOpen && (
             <div className="space-y-2">
-              {timelineEntries.map((e: any) => (
+              {timelineEntries.map((e) => (
                 <div
                   key={e.courseId}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/10"
@@ -351,7 +358,7 @@ export default function GamificationSection({
             本週之星
           </h2>
           <div className="flex flex-wrap gap-2">
-            {leaderboard.slice(0, 5).map((e: any) => (
+            {leaderboard.slice(0, 5).map((e) => (
               <span
                 key={e.rank}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${e.isCurrentUser ? 'bg-primary-500/30 text-primary-200 border border-primary-500/50' : 'bg-white/10 text-white/80'}`}
@@ -364,6 +371,50 @@ export default function GamificationSection({
           </div>
         </m.div>
       )}
+
+      {/* LEARN-041: 學習分析儀表板 */}
+      <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-gradient-to-br from-primary-500/5 to-accent-500/5 border border-white/10">
+        <h2 className="text-sm font-semibold text-white/90 mb-3 flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-primary-400" />
+          學習分析
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg bg-white/5 text-center">
+            <p className="text-2xl font-bold text-primary-300">{completedCourseCount}</p>
+            <p className="text-xs text-white/50 mt-1">完成課程</p>
+          </div>
+          <div className="p-3 rounded-lg bg-white/5 text-center">
+            <p className="text-2xl font-bold text-amber-300">{learnMinutes}</p>
+            <p className="text-xs text-white/50 mt-1">學習分鐘</p>
+          </div>
+          <div className="p-3 rounded-lg bg-white/5 text-center">
+            <p className="text-2xl font-bold text-green-300">{streak.days}</p>
+            <p className="text-xs text-white/50 mt-1">連續天數</p>
+          </div>
+          <div className="p-3 rounded-lg bg-white/5 text-center">
+            <p className="text-2xl font-bold text-violet-300">{points}</p>
+            <p className="text-xs text-white/50 mt-1">累計積分</p>
+          </div>
+        </div>
+        {/* LEARN-041: 學習熱力圖 */}
+        {heatmapHistory.length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs text-white/40 mb-2">近 30 天學習熱力圖</p>
+            <div className="flex flex-wrap gap-1">
+              {heatmapHistory.slice(-30).map((h, i) => {
+                const intensity = h.count === 0 ? 'bg-white/5' : h.count <= 1 ? 'bg-primary-500/20' : h.count <= 3 ? 'bg-primary-500/40' : 'bg-primary-500/70'
+                return (
+                  <div
+                    key={i}
+                    className={`w-4 h-4 rounded-sm ${intensity}`}
+                    title={`${h.date}: ${h.count} 章`}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </m.div>
 
       {/* Achievement Section */}
       {(badges.length > 0 || sommelierLevel) && showAchievementSection && (
@@ -388,7 +439,7 @@ export default function GamificationSection({
                 </span>
               )}
               {badges.map((id, index) => {
-                const badgeIcons: Record<string, any> = {
+                const badgeIcons: Record<string, LucideIcon> = {
                   'first-quiz': Award,
                   'streak-7': Flame,
                   'games-10': Trophy,
@@ -515,7 +566,7 @@ export default function GamificationSection({
           </button>
           {bookmarkOpen && (
             <div className="space-y-2">
-              {bookmarks.slice(0, 5).map((b: any, i: number) => (
+              {bookmarks.slice(0, 5).map((b, i) => (
                 <m.div
                   key={`${b.courseId}-${b.chapterId}-${i}`}
                   initial={{ opacity: 0, x: -20 }}
@@ -544,8 +595,8 @@ export default function GamificationSection({
             過去 7 天學習
           </h2>
           <div className="flex gap-1.5 items-end" role="img" aria-label="過去7天每日完成章數">
-            {heatmapHistory.map(({ date, count }: any) => {
-              const max = Math.max(1, ...heatmapHistory.map((h: any) => h.count))
+            {heatmapHistory.map(({ date, count }) => {
+              const max = Math.max(1, ...heatmapHistory.map((h) => h.count))
               const intensity = max > 0 ? count / max : 0
               return (
                 <div
@@ -586,8 +637,7 @@ export default function GamificationSection({
         )}
         {(Object.keys(progress).filter((cid) => {
           const p = progress[cid]
-          const total = (window as any).COURSES?.find((c: any) => c.id === cid)?.lessons ?? 0
-          return total > 0 && p && p.completed >= total
+          return p && p.total > 0 && p.completed >= p.total
         }).length > 0 || learnMinutes > 0) && (
           <button
             type="button"

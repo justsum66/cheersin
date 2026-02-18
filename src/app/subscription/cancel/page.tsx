@@ -3,14 +3,28 @@
 import { useEffect, useState } from 'react';
 import { m } from 'framer-motion';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { HelpCircle, Gift, RotateCcw } from 'lucide-react';
 import { CANCELLED_AT_KEY } from '@/lib/subscription-retention';
 import { useTranslation } from '@/contexts/I18nContext';
 
-/** P3-55：取消頁顯示挽留窗至 current_period_end；I18N-06 */
+/** PAY-028: Exit survey reasons */
+const EXIT_REASONS = [
+  { id: 'too_expensive', label: 'Too expensive' },
+  { id: 'not_using', label: 'Not using it enough' },
+  { id: 'missing_features', label: 'Missing features I need' },
+  { id: 'found_alternative', label: 'Found an alternative' },
+  { id: 'temporary', label: 'Temporary pause needed' },
+  { id: 'other', label: 'Other' },
+] as const
+
+/** P3-55：取消頁顯示挽留窗至 current_period_end；I18N-06；PAY-028: Exit survey */
 export default function SubscriptionCancelPage() {
   const { t } = useTranslation()
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
+  const [selectedReason, setSelectedReason] = useState<string | null>(null)
+  const [otherText, setOtherText] = useState('')
+  const [surveySubmitted, setSurveySubmitted] = useState(false)
 
   useEffect(() => {
     try {
@@ -21,14 +35,37 @@ export default function SubscriptionCancelPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false
     fetch('/api/subscription', { method: 'GET', credentials: 'include' })
       .then((r) => r.json())
       .then((data) => {
+        if (cancelled) return
         const end = data?.subscription?.current_period_end
         if (end && /^\d{4}-\d{2}-\d{2}$/.test(end)) setPeriodEnd(end)
       })
       .catch(() => {})
+    return () => { cancelled = true }
   }, []);
+
+  const submitSurvey = async () => {
+    if (!selectedReason) return
+    try {
+      await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'exit_survey',
+          value: 1,
+          id: selectedReason,
+          metadata: selectedReason === 'other' ? otherText.slice(0, 200) : undefined,
+        }),
+      })
+      setSurveySubmitted(true)
+      toast.success('Thank you for your feedback')
+    } catch {
+      setSurveySubmitted(true)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-wine-950 flex items-center justify-center px-4">
@@ -77,7 +114,11 @@ export default function SubscriptionCancelPage() {
         </div>
 
         <div className="space-y-3" role="group" aria-label={t('subscription.nextStepsAria') ?? undefined}>
-          <Link href="/pricing" className="btn-primary block w-full text-center min-h-[48px] py-3 games-focus-ring rounded-xl font-semibold">
+          {/* PAY-027: Offer pause as alternative to cancel */}
+          <Link href="/subscription/pause" className="btn-primary block w-full text-center min-h-[48px] py-3 games-focus-ring rounded-xl font-semibold">
+            Pause Instead
+          </Link>
+          <Link href="/pricing" className="btn-secondary block w-full text-center min-h-[48px] py-3 games-focus-ring rounded-xl font-medium">
             {t('subscription.ctaRetain')}
           </Link>
           <Link href="/subscription" className="btn-secondary block w-full text-center min-h-[48px] games-focus-ring rounded-xl">
@@ -87,6 +128,52 @@ export default function SubscriptionCancelPage() {
             {t('subscription.ctaHome')}
           </Link>
         </div>
+
+        {/* PAY-028: Exit survey */}
+        {!surveySubmitted ? (
+          <m.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 text-left"
+          >
+            <p className="text-sm text-white/80 font-medium mb-3">Help us improve — why are you leaving?</p>
+            <div className="space-y-2 mb-3">
+              {EXIT_REASONS.map(r => (
+                <label key={r.id} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="exit_reason"
+                    value={r.id}
+                    checked={selectedReason === r.id}
+                    onChange={() => setSelectedReason(r.id)}
+                    className="accent-primary-500"
+                  />
+                  <span className="text-sm text-white/70">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            {selectedReason === 'other' && (
+              <textarea
+                value={otherText}
+                onChange={e => setOtherText(e.target.value)}
+                placeholder="Tell us more..."
+                rows={2}
+                maxLength={200}
+                className="w-full mb-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-white/30 text-xs resize-none"
+              />
+            )}
+            <button
+              onClick={submitSurvey}
+              disabled={!selectedReason}
+              className="text-sm text-primary-400 hover:text-primary-300 font-medium disabled:opacity-40"
+            >
+              Submit Feedback
+            </button>
+          </m.div>
+        ) : (
+          <p className="mt-6 text-center text-white/40 text-sm">Thank you for your feedback</p>
+        )}
 
         <m.div
           initial={{ opacity: 0, y: 20 }}

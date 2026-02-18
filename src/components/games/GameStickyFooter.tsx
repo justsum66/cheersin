@@ -7,12 +7,14 @@ import { useState, useEffect } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useTranslation } from '@/contexts/I18nContext'
 import { usePathname } from 'next/navigation'
+import { useGameReduceMotion } from './GameWrapper'
 
 /**
  * R2-Extra: Mobile Sticky Footer for Games (Unlock All Features)
  * Shows only on mobile when user is on free tier
  */
 export function GameStickyFooter() {
+    const reducedMotion = useGameReduceMotion()
     const { tier } = useSubscription()
     const { t } = useTranslation()
     const pathname = usePathname()
@@ -38,13 +40,15 @@ export function GameStickyFooter() {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:hidden safe-area-pb">
             <m.div
-                initial={{ y: 100, opacity: 0 }}
+                initial={reducedMotion ? false : { y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="relative"
             >
                 <button
                     onClick={() => setIsVisible(false)}
-                    className="absolute -top-3 -right-2 p-1.5 bg-dark-800 rounded-full border border-white/10 text-white/50 z-10"
+                    className="absolute -top-3 -right-2 p-2 bg-dark-800 rounded-full border border-white/10 text-white/50 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center games-focus-ring"
+                    aria-label="關閉升級提示"
                 >
                     <X className="w-3 h-3" />
                 </button>

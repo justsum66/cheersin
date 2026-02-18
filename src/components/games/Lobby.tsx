@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo, useDeferredValue, useTransition, useEffect, type ReactNode } from 'react'
 import { m, LayoutGroup, useReducedMotion } from 'framer-motion'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Search, Users, Swords, Shuffle, LayoutGrid, Flame, Heart, ChevronDown, ChevronUp, Clock, PenTool, Trash2, Plus, Edit, Zap, Star, Smile, Beer, PartyPopper, Hash, MessageCircle, AlertTriangle, HelpCircle, Trophy, type LucideIcon } from 'lucide-react'
 import type { CustomGame } from '@/lib/custom-games'
 import { GUEST_TRIAL_GAME_IDS, getGameMeta, type GameCategory, type GameId, type GameDifficulty } from '@/config/games.config'
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { GameCard } from './GameCard'
 import { VirtualizedGameGrid } from './VirtualizedGameGrid'
 import { prefetchGame } from './GameLazyMap'
+import { SearchSuggestions } from '@/components/ui/SearchSuggestions'
 
 import {
   GAMES_RTL,
@@ -29,7 +31,6 @@ import {
 } from '@/modules/games/constants'
 import { useTranslation } from '@/contexts/I18nContext'
 import { NowPlayingCount } from './NowPlayingCount'
-import RandomBrewery from './RandomBrewery'
 import {
   toggleFavorite,
   getFavorites,
@@ -53,25 +54,44 @@ import { List, Play } from 'lucide-react'
 
 export type { GameCategory }
 
-/** GAMES_500 #68：卡片進入視窗時 prefetch，rootMargin 可配置 */
+/** GAMES_500 #68：卡片進入視窗時 prefetch — 共用單一 IntersectionObserver 節省記憶體 */
+const prefetchCallbacks = new Map<Element, () => void>()
+let sharedPrefetchObserver: IntersectionObserver | null = null
+function getSharedPrefetchObserver(rootMargin = '100px') {
+  if (!sharedPrefetchObserver) {
+    sharedPrefetchObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            prefetchCallbacks.get(entry.target)?.()
+            sharedPrefetchObserver?.unobserve(entry.target)
+            prefetchCallbacks.delete(entry.target)
+          }
+        }
+      },
+      { rootMargin, threshold: 0.01 }
+    )
+  }
+  return sharedPrefetchObserver
+}
+
 function PrefetchOnVisible({ gameId, rootMargin = '100px', children }: { gameId: string; rootMargin?: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e?.isIntersecting) prefetchGame(gameId)
-      },
-      { rootMargin, threshold: 0.01 }
-    )
+    const obs = getSharedPrefetchObserver(rootMargin)
+    prefetchCallbacks.set(el, () => prefetchGame(gameId))
     obs.observe(el)
-    return () => obs.disconnect()
+    return () => {
+      obs.unobserve(el)
+      prefetchCallbacks.delete(el)
+    }
   }, [gameId, rootMargin])
   return <div ref={ref}>{children}</div>
 }
 
-interface GameOption {
+export interface GameOption {
   id: string
   name: string
   description: string
@@ -251,6 +271,7 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
   /** 79 搜尋遊戲：依名稱或描述篩選；useDeferredValue 取代手動 debounce；R2-288 支援 initialSearchQuery */
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const deferredQuery = useDeferredValue(searchQuery)
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -265,6 +286,17 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
   const [newPlaylistName, setNewPlaylistName] = useState('')
   const [newPlaylistIds, setNewPlaylistIds] = useState<string[]>([])
 
+  /** OPT-010：響應式虛擬網格欄數，匹配 CSS 斷點 sm:2 md:3 lg:4 xl:5 */
+  const [responsiveColumnCount, setResponsiveColumnCount] = useState(5)
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth
+      setResponsiveColumnCount(w >= 1280 ? 5 : w >= 1024 ? 4 : w >= 768 ? 3 : w >= 640 ? 2 : 1)
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
   /** useMemo：複雜 filter 邏輯；T072「2 人」兩人友善；P0-003「情侶模式」兩人友善且 adult 或 party */
   const filteredByCategory = useMemo(
     () => {
@@ -381,12 +413,96 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
   /** GAMES_500 #51：分類 tab 鍵盤 Home/End 切換 */
   const categoryTabRefs = useRef<(HTMLButtonElement | null)[]>([])
 
+  /** Generate search suggestions based on games and recent searches */
+  const searchSuggestions = useMemo(() => {
+    const suggestions: Array<{ id: string; text: string; type: 'recent' | 'popular' | 'trending' | 'history' }> = [];
+    
+    // Add recent searches if query is empty
+    if (!deferredQuery || deferredQuery.length === 0) {
+      // Get recent searches from localStorage
+      try {
+        const recentSearches = typeof window !== 'undefined' 
+          ? JSON.parse(localStorage.getItem('cheersin_recent_searches') || '[]') 
+          : [];
+        
+        recentSearches.slice(0, 3).forEach((term: string) => {
+          suggestions.push({
+            id: `recent-${term}`,
+            text: term,
+            type: 'recent' as const,
+          });
+        });
+      } catch {
+        // Ignore parsing errors
+      }
+      
+      // Add popular games as suggestions
+      const popularGames = games.filter(g => g.popular).slice(0, 3);
+      popularGames.forEach(game => {
+        suggestions.push({
+          id: `popular-${game.id}`,
+          text: game.name,
+          type: 'popular' as const,
+        });
+      });
+      
+      // Add trending categories as suggestions
+      const trendingCategories = ['情侶模式', '經典派對', '競技對決', '2 人'];
+      trendingCategories.forEach(category => {
+        suggestions.push({
+          id: `trend-${category}`,
+          text: category,
+          type: 'trending' as const,
+        });
+      });
+    } else {
+      // Add matching games as suggestions when there's a query
+      const matchedGames = games.filter(g => 
+        g.name.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+        g.description.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+        (g.searchKeys && g.searchKeys.toLowerCase().includes(deferredQuery.toLowerCase()))
+      ).slice(0, 5);
+      
+      matchedGames.forEach(game => {
+        suggestions.push({
+          id: `game-${game.id}`,
+          text: game.name,
+          type: 'history' as const,
+        });
+      });
+    }
+    
+    return suggestions;
+  }, [games, deferredQuery]);
+
   /** GAMES_500 #50：搜尋框 focus 時捲入視窗（移動端鍵盤不遮擋） */
   const handleSearchFocus = useCallback(() => {
     setSearchFocused(true)
+    setShowSuggestions(true)
     searchInputRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [])
-  const handleSearchBlur = useCallback(() => { setSearchFocused(false) }, [])
+  
+  const handleSearchBlur = useCallback(() => { 
+    setSearchFocused(false) 
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 200);
+  }, [])
+  
+  const handleSuggestionSelect = useCallback((suggestion: { id: string; text: string; type: string }) => {
+    setSearchQuery(suggestion.text);
+    setShowSuggestions(false);
+    searchInputRef.current?.focus();
+    
+    // Save to recent searches
+    try {
+      const recentSearches = JSON.parse(localStorage.getItem('cheersin_recent_searches') || '[]');
+      const filtered = recentSearches.filter((term: string) => term !== suggestion.text);
+      const updated = [suggestion.text, ...filtered].slice(0, 5);
+      localStorage.setItem('cheersin_recent_searches', JSON.stringify(updated));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [])
 
   /** GAMES_500 #71：分類 tab 變更時當前項自動 scroll into view */
   useEffect(() => {
@@ -531,7 +647,7 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
           return (
             <div key="recent" className="mb-6" role="region" aria-label="最近玩過">
               <p className="text-white/50 text-sm mb-2 font-medium" data-i18n-key={GAMES_LOBBY_RECENT_I18N_KEY}>最近玩過</p>
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 games-scroll-fade">
                 {recentGames.map((game) => (
                   <GlassCard
                     as="button"
@@ -555,7 +671,7 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
                 本週熱門
               </p>
               <p className="text-white/30 text-xs mb-2" aria-hidden>本週你玩最多次的遊戲</p>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 games-scroll-fade">
                 {weeklyHotGames.map((game) => (
                   <GlassCard
                     as="button"
@@ -598,7 +714,7 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
       })}
 
       {/* GAMES_500 #46 #47 #48 #70 #78 #88 #92：搜尋 placeholder/aria、min 2 字提示、搜尋中、Esc 清除、autocomplete、清除按鈕、i18n key；R2-101 搜尋框 focus 時寬度過渡 */}
-      <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-center">
+      <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-center relative">
         <m.div
           layout
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -620,8 +736,8 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
               }
             }}
             aria-busy={isPending}
-            aria-label="搜尋遊戲名稱"
-            placeholder="搜尋遊戲名稱"
+            aria-label="搜尋遊戲名稱或拼音"
+            placeholder="搜尋遊戲名稱或拼音"
             data-i18n-key={GAMES_LOBBY_SEARCH_PLACEHOLDER_I18N_KEY}
             autoComplete="off"
             className="input-glass games-focus-ring w-full games-touch-target pl-11 pr-10"
@@ -643,10 +759,17 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
             </button>
           )}
         </m.div>
+        <SearchSuggestions
+          query={searchQuery}
+          suggestions={searchSuggestions}
+          onSelect={handleSuggestionSelect}
+          isVisible={showSuggestions && searchFocused}
+          onClose={() => setShowSuggestions(false)}
+        />
       </div>
       {/* GAMES_500 #51 #52 #53 #79 #89：分類 tab；R2-047 LayoutGroup 讓選中底線/背景平滑切換 */}
       {/* UI-34 Sticky Headers, UI-32 Mask */}
-      <div className="sticky top-[64px] z-30 -mx-4 px-4 bg-[#0a0a1a]/95 backdrop-blur-md pt-2 pb-1 transition-all duration-300">
+      <div className="sticky top-[var(--nav-height,64px)] z-30 -mx-4 px-4 bg-[#0a0a1a]/95 backdrop-blur-md pt-2 pb-1 transition-all duration-300">
         <LayoutGroup>
           <div
             ref={categoryTabListRef}
@@ -719,6 +842,16 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
             </button>
           ))}
         </div>
+        {(playerCountFilter !== 'all' || durationFilter !== 'all' || deferredQuery.length >= 2) && (
+          <button
+            type="button"
+            onClick={() => { setPlayerCountFilter('all'); setDurationFilter('all'); setSearchQuery('') }}
+            className="min-h-[36px] px-3 py-1 rounded-lg text-xs font-medium bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 games-focus-ring"
+            aria-label="重置所有篩選條件"
+          >
+            重置篩選
+          </button>
+        )}
       </div>
       {/* GAMES_500 #55 #77 #79：總遊戲數固定顯示；篩選時加註當前數量；P1-114 隨機選一個；I18N-05 */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -741,48 +874,15 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
           </Button>
         )}
       </div>
-      {/* GAMES_500 #49 #63 #64 #87：空狀態建議關鍵字／清除搜尋；建立房間為同頁區塊；I18N-05 */}
       {sortedGames.length === 0 && (
-        <div className="text-center py-8 px-4" role="status" aria-live="polite">
-          <Search className="w-10 h-10 text-white/30 mx-auto mb-3" aria-hidden />
-          <p className="text-white/50 text-sm mb-1">{t('games.noMatch')}</p>
-          <p className="text-white/40 text-xs mb-2">{t('games.tryKeywords')}</p>
-          <div className="flex flex-wrap justify-center gap-2 mb-3">
-            {[
-              { key: 'party', labelKey: 'games.keywordParty' as const },
-              { key: 'roulette', labelKey: 'games.keywordRoulette' as const },
-              { key: 'dice', labelKey: 'games.keywordDice' as const },
-              { key: 'truthOrDare', labelKey: 'games.keywordTruthOrDare' as const },
-            ].map(({ key, labelKey }) => {
-              const label = t(labelKey) ?? ''
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSearchQuery(label)}
-                  className="min-h-[44px] px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                  aria-label={(t('games.searchKeywordAria') ?? '').replace(/\{\{keyword\}\}/g, label)}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-          <p className="text-white/40 text-xs mb-4">{t('games.scrollToCreate')}</p>
-          {deferredQuery.trim().length >= 2 && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-            >
-              {t('games.clearSearch')}
-            </button>
-          )}
-        </div>
+        <EmptyState 
+          title={t('games.noMatch') || '沒有找到相符的結果'}
+          description={t('games.tryKeywords') || '試著調整您的搜尋條件，或瀏覽其他內容。'}
+        />
       )}
       {/* Virtualized game grid for better performance */}
       {displayFilter === 'custom' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap">
           <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5 mb-4">
             <a href="/games/create" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary-500/20">
               <Plus className="w-5 h-5" />
@@ -863,7 +963,7 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
           )}
         </div>
       ) : (
-        <div className="w-full" style={{ height: `${Math.min(600, Math.ceil(sortedGames.length / 5) * 200)}px` }}>
+        <div className="w-full" style={{ height: `${Math.min(600, Math.ceil(sortedGames.length / responsiveColumnCount) * 200)}px` }}>
           <VirtualizedGameGrid
             games={sortedGames}
             favoriteIds={favoriteIds}
@@ -874,10 +974,10 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
             handleRate={handleRate}
             setRulesModal={setRulesModal}
             deferredQuery={deferredQuery}
-            columnCount={5} // xl:grid-cols-5
-            height={Math.min(600, Math.ceil(sortedGames.length / 5) * 200)} // Max height of 600px
-            width={800} // Use fixed width
-            itemHeight={200} // Approximate height for each row
+            columnCount={responsiveColumnCount}
+            height={Math.min(600, Math.ceil(sortedGames.length / responsiveColumnCount) * 200)}
+            width={0}
+            itemHeight={200}
           />
         </div>
       )}
@@ -885,19 +985,17 @@ export default function Lobby({ games, customGames = [], onDeleteCustomGame, rec
         <div className="mt-6 flex justify-center">
           <button
             type="button"
-            onClick={() => setVisibleCount((c) => Math.min(c + INITIAL_VISIBLE, sortedGames.length))}
-            className="min-h-[48px] px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring"
+            onClick={() => {
+              startTransition(() => setVisibleCount((c) => Math.min(c + INITIAL_VISIBLE, sortedGames.length)))
+            }}
+            className="min-h-[48px] px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium games-focus-ring disabled:opacity-50 transition-opacity"
             aria-label={t('games.loadMoreAria') ?? `載入更多遊戲（目前 ${visibleGames.length} / ${sortedGames.length}）`}
+            disabled={isPending}
           >
-            {t('games.loadMore') ?? `載入更多（${sortedGames.length - visibleCount}）`}
+            {isPending ? '載入中…' : (t('games.loadMore') ?? `載入更多（${sortedGames.length - visibleCount}）`)}
           </button>
         </div>
       )}
-
-      {/* Open Brewery DB 整合：隨機酒廠卡片 */}
-      <div className="mt-6 max-w-sm">
-        <RandomBrewery />
-      </div>
 
       {/* P1-118：遊戲規則快速預覽 Modal；I18N-05 */}
       <Modal

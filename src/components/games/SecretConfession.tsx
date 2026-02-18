@@ -7,6 +7,7 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
@@ -37,6 +38,7 @@ const CONFESSION_PROMPTS = [
 export default function SecretConfession() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 3 ? contextPlayers : DEFAULT_PLAYERS
 
   const [currentPrompt, setCurrentPrompt] = useState<string | null>(null)
@@ -120,8 +122,9 @@ export default function SecretConfession() {
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <p className="text-white/50">只給 <span className="text-rose-400">{confessor}</span> 看</p>
           <m.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 border border-rose-500/30 text-center"
           >
             <p className="text-white text-lg">{currentPrompt}</p>
@@ -151,7 +154,7 @@ export default function SecretConfession() {
           </div>
         </div>
       ) : (
-        <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+        <m.div initial={reducedMotion ? false : { y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="text-center">
           {correctGuess ? (
             <p className="text-emerald-400 font-bold text-xl">有人猜對了！猜錯的人喝酒！</p>
           ) : (

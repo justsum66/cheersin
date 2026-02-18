@@ -205,6 +205,29 @@
   padding: 0;
 }
 
+/* OPT-063: Reduce backdrop-blur on reduced-motion / low-end for performance */
+@media (prefers-reduced-motion: reduce) {
+  .lobby-region .backdrop-blur-md,
+  .games-content .backdrop-blur-md,
+  .games-content .backdrop-blur-sm {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* OPT-045/051: Horizontal scroll fade indicators — gradient masks for scrollable rows */
+.games-scroll-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
+}
+
+/* OPT-046: Consistent focus ring for all .games-focus-ring elements */
+.games-focus-ring:focus-visible {
+  outline: 2px solid rgb(139 0 0 / 0.8);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgb(139 0 0 / 0.15);
+}
+
 .game-main {
   outline: none;
 }

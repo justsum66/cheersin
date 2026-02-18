@@ -5,6 +5,7 @@ import { m } from 'framer-motion'
 import { Wine, RotateCcw, AlertTriangle } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
 
@@ -37,6 +38,7 @@ const DRUNK_TRUTHS = [
 export default function DrunkTruth() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [ageVerified, setAgeVerified] = useState(false)
@@ -125,8 +127,9 @@ export default function DrunkTruth() {
       ) : !answered ? (
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <m.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-center"
           >
             <p className="text-white text-xl font-medium">{currentTruth}</p>
@@ -150,7 +153,12 @@ export default function DrunkTruth() {
           </div>
         </div>
       ) : (
-        <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
+        <m.div 
+          initial={reducedMotion ? false : { y: 10, opacity: 0 }} 
+          animate={{ y: 0, opacity: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
+          className="text-center"
+        >
           <p className="text-emerald-400 font-bold text-xl mb-4">回答完成！</p>
           <div className="flex gap-3 justify-center">
             <button onClick={nextPlayer} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">下一位</button>

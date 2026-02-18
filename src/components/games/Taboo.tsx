@@ -27,6 +27,38 @@ const TABOO_WORDS = [
   { word: '超市', taboo: ['買', '東西', '購物車', '付錢'] },
 ]
 
+/** GAME-115: Custom word packs */
+const TABOO_PACKS: Record<string, { label: string; words: typeof TABOO_WORDS }> = {
+  default: { label: '基本', words: TABOO_WORDS },
+  drink: {
+    label: '酒類',
+    words: [
+      { word: '啤酒', taboo: ['麥芽', '泡沫', '苦', '瓶'] },
+      { word: '威士忌', taboo: ['蘇格蘭', '橡木桶', '陳年', '單一'] },
+      { word: '香檳', taboo: ['氣泡', '法國', '慶祝', '乾杯'] },
+      { word: '紅酒', taboo: ['葡萄', '單寧', '醒酒', '木桶'] },
+      { word: '調酒', taboo: ['雞尾酒', '搖', '吧台', '冰'] },
+      { word: '梅酒', taboo: ['日本', '酸', '甜', '梅子'] },
+      { word: '伏特加', taboo: ['俄羅斯', '透明', '烈', '馬鈴薯'] },
+      { word: '清酒', taboo: ['日本', '米', '溫', '吟釀'] },
+    ],
+  },
+  movie: {
+    label: '電影',
+    words: [
+      { word: '復仇者聯盟', taboo: ['漫威', '鋼鐵人', '英雄', '薩諾斯'] },
+      { word: '鐵達尼號', taboo: ['沉船', '傑克', '蘿絲', '冰山'] },
+      { word: '哈利波特', taboo: ['魔法', '霍格華茲', '魔杖', '巫師'] },
+      { word: '侏儸紀公園', taboo: ['恐龍', '島', '化石', '暴龍'] },
+      { word: '星際大戰', taboo: ['光劍', '黑武士', '原力', '太空'] },
+      { word: '冰雪奇緣', taboo: ['艾莎', '雪', '公主', '冰'] },
+      { word: '玩命關頭', taboo: ['車', '賽車', '速度', '唐'] },
+      { word: '乘風破浪', taboo: ['帆船', '海', '航行', '冒險'] },
+    ],
+  },
+}
+type TabooPack = keyof typeof TABOO_PACKS
+
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 const ROUND_TIME = 60
 
@@ -44,17 +76,23 @@ export default function Taboo() {
   const [roundScore, setRoundScore] = useState(0)
   const [totalScore, setTotalScore] = useState<Record<number, number>>({})
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  /** GAME-116: Skip penalty counter */
+  const [skipCount, setSkipCount] = useState(0)
+  const MAX_SKIPS = 3
+  /** GAME-115: Active word pack */
+  const [activePack, setActivePack] = useState<TabooPack>('default')
+  const activeWords = TABOO_PACKS[activePack]?.words ?? TABOO_WORDS
 
   const getNextWord = useCallback(() => {
-    const available = TABOO_WORDS.map((_, i) => i).filter(i => !usedWords.has(i))
+    const available = activeWords.map((_, i) => i).filter(i => !usedWords.has(i))
     if (available.length === 0) {
       setUsedWords(new Set())
-      return TABOO_WORDS[Math.floor(Math.random() * TABOO_WORDS.length)]
+      return activeWords[Math.floor(Math.random() * activeWords.length)]
     }
     const idx = available[Math.floor(Math.random() * available.length)]
     setUsedWords(prev => new Set([...prev, idx]))
-    return TABOO_WORDS[idx]
-  }, [usedWords])
+    return activeWords[idx]
+  }, [usedWords, activeWords])
 
   const startRound = useCallback(() => {
     setCurrentWord(getNextWord())
@@ -82,10 +120,15 @@ export default function Taboo() {
     setCurrentWord(getNextWord())
   }, [getNextWord, play])
 
+  /** GAME-116: Skip with penalty - limited skips, -0.5 penalty after limit */
   const handleSkip = useCallback(() => {
     play('click')
+    if (skipCount >= MAX_SKIPS) {
+      setRoundScore(s => Math.max(0, s - 1))
+    }
+    setSkipCount(c => c + 1)
     setCurrentWord(getNextWord())
-  }, [getNextWord, play])
+  }, [getNextWord, play, skipCount])
 
   const handleTaboo = useCallback(() => {
     play('wrong')
@@ -108,6 +151,7 @@ export default function Taboo() {
     setGamePhase('ready')
     setTimeLeft(ROUND_TIME)
     setRoundScore(0)
+    setSkipCount(0)
   }, [players.length])
 
   const resetGame = useCallback(() => {
@@ -119,6 +163,7 @@ export default function Taboo() {
     setTimeLeft(ROUND_TIME)
     setRoundScore(0)
     setTotalScore({})
+    setSkipCount(0)
   }, [])
 
   useEffect(() => {
@@ -140,7 +185,23 @@ export default function Taboo() {
         rulesKey="taboo.rules"
       />
 
-      <Ban className="w-12 h-12 text-red-400 mb-4" />
+      <Ban className="w-12 h-12 text-red-400 mb-2" />
+
+      {/* GAME-115: Word pack selector */}
+      {gamePhase === 'ready' && (
+        <div className="flex gap-2 mb-4 flex-wrap justify-center">
+          {(Object.entries(TABOO_PACKS) as [TabooPack, (typeof TABOO_PACKS)[TabooPack]][]).map(([key, pack]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => { setActivePack(key); setUsedWords(new Set()) }}
+              className={`px-3 py-1.5 rounded-full text-xs games-focus-ring transition-colors ${activePack === key ? 'bg-red-500/30 text-red-300 border border-red-500/40' : 'bg-white/10 text-white/50 border border-white/10'}`}
+            >
+              {pack.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {gamePhase === 'ready' && (
         <div className="text-center w-full max-w-md">
@@ -193,9 +254,9 @@ export default function Taboo() {
             <button
               type="button"
               onClick={handleSkip}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-400 games-focus-ring min-h-[48px]"
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl border games-focus-ring min-h-[48px] ${skipCount >= MAX_SKIPS ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-amber-500/20 border-amber-500/50 text-amber-400'}`}
             >
-              跳過
+              跳過{skipCount >= MAX_SKIPS ? ' (-1)' : ` (${MAX_SKIPS - skipCount})`}
             </button>
             <button
               type="button"

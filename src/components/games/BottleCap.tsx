@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
-import { Circle, RefreshCw, Target, Trophy, Wine } from 'lucide-react'
+import { Circle, RefreshCw, Target, Trophy, Wine, Zap } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -21,6 +21,9 @@ const TARGETS = [
 /** R2-159：瓶蓋遊戲模式 — 射擊計分 或 真心話瓶 */
 type BottleCapMode = 'shoot' | 'bottle'
 
+/** GAME-086: Challenge mode — timed shots with shrinking timer */
+const CHALLENGE_TIME_LIMIT = 5000 // 5 seconds per shot
+
 export default function BottleCap() {
   const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
@@ -35,6 +38,12 @@ export default function BottleCap() {
   const [score, setScore] = useState<Record<number, number>>({})
   const [roundCount, setRoundCount] = useState(0)
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 })
+  /** GAME-085: Flip physics state for shot result animation */
+  const [flipAngle, setFlipAngle] = useState(0)
+  /** GAME-086: Challenge mode state */
+  const [challengeMode, setChallengeMode] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(CHALLENGE_TIME_LIMIT)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   /** R2-159：數位真心話瓶模式 — 轉瓶指到的人可選真心話或大冒險 */
   const [bottleMode, setBottleMode] = useState<BottleCapMode | null>(null)
   const [bottlePhase, setBottlePhase] = useState<'spin' | 'pointed' | 'question'>('spin')
@@ -56,8 +65,22 @@ export default function BottleCap() {
     })
     setGamePhase('aiming')
     setShotResult(null)
+    setFlipAngle(0)
     play('click')
-  }, [play])
+    /** GAME-086: Start challenge timer if in challenge mode */
+    if (challengeMode) {
+      setTimeLeft(CHALLENGE_TIME_LIMIT)
+      if (timerRef.current) clearInterval(timerRef.current)
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 100) {
+            return 0
+          }
+          return prev - 100
+        })
+      }, 100)
+    }
+  }, [play, challengeMode])
 
   const shoot = useCallback(() => {
     // 隨機射擊結果（模擬彈射）
@@ -80,6 +103,12 @@ export default function BottleCap() {
     setShotResult(result)
     setGamePhase('result')
     setRoundCount(r => r + 1)
+    /** GAME-085: Flip physics — simulate cap tumbling */
+    if (!reducedMotion) {
+      setFlipAngle(720 + Math.random() * 360)
+    }
+    /** GAME-086: Stop challenge timer on shot */
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
 
     if (result.points > 0) {
       play('correct')
@@ -106,6 +135,27 @@ export default function BottleCap() {
     setShotResult(null)
     setScore({})
     setRoundCount(0)
+    setFlipAngle(0)
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+  }, [])
+
+  /** GAME-086: Auto-miss when time runs out in challenge mode */
+  useEffect(() => {
+    if (challengeMode && gamePhase === 'aiming' && timeLeft <= 0) {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+      const missResult = { id: 0, points: -1, size: 0, color: '', name: '超時脫靶' }
+      setShotResult(missResult)
+      setGamePhase('result')
+      setRoundCount(r => r + 1)
+      play('wrong')
+    }
+  }, [challengeMode, gamePhase, timeLeft, play])
+
+  /** Cleanup timer on unmount */
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [])
 
   /** R2-159：轉瓶 — 隨機指到一人 */
@@ -211,6 +261,14 @@ export default function BottleCap() {
         rulesKey="bottle-cap.rules"
       />
       <button type="button" onClick={() => setBottleMode(null)} className="absolute top-4 right-4 text-white/50 text-sm games-focus-ring">換模式</button>
+      {/** GAME-086: Challenge mode toggle */}
+      <button
+        type="button"
+        onClick={() => setChallengeMode(p => !p)}
+        className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium games-focus-ring flex items-center gap-1 ${challengeMode ? 'bg-orange-500/30 text-orange-300 border border-orange-500/50' : 'bg-white/10 text-white/50'}`}
+      >
+        <Zap className="w-3 h-3" />{challengeMode ? '挑戰模式 ON' : '挑戰模式'}
+      </button>
       <Target className="w-12 h-12 text-amber-400 mb-4" />
       <p className="text-white/50 text-sm mb-2">{t('common.roundLabel', { n: roundCount + 1 })}</p>
 
@@ -231,6 +289,16 @@ export default function BottleCap() {
       {gamePhase === 'aiming' && (
         <div className="text-center w-full max-w-md">
           <p className="text-white/60 mb-4">{currentPlayer} {t('games.bottleCapAiming')}</p>
+          {/** GAME-086: Challenge mode countdown bar */}
+          {challengeMode && (
+            <div className="w-full h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
+              <m.div
+                className={`h-full rounded-full ${timeLeft > 2000 ? 'bg-green-500' : timeLeft > 1000 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                style={{ width: `${(timeLeft / CHALLENGE_TIME_LIMIT) * 100}%` }}
+                transition={{ duration: 0.1 }}
+              />
+            </div>
+          )}
 
           {/* 靶子 */}
           <div
@@ -273,9 +341,11 @@ export default function BottleCap() {
       {gamePhase === 'result' && shotResult && (
         <AnimatePresence>
           <m.div
-            initial={reducedMotion ? false : { opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.5, rotateY: 0 }}
+            animate={{ opacity: 1, scale: 1, rotateY: reducedMotion ? 0 : flipAngle }}
+            transition={reducedMotion ? undefined : { type: 'spring', stiffness: 80, damping: 12 }}
             className="text-center w-full max-w-md"
+            style={{ perspective: 600 }}
           >
             {shotResult.points >= 0 ? (
               <>

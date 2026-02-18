@@ -10,7 +10,7 @@ import { useTranslation } from '@/contexts/I18nContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { canAccessProCourse, canUseProTrial, getProTrialRemainingThisMonth } from '@/lib/subscription'
 import { getCourseRating } from '@/lib/learn-course-ratings'
-import { CoursePreviewModal } from '@/components/learn/CoursePreviewModal'
+import { CoursePreviewModal } from '@/components/learn/ui/CoursePreviewModal'
 
 // Type definitions
 // Type definitions
@@ -21,7 +21,7 @@ interface Course {
   id: string
   title: string
   description: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   lessons: number
   duration: string
   estimatedMinutes: number

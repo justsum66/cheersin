@@ -48,7 +48,7 @@ export function CacheManager() {
   const registerServiceWorker = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js')
-      console.log('[Cache Manager] Service worker registered:', registration)
+      if (process.env.NODE_ENV !== 'production') console.log('[Cache Manager] Service worker registered:', registration)
       setIsRegistered(true)
       
       // Handle updates
@@ -58,7 +58,7 @@ export function CacheManager() {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New version is available
-              console.log('[Cache Manager] New service worker available')
+              if (process.env.NODE_ENV !== 'production') console.log('[Cache Manager] New service worker available')
               showUpdateNotification()
             }
           })
@@ -75,11 +75,13 @@ export function CacheManager() {
       list.getEntries().forEach((entry) => {
         if (entry.name.includes('/api/') || entry.name.includes('/_next/data/')) {
           const resourceEntry = entry as PerformanceResourceTiming;
-          console.log(`[Cache Manager] API Response: ${entry.name}`, {
-            duration: entry.duration,
-            size: resourceEntry.transferSize,
-            cached: resourceEntry.transferSize === 0
-          })
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`[Cache Manager] API Response: ${entry.name}`, {
+              duration: entry.duration,
+              size: resourceEntry.transferSize,
+              cached: resourceEntry.transferSize === 0
+            })
+          }
         }
       })
     })
@@ -101,7 +103,7 @@ export function CacheManager() {
         type: 'CACHE_INVALIDATE',
         pattern
       })
-      console.log(`[Cache Manager] Invalidating cache for pattern: ${pattern}`)
+      if (process.env.NODE_ENV !== 'production') console.log(`[Cache Manager] Invalidating cache for pattern: ${pattern}`)
     }
   }
 

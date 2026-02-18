@@ -232,9 +232,9 @@ export function I18nProvider({
 }
 
 // Helper function to get nested object values
-function getNestedValue(obj: any, path: string): string | undefined {
-  return path.split('.').reduce((current, key) => {
-    return current && typeof current === 'object' ? current[key] : undefined
+function getNestedValue(obj: Record<string, unknown>, path: string): string | undefined {
+  return path.split('.').reduce<unknown>((current, key) => {
+    return current && typeof current === 'object' ? (current as Record<string, unknown>)[key] : undefined
   }, obj) as string | undefined
 }
 

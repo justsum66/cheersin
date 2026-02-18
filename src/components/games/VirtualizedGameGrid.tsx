@@ -7,9 +7,10 @@ import { useReducedMotion } from 'framer-motion'
 
 import { GameCard } from './GameCard'
 import { GUEST_TRIAL_GAME_IDS } from '@/config/games.config'
+import type { GameOption } from './Lobby'
 
 interface VirtualizedGameGridProps {
-  games: any[] // Using any for simplicity, but in practice you'd use the GameOption type
+  games: GameOption[]
   favoriteIds: string[]
   ratings: Record<string, number>
   weeklyFreeGameIds: string[]
@@ -25,12 +26,12 @@ interface VirtualizedGameGridProps {
 }
 
 // Calculate rows needed for the grid
-const calculateRows = (games: any[], columnCount: number) => {
+const calculateRows = (games: GameOption[], columnCount: number) => {
   return Math.ceil(games.length / columnCount)
 }
 
 // Get games for a specific row
-const getGamesForRow = (games: any[], rowIndex: number, columnCount: number) => {
+const getGamesForRow = (games: GameOption[], rowIndex: number, columnCount: number) => {
   const startIndex = rowIndex * columnCount
   const endIndex = Math.min(startIndex + columnCount, games.length)
   return games.slice(startIndex, endIndex)
@@ -53,7 +54,7 @@ const MemoizedRow = memo(({
   style
 }: {
   rowIndex: number,
-  games: any[],
+  games: GameOption[],
   favoriteIds: string[],
   ratings: Record<string, number>,
   weeklyFreeGameIds: string[],
@@ -70,7 +71,7 @@ const MemoizedRow = memo(({
   const reducedMotion = useReducedMotion()
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap" style={{ ...style, height: itemHeight }}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 card-grid-gap" style={{ ...style, height: itemHeight }}>
       {rowGames.map((game, colIndex) => {
         const gameIndex = rowIndex * columnCount + colIndex
         
@@ -93,7 +94,7 @@ const MemoizedRow = memo(({
                 onShowRules: (g) => setRulesModal({ name: g.name, rules: g.rulesSummary ?? 'Rules not available' }),
                 isPremium: game.isPremium ?? false,
                 isWeeklyFree: weeklyFreeGameIds.includes(game.id),
-                hasAdultContent: game.category === 'adult' || game.modes?.some((m: any) => m.id.includes('spicy') || m.id === 'adult'),
+                hasAdultContent: game.category === 'adult' || game.modes?.some((md) => md.id.includes('spicy') || md.id === 'adult'),
                 searchQuery: deferredQuery,
               }}
               index={gameIndex}
@@ -170,7 +171,7 @@ export const VirtualizedGameGrid = ({
   return (
     <div 
       ref={containerRef}
-      style={{ height, width, overflowY: 'auto', position: 'relative' }}
+      style={{ height, overflowY: 'auto', position: 'relative', width: '100%' }}
       className="virtualized-container"
     >
       {/* Spacer div to maintain scroll height */}

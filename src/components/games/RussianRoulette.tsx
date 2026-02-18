@@ -8,12 +8,14 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 /** G2.5-G2.6：俄羅斯輪盤 - 經典六選一 */
 export default function RussianRoulette() {
   const { t } = useTranslation()
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const defaultPlayers = [1, 2, 3, 4].map((n) => t('games.playerN', { n }))
   const players = contextPlayers.length >= 2 ? contextPlayers : defaultPlayers
 
@@ -100,8 +102,8 @@ export default function RussianRoulette() {
           <div className="relative w-40 h-40">
             <m.div 
               className="absolute inset-0 rounded-full border-4 border-white/30"
-              animate={spinning ? { rotate: 360 } : {}}
-              transition={{ duration: 0.5 }}
+              animate={spinning && !reducedMotion ? { rotate: 360 } : {}}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.5 }}
             >
               {[0, 1, 2, 3, 4, 5].map(i => (
                 <div
@@ -134,8 +136,9 @@ export default function RussianRoulette() {
             ) : (
               <m.div
                 key="result"
-                initial={{ scale: 0.8, opacity: 0 }}
+                initial={reducedMotion ? false : { scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="text-center"
               >
                 {result === 'boom' ? (

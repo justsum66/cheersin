@@ -5,6 +5,7 @@ import { m , AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, RotateCcw, Volume2 } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -36,6 +37,7 @@ export default function Telephone() {
   const { t } = useTranslation()
   const players = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'results'>('setup')
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [originalMessage, setOriginalMessage] = useState('')
@@ -120,8 +122,8 @@ export default function Telephone() {
       <div className="w-full max-w-2xl mx-auto text-center">
         <m.h1 
           className="text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={reducedMotion ? false : { opacity: 0, y: -20 }}
+          animate={reducedMotion ? false : { opacity: 1, y: 0 }}
         >
           傳話遊戲
         </m.h1>
@@ -141,9 +143,9 @@ export default function Telephone() {
           {gameState === 'setup' && (
             <m.div
               key="setup"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+              animate={reducedMotion ? false : { opacity: 1, scale: 1 }}
+              exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <MessageCircle className="w-16 h-16 mx-auto mb-6 text-purple-400" />
@@ -161,8 +163,8 @@ export default function Telephone() {
           {gameState === 'playing' && (
             <m.div
               key="playing"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 0.9, scale: 1 }}
+              initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+              animate={reducedMotion ? false : { opacity: 0.9, scale: 1 }}
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <div className="mb-6">
@@ -180,9 +182,9 @@ export default function Telephone() {
                 <div className="w-full bg-white/10 rounded-full h-2 mb-4">
                   <m.div 
                     className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                    initial={{ width: '0%' }}
+                    initial={reducedMotion ? false : { width: '0%' }}
                     animate={{ width: `${((currentPlayerIndex + 1) / players.length) * 100}%` }}
-                    transition={{ duration: 0.5 }}
+                    transition={reducedMotion ? { duration: 0 } : { duration: 0.5 }}
                   />
                 </div>
                 <p className="text-center text-white/80">
@@ -193,8 +195,8 @@ export default function Telephone() {
               <div className="bg-black/30 rounded-xl p-6 mb-6 min-h-[120px] flex items-center justify-center">
                 {isSpeaking ? (
                   <m.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ repeat: Infinity, duration: 1 }}
+                    animate={reducedMotion ? {} : { scale: [1, 1.1, 1] }}
+                    transition={reducedMotion ? { duration: 0 } : { repeat: Infinity, duration: 1 }}
                     className="text-center"
                   >
                     <Volume2 className="w-12 h-12 mx-auto mb-4 text-purple-400" />
@@ -203,8 +205,8 @@ export default function Telephone() {
                   </m.div>
                 ) : (
                   <m.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={reducedMotion ? false : { opacity: 0 }}
+                    animate={reducedMotion ? false : { opacity: 1 }}
                     className="text-center"
                   >
                     {currentPlayerIndex === 0 ? (
@@ -242,8 +244,8 @@ export default function Telephone() {
           {gameState === 'results' && (
             <m.div
               key="results"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+              animate={reducedMotion ? false : { opacity: 1, scale: 1 }}
               className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             >
               <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">

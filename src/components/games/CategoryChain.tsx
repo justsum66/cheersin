@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
-import { Link2, RotateCcw, Settings, Check, X, Clock } from 'lucide-react'
+import { Link2, RotateCcw, Settings, Check, X, Clock, Lightbulb } from 'lucide-react'
 import { useGamesPlayers } from './GamesContext'
 import { useGameReduceMotion } from './GameWrapper'
 import CopyResultButton from './CopyResultButton'
@@ -13,12 +13,12 @@ const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3']
 
 /** 分類選項 */
 const CATEGORIES = [
-  { id: 'animal', name: '動物', examples: '狗、貓、大象、老虎' },
-  { id: 'food', name: '食物', examples: '蘋果、漢堡、拉麵、壽司' },
-  { id: 'country', name: '國家/城市', examples: '台灣、日本、紐約、巴黎' },
-  { id: 'celebrity', name: '明星/名人', examples: '周杰倫、蔡依林、BTS' },
-  { id: 'movie', name: '電影/動漫', examples: '復仇者聯盟、神隱少女' },
-  { id: 'brand', name: '品牌', examples: 'Apple、Nike、LV、麥當勞' },
+  { id: 'animal', name: '動物', examples: '狗、貓、大象、老虎', hints: ['哺乳類', '鳥類', '海洋生物', '昆蟲', '爬蟲類'] },
+  { id: 'food', name: '食物', examples: '蘋果、漢堡、拉麵、壽司', hints: ['水果', '主食', '甜點', '飲料', '零食'] },
+  { id: 'country', name: '國家/城市', examples: '台灣、日本、紐約、巴黎', hints: ['亞洲', '歐洲', '美洲', '大洋洲', '非洲'] },
+  { id: 'celebrity', name: '明星/名人', examples: '周杰倫、蔡依林、BTS', hints: ['歌手', '演員', '運動員', '企業家', '歷史人物'] },
+  { id: 'movie', name: '電影/動漫', examples: '復仇者聯盟、神隱少女', hints: ['漫威', '迪士尼', '日本動畫', '恐怖片', '喜劇片'] },
+  { id: 'brand', name: '品牌', examples: 'Apple、Nike、LV、麥當勞', hints: ['科技', '時尚', '食品', '汽車', '運動'] },
 ] as const
 
 type CategoryId = typeof CATEGORIES[number]['id']
@@ -44,6 +44,9 @@ export default function CategoryChain() {
   const [timeLeft, setTimeLeft] = useState(timeLimit)
   const [isTimerRunning, setIsTimerRunning] = useState(true)
   const [history, setHistory] = useState<{ player: string; word: string }[]>([])
+  // GAME-062: Hint system
+  const [hintsUsed, setHintsUsed] = useState(0)
+  const MAX_HINTS = 3
 
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -61,6 +64,7 @@ export default function CategoryChain() {
     setTimeLeft(timeLimit)
     setIsTimerRunning(true)
     setHistory([])
+    setHintsUsed(0)
     inputRef.current?.focus()
   }, [timeLimit])
 
@@ -228,12 +232,21 @@ export default function CategoryChain() {
           key={timeLeft}
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
-          className={`flex items-center gap-2 mb-4 px-4 py-2 rounded-full ${
-            timeLeft <= 3 ? 'bg-red-500/30 text-red-400' : 'bg-white/10 text-white/70'
+          className={`flex items-center gap-2 mb-4 px-4 py-2 rounded-full transition-colors ${
+            timeLeft <= 3 ? 'bg-red-500/30 text-red-400 animate-pulse' : 'bg-white/10 text-white/70'
           }`}
         >
           <Clock className="w-4 h-4" />
           <span className="font-mono font-bold text-xl">{timeLeft}</span>
+          {/* GAME-061: Timer pressure - visual urgency bar */}
+          <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden ml-2">
+            <m.div
+              className={`h-full rounded-full ${timeLeft <= 3 ? 'bg-red-500' : 'bg-primary-500'}`}
+              initial={{ width: '100%' }}
+              animate={{ width: `${(timeLeft / timeLimit) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
         </m.div>
       )}
 
@@ -302,6 +315,21 @@ export default function CategoryChain() {
             </m.button>
           </div>
           <p className="text-white/40 text-sm">Enter 確認 · Esc 放棄</p>
+          {/* GAME-062: Hint button */}
+          {hintsUsed < MAX_HINTS && (
+            <button
+              type="button"
+              onClick={() => {
+                setHintsUsed((h) => h + 1)
+                // Penalty: reduce 2 seconds for using hint
+                setTimeLeft((t) => Math.max(1, t - 2))
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/15 text-yellow-400 text-xs hover:bg-yellow-500/25 transition-colors games-focus-ring mt-1"
+            >
+              <Lightbulb className="w-3 h-3" />
+              提示：{categoryInfo.hints[hintsUsed % categoryInfo.hints.length]}（-2秒，剩 {MAX_HINTS - hintsUsed} 次）
+            </button>
+          )}
         </div>
       )}
 

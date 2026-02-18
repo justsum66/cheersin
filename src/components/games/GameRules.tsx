@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react'
-import { useGameRulesContext } from './GameWrapper'
+import { useGameRulesContext, useGameReduceMotion } from './GameWrapper'
 
 interface GameRulesProps {
   /** 規則內文，支援多行 */
@@ -16,6 +16,7 @@ interface GameRulesProps {
 
 /** 可收合規則區塊，供各遊戲共用。無障礙：aria-expanded、按鈕可聚焦。長按遊戲內容區可由 GameWrapper 顯示規則。 */
 export default function GameRules({ rules, title = '規則', rulesKey }: GameRulesProps) {
+  const reducedMotion = useGameReduceMotion()
   const [open, setOpen] = useState(false)
   const ctx = useGameRulesContext()
 
@@ -45,10 +46,10 @@ export default function GameRules({ rules, title = '規則', rulesKey }: GameRul
             key="rules-content"
             id="game-rules-content"
             role="region"
-            initial={{ height: 0, opacity: 0 }}
+            initial={reducedMotion ? undefined : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="overflow-hidden"
           >
             {/* RWD-14 內文 text-base md:text-lg；RWD-18 leading-relaxed；RWD-8 max-h-48 */}

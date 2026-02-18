@@ -4,11 +4,11 @@
  * 劇本殺房間內大廳：邀請連結、加入表單、玩家列表、開始遊戲
  * SM-01：自 page 拆出；SM-65：ConfirmDialog triggerRef
  */
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { m } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Copy, Users, Play, ChevronLeft, LogOut } from 'lucide-react'
+import { Copy, Users, Play, ChevronLeft, LogOut, QrCode } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { formatDateTime } from '@/lib/formatters'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -69,6 +69,13 @@ export function ScriptMurderRoom({
   const startGameTriggerRef = useRef<HTMLButtonElement>(null)
   const leaveTriggerRef = useRef<HTMLButtonElement>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  /** SM-032: QR code toggle for room join */
+  const [showQr, setShowQr] = useState(false)
+  /** SM-032: Generate QR code URL via public API */
+  const qrUrl = useMemo(() => {
+    if (!inviteUrl) return ''
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`
+  }, [inviteUrl])
   const isExpired = !!room.expiresAt && new Date(room.expiresAt).getTime() < Date.now()
   /** SM-56：API 回傳「房間已滿」時顯示 i18n key */
   const joinErrorDisplay =
@@ -95,6 +102,22 @@ export function ScriptMurderRoom({
           {scriptDetail?.title} — {t('scriptMurder.lobbyTitleSuffix')}
         </h1>
         <p className="text-white/60 text-sm mb-6">{t('scriptMurder.lobbyShareInvite')}</p>
+        {/** SM-032: QR code display for quick room join */}
+        <div className="flex items-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => setShowQr(p => !p)}
+            className={`p-2 rounded-lg transition-colors games-focus-ring ${showQr ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60 hover:text-white'}`}
+            aria-label="顯示 QR Code"
+          >
+            <QrCode className="w-5 h-5" />
+          </button>
+          {showQr && qrUrl && (
+            <m.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="p-2 bg-white rounded-xl">
+              <img src={qrUrl} alt="Room QR Code" width={160} height={160} className="block" />
+            </m.div>
+          )}
+        </div>
         <p className="text-white/50 text-xs mb-4" role="doc-tip">{t('scriptMurder.onboardingSteps')}</p>
         {isExpired && (
           <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20" role="alert">

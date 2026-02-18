@@ -1,14 +1,16 @@
 'use client'
 
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { Beer, Check, X, PartyPopper } from 'lucide-react'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
+import { CountUp } from '@/components/ui/CountUp'
 import { useTranslation } from '@/contexts/I18nContext'
 
-// Task 14: ROI Section ("Why Pay?")
+// HP-014: ROI Section ("Why Pay?") with animated counters
 export function RoiSection() {
     const { t } = useTranslation()
+    const reducedMotion = useReducedMotion()
 
     return (
         <section className="py-20 md:py-24 relative overflow-hidden bg-black/20">
@@ -31,7 +33,10 @@ export function RoiSection() {
                                 <Beer className="w-10 h-10 text-white/50" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">1 Fancy Cocktail</h3>
-                            <div className="text-4xl font-display font-bold text-white/80 mb-6">$15.00</div>
+                            {/* HP-014: Animate counter on scroll-into-view */}
+                            <div className="text-4xl font-display font-bold text-white/80 mb-6">
+                                $<CountUp endValue={15} duration={1200} suffix=".00" reducedMotion={!!reducedMotion} />
+                            </div>
                             <ul className="text-left space-y-3 text-white/60 text-sm mb-8 max-w-[200px] mx-auto">
                                 <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Gone in 15 mins</li>
                                 <li className="flex items-center gap-2"><X className="w-4 h-4" /> Just a drink</li>
@@ -53,8 +58,9 @@ export function RoiSection() {
                                 <PartyPopper className="w-10 h-10 text-primary-400" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Unlimited Fun</h3>
+                            {/* HP-014: Animate counter on scroll-into-view */}
                             <div className="text-5xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400 mb-6">
-                                $9.99<span className="text-base text-white/40 font-normal">/mo</span>
+                                $<CountUp endValue={9} duration={1000} suffix=".99" className="bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-secondary-400" reducedMotion={!!reducedMotion} /><span className="text-base text-white/40 font-normal">/mo</span>
                             </div>
                             <ul className="text-left space-y-3 text-white mb-8 max-w-[240px] mx-auto font-medium">
                                 <li className="flex items-center gap-2 text-secondary-400"><Check className="w-4 h-4" /> Lasts all month</li>

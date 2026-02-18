@@ -154,3 +154,120 @@ export async function incrementPromoCodeUsage(code: string): Promise<void> {
   }
 }
 
+/** PAY-017: Send renewal reminder email (3 days before next billing) */
+export async function sendRenewalReminder(payload: ExpiryEmailPayload): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Cheersin <onboarding@resend.dev>'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
+
+  const subject = `Your ${payload.tier} plan renews in ${payload.daysLeft} day${payload.daysLeft !== 1 ? 's' : ''}`
+  const html = `
+    <p>Hi there,</p>
+    <p>Your Cheersin <strong>${payload.tier}</strong> plan will automatically renew on <strong>${payload.expiresAt}</strong>.</p>
+    <p>No action is needed — your access will continue seamlessly.</p>
+    <p>If you'd like to change or cancel your plan, visit <a href="${appUrl}/subscription/manage">Subscription Management</a>.</p>
+    <p>Thank you for being part of Cheersin!</p>
+  `
+
+  if (!apiKey) {
+    logger.info('[subscription-lifecycle] sendRenewalReminder skip (no RESEND_API_KEY)', { userId: payload.userId, daysLeft: payload.daysLeft })
+    return true
+  }
+
+  try {
+    const res = await fetch(RESEND_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [payload.email],
+        subject,
+        html,
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      logger.error('[subscription-lifecycle] Renewal reminder error', { status: res.status, err })
+      return false
+    }
+    return true
+  } catch (e) {
+    logger.error('[subscription-lifecycle] sendRenewalReminder failed', { err: e instanceof Error ? e.message : String(e) })
+    return false
+  }
+}
+
+/** PAY-018: Failed payment recovery email sequence — Day 1, 3, 7 */
+export interface PaymentRecoveryPayload {
+  userId: string
+  email: string
+  tier: string
+  attemptNumber: 1 | 2 | 3
+}
+
+export async function sendPaymentRecoveryEmail(payload: PaymentRecoveryPayload): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Cheersin <onboarding@resend.dev>'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheersin.app'
+
+  const subjects: Record<number, string> = {
+    1: 'Action needed: Your payment failed',
+    2: 'Reminder: Update your payment method',
+    3: 'Last chance: Your plan will be downgraded tomorrow',
+  }
+
+  const bodies: Record<number, string> = {
+    1: `
+      <p>Hi there,</p>
+      <p>We were unable to process your payment for Cheersin <strong>${payload.tier}</strong>.</p>
+      <p>Please update your payment method to continue enjoying your premium features.</p>
+      <p><a href="${appUrl}/subscription/manage" style="display:inline-block;padding:12px 24px;background:#f97316;color:white;border-radius:8px;text-decoration:none;font-weight:bold;">Update Payment</a></p>
+    `,
+    2: `
+      <p>Hi there,</p>
+      <p>This is a friendly reminder that your Cheersin payment is still outstanding.</p>
+      <p>To avoid losing access to your ${payload.tier} features, please update your payment method.</p>
+      <p><a href="${appUrl}/subscription/manage" style="display:inline-block;padding:12px 24px;background:#f97316;color:white;border-radius:8px;text-decoration:none;font-weight:bold;">Fix Payment Now</a></p>
+    `,
+    3: `
+      <p>Hi there,</p>
+      <p><strong>Your Cheersin ${payload.tier} plan will be downgraded tomorrow</strong> if payment is not resolved.</p>
+      <p>This is your final reminder. Please update your payment method now to keep your premium access.</p>
+      <p><a href="${appUrl}/subscription/manage" style="display:inline-block;padding:12px 24px;background:#ef4444;color:white;border-radius:8px;text-decoration:none;font-weight:bold;">Update Payment Urgently</a></p>
+    `,
+  }
+
+  if (!apiKey) {
+    logger.info('[subscription-lifecycle] sendPaymentRecoveryEmail skip (no RESEND_API_KEY)', { userId: payload.userId, attempt: payload.attemptNumber })
+    return true
+  }
+
+  try {
+    const res = await fetch(RESEND_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [payload.email],
+        subject: subjects[payload.attemptNumber] ?? subjects[1],
+        html: bodies[payload.attemptNumber] ?? bodies[1],
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      logger.error('[subscription-lifecycle] Recovery email error', { status: res.status, err, attempt: payload.attemptNumber })
+      return false
+    }
+    return true
+  } catch (e) {
+    logger.error('[subscription-lifecycle] sendPaymentRecoveryEmail failed', { err: e instanceof Error ? e.message : String(e) })
+    return false
+  }
+}
+

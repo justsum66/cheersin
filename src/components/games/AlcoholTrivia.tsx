@@ -21,6 +21,8 @@ export default function AlcoholTrivia() {
   const [isAnswered, setIsAnswered] = useState(false)
   const [score, setScore] = useState(0)
   const nextTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** GAME-096: Difficulty level selector */
+  const [difficultyFilter, setDifficultyFilter] = useState<1 | 2 | 3 | 0>(0)
 
   const q = questions[current]
   const isWrong = isAnswered && selected !== null && q && selected !== q.correct
@@ -79,6 +81,26 @@ export default function AlcoholTrivia() {
       />
       <Wine className="w-12 h-12 text-primary-400 mb-2" />
       <p className="text-white/60 text-sm mb-2">酒精知識王 · 答錯喝</p>
+      {/* GAME-096: Difficulty filter chips */}
+      <div className="flex gap-2 mb-3">
+        {([0, 1, 2, 3] as const).map(d => (
+          <button
+            key={d}
+            type="button"
+            onClick={() => {
+              setDifficultyFilter(d)
+              setQuestions(shuffleAlcoholTrivia(QUESTION_COUNT, d || undefined))
+              setCurrent(0)
+              setSelected(null)
+              setIsAnswered(false)
+              setScore(0)
+            }}
+            className={`px-3 py-1 rounded-full text-xs games-focus-ring transition-colors ${difficultyFilter === d ? 'bg-primary-500/30 text-primary-300 border border-primary-500/40' : 'bg-white/10 text-white/50 border border-white/10'}`}
+          >
+            {d === 0 ? '全部' : d === 1 ? '入門' : d === 2 ? '進階' : '專家'}
+          </button>
+        ))}
+      </div>
       <p className="text-white/50 text-xs mb-4">
         第 {current + 1} / {questions.length} 題 · 得分 {score}
       </p>
@@ -119,6 +141,16 @@ export default function AlcoholTrivia() {
               <p className="text-red-300 font-medium">答錯了～喝一口！</p>
               {!reducedMotion && <DrinkingAnimation duration={1.2} className="my-3 mx-auto" />}
             </div>
+          )}
+          {/* GAME-095: Explanation after answer */}
+          {isAnswered && q.explanation && (
+            <m.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 px-4 py-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20 text-primary-300 text-sm text-center"
+            >
+              {q.explanation}
+            </m.div>
           )}
         </m.div>
       )}

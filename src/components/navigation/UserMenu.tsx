@@ -88,8 +88,17 @@ export function UserMenu() {
         />
         <span className="text-sm font-medium text-white/90 hidden sm:inline truncate max-w-[8rem] flex items-center gap-1.5">
           {user.name ?? user.email ?? '帳戶'}
-          {/* R2-226：Pro 徽章 — 訂閱 tier 為 premium 時顯示 */}
-          {tier === 'premium' && <Crown className="w-3.5 h-3.5 text-primary-400 shrink-0" aria-label="Pro 會員" />}
+          {/* NAV-012：Subscription badge with tier-specific colors */}
+          {tier === 'premium' && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-[10px] font-bold text-cyan-300" aria-label="VIP 會員">
+              <Crown className="w-3 h-3" /> VIP
+            </span>
+          )}
+          {tier === 'basic' && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary-500/20 border border-primary-400/30 text-[10px] font-bold text-primary-300" aria-label="Pro 會員">
+              <Crown className="w-3 h-3" /> Pro
+            </span>
+          )}
         </span>
       </button>
       <AnimatePresence>

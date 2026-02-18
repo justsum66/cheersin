@@ -20,6 +20,7 @@ const config: Config = {
         'shimmer': 'shimmer 2s linear infinite',
         'spin-slow': 'spin 8s linear infinite',
         'bounce-soft': 'bounce-soft 2s ease-in-out infinite',
+        'faq-open': 'faqOpen 0.2s ease-out',
         'slide-up': 'slide-up 0.5s ease-out',
         'slide-down': 'slide-down 0.5s ease-out',
         'fade-in': 'fade-in 0.5s ease-out',
@@ -49,6 +50,10 @@ const config: Config = {
         'slide-up': {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        faqOpen: {
+          '0%': { opacity: '0', transform: 'translateY(-4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         'slide-down': {
           '0%': { transform: 'translateY(-20px)', opacity: '0' },

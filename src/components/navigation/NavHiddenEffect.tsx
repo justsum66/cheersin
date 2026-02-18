@@ -4,15 +4,23 @@ import { useEffect } from 'react'
 import { useNavVisibility } from '@/contexts/NavVisibilityContext'
 import { usePathname } from 'next/navigation'
 
-/** 93 遊戲進行中：隱藏導航時移除 main 頂部 padding，最大化解戲區域 */
+/** NAV-018：遊戲進行中隱藏導航；離開 /games 時確保 nav 恢復可見 */
 export default function NavHiddenEffect() {
   const pathname = usePathname()
   const navVisibility = useNavVisibility()
-  const hideForGame = pathname === '/games' && navVisibility?.hideForGame
+  const isGamesPage = pathname === '/games' || pathname.startsWith('/games/')
+  const hideForGame = isGamesPage && navVisibility?.hideForGame
 
   useEffect(() => {
     document.documentElement.dataset.navHidden = hideForGame ? '1' : '0'
   }, [hideForGame])
+
+  // NAV-018: Reset hideForGame when navigating away from games pages
+  useEffect(() => {
+    if (!isGamesPage && navVisibility?.hideForGame) {
+      navVisibility.setHideForGame?.(false)
+    }
+  }, [isGamesPage, navVisibility])
 
   return null
 }

@@ -127,17 +127,17 @@ export const textVariants = cva('', {
   variants: {
     variant: {
       // 標題層次
-      h1: 'text-4xl font-bold tracking-tight text-white',
-      h2: 'text-3xl font-bold tracking-tight text-white',
-      h3: 'text-2xl font-bold tracking-tight text-white',
-      h4: 'text-xl font-semibold tracking-tight text-white',
-      h5: 'text-lg font-semibold text-white',
-      h6: 'text-base font-semibold text-white',
+      h1: 'text-4xl md:text-5xl font-bold tracking-tight text-white mb-4',
+      h2: 'text-3xl md:text-4xl font-bold tracking-tight text-white mb-4',
+      h3: 'text-2xl md:text-3xl font-bold tracking-tight text-white mb-3',
+      h4: 'text-xl md:text-2xl font-semibold tracking-tight text-white mb-3',
+      h5: 'text-lg md:text-xl font-semibold text-white mb-2',
+      h6: 'text-base md:text-lg font-semibold text-white mb-2',
       
       // 內文層次
-      body: 'text-base text-white/70 leading-relaxed',
-      caption: 'text-sm text-white/50',
-      overline: 'text-xs text-white/40 uppercase tracking-wider',
+      body: 'text-base text-white/80 leading-relaxed mb-2', // Increased contrast from 70% to 80%
+      caption: 'text-sm text-white/60 mb-1',               // Increased contrast from 50% to 60%
+      overline: 'text-xs text-white/50 uppercase tracking-wider mb-1', // Increased contrast from 40% to 50%
       
       // 語意文字
       success: 'text-[#00FF9D]',

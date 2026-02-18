@@ -201,7 +201,7 @@ export function preloadRouteChunk(pathname: string): void {
 
   if (chunkConfig && chunkConfig.preload) {
     // In a real implementation, this would trigger webpack's preload
-    console.log(`[Bundle Optimizer] Preloading chunk: ${chunkName}`);
+    if (process.env.NODE_ENV !== 'production') console.log(`[Bundle Optimizer] Preloading chunk: ${chunkName}`);
   }
 }
 

@@ -129,6 +129,7 @@ export function useGameLogic<TState = Record<string, unknown>>(
   // 計時器
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const gameEndedRef = useRef(false)
 
   // 計算當前玩家
   const currentPlayer = players.length > 0 ? players[currentPlayerIndex] : null
@@ -136,6 +137,7 @@ export function useGameLogic<TState = Record<string, unknown>>(
   // 遊戲控制
   const startGame = useCallback(() => {
     if (players.length < 1) return
+    gameEndedRef.current = false
     setPhase('playing')
     setRound(1)
     setCurrentPlayerIndex(0)
@@ -158,6 +160,11 @@ timerRef.current = null
 
   const resumeGame = useCallback(() => {
     setPhase('playing')
+    // OPT-003: Clear existing timer before creating new one to prevent accumulation
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
     // 恢復計時器
     if (timeRemaining && timeRemaining > 0) {
       timerRef.current = setInterval(() => {
@@ -173,6 +180,8 @@ timerRef.current = null
   }, [timeRemaining])
 
   const endGame = useCallback(() => {
+    if (gameEndedRef.current) return
+    gameEndedRef.current = true
     setPhase('finished')
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -182,6 +191,7 @@ timerRef.current = null
   }, [enableSound, play])
 
   const resetGame = useCallback(() => {
+    gameEndedRef.current = false
     setPhase('idle')
     setPlayers((prev) => prev.map((p) => ({ ...p, score: 0, isActive: false })))
     setCurrentPlayerIndex(0)

@@ -7,6 +7,7 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2', '玩家 3', '玩家 4']
 
@@ -37,6 +38,7 @@ const PARANOIA_QUESTIONS = [
 export default function ParanoiaGame() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 3 ? contextPlayers : DEFAULT_PLAYERS
 
   const [currentAskerIdx, setCurrentAskerIdx] = useState(0)
@@ -111,8 +113,9 @@ export default function ParanoiaGame() {
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <p className="text-white/50">只給 <span className="text-indigo-400">{currentAsker}</span> 看</p>
           <m.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-center"
           >
             <p className="text-white text-lg">{currentQ}</p>
@@ -128,7 +131,7 @@ export default function ParanoiaGame() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 w-full max-w-md text-center">
-          <m.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="text-xl">
+          <m.div initial={reducedMotion ? false : { scale: 0.9 }} animate={{ scale: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="text-xl">
             <span className="text-indigo-400 font-bold">{currentAsker}</span>
             <span className="text-white/70"> 選了 </span>
             <span className="text-purple-400 font-bold">{selectedPlayer}</span>
@@ -150,7 +153,7 @@ export default function ParanoiaGame() {
               </div>
             </div>
           ) : (
-            <m.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mt-4">
+            <m.div initial={reducedMotion ? false : { y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="mt-4">
               <p className="text-white/50 mb-2">問題是：</p>
               <p className="text-white text-lg p-4 rounded-xl bg-purple-500/20 border border-purple-500/30">{currentQ}</p>
               <div className="flex gap-3 mt-4 justify-center">

@@ -12,9 +12,9 @@ export function HeroPersonaSection() {
 
     return (
         <section className="py-20 md:py-32 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#0a0a1a] via-[#1a0a2e] to-[#0a0a1a] pointer-events-none -z-10" />
-            <div className="absolute right-0 top-1/4 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none" />
+            {/* Background Effects - HP-011: GPU compositing with will-change */}
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#0a0a1a] via-[#1a0a2e] to-[#0a0a1a] pointer-events-none -z-10 will-change-transform" />
+            <div className="absolute right-0 top-1/4 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none will-change-transform" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

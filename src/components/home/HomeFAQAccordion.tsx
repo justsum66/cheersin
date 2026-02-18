@@ -1,8 +1,7 @@
 'use client'
 
-import { m , AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
-import { useAccordion } from '@/hooks/useAccordion'
 import { TypewriterText } from '@/components/ui/TypewriterText'
 
 export interface FAQItem {
@@ -10,9 +9,8 @@ export interface FAQItem {
   a: string
 }
 
-/** Client：FAQ 折疊互動 — DEDUP #8 使用共用 useAccordion；R2-111 FAQ 標題打字機 */
+/** HP-009：semantic <details>/<summary> — works without JS, native a11y */
 export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
-  const [openIndex, setOpenIndex] = useAccordion(null)
   const reducedMotion = useReducedMotion()
 
   return (
@@ -20,39 +18,20 @@ export default function HomeFAQAccordion({ items }: { items: FAQItem[] }) {
       <TypewriterText text="常見問題" as="h3" reducedMotion={!!reducedMotion} className="text-sm font-medium text-white/60 mb-3" />
       <div className="space-y-2">
         {items.map((item, index) => (
-          <m.div
+          <details
             key={index}
-            layout
-            className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
+            className="group rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden"
           >
-            <button
-              type="button"
-              onClick={() => setOpenIndex(index)}
-              className="w-full flex items-center justify-between gap-3 games-touch-target px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors games-focus-ring rounded-xl"
-              aria-expanded={openIndex === index}
+            <summary
+              className="flex items-center justify-between gap-3 games-touch-target px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors games-focus-ring rounded-xl cursor-pointer list-none [&::-webkit-details-marker]:hidden"
             >
               <span className="text-sm font-medium">{item.q}</span>
-              <m.span
-                animate={{ rotate: openIndex === index ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="w-4 h-4 text-white/50" />
-              </m.span>
-            </button>
-            <AnimatePresence initial={false}>
-              {openIndex === index && (
-                <m.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="overflow-hidden"
-                >
-                  <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
-                </m.div>
-              )}
-            </AnimatePresence>
-          </m.div>
+              <ChevronDown className="w-4 h-4 text-white/50 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+            </summary>
+            <div className="overflow-hidden animate-[faqOpen_0.2s_ease-out]">
+              <p className="px-4 pb-3 pt-0 text-xs text-white/60 leading-relaxed">{item.a}</p>
+            </div>
+          </details>
         ))}
       </div>
     </div>

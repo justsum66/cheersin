@@ -28,3 +28,76 @@
   color: white;
   border-color: rgba(34, 197, 94, 0.5);
 }
+
+/* LEARN-025: Print-friendly stylesheet for courses */
+@media print {
+  /* Hide non-essential UI elements */
+  nav,
+  button,
+  .print\\:hidden,
+  [role="navigation"],
+  aside,
+  .fixed,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Reset dark background for print */
+  body,
+  main,
+  article,
+  section,
+  div {
+    background: white !important;
+    color: #1a1a1a !important;
+    border-color: #ddd !important;
+  }
+
+  /* Typography for print */
+  h1, h2, h3 {
+    color: #111 !important;
+    page-break-after: avoid;
+  }
+
+  p {
+    color: #333 !important;
+    line-height: 1.8;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Course content sections */
+  section[role="region"] {
+    page-break-inside: avoid;
+    border: 1px solid #ddd !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Notes textarea -> visible text */
+  textarea {
+    border: 1px solid #ccc !important;
+    background: #f9f9f9 !important;
+    color: #333 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Progress bar print */
+  .progress-bar-fill {
+    background: #333 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Images */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 2cm;
+  }
+}

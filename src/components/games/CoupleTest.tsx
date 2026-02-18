@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
 import { Heart, RotateCcw, Check, X } from 'lucide-react'
 import { useGameSound } from '@/hooks/useGameSound'
+import { useGameReduceMotion } from './GameWrapper'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -51,6 +52,7 @@ const COUPLE_QUESTIONS = [
 export default function CoupleTest() {
   const { t } = useTranslation()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const [player1Name, setPlayer1Name] = useState('')
   const [player2Name, setPlayer2Name] = useState('')
   const [started, setStarted] = useState(false)
@@ -155,17 +157,53 @@ export default function CoupleTest() {
           </m.button>
         </div>
       ) : showResult ? (
-        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
-          <p className="text-4xl font-bold text-pink-400 mb-2">{compatibility}%</p>
+        <m.div 
+          initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }}
+          transition={reducedMotion ? { duration: 0 } : undefined}
+          className="text-center"
+        >
+          {/* GAME-089: Animated compatibility score ring */}
+          <div className="relative w-32 h-32 mx-auto mb-4">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+              <m.circle
+                cx="18" cy="18" r="16" fill="none"
+                stroke={compatibility >= 75 ? '#ec4899' : compatibility >= 50 ? '#eab308' : '#ef4444'}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray={`${compatibility} 100`}
+                initial={reducedMotion ? { strokeDasharray: `${compatibility} 100` } : { strokeDasharray: '0 100' }}
+                animate={{ strokeDasharray: `${compatibility} 100` }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 1.5, ease: 'easeOut' }}
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-pink-400">{compatibility}%</span>
+          </div>
           <p className="text-white/70 mb-1">默契指數</p>
           <p className="text-primary-300 font-medium mb-2">{pairingLabel}</p>
           <p className="text-white/50 mb-4">答對 {score.correct} / {totalQuestions} 題</p>
-          {compatibility >= 80 && <p className="text-emerald-400">太棒了！你們超有默契 💕</p>}
-          {compatibility >= 50 && compatibility < 80 && <p className="text-yellow-400">還不錯！繼續培養默契 💛</p>}
-          {compatibility < 50 && <p className="text-red-400">需要更多了解對方喔 💔</p>}
-          <div className="flex gap-3 mt-4 justify-center">
+          {compatibility >= 80 && <p className="text-emerald-400">太棒了！你們超有默契</p>}
+          {compatibility >= 50 && compatibility < 80 && <p className="text-yellow-400">還不錯！繼續培養默契</p>}
+          {compatibility < 50 && <p className="text-red-400">需要更多了解對方喔</p>}
+          <div className="flex gap-3 mt-4 justify-center flex-wrap">
             <button onClick={resetGame} className="px-6 py-3 rounded-xl bg-primary-500 text-white font-bold games-focus-ring">再玩一次</button>
-            <CopyResultButton text={`情侶默契測試：${player1Name} ❤️ ${player2Name}\n默契指數：${compatibility}% · ${pairingLabel}\n答對 ${score.correct}/${totalQuestions} 題`} />
+            <CopyResultButton text={`情侶默契測試：${player1Name} & ${player2Name}\n默契指數：${compatibility}% · ${pairingLabel}\n答對 ${score.correct}/${totalQuestions} 題`} />
+            {/* GAME-090: Share result card */}
+            <button
+              type="button"
+              onClick={() => {
+                const shareText = `我和 ${player2Name} 的默契指數是 ${compatibility}%！結果是「${pairingLabel}」\n來 Cheersin 測試你們的默契吧！`
+                if (navigator.share) {
+                  navigator.share({ title: '情侶默契測試', text: shareText }).catch(() => {})
+                } else if (navigator.clipboard) {
+                  navigator.clipboard.writeText(shareText)
+                }
+              }}
+              className="px-6 py-3 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 font-bold games-focus-ring"
+            >
+              分享結果
+            </button>
           </div>
         </m.div>
       ) : (
@@ -177,8 +215,9 @@ export default function CoupleTest() {
           
           <m.div
             key={currentQ}
-            initial={{ x: 50, opacity: 0 }}
+            initial={reducedMotion ? false : { x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="w-full p-6 rounded-2xl bg-gradient-to-br from-pink-500/20 to-red-500/20 border border-pink-500/30 text-center"
           >
             <p className="text-white text-xl">{currentQ}</p>

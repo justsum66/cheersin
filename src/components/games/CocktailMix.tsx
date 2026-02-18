@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
-import { Wine, RotateCcw, Trophy, Sparkles, GlassWater } from 'lucide-react'
+import { Wine, RotateCcw, Trophy, Sparkles, GlassWater, Share2, Copy } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -249,11 +249,18 @@ export default function CocktailMix() {
                 <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-lg p-4 mb-4">
                   <p className="text-xl font-bold text-center">{currentCocktail.name}</p>
                   <p className="text-white/80 text-center">正確配方：</p>
+                  {/* GAME-064: Ingredient reveal animation */}
                   <div className="flex flex-wrap justify-center gap-2 mt-2">
                     {currentCocktail.ingredients.map((ing, index) => (
-                      <span key={index} className="px-2 py-1 bg-amber-500/30 rounded-full text-sm">
+                      <m.span
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ delay: index * 0.15, type: 'spring', stiffness: 300, damping: 20 }}
+                        className="px-2 py-1 bg-amber-500/30 rounded-full text-sm"
+                      >
                         {ing}
-                      </span>
+                      </m.span>
                     ))}
                   </div>
                 </div>
@@ -310,6 +317,24 @@ export default function CocktailMix() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* GAME-063: Share recipe button */}
+              <div className="flex gap-2 mb-4 justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `🍸 ${currentCocktail.name}\n${currentCocktail.description}\n材料：${currentCocktail.ingredients.join('、')}`
+                    if (typeof navigator !== 'undefined' && navigator.share) {
+                      navigator.share({ title: currentCocktail.name, text }).catch(() => {})
+                    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(text).catch(() => {})
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 text-xs hover:bg-amber-500/30 transition-colors games-focus-ring"
+                >
+                  <Share2 className="w-3 h-3" /> 分享配方
+                </button>
               </div>
 
               <div className="flex gap-4">

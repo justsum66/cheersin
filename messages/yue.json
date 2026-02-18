@@ -681,7 +681,9 @@
     "description": "選擇劇本，建立房間，4–8 人秘密角色、投票、懲罰。",
     "createRoom": "建立房間",
     "creating": "建立中…",
-    "noScripts": "尚無劇本，敬請期待。", "noScriptsHint": "若為新環境，首次載入會自動建立 8 支劇本，請按「重新載入」再試。", "reloadScripts": "重新載入",
+    "noScripts": "尚無劇本，敬請期待。",
+    "noScriptsHint": "若為新環境，首次載入會自動建立 8 支劇本，請按「重新載入」再試。",
+    "reloadScripts": "重新載入",
     "upgradeUnlock": "升級解鎖",
     "copyInvite": "複製邀請連結",
     "copied": "已複製",
@@ -722,7 +724,8 @@
     "joining": "加入中…",
     "backToHome": "返回首頁",
     "goToPartyGames": "先去派對遊樂場",
-    "playersAndDuration": "{{min}}–{{max}} 人 · 約 {{minDur}} 分鐘", "chaptersAndRoles": "{{chapters}} 章 · {{roles}} 角色",
+    "playersAndDuration": "{{min}}–{{max}} 人 · 約 {{minDur}} 分鐘",
+    "chaptersAndRoles": "{{chapters}} 章 · {{roles}} 角色",
     "roomFallbackTitle": "劇本殺房",
     "playersCount": "{{current}}/{{max}} 人",
     "errorLoadScripts": "無法載入劇本列表",
@@ -904,5 +907,8 @@
     "noSubscriptions": "尚無訂閱紀錄",
     "noUserFound": "找不到符合的用戶",
     "paypalId": "PayPal ID"
+  },
+  "home": {
+    "heroPill": "THE ULTIMATE PARTY APP"
   }
 }

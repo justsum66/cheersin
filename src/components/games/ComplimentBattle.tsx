@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { m , AnimatePresence } from 'framer-motion'
-import { Heart, Send, RotateCcw, Trophy } from 'lucide-react'
+import { Heart, Send, RotateCcw, Trophy, Crown } from 'lucide-react'
 import { useTranslation } from '@/contexts/I18nContext'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
@@ -287,12 +287,29 @@ export default function ComplimentBattle() {
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-4 text-center">累計得分</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {players.map((player) => (
-                    <div key={player} className="bg-gradient-to-r from-pink-500/20 to-rose-500/20 rounded-lg p-3 text-center">
-                      <div className="font-bold text-pink-400">{player}</div>
-                      <div className="text-2xl font-bold text-yellow-400">{scores[player] || 0}</div>
-                    </div>
-                  ))}
+                  {players
+                    .slice()
+                    .sort((a, b) => (scores[b] || 0) - (scores[a] || 0))
+                    .map((player, idx) => {
+                      const isLeader = idx === 0 && (scores[player] || 0) > 0
+                      return (
+                        <div key={player} className={`rounded-lg p-3 text-center ${isLeader ? 'bg-gradient-to-r from-yellow-500/25 to-amber-500/25 border border-yellow-500/40' : 'bg-gradient-to-r from-pink-500/20 to-rose-500/20'}`}>
+                          {/* GAME-066: Crown icon for current leader */}
+                          {isLeader && (
+                            <m.div
+                              initial={{ scale: 0, rotate: -20 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                              className="flex justify-center mb-1"
+                            >
+                              <Crown className="w-6 h-6 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
+                            </m.div>
+                          )}
+                          <div className={`font-bold ${isLeader ? 'text-yellow-300' : 'text-pink-400'}`}>{player}</div>
+                          <div className="text-2xl font-bold text-yellow-400">{scores[player] || 0}</div>
+                        </div>
+                      )
+                    })}
                 </div>
               </div>
 

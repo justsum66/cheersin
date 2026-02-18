@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
-import { List } from 'react-window'
+import { FixedSizeList as List } from 'react-window'
 import {
   Bot, Sparkles, Wine,
   Settings, Zap, Crown,
@@ -260,9 +260,11 @@ export default function AssistantPage() {
     }
   }, [])
 
-  /** B1 Task 48：根據上一則 AI 回覆的 similarQuestions 動態顯示建議問題 */
-  const lastAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant' && (m.content?.trim() ?? '').length > 0)
-  const dynamicSuggestions = lastAssistantMessage?.similarQuestions?.slice(0, 6) ?? []
+  /** B1 Task 48：根據上一則 AI 回覆的 similarQuestions 動態顯示建議問題；PERF：memoize reverse find */
+  const dynamicSuggestions = useMemo(() => {
+    const last = [...messages].reverse().find((m) => m.role === 'assistant' && (m.content?.trim() ?? '').length > 0)
+    return last?.similarQuestions?.slice(0, 6) ?? []
+  }, [messages])
 
   /** 139 儲存口味偏好 */
   useEffect(() => {
@@ -436,11 +438,13 @@ export default function AssistantPage() {
     }
   }
 
-  /** AST-37：複製前淨化內容 */
-  const copyMessage = (content: string) => {
+  /** AST-37：複製前淨化內容；SEC：clipboard API failure handling */
+  const copyMessage = useCallback((content: string) => {
     const sanitized = sanitizeForExport(content, 100_000)
-    navigator.clipboard.writeText(sanitized)
-  }
+    navigator.clipboard.writeText(sanitized).catch(() => {
+      toast.error(t('common.copyError'))
+    })
+  }, [t])
 
   /** 142 加入願望清單：將推薦內容加入 cheersin_wishlist（與 profile 相容：id, name, type） */
   const addToWishlist = (content: string, messageId: string) => {
@@ -478,7 +482,7 @@ export default function AssistantPage() {
     }
   }
 
-  const isWineInWishlist = (wineId: string): boolean => {
+  const isWineInWishlist = useCallback((wineId: string): boolean => {
     if (typeof window === 'undefined') return false
     try {
       const raw = localStorage.getItem(WISHLIST_KEY)
@@ -487,7 +491,15 @@ export default function AssistantPage() {
     } catch {
       return false
     }
-  }
+  }, [])
+
+  /** CLEANUP: 頁面離開時取消語音播報與語音輸入，防止記憶體洩漏 */
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+      recognitionRef.current?.stop()
+    }
+  }, [])
 
   const startVoiceInput = () => {
     if (isListening) {
@@ -545,14 +557,14 @@ export default function AssistantPage() {
   }
 
   /** AST-37：從最近一輪對話產生分享用文字（淨化後） */
-  const getShareText = (): string => {
+  const getShareText = useCallback((): string => {
     const lastUser = [...messages].reverse().find((m) => m.role === 'user')
     const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
     const q = sanitizeForExport(lastUser?.content ?? '', 80) || '與 AI 侍酒師的對話'
     const a = sanitizeForExport(lastAssistant?.content ?? '', 120)
     const line = a ? `\n— ${a}${a.length >= 120 ? '…' : ''}` : ''
     return `Cheersin 侍酒師\nQ: ${q}${line}`
-  }
+  }, [messages])
 
   /** C45 依日期分組標題（今天、昨天、日期字串） */
   const getDateGroupLabel = (date: Date): string => {
@@ -824,8 +836,9 @@ export default function AssistantPage() {
             <m.div
               ref={suggestionsScrollRef}
               onFocus={handleSuggestionsFocus}
-              initial={{ opacity: 0, y: 8 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : undefined}
               className="flex overflow-x-auto gap-2 mb-6 pb-2 -mx-2 px-2 scrollbar-hide items-center"
             >
               <span className="text-white/40 text-xs shrink-0 mr-1">{t('assistant.fromLastReply')}</span>
@@ -911,11 +924,12 @@ export default function AssistantPage() {
           {/* 載入中動畫：三個漸變圓點跳動 */}
           {isLoading && (
             <m.div
-              initial={{ opacity: 0 }}
+              initial={prefersReducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={prefersReducedMotion ? { duration: 0 } : undefined}
               className="flex gap-6 items-center"
               aria-live="polite"
-              aria-label="AI 正在回覆"
+              aria-label={t('assistant.repliesIn')}
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 flex items-center justify-center border border-white/10 flex-shrink-0 overflow-hidden animate-pulse">
                 <Image src="/sizes/icon_128_gold.png" alt={BRAND_NAME} width={24} height={24} className="object-contain" />
@@ -985,18 +999,23 @@ export default function AssistantPage() {
       <AnimatePresence>
         {showClearConfirm && (
           <m.div
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowClearConfirm(false)}
           >
             <m.div
-              initial={{ scale: 0.9 }}
+              initial={prefersReducedMotion ? false : { scale: 0.9 }}
               animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
+              exit={prefersReducedMotion ? { scale: 1 } : { scale: 0.9 }}
+              transition={prefersReducedMotion ? { duration: 0 } : undefined}
               className="rounded-2xl bg-dark-800 border border-white/10 p-6 max-w-sm w-full shadow-xl"
               onClick={(e) => e.stopPropagation()}
+              role="alertdialog"
+              aria-modal="true"
+              aria-label={t('assistant.clearAllConfirm')}
             >
               <p className="text-white font-medium mb-4">{t('assistant.clearAllConfirm')}</p>
               <div className="flex gap-3">

@@ -4,7 +4,7 @@
  * P0-023：管理後台 — 用戶查找與訂閱狀態管理
  * 依 email 或 user id 查詢，顯示 profile 與訂閱紀錄；可更新訂閱階級。
  */
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from '@/contexts/I18nContext'
 import { getErrorMessage } from '@/lib/api-response'
 import { Users, Search, Loader2, RefreshCw } from 'lucide-react'
@@ -32,16 +32,27 @@ export default function AdminUsersPage() {
   const [queryDebounced, setQueryDebounced] = useState('')
   const [adminSecret, setAdminSecret] = useState('')
   const [loading, setLoading] = useState(false)
+  /** RACE-FIX: AbortController ref to cancel previous search requests */
+  const abortControllerRef = useRef<AbortController | null>(null)
+  
   useEffect(() => {
     const t = setTimeout(() => setQueryDebounced(query.trim()), 300)
     return () => clearTimeout(t)
   }, [query])
+  
   useEffect(() => {
     if (queryDebounced.length < 3) return
     search(queryDebounced)
     // 僅在防抖後 query 變更時觸發搜尋，不依賴 search 避免重複請求
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryDebounced])
+  
+  /** RACE-FIX: Cleanup on unmount */
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort()
+    }
+  }, [])
   const [profile, setProfile] = useState<Profile | null>(null)
   const [subscriptions, setSubscriptions] = useState<SubRow[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -63,13 +74,25 @@ export default function AdminUsersPage() {
       setError(t('admin.enterEmailOrUserId'))
       return
     }
+    
+    // RACE-FIX: Cancel any previous request
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    
     setLoading(true)
     setError(null)
     setProfile(null)
     setSubscriptions([])
     setTierMessage(null)
     try {
-      const res = await fetch(`${API_USERS}?q=${encodeURIComponent(q)}`, { headers: headers() })
+      const res = await fetch(`${API_USERS}?q=${encodeURIComponent(q)}`, { 
+        headers: headers(),
+        signal: controller.signal,
+      })
+      // RACE-FIX: Check if request was aborted
+      if (controller.signal.aborted) return
+      
       const data = await res.json()
       if (res.status === 401 || res.status === 403) {
         setForbidden(true)
@@ -85,9 +108,14 @@ export default function AdminUsersPage() {
       setProfile(data.profile ?? null)
       setSubscriptions(data.subscriptions ?? [])
     } catch (e) {
+      // RACE-FIX: Ignore abort errors
+      if (e instanceof Error && e.name === 'AbortError') return
       setError(e instanceof Error ? e.message : t('admin.searchFailed'))
     } finally {
-      setLoading(false)
+      // RACE-FIX: Only update loading if this is still the current request
+      if (!controller.signal.aborted) {
+        setLoading(false)
+      }
     }
   }, [query, queryDebounced, headers, t])
 

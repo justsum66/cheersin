@@ -7,6 +7,7 @@ import { useGamesPlayers } from './GamesContext'
 import { useGameSound } from '@/hooks/useGameSound'
 import GameRules from './GameRules'
 import CopyResultButton from './CopyResultButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 const DEFAULT_PLAYERS = ['玩家 1', '玩家 2']
 
@@ -16,6 +17,7 @@ const EMOJIS = ['🍎', '🍕', '🎸', '🚗', '⚽', '🌟', '🎂', '🐱', '
 export default function MemoryGame() {
   const contextPlayers = useGamesPlayers()
   const { play } = useGameSound()
+  const reducedMotion = useGameReduceMotion()
   const players = contextPlayers.length >= 2 ? contextPlayers : DEFAULT_PLAYERS
 
   const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0)
@@ -56,7 +58,7 @@ export default function MemoryGame() {
     setChecking(true)
     const [first, second] = selected
     
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       const newCards = [...cards]
       if (cards[first].emoji === cards[second].emoji) {
         // Match!
@@ -80,6 +82,7 @@ export default function MemoryGame() {
         setGameOver(true)
       }
     }, 1000)
+    return () => clearTimeout(timer)
   }, [selected, cards, currentPlayer, currentPlayerIdx, players.length, play])
 
   const getWinner = () => {
@@ -89,7 +92,7 @@ export default function MemoryGame() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px">
+    <div className="flex flex-col items-center justify-center h-full py-4 px-4 safe-area-px" role="main" aria-label="記憶大考驗">
       <GameRules rules={`翻開兩張牌，找到配對！\n配對成功得1分，失敗換人。\n輸家喝酒！`} />
       
       <div className="flex items-center gap-2 mb-4">
@@ -102,7 +105,7 @@ export default function MemoryGame() {
           開始遊戲！
         </m.button>
       ) : gameOver ? (
-        <m.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        <m.div initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={reducedMotion ? { duration: 0 } : undefined} className="text-center">
           <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
           <p className="text-yellow-400 font-bold text-2xl">遊戲結束！</p>
           <p className="text-white mt-2">贏家：<span className="text-cyan-400 font-bold">{getWinner()}</span></p>
@@ -133,6 +136,7 @@ export default function MemoryGame() {
                   'bg-white/10 border border-white/20 text-white/20'
                 }`}
                 disabled={card.flipped || card.matched || checking}
+                aria-label={card.flipped || card.matched ? `卡片 ${i + 1}：${card.emoji}` : `翻開卡片 ${i + 1}`}
               >
                 {card.flipped || card.matched ? card.emoji : '?'}
               </m.button>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { m } from 'framer-motion'
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton'
 import { RANDOM_NICKNAMES } from '@/config/games.config'
+import { useGameReduceMotion } from './GameWrapper'
 
 export interface RoomPlayer {
     id: string
@@ -40,6 +41,7 @@ export function PlayerManagementModal({
     onLoadLastSaved,
     tier
 }: PlayerManagementModalProps) {
+    const reducedMotion = useGameReduceMotion()
     const [newPlayerName, setNewPlayerName] = useState('')
     const [addPlayerError, setAddPlayerError] = useState<string | null>(null)
 
@@ -70,16 +72,18 @@ export function PlayerManagementModal({
 
     return (
         <m.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={onClose}
         >
             <m.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
+                exit={reducedMotion ? undefined : { scale: 0.9, opacity: 0 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="bg-[#0a0a1a] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"

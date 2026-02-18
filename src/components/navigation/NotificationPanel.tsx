@@ -10,6 +10,8 @@ interface NotificationPanelProps {
   prefersReducedMotion: boolean
   /** R2-070：有新通知時鈴鐺微晃動 */
   hasUnread?: boolean
+  /** NAV-013：未讀通知數量 */
+  unreadCount?: number
 }
 
 /** P002: Notification panel extracted from Navigation.tsx for better code splitting */
@@ -18,6 +20,7 @@ export function NotificationPanel({
   setNotificationsOpen,
   prefersReducedMotion,
   hasUnread = false,
+  unreadCount = 0,
 }: NotificationPanelProps) {
   const notificationsRef = useRef<HTMLDivElement>(null)
 
@@ -43,12 +46,23 @@ export function NotificationPanel({
         aria-label="站內通知"
         aria-expanded={notificationsOpen}
       >
+        {/* NAV-024: Animated bell wobble when new notification arrives */}
         <m.span
-          animate={hasUnread && !prefersReducedMotion ? { rotate: [0, -12, 12, -8, 8, 0] } : {}}
-          transition={{ repeat: Infinity, repeatDelay: 2, duration: 0.5 }}
-          className="inline-flex"
+          animate={
+            hasUnread && !prefersReducedMotion
+              ? { rotate: [0, -15, 15, -10, 10, -5, 5, 0] }
+              : {}
+          }
+          transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.6 }}
+          className="inline-flex relative"
         >
           <Bell className="w-5 h-5" />
+          {/* NAV-013: Badge count for unread notifications */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none shadow-sm">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </m.span>
       </button>
       <AnimatePresence>

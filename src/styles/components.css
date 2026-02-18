@@ -227,7 +227,7 @@ a:not([class*="btn-"]):focus-visible {
   padding-bottom: var(--btn-padding-y);
   background-image: linear-gradient(to right, #8B0000, #7a0000);
   box-shadow: 0 6px 20px -4px rgba(139, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 250ms cubic-bezier(0.32, 0.72, 0, 1), background-image 200ms ease;
+  transition: transform 80ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 120ms cubic-bezier(0.32, 0.72, 0, 1), background-image 200ms ease;
   will-change: auto;
   animation: btn-pulse 2.8s ease-in-out infinite;
 }
@@ -247,7 +247,9 @@ a:not([class*="btn-"]):focus-visible {
 
 .btn-primary:active {
   background-image: linear-gradient(to right, #7a0000, #6b0000);
-  box-shadow: 0 4px 12px -4px rgba(139, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 8px -2px rgba(139, 0, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: scale(0.96);
+  transition: all 80ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -263,7 +265,7 @@ a:not([class*="btn-"]):focus-visible {
   padding-right: calc(var(--btn-padding-x) * 0.8);
   padding-top: var(--btn-padding-y);
   padding-bottom: var(--btn-padding-y);
-  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease;
+  transition: transform 80ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 120ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease;
   will-change: auto;
 }
 
@@ -273,11 +275,23 @@ a:not([class*="btn-"]):focus-visible {
   background-size: 200% auto;
 }
 
+.btn-secondary:active {
+  transform: scale(0.96);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 80ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* T31: btn-ghost 統一 hover scale 與 btn-primary/secondary 一致 */
 .btn-ghost {
   @apply bg-transparent border border-white/30 text-white/90 hover:bg-white/10 hover:border-white/50 hover:scale-[1.02] active:scale-[0.95] min-h-[48px] min-w-[44px] inline-flex items-center justify-center font-medium;
   border-radius: var(--radius-md, 0.75rem);
-  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+  transition: transform 80ms cubic-bezier(0.32, 0.72, 0, 1), border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+
+.btn-ghost:active {
+  transform: scale(0.96);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 80ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html.light .btn-ghost {
@@ -750,6 +764,13 @@ a:focus-visible {
   animation: toastFadeIn 0.3s ease-out;
 }
 
+/* A11Y: Respect reduced motion preference for toast */
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter-anim {
+    animation: none;
+  }
+}
+
 /* R2-058：定價最受歡迎標籤金色邊框閃爍光暈 */
 @keyframes pricingBadgeGlow {
 
@@ -765,6 +786,13 @@ a:focus-visible {
 
 .pricing-most-popular-badge {
   animation: pricingBadgeGlow 2.5s ease-in-out infinite;
+}
+
+/* A11Y: Respect reduced motion preference for pricing badge */
+@media (prefers-reduced-motion: reduce) {
+  .pricing-most-popular-badge {
+    animation: none;
+  }
 }
 
 /* R2-129：退款徽章光暈脈動 */

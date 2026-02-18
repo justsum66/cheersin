@@ -18,15 +18,17 @@ export interface NavItem {
   href: string
   navKey: NavKey
   icon: LucideIcon
+  /** NAV-009: Keyboard shortcut hint (Alt+key) */
+  shortcutKey?: string
 }
 
 /** N10：導航項目（順序與桌面/行動一致，N19）；文案由 useTranslation t('nav.*') 提供 */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/', navKey: 'home', icon: Wine },
-  { href: '/quiz', navKey: 'quiz', icon: Sparkles },
-  { href: '/games', navKey: 'games', icon: Gamepad2 },
-  { href: '/assistant', navKey: 'assistant', icon: MessageCircle },
-  { href: '/learn', navKey: 'learn', icon: GraduationCap },
+  { href: '/', navKey: 'home', icon: Wine, shortcutKey: 'H' },
+  { href: '/quiz', navKey: 'quiz', icon: Sparkles, shortcutKey: 'Q' },
+  { href: '/games', navKey: 'games', icon: Gamepad2, shortcutKey: 'G' },
+  { href: '/assistant', navKey: 'assistant', icon: MessageCircle, shortcutKey: 'A' },
+  { href: '/learn', navKey: 'learn', icon: GraduationCap, shortcutKey: 'L' },
 ]
 
 /** N28：滾動閾值（px）— 超過則 nav 縮小、背景不透明 */

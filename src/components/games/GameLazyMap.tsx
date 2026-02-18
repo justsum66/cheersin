@@ -3,6 +3,7 @@
 import type React from 'react'
 import { lazy, Suspense } from 'react'
 import { logger } from '@/lib/logger'
+import GameErrorBoundary from './GameErrorBoundary'
 
 /** R2-012 / PERF-003：依分類動態 Code Splitting，所有遊戲皆 lazy 載入，無首屏載入全部遊戲 */
 type GameLoader = () => Promise<{ default: React.ComponentType }>
@@ -161,8 +162,10 @@ export function LazyGame({ gameId }: { gameId: string }) {
   const LazyComponent = GAME_LAZY_MAP[gameId]
   if (!LazyComponent) return null
   return (
-    <Suspense fallback={<GameLoadingFallback />}>
-      <LazyComponent />
-    </Suspense>
+    <GameErrorBoundary gameName={gameId}>
+      <Suspense fallback={<GameLoadingFallback />}>
+        <LazyComponent />
+      </Suspense>
+    </GameErrorBoundary>
   )
 }

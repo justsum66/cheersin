@@ -19,15 +19,17 @@ export function useGamePersistence<T>(key: string, initialState: T, ttl: number 
             const saved = localStorage.getItem(storageKey)
             if (saved) {
                 const parsed = JSON.parse(saved)
-                // Check TTL
-                if (Date.now() - parsed.timestamp < ttl) {
+                // Check TTL and data integrity
+                if (parsed?.timestamp && parsed?.data !== undefined && Date.now() - parsed.timestamp < ttl) {
                     setState(parsed.data)
                 } else {
                     localStorage.removeItem(storageKey)
                 }
             }
         } catch (e) {
-            logger.warn('[useGamePersistence] load error', { err: e instanceof Error ? e.message : String(e) })
+            // OPT-025: Graceful recovery from corrupted JSON
+            try { localStorage.removeItem(`game_save_${key}`) } catch { /* ignore */ }
+            logger.warn('[useGamePersistence] load error (corrupted data cleared)', { err: e instanceof Error ? e.message : String(e) })
         } finally {
             setIsLoaded(true)
             isFirstMount.current = false
@@ -46,6 +48,7 @@ export function useGamePersistence<T>(key: string, initialState: T, ttl: number 
             }
             localStorage.setItem(storageKey, JSON.stringify(payload))
         } catch (e) {
+            // OPT-026: Handle QuotaExceededError gracefully
             logger.warn('[useGamePersistence] save error', { err: e instanceof Error ? e.message : String(e) })
         }
     }, [key, state])

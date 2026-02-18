@@ -15,7 +15,7 @@ import { getCourseRating } from '@/lib/learn-course-ratings'
 import { getActiveLaunchAnnouncements } from '@/config/announcements.config'
 import { InViewAnimate } from '@/components/ui/InViewAnimate'
 import { preventNumberScrollOnWheel } from '@/hooks/usePreventNumberScroll'
-import { CoursePreviewModal } from '@/components/learn/CoursePreviewModal'
+import { CoursePreviewModal } from '@/components/learn/ui/CoursePreviewModal'
 import { useTranslation } from '@/contexts/I18nContext'
 
 // Types

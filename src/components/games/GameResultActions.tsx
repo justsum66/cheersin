@@ -9,6 +9,7 @@
 import { m } from 'framer-motion'
 import { useTranslation } from '@/contexts/I18nContext'
 import { ShareStoryCardButton } from './ShareStoryCardButton'
+import { useGameReduceMotion } from './GameWrapper'
 
 interface GameResultActionsProps {
   /** 再來一局 callback */
@@ -32,19 +33,20 @@ export function GameResultActions({
   shareStoryCard,
   className = '',
 }: GameResultActionsProps) {
+  const reducedMotion = useGameReduceMotion()
   const { t } = useTranslation()
   const restartText = restartLabel ?? t('games.playAgain')
   const exitText = exitLabel ?? t('gamesError.backLobby')
   return (
-    <div className={`flex flex-wrap items-center justify-center gap-3 ${className}`}>
+    <div className={`flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 ${className}`}>
       <m.button
         type="button"
         onClick={onRestart}
-        className="btn-primary games-touch-target px-6 py-3 rounded-xl font-bold games-focus-ring"
+        className="btn-primary games-touch-target min-h-[48px] px-6 py-3 rounded-xl font-bold games-focus-ring"
         aria-label={restartText}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: [12, -4, 0] }}
-        transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: reducedMotion ? 0 : [12, -4, 0] }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
       >
         {restartText}
       </m.button>
@@ -59,7 +61,7 @@ export function GameResultActions({
         <button
           type="button"
           onClick={onExit}
-          className="btn-secondary games-touch-target px-6 py-3 rounded-xl font-medium games-focus-ring"
+          className="btn-secondary games-touch-target min-h-[48px] px-6 py-3 rounded-xl font-medium games-focus-ring"
           aria-label={exitText}
         >
           {exitText}

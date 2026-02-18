@@ -3,7 +3,7 @@
 /** R2-380：風味輪 — 互動式風味詞探索 */
 import Link from 'next/link'
 import { ChevronLeft, Circle } from 'lucide-react'
-import { FlavorWheel } from '@/components/learn/FlavorWheel'
+import { FlavorWheel } from '@/components/learn/ui/FlavorWheel'
 
 export default function FlavorWheelPage() {
   return (
